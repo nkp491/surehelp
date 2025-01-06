@@ -8,21 +8,36 @@ interface MetricButtonsProps {
   metric: string;
   onIncrement: () => void;
   onDecrement: () => void;
+  value: number;
 }
 
 const MetricButtons = ({
   metric,
   onIncrement,
   onDecrement,
+  value,
 }: MetricButtonsProps) => {
   const formatMetricName = (metric: string) => {
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
+  const formatValue = (metric: string, value: number) => {
+    if (metric === 'ap') {
+      return `$${(value / 100).toFixed(2)}`;
+    }
+    return value.toString();
+  };
+
   return (
     <Card className="p-4">
       <div className="flex flex-col items-center gap-2">
-        <div className="flex items-center gap-2 w-full justify-center mb-2">
+        <h3 className="font-semibold text-lg capitalize">
+          {formatMetricName(metric)}
+        </h3>
+        <div className="text-xl font-bold mb-2">
+          {formatValue(metric, value)}
+        </div>
+        <div className="flex items-center gap-2 w-full justify-center">
           <Button
             onClick={onDecrement}
             variant="outline"
@@ -40,9 +55,6 @@ const MetricButtons = ({
             <Plus className="h-4 w-4" />
           </Button>
         </div>
-        <h3 className="font-semibold text-lg capitalize">
-          {formatMetricName(metric)}
-        </h3>
       </div>
     </Card>
   );

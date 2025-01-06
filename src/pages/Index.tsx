@@ -89,10 +89,11 @@ const Index = () => {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
-              {Object.keys(metrics).map((metric) => (
+              {Object.entries(metrics).map(([metric, value]) => (
                 <MetricButtons
                   key={metric}
                   metric={metric}
+                  value={value}
                   onIncrement={() => updateMetric(metric as MetricType, true)}
                   onDecrement={() => updateMetric(metric as MetricType, false)}
                 />
