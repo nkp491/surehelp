@@ -64,7 +64,7 @@ const Index = () => {
             <div className="flex justify-between items-center mb-8">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                  SureHelp
+                  Client Assessment
                 </h1>
                 <p className="text-lg text-gray-600">
                   Fill out the form below to store your medical information
@@ -76,9 +76,6 @@ const Index = () => {
                 </Link>
                 <Link to="/metrics">
                   <Button variant="outline">View Metrics</Button>
-                </Link>
-                <Link to="/client-assessment">
-                  <Button variant="outline">New Assessment</Button>
                 </Link>
                 <Button
                   onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
@@ -103,6 +100,8 @@ const Index = () => {
               ))}
             </div>
             
+            <FormContainer />
+
             <Routes>
               <Route path="/submitted-forms" element={<SubmittedForms />} />
               <Route path="/metrics" element={<MetricsVisualization />} />

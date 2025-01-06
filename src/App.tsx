@@ -7,7 +7,6 @@ import { useState } from "react";
 import Index from "./pages/Index";
 import SubmittedForms from "./pages/SubmittedForms";
 import MetricsVisualization from "./pages/MetricsVisualization";
-import ClientAssessmentForm from "./pages/ClientAssessmentForm";
 
 const App = () => {
   const [queryClient] = useState(() => new QueryClient());
@@ -22,7 +21,6 @@ const App = () => {
             <Route path="/" element={<Index />}>
               <Route path="submitted-forms" element={<SubmittedForms />} />
               <Route path="metrics" element={<MetricsVisualization />} />
-              <Route path="client-assessment" element={<ClientAssessmentForm />} />
             </Route>
           </Routes>
         </BrowserRouter>
