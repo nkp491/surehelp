@@ -10,7 +10,6 @@ interface MetricCardProps {
   onInputChange: (value: string) => void;
   onIncrement: () => void;
   onDecrement: () => void;
-  isAP?: boolean;
 }
 
 const MetricCard = ({
@@ -20,14 +19,13 @@ const MetricCard = ({
   onInputChange,
   onIncrement,
   onDecrement,
-  isAP = false,
 }: MetricCardProps) => {
   const formatMetricName = (metric: string) => {
-    return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
+    return metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
   return (
-    <Card className={`p-4 ${isAP ? 'col-span-full bg-gray-50' : ''}`}>
+    <Card className="p-4">
       <div className="flex flex-col items-center gap-2">
         <h3 className="font-semibold text-lg capitalize">
           {formatMetricName(metric)}
@@ -38,7 +36,7 @@ const MetricCard = ({
             value={inputValue}
             onChange={(e) => onInputChange(e.target.value)}
             className="text-center w-full max-w-xl font-bold text-lg"
-            placeholder={isAP ? "$0.00" : "0"}
+            placeholder="0"
           />
           <div className="flex items-center gap-2">
             <Button
