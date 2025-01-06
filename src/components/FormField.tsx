@@ -25,6 +25,56 @@ const FormField = ({
   error,
   readOnly = false,
 }: FormFieldProps) => {
+  if (type === "height") {
+    const [feet, inches] = value.split("'").map(v => v.replace('"', ''));
+    
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
+        <div className="flex gap-2">
+          <div className="flex-1">
+            <Input
+              type="number"
+              value={feet || ""}
+              onChange={(e) => {
+                const newFeet = e.target.value;
+                const newInches = inches || "0";
+                onChange?.(`${newFeet}'${newInches}"`);
+              }}
+              placeholder="Feet"
+              min="0"
+              max="9"
+              className={cn(error ? "border-destructive" : "border-input")}
+              required={required}
+              readOnly={readOnly}
+            />
+          </div>
+          <div className="flex-1">
+            <Input
+              type="number"
+              value={inches || ""}
+              onChange={(e) => {
+                const newInches = e.target.value;
+                const currentFeet = feet || "0";
+                onChange?.(`${currentFeet}'${newInches}"`);
+              }}
+              placeholder="Inches"
+              min="0"
+              max="11"
+              className={cn(error ? "border-destructive" : "border-input")}
+              required={required}
+              readOnly={readOnly}
+            />
+          </div>
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">
