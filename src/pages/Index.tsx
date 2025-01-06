@@ -4,14 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Database, ExternalLink } from "lucide-react";
 import { FormSubmission } from "@/types/form";
 import SubmissionsTable from "@/components/SubmissionsTable";
-import CounterHistory from "@/components/CounterHistory";
-import Counter from "@/components/Counter";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
-  const [count, setCount] = useState(0);
-  const [counterHistory, setCounterHistory] = useState<{ date: string; count: number; }[]>([]);
   const [editingSubmission, setEditingSubmission] = useState<FormSubmission | null>(null);
 
   useEffect(() => {
@@ -20,16 +16,6 @@ const Index = () => {
       if (storedSubmissions) {
         setSubmissions(JSON.parse(storedSubmissions));
       }
-
-      const storedHistory = localStorage.getItem("counterHistory");
-      if (storedHistory) {
-        setCounterHistory(JSON.parse(storedHistory));
-      }
-
-      const storedCount = localStorage.getItem("currentCount");
-      if (storedCount) {
-        setCount(parseInt(storedCount, 10));
-      }
     } catch (error) {
       console.error("Error loading data from localStorage:", error);
     }
@@ -37,32 +23,6 @@ const Index = () => {
 
   const scrollToSubmissions = () => {
     document.getElementById('submissions-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleIncrement = () => {
-    setCount(prevCount => {
-      const newCount = prevCount + 1;
-      localStorage.setItem("currentCount", newCount.toString());
-      
-      const today = new Date().toISOString().split('T')[0];
-      setCounterHistory(prev => {
-        const existingEntry = prev.find(entry => entry.date === today);
-        let newHistory;
-        
-        if (existingEntry) {
-          newHistory = prev.map(entry =>
-            entry.date === today ? { ...entry, count: entry.count + 1 } : entry
-          );
-        } else {
-          newHistory = [...prev, { date: today, count: 1 }];
-        }
-        
-        localStorage.setItem("counterHistory", JSON.stringify(newHistory));
-        return newHistory;
-      });
-
-      return newCount;
-    });
   };
 
   const handleEdit = (submission: FormSubmission) => {
@@ -99,7 +59,6 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <Counter count={count} onIncrement={handleIncrement} />
                 <Button
                   onClick={scrollToSubmissions}
                   className="flex items-center gap-2"
@@ -124,12 +83,11 @@ const Index = () => {
               onUpdate={handleFormUpdate}
             />
             
-            <div id="submissions-section" className="mt-16 space-y-8">
+            <div id="submissions-section" className="mt-16">
               <SubmissionsTable 
                 submissions={submissions}
                 onEdit={handleEdit}
               />
-              <CounterHistory history={counterHistory} />
             </div>
           </TabsContent>
           
