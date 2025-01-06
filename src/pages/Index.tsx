@@ -5,6 +5,7 @@ import { Database, ExternalLink } from "lucide-react";
 import { FormSubmission } from "@/types/form";
 import SubmissionsTable from "@/components/SubmissionsTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import BusinessMetrics from "@/components/BusinessMetrics";
 
 const Index = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
@@ -49,6 +50,7 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="client-tracker">
+            <BusinessMetrics />
             <div className="flex justify-between items-center mb-12">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">
