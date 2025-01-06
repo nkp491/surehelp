@@ -21,7 +21,7 @@ import { useFormLogic } from "@/hooks/useFormLogic";
 import { FormField } from "@/types/formTypes";
 
 interface FormContainerProps {
-  editingSubmission?: FormSubmission | null; // Made optional with ?
+  editingSubmission?: FormSubmission | null;
   onUpdate?: (submission: FormSubmission) => void;
 }
 
