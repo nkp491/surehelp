@@ -21,11 +21,11 @@ import { useFormLogic } from "@/hooks/useFormLogic";
 import { FormField } from "@/types/formTypes";
 
 interface FormContainerProps {
-  editingSubmission: FormSubmission | null;
+  editingSubmission?: FormSubmission | null; // Made optional with ?
   onUpdate?: (submission: FormSubmission) => void;
 }
 
-const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
+const FormContainer = ({ editingSubmission = null, onUpdate }: FormContainerProps) => {
   const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
 
