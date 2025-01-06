@@ -2,9 +2,9 @@ import { useState, useEffect } from "react";
 import MetricCard from "./metrics/MetricCard";
 import RatioCard from "./metrics/RatioCard";
 import MetricsChart from "./MetricsChart";
-import { calculateRatios } from "@/utils/metricsUtils";
+import { calculateRatios, formatCurrency } from "@/utils/metricsUtils";
 
-type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales";
+type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
 interface MetricCount {
   [key: string]: number;
@@ -18,6 +18,7 @@ const BusinessMetrics = () => {
     scheduled: 0,
     sits: 0,
     sales: 0,
+    ap: 0,
   });
 
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
@@ -71,17 +72,26 @@ const BusinessMetrics = () => {
     }
   };
 
-  const chartData = Object.entries(metrics).map(([name, value]) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    value: value,
-  }));
+  const chartData = Object.entries(metrics)
+    .filter(([name]) => name !== 'ap') // Exclude AP from the chart
+    .map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value: value,
+    }));
 
   const ratios = calculateRatios(metrics);
+
+  const formatMetricValue = (metric: string, value: number) => {
+    if (metric === 'ap') {
+      return formatCurrency(value);
+    }
+    return value.toString();
+  };
 
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
         {Object.entries(metrics).map(([metric, count]) => (
           <MetricCard
             key={metric}
@@ -91,6 +101,7 @@ const BusinessMetrics = () => {
             onInputChange={(value) => handleInputChange(metric as MetricType, value)}
             onIncrement={() => updateMetric(metric as MetricType, true)}
             onDecrement={() => updateMetric(metric as MetricType, false)}
+            formatValue={(value) => formatMetricValue(metric, value)}
           />
         ))}
       </div>
