@@ -174,7 +174,11 @@ const Index = () => {
                         <TableCell>{submission.height}</TableCell>
                         <TableCell>{submission.weight}</TableCell>
                         <TableCell>{submission.tobaccoUse}</TableCell>
-                        <TableCell>{submission.selectedConditions?.join(", ")}</TableCell>
+                        <TableCell>
+                          {Array.isArray(submission.selectedConditions) 
+                            ? submission.selectedConditions.join(", ")
+                            : submission.selectedConditions}
+                        </TableCell>
                         <TableCell>
                           <Button
                             variant="outline"
