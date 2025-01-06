@@ -1,10 +1,9 @@
 import { useState, useEffect } from "react";
-import { FormValues } from "@/types/formTypes";
 import { FormSubmission } from "@/types/form";
 import { differenceInYears, parse } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 
-const initialFormValues: FormValues = {
+const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   name: "",
   dob: "",
   age: "",
@@ -22,12 +21,13 @@ const initialFormValues: FormValues = {
 
 export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?: (submission: FormSubmission) => void) => {
   const { toast } = useToast();
-  const [formData, setFormData] = useState<FormValues>(initialFormValues);
-  const [errors, setErrors] = useState<Partial<FormValues>>({});
+  const [formData, setFormData] = useState<typeof initialFormValues>(initialFormValues);
+  const [errors, setErrors] = useState<Partial<typeof initialFormValues>>({});
 
   useEffect(() => {
     if (editingSubmission) {
-      setFormData(editingSubmission);
+      const { timestamp, outcome, ...rest } = editingSubmission;
+      setFormData(rest);
     }
   }, [editingSubmission]);
 
@@ -40,7 +40,7 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
   }, [formData.dob]);
 
   const validateForm = () => {
-    const newErrors: Partial<FormValues> = {};
+    const newErrors: Partial<typeof initialFormValues> = {};
     
     if (!formData.name) {
       newErrors.name = "Name is required";
@@ -57,12 +57,14 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
     e.preventDefault();
     
     if (validateForm()) {
+      const submissionData: FormSubmission = {
+        ...formData,
+        outcome,
+        timestamp: editingSubmission?.timestamp || new Date().toISOString()
+      };
+
       if (editingSubmission) {
-        onUpdate?.({
-          ...formData,
-          outcome,
-          timestamp: editingSubmission.timestamp
-        });
+        onUpdate?.(submissionData);
         
         toast({
           title: "Success!",
@@ -70,12 +72,7 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
         });
       } else {
         const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
-        const newSubmission = { 
-          ...formData, 
-          outcome,
-          timestamp: new Date().toISOString() 
-        };
-        submissions.push(newSubmission);
+        submissions.push(submissionData);
         localStorage.setItem("formSubmissions", JSON.stringify(submissions));
         
         toast({

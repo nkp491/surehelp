@@ -1,12 +1,17 @@
 export interface FormSubmission {
-  firstName: string;
-  lastName: string;
-  email: string;
-  phone: string;
-  address: string;
-  city: string;
-  state: string;
-  zipCode: string;
+  name: string;
+  dob: string;
+  age: string;
+  height: string;
+  weight: string;
+  tobaccoUse: string;
+  selectedConditions: string[];
+  medicalConditions: string;
+  hospitalizations: string;
+  surgeries: string;
+  prescriptionMedications: string;
+  lastMedicalExam: string;
+  familyMedicalConditions: string;
   timestamp: string;
   outcome: string;
 }
