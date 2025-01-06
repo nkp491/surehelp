@@ -5,6 +5,7 @@ import FormField from "./FormField";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { differenceInYears, parse } from "date-fns";
+import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
 
 interface FormData {
   name: string;
@@ -13,6 +14,7 @@ interface FormData {
   height: string;
   weight: string;
   tobaccoUse: string;
+  selectedConditions: string[];
   medicalConditions: string;
   hospitalizations: string;
   surgeries: string;
@@ -36,6 +38,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     height: "",
     weight: "",
     tobaccoUse: "no",
+    selectedConditions: [],
     medicalConditions: "",
     hospitalizations: "",
     surgeries: "",
@@ -107,6 +110,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
         height: "",
         weight: "",
         tobaccoUse: "no",
+        selectedConditions: [],
         medicalConditions: "",
         hospitalizations: "",
         surgeries: "",
@@ -185,13 +189,18 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
           </div>
         </RadioGroup>
       </div>
+
+      <MedicalConditionsCheckbox
+        selectedConditions={formData.selectedConditions}
+        onChange={(conditions) => setFormData({ ...formData, selectedConditions: conditions })}
+      />
       
       <FormField
-        label="Medical Conditions"
+        label="Other Medical Conditions"
         type="text"
         value={formData.medicalConditions}
         onChange={(value) => setFormData({ ...formData, medicalConditions: value })}
-        placeholder="Enter any medical conditions"
+        placeholder="Enter any other medical conditions"
       />
       
       <FormField

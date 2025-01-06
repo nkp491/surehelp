@@ -12,6 +12,7 @@ interface FormSubmission {
   height: string;
   weight: string;
   tobaccoUse: string;
+  selectedConditions: string[];
   medicalConditions: string;
   hospitalizations: string;
   surgeries: string;
@@ -160,6 +161,7 @@ const Index = () => {
                       <TableHead>Height</TableHead>
                       <TableHead>Weight</TableHead>
                       <TableHead>Tobacco Use</TableHead>
+                      <TableHead>Medical Conditions</TableHead>
                       <TableHead>Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -172,6 +174,7 @@ const Index = () => {
                         <TableCell>{submission.height}</TableCell>
                         <TableCell>{submission.weight}</TableCell>
                         <TableCell>{submission.tobaccoUse}</TableCell>
+                        <TableCell>{submission.selectedConditions?.join(", ")}</TableCell>
                         <TableCell>
                           <Button
                             variant="outline"
