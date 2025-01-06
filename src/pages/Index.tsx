@@ -2,6 +2,8 @@ import FormContainer from "@/components/FormContainer";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Database } from "lucide-react";
 
 interface FormSubmission {
   name: string;
@@ -22,20 +24,35 @@ const Index = () => {
     }
   }, []);
 
+  const scrollToSubmissions = () => {
+    document.getElementById('submissions-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto py-12">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Form Repository
-          </h1>
-          <p className="text-lg text-gray-600">
-            Fill out the form below to store your information
-          </p>
+        <div className="flex justify-between items-center mb-12">
+          <div>
+            <h1 className="text-4xl font-bold text-gray-900 mb-4">
+              Form Repository
+            </h1>
+            <p className="text-lg text-gray-600">
+              Fill out the form below to store your information
+            </p>
+          </div>
+          <Button
+            onClick={scrollToSubmissions}
+            className="flex items-center gap-2"
+            variant="outline"
+          >
+            <Database className="h-4 w-4" />
+            View Submissions ({submissions.length})
+          </Button>
         </div>
+        
         <FormContainer />
         
-        <div className="mt-16">
+        <div id="submissions-section" className="mt-16">
           <Card>
             <CardHeader>
               <CardTitle>Submitted Forms</CardTitle>
