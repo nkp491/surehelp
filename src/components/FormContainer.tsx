@@ -17,23 +17,7 @@ import {
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import DraggableFormField from "./DraggableFormField";
-
-interface FormData {
-  name: string;
-  dob: string;
-  age: string;
-  height: string;
-  weight: string;
-  tobaccoUse: string;
-  selectedConditions: string[];
-  medicalConditions: string;
-  hospitalizations: string;
-  surgeries: string;
-  prescriptionMedications: string;
-  lastMedicalExam: string;
-  familyMedicalConditions: string;
-  timestamp?: string;
-}
+import { FormSubmission } from "@/types/form";
 
 interface FormField {
   id: string;
@@ -44,8 +28,8 @@ interface FormField {
 }
 
 interface FormContainerProps {
-  editingSubmission: FormData | null;
-  onUpdate?: (submission: FormData) => void;
+  editingSubmission: FormSubmission | null;
+  onUpdate?: (submission: FormSubmission) => void;
 }
 
 const INITIAL_FIELDS: FormField[] = [
@@ -106,7 +90,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   }, [formData.dob]);
 
   const validateForm = () => {
-    const newErrors: Partial<FormData> = {};
+    const newErrors: Partial<FormSubmission> = {};
     
     if (!formData.name) {
       newErrors.name = "Name is required";
@@ -200,13 +184,13 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
                 id={field.id}
                 fieldType={field.type}
                 label={field.label}
-                value={formData[field.id as keyof FormData]}
+                value={formData[field.id as keyof FormSubmission]}
                 onChange={(value) =>
                   setFormData((prev) => ({ ...prev, [field.id]: value }))
                 }
                 placeholder={field.placeholder}
                 required={field.required}
-                error={errors[field.id as keyof FormData]}
+                error={errors[field.id as keyof FormSubmission]}
               />
             ))}
           </div>

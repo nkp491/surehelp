@@ -1,53 +1,30 @@
 import FormContainer from "@/components/FormContainer";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database, Plus, Pencil } from "lucide-react";
-
-interface FormSubmission {
-  name: string;
-  dob: string;
-  age: string;
-  height: string;
-  weight: string;
-  tobaccoUse: string;
-  selectedConditions: string[];
-  medicalConditions: string;
-  hospitalizations: string;
-  surgeries: string;
-  prescriptionMedications: string;
-  lastMedicalExam: string;
-  familyMedicalConditions: string;
-  timestamp: string;
-}
-
-interface CounterHistory {
-  date: string;
-  count: number;
-}
+import { Database, Plus } from "lucide-react";
+import { FormSubmission } from "@/types/form";
+import SubmissionsTable from "@/components/SubmissionsTable";
+import CounterHistory from "@/components/CounterHistory";
+import Counter from "@/components/Counter";
 
 const Index = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [count, setCount] = useState(0);
-  const [counterHistory, setCounterHistory] = useState<CounterHistory[]>([]);
+  const [counterHistory, setCounterHistory] = useState<{ date: string; count: number; }[]>([]);
   const [editingSubmission, setEditingSubmission] = useState<FormSubmission | null>(null);
 
   useEffect(() => {
     try {
-      // Load submissions from localStorage
       const storedSubmissions = localStorage.getItem("formSubmissions");
       if (storedSubmissions) {
         setSubmissions(JSON.parse(storedSubmissions));
       }
 
-      // Load counter history from localStorage
       const storedHistory = localStorage.getItem("counterHistory");
       if (storedHistory) {
         setCounterHistory(JSON.parse(storedHistory));
       }
 
-      // Load current count from localStorage
       const storedCount = localStorage.getItem("currentCount");
       if (storedCount) {
         setCount(parseInt(storedCount, 10));
@@ -64,11 +41,8 @@ const Index = () => {
   const handleIncrement = () => {
     setCount(prevCount => {
       const newCount = prevCount + 1;
-      
-      // Save current count to localStorage
       localStorage.setItem("currentCount", newCount.toString());
       
-      // Update counter history
       const today = new Date().toISOString().split('T')[0];
       setCounterHistory(prev => {
         const existingEntry = prev.find(entry => entry.date === today);
@@ -82,7 +56,6 @@ const Index = () => {
           newHistory = [...prev, { date: today, count: 1 }];
         }
         
-        // Save to localStorage
         localStorage.setItem("counterHistory", JSON.stringify(newHistory));
         return newHistory;
       });
@@ -118,17 +91,7 @@ const Index = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-white p-3 rounded-md border">
-              <Button
-                onClick={handleIncrement}
-                variant="outline"
-                size="lg"
-                className="flex items-center gap-2 text-lg px-6 py-6"
-              >
-                <Plus className="h-6 w-6" />
-                Count: {count}
-              </Button>
-            </div>
+            <Counter count={count} onIncrement={handleIncrement} />
             <Button
               onClick={scrollToSubmissions}
               className="flex items-center gap-2"
@@ -146,87 +109,11 @@ const Index = () => {
         />
         
         <div id="submissions-section" className="mt-16 space-y-8">
-          <Card>
-            <CardHeader>
-              <CardTitle>Submitted Forms</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="overflow-x-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>DOB</TableHead>
-                      <TableHead>Age</TableHead>
-                      <TableHead>Height</TableHead>
-                      <TableHead>Weight</TableHead>
-                      <TableHead>Tobacco Use</TableHead>
-                      <TableHead>Medical Conditions</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {submissions.map((submission, index) => (
-                      <TableRow key={index}>
-                        <TableCell>{submission.name}</TableCell>
-                        <TableCell>{submission.dob}</TableCell>
-                        <TableCell>{submission.age}</TableCell>
-                        <TableCell>{submission.height}</TableCell>
-                        <TableCell>{submission.weight}</TableCell>
-                        <TableCell>{submission.tobaccoUse}</TableCell>
-                        <TableCell>
-                          {Array.isArray(submission.selectedConditions) 
-                            ? submission.selectedConditions.join(", ")
-                            : submission.selectedConditions}
-                        </TableCell>
-                        <TableCell>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(submission)}
-                            className="flex items-center gap-2"
-                          >
-                            <Pencil className="h-4 w-4" />
-                            Edit
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-                {submissions.length === 0 && (
-                  <p className="text-center text-gray-500 py-8">No submissions yet</p>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Counter History</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Count</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {counterHistory.map((entry, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{entry.date}</TableCell>
-                      <TableCell>{entry.count}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {counterHistory.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No counter history yet</p>
-              )}
-            </CardContent>
-          </Card>
+          <SubmissionsTable 
+            submissions={submissions}
+            onEdit={handleEdit}
+          />
+          <CounterHistory history={counterHistory} />
         </div>
       </div>
     </div>
