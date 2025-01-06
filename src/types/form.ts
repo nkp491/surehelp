@@ -1,21 +1,12 @@
 export interface FormSubmission {
-  name: string;
-  dob: string;
-  age: string;
-  height: string;
-  weight: string;
-  tobaccoUse: string;
-  selectedConditions: string[];
-  medicalConditions: string;
-  hospitalizations: string;
-  surgeries: string;
-  prescriptionMedications: string;
-  lastMedicalExam: string;
-  familyMedicalConditions: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zipCode: string;
   timestamp: string;
-}
-
-export interface CounterHistory {
-  date: string;
-  count: number;
+  outcome: string;
 }

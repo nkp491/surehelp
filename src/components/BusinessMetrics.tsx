@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import MetricsChart from "./MetricsChart";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales";
 
@@ -37,10 +38,15 @@ const BusinessMetrics = () => {
     });
   };
 
+  const chartData = Object.entries(metrics).map(([name, value]) => ({
+    name: name.charAt(0).toUpperCase() + name.slice(1),
+    value,
+  }));
+
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
         {Object.entries(metrics).map(([metric, count]) => (
           <Card key={metric} className="p-4">
             <div className="flex flex-col items-center gap-2">
@@ -70,6 +76,7 @@ const BusinessMetrics = () => {
           </Card>
         ))}
       </div>
+      <MetricsChart data={chartData} />
     </div>
   );
 };
