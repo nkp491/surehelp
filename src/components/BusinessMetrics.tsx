@@ -74,20 +74,29 @@ const BusinessMetrics = () => {
     value: name === 'ap' ? parseFloat(value.toFixed(2)) : value,
   }));
 
+  const formatMetricName = (metric: string) => {
+    return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
+  };
+
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
         {Object.entries(metrics).map(([metric, count]) => (
-          <Card key={metric} className="p-4">
+          <Card 
+            key={metric} 
+            className={`p-4 ${metric === 'ap' ? 'lg:col-span-7 mt-4' : ''}`}
+          >
             <div className="flex flex-col items-center gap-2">
-              <h3 className="font-semibold text-lg capitalize">{metric}</h3>
+              <h3 className="font-semibold text-lg capitalize">
+                {formatMetricName(metric)}
+              </h3>
               {metric === 'ap' ? (
                 <Input
                   type="text"
                   value={apInput || formatCurrency(count)}
                   onChange={handleAPInputChange}
-                  className="text-center"
+                  className="text-center w-full max-w-xl font-bold text-lg"
                   placeholder="$0.00"
                 />
               ) : (
