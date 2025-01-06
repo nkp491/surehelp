@@ -64,7 +64,7 @@ const Index = () => {
             <div className="flex justify-between items-center mb-8">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">
-                  Client Assessment
+                  SureHelp
                 </h1>
                 <p className="text-lg text-gray-600">
                   Fill out the form below to store your medical information
