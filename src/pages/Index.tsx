@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database } from "lucide-react";
+import { Database, Plus } from "lucide-react";
 
 interface FormSubmission {
   name: string;
@@ -15,6 +15,7 @@ interface FormSubmission {
 
 const Index = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
+  const [count, setCount] = useState(0);
 
   useEffect(() => {
     // Load submissions from localStorage
@@ -26,6 +27,10 @@ const Index = () => {
 
   const scrollToSubmissions = () => {
     document.getElementById('submissions-section')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const handleIncrement = () => {
+    setCount(prevCount => prevCount + 1);
   };
 
   return (
@@ -40,14 +45,27 @@ const Index = () => {
               Fill out the form below to store your information
             </p>
           </div>
-          <Button
-            onClick={scrollToSubmissions}
-            className="flex items-center gap-2"
-            variant="outline"
-          >
-            <Database className="h-4 w-4" />
-            View Submissions ({submissions.length})
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 bg-white p-2 rounded-md border">
+              <Button
+                onClick={handleIncrement}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Count: {count}
+              </Button>
+            </div>
+            <Button
+              onClick={scrollToSubmissions}
+              className="flex items-center gap-2"
+              variant="outline"
+            >
+              <Database className="h-4 w-4" />
+              View Submissions ({submissions.length})
+            </Button>
+          </div>
         </div>
         
         <FormContainer />
