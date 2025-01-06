@@ -27,33 +27,56 @@ const BusinessMetrics = () => {
     ap: 0,
   });
 
-  const [apInput, setApInput] = useState<string>("");
+  const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
     const storedMetrics = localStorage.getItem("businessMetrics");
     if (storedMetrics) {
-      setMetrics(JSON.parse(storedMetrics));
+      const parsedMetrics = JSON.parse(storedMetrics);
+      setMetrics(parsedMetrics);
+      // Initialize input values
+      const initialInputs: {[key: string]: string} = {};
+      Object.entries(parsedMetrics).forEach(([key, value]) => {
+        initialInputs[key] = key === 'ap' ? formatCurrency(value as number) : value?.toString() || '0';
+      });
+      setMetricInputs(initialInputs);
     }
   }, []);
 
   const updateMetric = (metric: MetricType, increment: boolean) => {
     setMetrics((prev) => {
+      const newValue = prev[metric] + (increment ? 1 : -1);
       const newMetrics = {
         ...prev,
-        [metric]: prev[metric] + (increment ? 1 : -1),
+        [metric]: newValue,
       };
+      setMetricInputs(current => ({
+        ...current,
+        [metric]: metric === 'ap' ? formatCurrency(newValue) : newValue.toString()
+      }));
       localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
       return newMetrics;
     });
   };
 
-  const updateAP = (value: string) => {
-    const numericValue = parseFloat(value.replace(/[^0-9.-]+/g, ""));
+  const handleInputChange = (metric: MetricType, value: string) => {
+    setMetricInputs(prev => ({
+      ...prev,
+      [metric]: value
+    }));
+
+    let numericValue: number;
+    if (metric === 'ap') {
+      numericValue = parseFloat(value.replace(/[^0-9.-]+/g, ""));
+    } else {
+      numericValue = parseInt(value) || 0;
+    }
+
     if (!isNaN(numericValue)) {
-      setMetrics((prev) => {
+      setMetrics(prev => {
         const newMetrics = {
           ...prev,
-          ap: numericValue,
+          [metric]: numericValue
         };
         localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
         return newMetrics;
@@ -99,12 +122,6 @@ const BusinessMetrics = () => {
     ];
   };
 
-  const handleAPInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    setApInput(value);
-    updateAP(value);
-  };
-
   const chartData = Object.entries(metrics).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
     value: name === 'ap' ? parseFloat(value.toFixed(2)) : value,
@@ -127,15 +144,14 @@ const BusinessMetrics = () => {
               <h3 className="font-semibold text-lg capitalize">
                 {formatMetricName(metric)}
               </h3>
-              {metric === 'ap' ? (
+              <div className="flex flex-col items-center gap-2 w-full">
                 <Input
                   type="text"
-                  value={apInput || formatCurrency(count)}
-                  onChange={handleAPInputChange}
+                  value={metricInputs[metric] || (metric === 'ap' ? formatCurrency(count) : count.toString())}
+                  onChange={(e) => handleInputChange(metric as MetricType, e.target.value)}
                   className="text-center w-full max-w-xl font-bold text-lg"
-                  placeholder="$0.00"
+                  placeholder={metric === 'ap' ? "$0.00" : "0"}
                 />
-              ) : (
                 <div className="flex items-center gap-2">
                   <Button
                     onClick={() => updateMetric(metric as MetricType, false)}
@@ -145,9 +161,6 @@ const BusinessMetrics = () => {
                   >
                     <Minus className="h-4 w-4" />
                   </Button>
-                  <span className="text-xl font-bold min-w-[3ch] text-center">
-                    {count}
-                  </span>
                   <Button
                     onClick={() => updateMetric(metric as MetricType, true)}
                     variant="outline"
@@ -157,7 +170,7 @@ const BusinessMetrics = () => {
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
-              )}
+              </div>
             </div>
           </Card>
         ))}
