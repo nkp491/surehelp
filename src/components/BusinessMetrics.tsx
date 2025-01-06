@@ -4,7 +4,7 @@ import RatioCard from "./metrics/RatioCard";
 import MetricsChart from "./MetricsChart";
 import { calculateRatios } from "@/utils/metricsUtils";
 
-type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales";
+type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
 interface MetricCount {
   [key: string]: number;
@@ -18,6 +18,7 @@ const BusinessMetrics = () => {
     scheduled: 0,
     sits: 0,
     sales: 0,
+    ap: 0,
   });
 
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
@@ -29,7 +30,9 @@ const BusinessMetrics = () => {
       setMetrics(parsedMetrics);
       const initialInputs: {[key: string]: string} = {};
       Object.entries(parsedMetrics).forEach(([key, value]) => {
-        initialInputs[key] = value?.toString() || '0';
+        initialInputs[key] = key === 'ap' ? 
+          (value ? (value as number / 100).toFixed(2) : '0.00') : 
+          value?.toString() || '0';
       });
       setMetricInputs(initialInputs);
     }
@@ -37,15 +40,30 @@ const BusinessMetrics = () => {
 
   const updateMetric = (metric: MetricType, increment: boolean) => {
     setMetrics((prev) => {
-      const newValue = prev[metric] + (increment ? 1 : -1);
+      const currentValue = prev[metric];
+      let newValue;
+      
+      if (metric === 'ap') {
+        // For AP, increment/decrement by $1.00
+        newValue = currentValue + (increment ? 100 : -100);
+        if (newValue < 0) newValue = 0;
+      } else {
+        newValue = currentValue + (increment ? 1 : -1);
+        if (newValue < 0) newValue = 0;
+      }
+
       const newMetrics = {
         ...prev,
         [metric]: newValue,
       };
+
       setMetricInputs(current => ({
         ...current,
-        [metric]: newValue.toString()
+        [metric]: metric === 'ap' ? 
+          (newValue / 100).toFixed(2) : 
+          newValue.toString()
       }));
+
       localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
       return newMetrics;
     });
@@ -57,31 +75,47 @@ const BusinessMetrics = () => {
       [metric]: value
     }));
 
-    const numericValue = parseInt(value) || 0;
-
-    if (!isNaN(numericValue)) {
-      setMetrics(prev => {
-        const newMetrics = {
-          ...prev,
-          [metric]: numericValue
-        };
-        localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
-        return newMetrics;
-      });
+    if (metric === 'ap') {
+      // Convert currency string to cents for storage
+      const numericValue = Math.round(parseFloat(value) * 100) || 0;
+      if (!isNaN(numericValue)) {
+        setMetrics(prev => {
+          const newMetrics = {
+            ...prev,
+            [metric]: numericValue
+          };
+          localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
+          return newMetrics;
+        });
+      }
+    } else {
+      const numericValue = parseInt(value) || 0;
+      if (!isNaN(numericValue)) {
+        setMetrics(prev => {
+          const newMetrics = {
+            ...prev,
+            [metric]: numericValue
+          };
+          localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
+          return newMetrics;
+        });
+      }
     }
   };
 
-  const chartData = Object.entries(metrics).map(([name, value]) => ({
-    name: name.charAt(0).toUpperCase() + name.slice(1),
-    value: value,
-  }));
+  const chartData = Object.entries(metrics)
+    .filter(([name]) => name !== 'ap') // Exclude AP from the chart
+    .map(([name, value]) => ({
+      name: name.charAt(0).toUpperCase() + name.slice(1),
+      value: value,
+    }));
 
   const ratios = calculateRatios(metrics);
 
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
         {Object.entries(metrics).map(([metric, count]) => (
           <MetricCard
             key={metric}
@@ -91,6 +125,7 @@ const BusinessMetrics = () => {
             onInputChange={(value) => handleInputChange(metric as MetricType, value)}
             onIncrement={() => updateMetric(metric as MetricType, true)}
             onDecrement={() => updateMetric(metric as MetricType, false)}
+            isCurrency={metric === 'ap'}
           />
         ))}
       </div>

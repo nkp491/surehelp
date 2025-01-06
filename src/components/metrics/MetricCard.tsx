@@ -10,6 +10,7 @@ interface MetricCardProps {
   onInputChange: (value: string) => void;
   onIncrement: () => void;
   onDecrement: () => void;
+  isCurrency?: boolean;
 }
 
 const MetricCard = ({
@@ -19,9 +20,24 @@ const MetricCard = ({
   onInputChange,
   onIncrement,
   onDecrement,
+  isCurrency = false,
 }: MetricCardProps) => {
   const formatMetricName = (metric: string) => {
-    return metric.charAt(0).toUpperCase() + metric.slice(1);
+    return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
+  };
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    
+    if (isCurrency) {
+      // Allow only valid currency input
+      value = value.replace(/[^\d.]/g, '');
+      const parts = value.split('.');
+      if (parts.length > 2) return; // Don't allow multiple decimal points
+      if (parts[1]?.length > 2) return; // Don't allow more than 2 decimal places
+    }
+    
+    onInputChange(value);
   };
 
   return (
@@ -50,10 +66,10 @@ const MetricCard = ({
         </h3>
         <Input
           type="text"
-          value={inputValue}
-          onChange={(e) => onInputChange(e.target.value)}
+          value={isCurrency ? `$${inputValue}` : inputValue}
+          onChange={handleInputChange}
           className="text-center w-full max-w-xl font-bold text-lg"
-          placeholder="0"
+          placeholder={isCurrency ? "$0.00" : "0"}
         />
       </div>
     </Card>
