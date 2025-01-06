@@ -10,13 +10,9 @@ export const formatPercentage = (value: number) => {
 };
 
 export const calculateRatios = (metrics: { [key: string]: number }) => {
-  const { leads, contacts, scheduled, sits, sales, ap } = metrics;
+  const { leads, calls, contacts, scheduled, sits, sales } = metrics;
   
   return [
-    {
-      label: "AP per Lead",
-      value: leads > 0 ? formatCurrency(ap / leads) : "$0.00",
-    },
     {
       label: "Leads to Contact",
       value: leads > 0 ? formatPercentage(contacts / leads) : "0%",
@@ -33,5 +29,21 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
       label: "Leads to Sales",
       value: leads > 0 ? formatPercentage(sales / leads) : "0%",
     },
+    {
+      label: "Calls to Contact",
+      value: calls > 0 ? formatPercentage(contacts / calls) : "0%",
+    },
+    {
+      label: "Calls to Scheduled",
+      value: calls > 0 ? formatPercentage(scheduled / calls) : "0%",
+    },
+    {
+      label: "Calls to Sits",
+      value: calls > 0 ? formatPercentage(sits / calls) : "0%",
+    },
+    {
+      label: "Calls to Sales",
+      value: calls > 0 ? formatPercentage(sales / calls) : "0%",
+    }
   ];
 };

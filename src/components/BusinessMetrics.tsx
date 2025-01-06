@@ -76,6 +76,8 @@ const BusinessMetrics = () => {
     value: value,
   }));
 
+  const ratios = calculateRatios(metrics);
+
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
@@ -93,8 +95,8 @@ const BusinessMetrics = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
-        {calculateRatios(metrics).map((ratio, index) => (
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+        {ratios.map((ratio, index) => (
           <RatioCard
             key={index}
             label={ratio.label}
