@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import FormField from "./FormField";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { differenceInYears, parse } from "date-fns";
-import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import DraggableFormField from "./DraggableFormField";
 
 interface FormData {
   name: string;
@@ -24,10 +35,34 @@ interface FormData {
   timestamp?: string;
 }
 
+interface FormField {
+  id: string;
+  type: string;
+  label: string;
+  required?: boolean;
+  placeholder?: string;
+}
+
 interface FormContainerProps {
   editingSubmission: FormData | null;
   onUpdate?: (submission: FormData) => void;
 }
+
+const INITIAL_FIELDS: FormField[] = [
+  { id: "name", type: "text", label: "Name", required: true },
+  { id: "dob", type: "date", label: "Date of Birth", required: true },
+  { id: "age", type: "text", label: "Age" },
+  { id: "height", type: "text", label: "Height", placeholder: "Enter your height" },
+  { id: "weight", type: "text", label: "Weight", placeholder: "Enter your weight" },
+  { id: "tobaccoUse", type: "tobaccoUse", label: "Tobacco Use" },
+  { id: "selectedConditions", type: "medicalConditions", label: "Medical Conditions" },
+  { id: "medicalConditions", type: "text", label: "Other Medical Conditions", placeholder: "Enter any other medical conditions" },
+  { id: "hospitalizations", type: "text", label: "Hospitalizations", placeholder: "Enter any hospitalizations" },
+  { id: "surgeries", type: "text", label: "Surgeries", placeholder: "Enter any surgeries" },
+  { id: "prescriptionMedications", type: "textarea", label: "Prescription Medications", placeholder: "Enter your prescription medications" },
+  { id: "lastMedicalExam", type: "date", label: "Last Medical Exam" },
+  { id: "familyMedicalConditions", type: "textarea", label: "Family Medical Conditions", placeholder: "Enter family medical conditions" },
+];
 
 const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   const { toast } = useToast();
@@ -46,8 +81,15 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     lastMedicalExam: "",
     familyMedicalConditions: "",
   });
-
+  const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
   const [errors, setErrors] = useState<Partial<FormData>>({});
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (editingSubmission) {
@@ -127,120 +169,49 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     }
   };
 
+  const handleDragEnd = (event: any) => {
+    const { active, over } = event;
+
+    if (active.id !== over.id) {
+      setFields((items) => {
+        const oldIndex = items.findIndex((item) => item.id === active.id);
+        const newIndex = items.findIndex((item) => item.id === over.id);
+
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
   return (
     <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto p-6">
-      <FormField
-        label="Name"
-        type="text"
-        value={formData.name}
-        onChange={(value) => setFormData({ ...formData, name: value })}
-        placeholder="Enter your name"
-        required
-        error={errors.name}
-      />
-      
-      <FormField
-        label="Date of Birth"
-        type="date"
-        value={formData.dob}
-        onChange={(value) => setFormData({ ...formData, dob: value })}
-        required
-        error={errors.dob}
-      />
-      
-      <FormField
-        label="Age"
-        type="text"
-        value={formData.age}
-        readOnly
-        placeholder="Auto-calculated from DOB"
-      />
-      
-      <FormField
-        label="Height"
-        type="text"
-        value={formData.height}
-        onChange={(value) => setFormData({ ...formData, height: value })}
-        placeholder="Enter your height"
-      />
-      
-      <FormField
-        label="Weight"
-        type="text"
-        value={formData.weight}
-        onChange={(value) => setFormData({ ...formData, weight: value })}
-        placeholder="Enter your weight"
-      />
-      
-      <div className="space-y-2">
-        <Label>Tobacco Use</Label>
-        <RadioGroup
-          value={formData.tobaccoUse}
-          onValueChange={(value) => setFormData({ ...formData, tobaccoUse: value })}
-          className="flex space-x-4"
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={fields.map((field) => field.id)}
+          strategy={verticalListSortingStrategy}
         >
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="yes" id="yes" />
-            <Label htmlFor="yes">Yes</Label>
+          <div className="space-y-4">
+            {fields.map((field) => (
+              <DraggableFormField
+                key={field.id}
+                id={field.id}
+                fieldType={field.type}
+                label={field.label}
+                value={formData[field.id as keyof FormData]}
+                onChange={(value) =>
+                  setFormData((prev) => ({ ...prev, [field.id]: value }))
+                }
+                placeholder={field.placeholder}
+                required={field.required}
+                error={errors[field.id as keyof FormData]}
+              />
+            ))}
           </div>
-          <div className="flex items-center space-x-2">
-            <RadioGroupItem value="no" id="no" />
-            <Label htmlFor="no">No</Label>
-          </div>
-        </RadioGroup>
-      </div>
-
-      <MedicalConditionsCheckbox
-        selectedConditions={formData.selectedConditions}
-        onChange={(conditions) => setFormData({ ...formData, selectedConditions: conditions })}
-      />
-      
-      <FormField
-        label="Other Medical Conditions"
-        type="text"
-        value={formData.medicalConditions}
-        onChange={(value) => setFormData({ ...formData, medicalConditions: value })}
-        placeholder="Enter any other medical conditions"
-      />
-      
-      <FormField
-        label="Hospitalizations"
-        type="text"
-        value={formData.hospitalizations}
-        onChange={(value) => setFormData({ ...formData, hospitalizations: value })}
-        placeholder="Enter any hospitalizations"
-      />
-      
-      <FormField
-        label="Surgeries"
-        type="text"
-        value={formData.surgeries}
-        onChange={(value) => setFormData({ ...formData, surgeries: value })}
-        placeholder="Enter any surgeries"
-      />
-      
-      <FormField
-        label="Prescription Medications"
-        type="textarea"
-        value={formData.prescriptionMedications}
-        onChange={(value) => setFormData({ ...formData, prescriptionMedications: value })}
-        placeholder="Enter your prescription medications"
-      />
-      
-      <FormField
-        label="Last Medical Exam"
-        type="date"
-        value={formData.lastMedicalExam}
-        onChange={(value) => setFormData({ ...formData, lastMedicalExam: value })}
-      />
-      
-      <FormField
-        label="Family Medical Conditions"
-        type="textarea"
-        value={formData.familyMedicalConditions}
-        onChange={(value) => setFormData({ ...formData, familyMedicalConditions: value })}
-        placeholder="Enter family medical conditions"
-      />
+        </SortableContext>
+      </DndContext>
       
       <Button type="submit" className="w-full">
         {editingSubmission ? "Update Form" : "Submit Form"}
