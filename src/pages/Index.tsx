@@ -77,6 +77,9 @@ const Index = () => {
                 <Link to="/metrics">
                   <Button variant="outline">View Metrics</Button>
                 </Link>
+                <Link to="/client-assessment">
+                  <Button variant="outline">New Assessment</Button>
+                </Link>
                 <Button
                   onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
                   className="flex items-center gap-2"
@@ -100,8 +103,6 @@ const Index = () => {
               ))}
             </div>
             
-            <FormContainer />
-
             <Routes>
               <Route path="/submitted-forms" element={<SubmittedForms />} />
               <Route path="/metrics" element={<MetricsVisualization />} />
