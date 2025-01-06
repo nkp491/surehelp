@@ -5,6 +5,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, Routes, Route } from "react-router-dom";
 import SubmittedForms from "./SubmittedForms";
 import MetricsVisualization from "./MetricsVisualization";
+import BusinessMetrics from "@/components/BusinessMetrics";
 
 const Index = () => {
   return (
@@ -17,6 +18,10 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="client-tracker">
+            <div className="mb-12">
+              <BusinessMetrics />
+            </div>
+
             <div className="flex justify-between items-center mb-8">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">

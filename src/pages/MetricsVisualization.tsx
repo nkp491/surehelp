@@ -1,4 +1,3 @@
-import BusinessMetrics from "@/components/BusinessMetrics";
 import DailyReport from "@/components/DailyReport";
 
 const MetricsVisualization = () => {
@@ -21,7 +20,6 @@ const MetricsVisualization = () => {
             </div>
           </div>
         </div>
-        <BusinessMetrics />
         <DailyReport />
       </div>
     </div>
