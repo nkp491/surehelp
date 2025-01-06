@@ -3,6 +3,7 @@ import MetricCard from "./metrics/MetricCard";
 import RatioCard from "./metrics/RatioCard";
 import MetricsChart from "./MetricsChart";
 import { calculateRatios } from "@/utils/metricsUtils";
+import MetricButtons from "./MetricButtons";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
@@ -44,7 +45,6 @@ const BusinessMetrics = () => {
       let newValue;
       
       if (metric === 'ap') {
-        // For AP, increment/decrement by $1.00
         newValue = currentValue + (increment ? 100 : -100);
         if (newValue < 0) newValue = 0;
       } else {
@@ -76,7 +76,6 @@ const BusinessMetrics = () => {
     }));
 
     if (metric === 'ap') {
-      // Convert currency string to cents for storage
       const numericValue = Math.round(parseFloat(value) * 100) || 0;
       if (!isNaN(numericValue)) {
         setMetrics(prev => {
@@ -104,7 +103,7 @@ const BusinessMetrics = () => {
   };
 
   const chartData = Object.entries(metrics)
-    .filter(([name]) => name !== 'ap') // Exclude AP from the chart
+    .filter(([name]) => name !== 'ap')
     .map(([name, value]) => ({
       name: name.charAt(0).toUpperCase() + name.slice(1),
       value: value,
@@ -123,8 +122,6 @@ const BusinessMetrics = () => {
             value={count}
             inputValue={metricInputs[metric] || '0'}
             onInputChange={(value) => handleInputChange(metric as MetricType, value)}
-            onIncrement={() => updateMetric(metric as MetricType, true)}
-            onDecrement={() => updateMetric(metric as MetricType, false)}
             isCurrency={metric === 'ap'}
           />
         ))}

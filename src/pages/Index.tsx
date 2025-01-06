@@ -5,8 +5,52 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link, Routes, Route } from "react-router-dom";
 import SubmittedForms from "./SubmittedForms";
 import MetricsVisualization from "./MetricsVisualization";
+import MetricButtons from "@/components/MetricButtons";
+import { useState, useEffect } from "react";
+
+type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
 const Index = () => {
+  const [metrics, setMetrics] = useState<{[key: string]: number}>({
+    leads: 0,
+    calls: 0,
+    contacts: 0,
+    scheduled: 0,
+    sits: 0,
+    sales: 0,
+    ap: 0,
+  });
+
+  useEffect(() => {
+    const storedMetrics = localStorage.getItem("businessMetrics");
+    if (storedMetrics) {
+      setMetrics(JSON.parse(storedMetrics));
+    }
+  }, []);
+
+  const updateMetric = (metric: MetricType, increment: boolean) => {
+    setMetrics((prev) => {
+      const currentValue = prev[metric];
+      let newValue;
+      
+      if (metric === 'ap') {
+        newValue = currentValue + (increment ? 100 : -100);
+        if (newValue < 0) newValue = 0;
+      } else {
+        newValue = currentValue + (increment ? 1 : -1);
+        if (newValue < 0) newValue = 0;
+      }
+
+      const newMetrics = {
+        ...prev,
+        [metric]: newValue,
+      };
+
+      localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
+      return newMetrics;
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto py-12">
@@ -42,6 +86,17 @@ const Index = () => {
                   Toolkits
                 </Button>
               </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+              {Object.keys(metrics).map((metric) => (
+                <MetricButtons
+                  key={metric}
+                  metric={metric}
+                  onIncrement={() => updateMetric(metric as MetricType, true)}
+                  onDecrement={() => updateMetric(metric as MetricType, false)}
+                />
+              ))}
             </div>
             
             <FormContainer />
