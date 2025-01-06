@@ -2,12 +2,23 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import FormField from "./FormField";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { differenceInYears, parse } from "date-fns";
 
 interface FormData {
   name: string;
-  email: string;
-  phone: string;
-  message: string;
+  dob: string;
+  age: string;
+  height: string;
+  weight: string;
+  tobaccoUse: string;
+  medicalConditions: string;
+  hospitalizations: string;
+  surgeries: string;
+  prescriptionMedications: string;
+  lastMedicalExam: string;
+  familyMedicalConditions: string;
   timestamp?: string;
 }
 
@@ -20,9 +31,17 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     name: "",
-    email: "",
-    phone: "",
-    message: "",
+    dob: "",
+    age: "",
+    height: "",
+    weight: "",
+    tobaccoUse: "no",
+    medicalConditions: "",
+    hospitalizations: "",
+    surgeries: "",
+    prescriptionMedications: "",
+    lastMedicalExam: "",
+    familyMedicalConditions: "",
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
@@ -33,21 +52,22 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     }
   }, [editingSubmission]);
 
+  useEffect(() => {
+    if (formData.dob) {
+      const birthDate = parse(formData.dob, 'yyyy-MM-dd', new Date());
+      const age = differenceInYears(new Date(), birthDate);
+      setFormData(prev => ({ ...prev, age: age.toString() }));
+    }
+  }, [formData.dob]);
+
   const validateForm = () => {
     const newErrors: Partial<FormData> = {};
     
     if (!formData.name) {
       newErrors.name = "Name is required";
     }
-    
-    if (!formData.email) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Email is invalid";
-    }
-    
-    if (!formData.message) {
-      newErrors.message = "Message is required";
+    if (!formData.dob) {
+      newErrors.dob = "Date of Birth is required";
     }
     
     setErrors(newErrors);
@@ -59,7 +79,6 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     
     if (validateForm()) {
       if (editingSubmission) {
-        // Update existing submission
         onUpdate?.({
           ...formData,
           timestamp: editingSubmission.timestamp
@@ -70,7 +89,6 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
           description: "Your form has been updated successfully.",
         });
       } else {
-        // Store new submission in localStorage
         const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
         const newSubmission = { ...formData, timestamp: new Date().toISOString() };
         submissions.push(newSubmission);
@@ -82,12 +100,19 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
         });
       }
       
-      // Reset form
       setFormData({
         name: "",
-        email: "",
-        phone: "",
-        message: "",
+        dob: "",
+        age: "",
+        height: "",
+        weight: "",
+        tobaccoUse: "no",
+        medicalConditions: "",
+        hospitalizations: "",
+        surgeries: "",
+        prescriptionMedications: "",
+        lastMedicalExam: "",
+        familyMedicalConditions: "",
       });
     } else {
       toast({
@@ -111,31 +136,101 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
       />
       
       <FormField
-        label="Email"
-        type="email"
-        value={formData.email}
-        onChange={(value) => setFormData({ ...formData, email: value })}
-        placeholder="Enter your email"
+        label="Date of Birth"
+        type="date"
+        value={formData.dob}
+        onChange={(value) => setFormData({ ...formData, dob: value })}
         required
-        error={errors.email}
+        error={errors.dob}
       />
       
       <FormField
-        label="Phone"
-        type="tel"
-        value={formData.phone}
-        onChange={(value) => setFormData({ ...formData, phone: value })}
-        placeholder="Enter your phone number (optional)"
-      />
-      
-      <FormField
-        label="Message"
+        label="Age"
         type="text"
-        value={formData.message}
-        onChange={(value) => setFormData({ ...formData, message: value })}
-        placeholder="Enter your message"
-        required
-        error={errors.message}
+        value={formData.age}
+        readOnly
+        placeholder="Auto-calculated from DOB"
+      />
+      
+      <FormField
+        label="Height"
+        type="text"
+        value={formData.height}
+        onChange={(value) => setFormData({ ...formData, height: value })}
+        placeholder="Enter your height"
+      />
+      
+      <FormField
+        label="Weight"
+        type="text"
+        value={formData.weight}
+        onChange={(value) => setFormData({ ...formData, weight: value })}
+        placeholder="Enter your weight"
+      />
+      
+      <div className="space-y-2">
+        <Label>Tobacco Use</Label>
+        <RadioGroup
+          value={formData.tobaccoUse}
+          onValueChange={(value) => setFormData({ ...formData, tobaccoUse: value })}
+          className="flex space-x-4"
+        >
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="yes" id="yes" />
+            <Label htmlFor="yes">Yes</Label>
+          </div>
+          <div className="flex items-center space-x-2">
+            <RadioGroupItem value="no" id="no" />
+            <Label htmlFor="no">No</Label>
+          </div>
+        </RadioGroup>
+      </div>
+      
+      <FormField
+        label="Medical Conditions"
+        type="text"
+        value={formData.medicalConditions}
+        onChange={(value) => setFormData({ ...formData, medicalConditions: value })}
+        placeholder="Enter any medical conditions"
+      />
+      
+      <FormField
+        label="Hospitalizations"
+        type="text"
+        value={formData.hospitalizations}
+        onChange={(value) => setFormData({ ...formData, hospitalizations: value })}
+        placeholder="Enter any hospitalizations"
+      />
+      
+      <FormField
+        label="Surgeries"
+        type="text"
+        value={formData.surgeries}
+        onChange={(value) => setFormData({ ...formData, surgeries: value })}
+        placeholder="Enter any surgeries"
+      />
+      
+      <FormField
+        label="Prescription Medications"
+        type="textarea"
+        value={formData.prescriptionMedications}
+        onChange={(value) => setFormData({ ...formData, prescriptionMedications: value })}
+        placeholder="Enter your prescription medications"
+      />
+      
+      <FormField
+        label="Last Medical Exam"
+        type="date"
+        value={formData.lastMedicalExam}
+        onChange={(value) => setFormData({ ...formData, lastMedicalExam: value })}
+      />
+      
+      <FormField
+        label="Family Medical Conditions"
+        type="textarea"
+        value={formData.familyMedicalConditions}
+        onChange={(value) => setFormData({ ...formData, familyMedicalConditions: value })}
+        placeholder="Enter family medical conditions"
       />
       
       <Button type="submit" className="w-full">

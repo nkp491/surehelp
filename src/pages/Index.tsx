@@ -7,9 +7,17 @@ import { Database, Plus, Pencil } from "lucide-react";
 
 interface FormSubmission {
   name: string;
-  email: string;
-  phone: string;
-  message: string;
+  dob: string;
+  age: string;
+  height: string;
+  weight: string;
+  tobaccoUse: string;
+  medicalConditions: string;
+  hospitalizations: string;
+  surgeries: string;
+  prescriptionMedications: string;
+  lastMedicalExam: string;
+  familyMedicalConditions: string;
   timestamp: string;
 }
 
@@ -102,10 +110,10 @@ const Index = () => {
         <div className="flex justify-between items-center mb-12">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Form Repository
+              Medical History Form
             </h1>
             <p className="text-lg text-gray-600">
-              Fill out the form below to store your information
+              Fill out the form below to store your medical information
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -142,43 +150,47 @@ const Index = () => {
               <CardTitle>Submitted Forms</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Name</TableHead>
-                    <TableHead>Email</TableHead>
-                    <TableHead>Phone</TableHead>
-                    <TableHead>Message</TableHead>
-                    <TableHead>Timestamp</TableHead>
-                    <TableHead>Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {submissions.map((submission, index) => (
-                    <TableRow key={index}>
-                      <TableCell>{submission.name}</TableCell>
-                      <TableCell>{submission.email}</TableCell>
-                      <TableCell>{submission.phone || "N/A"}</TableCell>
-                      <TableCell className="max-w-xs truncate">{submission.message}</TableCell>
-                      <TableCell>{new Date(submission.timestamp).toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(submission)}
-                          className="flex items-center gap-2"
-                        >
-                          <Pencil className="h-4 w-4" />
-                          Edit
-                        </Button>
-                      </TableCell>
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>DOB</TableHead>
+                      <TableHead>Age</TableHead>
+                      <TableHead>Height</TableHead>
+                      <TableHead>Weight</TableHead>
+                      <TableHead>Tobacco Use</TableHead>
+                      <TableHead>Actions</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-              {submissions.length === 0 && (
-                <p className="text-center text-gray-500 py-8">No submissions yet</p>
-              )}
+                  </TableHeader>
+                  <TableBody>
+                    {submissions.map((submission, index) => (
+                      <TableRow key={index}>
+                        <TableCell>{submission.name}</TableCell>
+                        <TableCell>{submission.dob}</TableCell>
+                        <TableCell>{submission.age}</TableCell>
+                        <TableCell>{submission.height}</TableCell>
+                        <TableCell>{submission.weight}</TableCell>
+                        <TableCell>{submission.tobaccoUse}</TableCell>
+                        <TableCell>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(submission)}
+                            className="flex items-center gap-2"
+                          >
+                            <Pencil className="h-4 w-4" />
+                            Edit
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+                {submissions.length === 0 && (
+                  <p className="text-center text-gray-500 py-8">No submissions yet</p>
+                )}
+              </div>
             </CardContent>
           </Card>
 
