@@ -1,7 +1,7 @@
 import FormContainer from "@/components/FormContainer";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database, Plus } from "lucide-react";
+import { Database, ExternalLink } from "lucide-react";
 import { FormSubmission } from "@/types/form";
 import SubmissionsTable from "@/components/SubmissionsTable";
 import CounterHistory from "@/components/CounterHistory";
@@ -107,6 +107,14 @@ const Index = () => {
                 >
                   <Database className="h-4 w-4" />
                   View Submissions ({submissions.length})
+                </Button>
+                <Button
+                  onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
+                  className="flex items-center gap-2"
+                  variant="outline"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Toolkits
                 </Button>
               </div>
             </div>
