@@ -10,7 +10,6 @@ interface MetricCardProps {
   onInputChange: (value: string) => void;
   onIncrement: () => void;
   onDecrement: () => void;
-  formatValue?: (value: number) => string;
 }
 
 const MetricCard = ({
@@ -20,10 +19,9 @@ const MetricCard = ({
   onInputChange,
   onIncrement,
   onDecrement,
-  formatValue = (value) => value.toString(),
 }: MetricCardProps) => {
   const formatMetricName = (metric: string) => {
-    return metric.toUpperCase() === 'AP' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
+    return metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
   return (
@@ -57,9 +55,6 @@ const MetricCard = ({
           className="text-center w-full max-w-xl font-bold text-lg"
           placeholder="0"
         />
-        <div className="text-sm text-gray-600">
-          {formatValue(value)}
-        </div>
       </div>
     </Card>
   );
