@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import FormField from "./FormField";
@@ -8,9 +8,15 @@ interface FormData {
   email: string;
   phone: string;
   message: string;
+  timestamp?: string;
 }
 
-const FormContainer = () => {
+interface FormContainerProps {
+  editingSubmission: FormData | null;
+  onUpdate?: (submission: FormData) => void;
+}
+
+const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<FormData>({
     name: "",
@@ -20,6 +26,12 @@ const FormContainer = () => {
   });
 
   const [errors, setErrors] = useState<Partial<FormData>>({});
+
+  useEffect(() => {
+    if (editingSubmission) {
+      setFormData(editingSubmission);
+    }
+  }, [editingSubmission]);
 
   const validateForm = () => {
     const newErrors: Partial<FormData> = {};
@@ -46,15 +58,29 @@ const FormContainer = () => {
     e.preventDefault();
     
     if (validateForm()) {
-      // Store in localStorage for now
-      const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
-      submissions.push({ ...formData, timestamp: new Date().toISOString() });
-      localStorage.setItem("formSubmissions", JSON.stringify(submissions));
-      
-      toast({
-        title: "Success!",
-        description: "Your form has been submitted successfully.",
-      });
+      if (editingSubmission) {
+        // Update existing submission
+        onUpdate?.({
+          ...formData,
+          timestamp: editingSubmission.timestamp
+        });
+        
+        toast({
+          title: "Success!",
+          description: "Your form has been updated successfully.",
+        });
+      } else {
+        // Store new submission in localStorage
+        const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
+        const newSubmission = { ...formData, timestamp: new Date().toISOString() };
+        submissions.push(newSubmission);
+        localStorage.setItem("formSubmissions", JSON.stringify(submissions));
+        
+        toast({
+          title: "Success!",
+          description: "Your form has been submitted successfully.",
+        });
+      }
       
       // Reset form
       setFormData({
@@ -113,7 +139,7 @@ const FormContainer = () => {
       />
       
       <Button type="submit" className="w-full">
-        Submit Form
+        {editingSubmission ? "Update Form" : "Submit Form"}
       </Button>
     </form>
   );

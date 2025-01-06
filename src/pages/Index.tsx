@@ -3,7 +3,7 @@ import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database, Plus } from "lucide-react";
+import { Database, Plus, Pencil } from "lucide-react";
 
 interface FormSubmission {
   name: string;
@@ -22,6 +22,7 @@ const Index = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [count, setCount] = useState(0);
   const [counterHistory, setCounterHistory] = useState<CounterHistory[]>([]);
+  const [editingSubmission, setEditingSubmission] = useState<FormSubmission | null>(null);
 
   useEffect(() => {
     try {
@@ -81,6 +82,20 @@ const Index = () => {
     });
   };
 
+  const handleEdit = (submission: FormSubmission) => {
+    setEditingSubmission(submission);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleFormUpdate = (updatedSubmission: FormSubmission) => {
+    const updatedSubmissions = submissions.map(sub => 
+      sub.timestamp === updatedSubmission.timestamp ? updatedSubmission : sub
+    );
+    setSubmissions(updatedSubmissions);
+    localStorage.setItem("formSubmissions", JSON.stringify(updatedSubmissions));
+    setEditingSubmission(null);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto py-12">
@@ -116,7 +131,10 @@ const Index = () => {
           </div>
         </div>
         
-        <FormContainer />
+        <FormContainer 
+          editingSubmission={editingSubmission} 
+          onUpdate={handleFormUpdate}
+        />
         
         <div id="submissions-section" className="mt-16 space-y-8">
           <Card>
@@ -132,6 +150,7 @@ const Index = () => {
                     <TableHead>Phone</TableHead>
                     <TableHead>Message</TableHead>
                     <TableHead>Timestamp</TableHead>
+                    <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -142,6 +161,17 @@ const Index = () => {
                       <TableCell>{submission.phone || "N/A"}</TableCell>
                       <TableCell className="max-w-xs truncate">{submission.message}</TableCell>
                       <TableCell>{new Date(submission.timestamp).toLocaleString()}</TableCell>
+                      <TableCell>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(submission)}
+                          className="flex items-center gap-2"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Edit
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
