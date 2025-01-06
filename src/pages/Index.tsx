@@ -13,15 +13,27 @@ interface FormSubmission {
   timestamp: string;
 }
 
+interface CounterHistory {
+  date: string;
+  count: number;
+}
+
 const Index = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [count, setCount] = useState(0);
+  const [counterHistory, setCounterHistory] = useState<CounterHistory[]>([]);
 
   useEffect(() => {
     // Load submissions from localStorage
     const storedSubmissions = localStorage.getItem("formSubmissions");
     if (storedSubmissions) {
       setSubmissions(JSON.parse(storedSubmissions));
+    }
+
+    // Load counter history from localStorage
+    const storedHistory = localStorage.getItem("counterHistory");
+    if (storedHistory) {
+      setCounterHistory(JSON.parse(storedHistory));
     }
   }, []);
 
@@ -30,7 +42,30 @@ const Index = () => {
   };
 
   const handleIncrement = () => {
-    setCount(prevCount => prevCount + 1);
+    setCount(prevCount => {
+      const newCount = prevCount + 1;
+      
+      // Update counter history
+      const today = new Date().toISOString().split('T')[0];
+      setCounterHistory(prev => {
+        const existingEntry = prev.find(entry => entry.date === today);
+        let newHistory;
+        
+        if (existingEntry) {
+          newHistory = prev.map(entry =>
+            entry.date === today ? { ...entry, count: entry.count + 1 } : entry
+          );
+        } else {
+          newHistory = [...prev, { date: today, count: 1 }];
+        }
+        
+        // Save to localStorage
+        localStorage.setItem("counterHistory", JSON.stringify(newHistory));
+        return newHistory;
+      });
+
+      return newCount;
+    });
   };
 
   return (
@@ -70,7 +105,7 @@ const Index = () => {
         
         <FormContainer />
         
-        <div id="submissions-section" className="mt-16">
+        <div id="submissions-section" className="mt-16 space-y-8">
           <Card>
             <CardHeader>
               <CardTitle>Submitted Forms</CardTitle>
@@ -100,6 +135,33 @@ const Index = () => {
               </Table>
               {submissions.length === 0 && (
                 <p className="text-center text-gray-500 py-8">No submissions yet</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Counter History</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Count</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {counterHistory.map((entry, index) => (
+                    <TableRow key={index}>
+                      <TableCell>{entry.date}</TableCell>
+                      <TableCell>{entry.count}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              {counterHistory.length === 0 && (
+                <p className="text-center text-gray-500 py-8">No counter history yet</p>
               )}
             </CardContent>
           </Card>
