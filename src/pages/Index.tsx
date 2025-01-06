@@ -1,45 +1,12 @@
 import FormContainer from "@/components/FormContainer";
-import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Database, ExternalLink } from "lucide-react";
-import { FormSubmission } from "@/types/form";
-import SubmissionsTable from "@/components/SubmissionsTable";
+import { ExternalLink } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import BusinessMetrics from "@/components/BusinessMetrics";
+import { Link, Routes, Route } from "react-router-dom";
+import SubmittedForms from "./SubmittedForms";
+import MetricsVisualization from "./MetricsVisualization";
 
 const Index = () => {
-  const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
-  const [editingSubmission, setEditingSubmission] = useState<FormSubmission | null>(null);
-
-  useEffect(() => {
-    try {
-      const storedSubmissions = localStorage.getItem("formSubmissions");
-      if (storedSubmissions) {
-        setSubmissions(JSON.parse(storedSubmissions));
-      }
-    } catch (error) {
-      console.error("Error loading data from localStorage:", error);
-    }
-  }, []);
-
-  const scrollToSubmissions = () => {
-    document.getElementById('submissions-section')?.scrollIntoView({ behavior: 'smooth' });
-  };
-
-  const handleEdit = (submission: FormSubmission) => {
-    setEditingSubmission(submission);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const handleFormUpdate = (updatedSubmission: FormSubmission) => {
-    const updatedSubmissions = submissions.map(sub => 
-      sub.timestamp === updatedSubmission.timestamp ? updatedSubmission : sub
-    );
-    setSubmissions(updatedSubmissions);
-    localStorage.setItem("formSubmissions", JSON.stringify(updatedSubmissions));
-    setEditingSubmission(null);
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto py-12">
@@ -50,8 +17,7 @@ const Index = () => {
           </TabsList>
           
           <TabsContent value="client-tracker">
-            <BusinessMetrics />
-            <div className="flex justify-between items-center mb-12">
+            <div className="flex justify-between items-center mb-8">
               <div>
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">
                   Client Assessment
@@ -61,14 +27,12 @@ const Index = () => {
                 </p>
               </div>
               <div className="flex items-center gap-4">
-                <Button
-                  onClick={scrollToSubmissions}
-                  className="flex items-center gap-2"
-                  variant="outline"
-                >
-                  <Database className="h-4 w-4" />
-                  View Submissions ({submissions.length})
-                </Button>
+                <Link to="/submitted-forms">
+                  <Button variant="outline">View Submissions</Button>
+                </Link>
+                <Link to="/metrics">
+                  <Button variant="outline">View Metrics</Button>
+                </Link>
                 <Button
                   onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
                   className="flex items-center gap-2"
@@ -80,17 +44,12 @@ const Index = () => {
               </div>
             </div>
             
-            <FormContainer 
-              editingSubmission={editingSubmission} 
-              onUpdate={handleFormUpdate}
-            />
-            
-            <div id="submissions-section" className="mt-16">
-              <SubmissionsTable 
-                submissions={submissions}
-                onEdit={handleEdit}
-              />
-            </div>
+            <FormContainer />
+
+            <Routes>
+              <Route path="/submitted-forms" element={<SubmittedForms />} />
+              <Route path="/metrics" element={<MetricsVisualization />} />
+            </Routes>
           </TabsContent>
           
           <TabsContent value="commissions-tracker">
