@@ -11,6 +11,11 @@ interface MetricCount {
   [key: string]: number;
 }
 
+interface MetricRatio {
+  label: string;
+  value: number | string;
+}
+
 const BusinessMetrics = () => {
   const [metrics, setMetrics] = useState<MetricCount>({
     leads: 0,
@@ -61,6 +66,37 @@ const BusinessMetrics = () => {
       style: 'currency',
       currency: 'USD',
     }).format(value);
+  };
+
+  const formatPercentage = (value: number) => {
+    return `${(value * 100).toFixed(1)}%`;
+  };
+
+  const calculateRatios = (): MetricRatio[] => {
+    const { leads, contacts, scheduled, sits, sales, ap } = metrics;
+    
+    return [
+      {
+        label: "AP per Lead",
+        value: leads > 0 ? formatCurrency(ap / leads) : "$0.00",
+      },
+      {
+        label: "Leads to Contact",
+        value: leads > 0 ? formatPercentage(contacts / leads) : "0%",
+      },
+      {
+        label: "Leads to Scheduled",
+        value: leads > 0 ? formatPercentage(scheduled / leads) : "0%",
+      },
+      {
+        label: "Leads to Sits",
+        value: leads > 0 ? formatPercentage(sits / leads) : "0%",
+      },
+      {
+        label: "Leads to Sales",
+        value: leads > 0 ? formatPercentage(sales / leads) : "0%",
+      },
+    ];
   };
 
   const handleAPInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -126,6 +162,18 @@ const BusinessMetrics = () => {
           </Card>
         ))}
       </div>
+
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+        {calculateRatios().map((ratio, index) => (
+          <Card key={index} className="p-4">
+            <div className="flex flex-col items-center gap-2">
+              <h3 className="font-semibold text-lg text-center">{ratio.label}</h3>
+              <span className="text-xl font-bold">{ratio.value}</span>
+            </div>
+          </Card>
+        ))}
+      </div>
+
       <MetricsChart data={chartData} />
     </div>
   );
