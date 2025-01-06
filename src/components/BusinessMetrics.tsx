@@ -34,7 +34,6 @@ const BusinessMetrics = () => {
     if (storedMetrics) {
       const parsedMetrics = JSON.parse(storedMetrics);
       setMetrics(parsedMetrics);
-      // Initialize input values
       const initialInputs: {[key: string]: string} = {};
       Object.entries(parsedMetrics).forEach(([key, value]) => {
         initialInputs[key] = key === 'ap' ? formatCurrency(value as number) : value?.toString() || '0';
@@ -134,11 +133,11 @@ const BusinessMetrics = () => {
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
         {Object.entries(metrics).map(([metric, count]) => (
           <Card 
             key={metric} 
-            className={`p-4 ${metric === 'ap' ? 'lg:col-span-7 mt-4' : ''}`}
+            className={`p-4 ${metric === 'ap' ? 'col-span-full bg-gray-50' : ''}`}
           >
             <div className="flex flex-col items-center gap-2">
               <h3 className="font-semibold text-lg capitalize">
@@ -176,7 +175,7 @@ const BusinessMetrics = () => {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-8">
         {calculateRatios().map((ratio, index) => (
           <Card key={index} className="p-4">
             <div className="flex flex-col items-center gap-2">
