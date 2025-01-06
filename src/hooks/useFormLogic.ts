@@ -53,13 +53,14 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
     
     if (validateForm()) {
       if (editingSubmission) {
         onUpdate?.({
           ...formData,
+          outcome,
           timestamp: editingSubmission.timestamp
         });
         
@@ -69,13 +70,17 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
         });
       } else {
         const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
-        const newSubmission = { ...formData, timestamp: new Date().toISOString() };
+        const newSubmission = { 
+          ...formData, 
+          outcome,
+          timestamp: new Date().toISOString() 
+        };
         submissions.push(newSubmission);
         localStorage.setItem("formSubmissions", JSON.stringify(submissions));
         
         toast({
           title: "Success!",
-          description: "Your form has been submitted successfully.",
+          description: `Form submitted with outcome: ${outcome}`,
         });
       }
       

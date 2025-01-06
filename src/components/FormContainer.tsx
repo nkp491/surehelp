@@ -49,8 +49,13 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     }
   };
 
+  const handleOutcomeSubmit = (outcome: string) => (e: React.MouseEvent) => {
+    e.preventDefault();
+    handleSubmit(e as any, outcome);
+  };
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 max-w-xl mx-auto p-6">
+    <form onSubmit={(e) => e.preventDefault()} className="space-y-6 max-w-xl mx-auto p-6">
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
@@ -80,9 +85,26 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
         </SortableContext>
       </DndContext>
       
-      <Button type="submit" className="w-full">
-        {editingSubmission ? "Update Form" : "Submit Form"}
-      </Button>
+      <div className="grid grid-cols-3 gap-4">
+        <Button 
+          onClick={handleOutcomeSubmit('protected')}
+          className="bg-green-600 hover:bg-green-700"
+        >
+          Protected
+        </Button>
+        <Button 
+          onClick={handleOutcomeSubmit('follow-up')}
+          className="bg-yellow-600 hover:bg-yellow-700"
+        >
+          Follow-Up
+        </Button>
+        <Button 
+          onClick={handleOutcomeSubmit('declined')}
+          className="bg-red-600 hover:bg-red-700"
+        >
+          Declined
+        </Button>
+      </div>
     </form>
   );
 };
