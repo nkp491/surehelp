@@ -24,16 +24,26 @@ const Index = () => {
   const [counterHistory, setCounterHistory] = useState<CounterHistory[]>([]);
 
   useEffect(() => {
-    // Load submissions from localStorage
-    const storedSubmissions = localStorage.getItem("formSubmissions");
-    if (storedSubmissions) {
-      setSubmissions(JSON.parse(storedSubmissions));
-    }
+    try {
+      // Load submissions from localStorage
+      const storedSubmissions = localStorage.getItem("formSubmissions");
+      if (storedSubmissions) {
+        setSubmissions(JSON.parse(storedSubmissions));
+      }
 
-    // Load counter history from localStorage
-    const storedHistory = localStorage.getItem("counterHistory");
-    if (storedHistory) {
-      setCounterHistory(JSON.parse(storedHistory));
+      // Load counter history from localStorage
+      const storedHistory = localStorage.getItem("counterHistory");
+      if (storedHistory) {
+        setCounterHistory(JSON.parse(storedHistory));
+      }
+
+      // Load current count from localStorage
+      const storedCount = localStorage.getItem("currentCount");
+      if (storedCount) {
+        setCount(parseInt(storedCount, 10));
+      }
+    } catch (error) {
+      console.error("Error loading data from localStorage:", error);
     }
   }, []);
 
@@ -44,6 +54,9 @@ const Index = () => {
   const handleIncrement = () => {
     setCount(prevCount => {
       const newCount = prevCount + 1;
+      
+      // Save current count to localStorage
+      localStorage.setItem("currentCount", newCount.toString());
       
       // Update counter history
       const today = new Date().toISOString().split('T')[0];
