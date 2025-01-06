@@ -110,21 +110,21 @@ const Index = () => {
         <div className="flex justify-between items-center mb-12">
           <div>
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Medical History Form
+              Client Assessment
             </h1>
             <p className="text-lg text-gray-600">
               Fill out the form below to store your medical information
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-2 bg-white p-2 rounded-md border">
+            <div className="flex items-center gap-2 bg-white p-3 rounded-md border">
               <Button
                 onClick={handleIncrement}
                 variant="outline"
-                size="sm"
-                className="flex items-center gap-2"
+                size="lg"
+                className="flex items-center gap-2 text-lg px-6 py-6"
               >
-                <Plus className="h-4 w-4" />
+                <Plus className="h-6 w-6" />
                 Count: {count}
               </Button>
             </div>
