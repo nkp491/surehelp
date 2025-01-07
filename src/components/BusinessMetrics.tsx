@@ -6,6 +6,7 @@ import { calculateRatios } from "@/utils/metricsUtils";
 import MetricButtons from "./MetricButtons";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
+type TimePeriod = "24h" | "7d" | "30d";
 
 interface MetricCount {
   [key: string]: number;
@@ -23,6 +24,7 @@ const BusinessMetrics = () => {
   });
 
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
 
   useEffect(() => {
     const storedMetrics = localStorage.getItem("businessMetrics");
@@ -111,6 +113,13 @@ const BusinessMetrics = () => {
 
   const ratios = calculateRatios(metrics);
 
+  const handleTimePeriodChange = (period: TimePeriod) => {
+    setTimePeriod(period);
+    // In a real application, you would fetch data for the selected time period here
+    // For now, we'll just update the state
+    console.log(`Time period changed to: ${period}`);
+  };
+
   return (
     <div className="w-full mb-8">
       <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
@@ -137,7 +146,11 @@ const BusinessMetrics = () => {
         ))}
       </div>
 
-      <MetricsChart data={chartData} />
+      <MetricsChart 
+        data={chartData} 
+        timePeriod={timePeriod}
+        onTimePeriodChange={handleTimePeriodChange}
+      />
     </div>
   );
 };
