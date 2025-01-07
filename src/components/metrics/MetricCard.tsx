@@ -33,17 +33,21 @@ const MetricCard = ({
     onInputChange(value);
   };
 
+  const isAP = metric === 'ap';
+
   return (
-    <Card className="p-4">
+    <Card className={`p-4 ${isAP ? 'border-2 border-primary shadow-lg' : ''}`}>
       <div className="flex flex-col items-center gap-2">
-        <h3 className="font-semibold text-lg capitalize">
+        <h3 className={`font-semibold text-lg capitalize ${isAP ? 'text-primary text-xl' : ''}`}>
           {formatMetricName(metric)}
         </h3>
         <Input
           type="text"
           value={isCurrency ? `$${inputValue}` : inputValue}
           onChange={handleInputChange}
-          className="text-center w-full max-w-xl font-bold text-lg"
+          className={`text-center w-full max-w-xl font-bold ${
+            isAP ? 'text-xl bg-primary/5 border-primary focus:border-primary focus:ring-primary' : 'text-lg'
+          }`}
           placeholder={isCurrency ? "$0.00" : "0"}
         />
       </div>
