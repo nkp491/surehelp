@@ -31,7 +31,7 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     },
     {
       label: "Calls to Contact",
-      value: calls > 0 ? contacts.toString() : "0",
+      value: calls > 0 && contacts > 0 ? (calls / contacts).toFixed(1) : "0",
     },
     {
       label: "Calls to Scheduled",
