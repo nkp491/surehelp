@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import CustomerProfile from "./CustomerProfile";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,11 +24,95 @@ interface SubmissionsTableProps {
   onEdit: (submission: FormSubmission) => void;
 }
 
-const getSubmissionStatus = (submission: FormSubmission) => {
-  if (submission.outcome === "Protected") return "bg-green-500";
-  if (submission.outcome === "Follow-up") return "bg-yellow-500";
-  if (submission.outcome === "Declined") return "bg-red-500";
-  return "bg-gray-500";
+const getSubmissionStatus = (outcome: string | undefined) => {
+  switch (outcome?.toLowerCase()) {
+    case "protected":
+      return "bg-green-500";
+    case "follow-up":
+      return "bg-yellow-500";
+    case "declined":
+      return "bg-red-500";
+    default:
+      return "bg-gray-500";
+  }
+};
+
+const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile }: {
+  submissions: FormSubmission[];
+  onEdit: (submission: FormSubmission) => void;
+  onDelete: (submission: FormSubmission) => void;
+  onViewProfile: (submission: FormSubmission) => void;
+}) => {
+  return (
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Name</TableHead>
+          <TableHead>DOB</TableHead>
+          <TableHead>Age</TableHead>
+          <TableHead>Status</TableHead>
+          <TableHead>Actions</TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {submissions.map((submission, index) => (
+          <TableRow 
+            key={index}
+            className="cursor-pointer hover:bg-gray-50"
+          >
+            <TableCell>{submission.name}</TableCell>
+            <TableCell>{submission.dob}</TableCell>
+            <TableCell>{submission.age}</TableCell>
+            <TableCell>
+              <Badge 
+                className={`${getSubmissionStatus(submission.outcome)} text-white`}
+              >
+                {submission.outcome || 'Pending'}
+              </Badge>
+            </TableCell>
+            <TableCell>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onEdit(submission)}
+                  className="flex items-center gap-2"
+                >
+                  <Pencil className="h-4 w-4" />
+                  Edit
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onViewProfile(submission)}
+                  className="flex items-center gap-2"
+                >
+                  <User className="h-4 w-4" />
+                  Profile
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => onDelete(submission)}
+                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
+                >
+                  <Trash2 className="h-4 w-4" />
+                  Delete
+                </Button>
+              </div>
+            </TableCell>
+          </TableRow>
+        ))}
+        {submissions.length === 0 && (
+          <TableRow>
+            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+              No submissions found
+            </TableCell>
+          </TableRow>
+        )}
+      </TableBody>
+    </Table>
+  );
 };
 
 const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
@@ -52,12 +137,15 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
         description: "Form submission deleted successfully",
       });
 
-      // Force a page reload to refresh the submissions list
       window.location.reload();
     }
     setDeleteDialogOpen(false);
     setSubmissionToDelete(null);
   };
+
+  const protectedSubmissions = submissions.filter(s => s.outcome?.toLowerCase() === "protected");
+  const followUpSubmissions = submissions.filter(s => s.outcome?.toLowerCase() === "follow-up");
+  const declinedSubmissions = submissions.filter(s => s.outcome?.toLowerCase() === "declined");
 
   return (
     <Card>
@@ -65,82 +153,46 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
         <CardTitle>Submitted Forms</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="overflow-x-auto">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>DOB</TableHead>
-                <TableHead>Age</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {submissions.map((submission, index) => (
-                <TableRow 
-                  key={index}
-                  className="cursor-pointer hover:bg-gray-50"
-                  onClick={() => setSelectedCustomer(submission)}
-                >
-                  <TableCell>{submission.name}</TableCell>
-                  <TableCell>{submission.dob}</TableCell>
-                  <TableCell>{submission.age}</TableCell>
-                  <TableCell>
-                    <Badge 
-                      className={`${getSubmissionStatus(submission)} text-white`}
-                    >
-                      {submission.outcome || 'Pending'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          onEdit(submission);
-                        }}
-                        className="flex items-center gap-2"
-                      >
-                        <Pencil className="h-4 w-4" />
-                        Edit
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setSelectedCustomer(submission);
-                        }}
-                        className="flex items-center gap-2"
-                      >
-                        <User className="h-4 w-4" />
-                        Profile
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleDelete(submission);
-                        }}
-                        className="flex items-center gap-2 text-red-600 hover:text-red-700"
-                      >
-                        <Trash2 className="h-4 w-4" />
-                        Delete
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-          {submissions.length === 0 && (
-            <p className="text-center text-gray-500 py-8">No submissions yet</p>
-          )}
-        </div>
+        <Tabs defaultValue="protected" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-4">
+            <TabsTrigger value="protected" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
+              Protected ({protectedSubmissions.length})
+            </TabsTrigger>
+            <TabsTrigger value="follow-up" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">
+              Follow-up ({followUpSubmissions.length})
+            </TabsTrigger>
+            <TabsTrigger value="declined" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
+              Declined ({declinedSubmissions.length})
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="protected">
+            <SubmissionsList 
+              submissions={protectedSubmissions}
+              onEdit={onEdit}
+              onDelete={handleDelete}
+              onViewProfile={setSelectedCustomer}
+            />
+          </TabsContent>
+
+          <TabsContent value="follow-up">
+            <SubmissionsList 
+              submissions={followUpSubmissions}
+              onEdit={onEdit}
+              onDelete={handleDelete}
+              onViewProfile={setSelectedCustomer}
+            />
+          </TabsContent>
+
+          <TabsContent value="declined">
+            <SubmissionsList 
+              submissions={declinedSubmissions}
+              onEdit={onEdit}
+              onDelete={handleDelete}
+              onViewProfile={setSelectedCustomer}
+            />
+          </TabsContent>
+        </Tabs>
 
         {selectedCustomer && (
           <CustomerProfile
