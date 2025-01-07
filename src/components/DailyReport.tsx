@@ -11,6 +11,7 @@ interface DailyMetrics {
     scheduled: number;
     sits: number;
     sales: number;
+    ap: number;
   };
 }
 
@@ -76,6 +77,13 @@ const DailyReport = () => {
     };
   }, [dailyReports]);
 
+  const formatMetricValue = (metric: string, value: number) => {
+    if (metric === 'ap') {
+      return `$${(value / 100).toFixed(2)}`;
+    }
+    return value;
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Daily Reports</h2>
@@ -86,11 +94,11 @@ const DailyReport = () => {
               <h3 className="font-semibold text-lg">
                 Report for {format(new Date(report.date), "MMMM d, yyyy")}
               </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
                 {Object.entries(report.metrics).map(([metric, value]) => (
                   <div key={metric} className="text-sm">
-                    <span className="font-medium capitalize">{metric}: </span>
-                    <span>{value}</span>
+                    <span className="font-medium capitalize">{metric === 'ap' ? 'AP' : metric}: </span>
+                    <span>{formatMetricValue(metric, value)}</span>
                   </div>
                 ))}
               </div>
