@@ -12,7 +12,24 @@ interface FormSectionProps {
 
 const FormSection = ({ section, fields, formData, setFormData, errors }: FormSectionProps) => {
   const handleFieldChange = (fieldId: string, value: any) => {
-    setFormData((prev: FormSubmission) => ({ ...prev, [fieldId]: value }));
+    setFormData((prev: FormSubmission) => {
+      // Handle array fields specifically
+      if (
+        fieldId === "selectedConditions" ||
+        fieldId === "employmentStatus" ||
+        fieldId === "selectedInvestments"
+      ) {
+        return {
+          ...prev,
+          [fieldId]: value as string[]
+        };
+      }
+      // Handle all other fields as strings
+      return {
+        ...prev,
+        [fieldId]: value as string
+      };
+    });
   };
 
   return (
