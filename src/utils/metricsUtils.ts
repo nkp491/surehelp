@@ -15,7 +15,7 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
   return [
     {
       label: "Leads to Contact",
-      value: leads > 0 ? formatPercentage(contacts / leads) : "0%",
+      value: leads > 0 ? contacts.toString() : "0",
     },
     {
       label: "Leads to Scheduled",
