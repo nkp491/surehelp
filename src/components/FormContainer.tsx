@@ -26,9 +26,57 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
 
+  // Initialize form data when editing submission changes
   useEffect(() => {
     if (editingSubmission) {
-      setFormData(editingSubmission);
+      // Create a new object with all the fields from editingSubmission
+      const submissionData = {
+        name: editingSubmission.name || "",
+        dob: editingSubmission.dob || "",
+        age: editingSubmission.age || "",
+        height: editingSubmission.height || "",
+        weight: editingSubmission.weight || "",
+        tobaccoUse: editingSubmission.tobaccoUse || "no",
+        selectedConditions: editingSubmission.selectedConditions || [],
+        medicalConditions: editingSubmission.medicalConditions || "",
+        hospitalizations: editingSubmission.hospitalizations || "",
+        surgeries: editingSubmission.surgeries || "",
+        prescriptionMedications: editingSubmission.prescriptionMedications || "",
+        lastMedicalExam: editingSubmission.lastMedicalExam || "",
+        familyMedicalConditions: editingSubmission.familyMedicalConditions || "",
+        employmentStatus: editingSubmission.employmentStatus || [],
+        occupation: editingSubmission.occupation || "",
+        selectedInvestments: editingSubmission.selectedInvestments || [],
+        socialSecurityIncome: editingSubmission.socialSecurityIncome || "",
+        pensionIncome: editingSubmission.pensionIncome || "",
+        survivorshipIncome: editingSubmission.survivorshipIncome || "",
+        totalIncome: editingSubmission.totalIncome || "",
+        expenses: editingSubmission.expenses || "",
+        lifeInsuranceAmount: editingSubmission.lifeInsuranceAmount || "",
+        rentOrMortgage: editingSubmission.rentOrMortgage || "",
+        remainingBalance: editingSubmission.remainingBalance || "",
+        yearsLeft: editingSubmission.yearsLeft || "",
+        homeValue: editingSubmission.homeValue || "",
+        equity: editingSubmission.equity || "",
+        phone: editingSubmission.phone || "",
+        email: editingSubmission.email || "",
+        address: editingSubmission.address || "",
+        notes: editingSubmission.notes || "",
+        followUpNotes: editingSubmission.followUpNotes || "",
+        coverageOptions: editingSubmission.coverageOptions || "",
+        emergencyContact: editingSubmission.emergencyContact || "",
+        beneficiaries: editingSubmission.beneficiaries || "",
+        sourcedFrom: editingSubmission.sourcedFrom || "",
+        leadType: editingSubmission.leadType || "",
+        premium: editingSubmission.premium || "",
+        effectiveDate: editingSubmission.effectiveDate || "",
+        draftDay: editingSubmission.draftDay || "",
+        coverageAmount: editingSubmission.coverageAmount || "",
+        accidental: editingSubmission.accidental || "",
+        carrierAndProduct: editingSubmission.carrierAndProduct || "",
+        policyNumber: editingSubmission.policyNumber || "",
+      };
+      setFormData(submissionData);
     }
   }, [editingSubmission, setFormData]);
 
