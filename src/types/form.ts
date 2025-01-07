@@ -18,6 +18,14 @@ export interface FormSubmission {
   pensionIncome: string;
   survivorshipIncome: string;
   selectedInvestments: string[];
+  phone: string;
+  email: string;
+  address: string;
+  notes: string;
+  followUpNotes: string;
+  coverageOptions: string;
+  emergencyContact: string;
+  beneficiaries: string;
   timestamp: string;
   outcome: string;
 }
