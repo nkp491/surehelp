@@ -25,6 +25,12 @@ const INCOME_FIELDS: FormField[] = [
   { id: "survivorshipIncome", type: "currency", label: "Survivorship Income", placeholder: "Enter survivorship income" },
   { id: "totalIncome", type: "currency", label: "Total Income", placeholder: "Enter total income" },
   { id: "expenses", type: "currency", label: "Expenses", placeholder: "Enter expenses" },
+  { id: "lifeInsuranceAmount", type: "currency", label: "Life Insurance Amount", placeholder: "Enter life insurance amount" },
+  { id: "rentOrMortgage", type: "currency", label: "Rent or Mortgage", placeholder: "Enter rent or mortgage amount" },
+  { id: "remainingBalance", type: "currency", label: "Remaining Balance", placeholder: "Enter remaining balance" },
+  { id: "yearsLeft", type: "text", label: "Years Left", placeholder: "Enter years left" },
+  { id: "homeValue", type: "currency", label: "Home Value", placeholder: "Enter home value" },
+  { id: "equity", type: "text", label: "Equity", placeholder: "Enter equity" },
 ];
 
 const ASSESSMENT_NOTES_FIELDS: FormField[] = [

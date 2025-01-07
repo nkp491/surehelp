@@ -19,6 +19,12 @@ export interface FormSubmission {
   survivorshipIncome: string;
   totalIncome: string;
   expenses: string;
+  lifeInsuranceAmount: string;
+  rentOrMortgage: string;
+  remainingBalance: string;
+  yearsLeft: string;
+  homeValue: string;
+  equity: string;
   selectedInvestments: string[];
   phone: string;
   email: string;
@@ -28,7 +34,6 @@ export interface FormSubmission {
   coverageOptions: string;
   emergencyContact: string;
   beneficiaries: string;
-  // New Agent Use Only fields
   sourcedFrom: string;
   leadType: string;
   premium: string;
