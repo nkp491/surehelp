@@ -19,43 +19,43 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     },
     {
       label: "Leads to Scheduled",
-      value: leads > 0 ? formatPercentage(scheduled / leads) : "0%",
+      value: leads > 0 ? scheduled.toString() : "0",
     },
     {
       label: "Leads to Sits",
-      value: leads > 0 ? formatPercentage(sits / leads) : "0%",
+      value: leads > 0 ? sits.toString() : "0",
     },
     {
       label: "Leads to Sales",
-      value: leads > 0 ? formatPercentage(sales / leads) : "0%",
+      value: leads > 0 ? sales.toString() : "0",
     },
     {
       label: "Calls to Contact",
-      value: calls > 0 ? formatPercentage(contacts / calls) : "0%",
+      value: calls > 0 ? contacts.toString() : "0",
     },
     {
       label: "Calls to Scheduled",
-      value: calls > 0 ? formatPercentage(scheduled / calls) : "0%",
+      value: calls > 0 ? scheduled.toString() : "0",
     },
     {
       label: "Calls to Sits",
-      value: calls > 0 ? formatPercentage(sits / calls) : "0%",
+      value: calls > 0 ? sits.toString() : "0",
     },
     {
       label: "Calls to Sales",
-      value: calls > 0 ? formatPercentage(sales / calls) : "0%",
+      value: calls > 0 ? sales.toString() : "0",
     },
     {
       label: "Contact to Scheduled",
-      value: contacts > 0 ? formatPercentage(scheduled / contacts) : "0%",
+      value: contacts > 0 ? scheduled.toString() : "0",
     },
     {
       label: "Contact to Sits",
-      value: contacts > 0 ? formatPercentage(sits / contacts) : "0%",
+      value: contacts > 0 ? sits.toString() : "0",
     },
     {
       label: "Contact to Sales",
-      value: contacts > 0 ? formatPercentage(sales / contacts) : "0%",
+      value: contacts > 0 ? sales.toString() : "0",
     },
     {
       label: "AP per Contact",
