@@ -1,11 +1,8 @@
-import { useSortable } from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
-import { GripVertical } from "lucide-react";
 import FormField from "./FormField";
 import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
 import EmploymentStatusCheckbox from "./EmploymentStatusCheckbox";
-import { Label } from "./ui/label";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import TobaccoUseField from "./form-fields/TobaccoUseField";
+import DraggableWrapper from "./form-fields/DraggableWrapper";
 
 interface DraggableFormFieldProps {
   id: string;
@@ -28,19 +25,6 @@ const DraggableFormField = ({
   required,
   error,
 }: DraggableFormFieldProps) => {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({ id });
-
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-
   const renderField = () => {
     switch (fieldType) {
       case "medicalConditions":
@@ -59,23 +43,10 @@ const DraggableFormField = ({
         );
       case "tobaccoUse":
         return (
-          <div className="space-y-2">
-            <Label>Tobacco Use</Label>
-            <RadioGroup
-              value={value}
-              onValueChange={onChange}
-              className="flex space-x-4"
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="yes" id="yes" />
-                <Label htmlFor="yes">Yes</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="no" id="no" />
-                <Label htmlFor="no">No</Label>
-              </div>
-            </RadioGroup>
-          </div>
+          <TobaccoUseField
+            value={value}
+            onChange={onChange}
+          />
         );
       default:
         return (
@@ -93,20 +64,9 @@ const DraggableFormField = ({
   };
 
   return (
-    <div
-      ref={setNodeRef}
-      style={style}
-      className="relative bg-white rounded-lg p-4 border shadow-sm"
-    >
-      <div
-        {...attributes}
-        {...listeners}
-        className="absolute right-2 top-2 cursor-move hover:text-primary"
-      >
-        <GripVertical className="h-5 w-5" />
-      </div>
+    <DraggableWrapper id={id}>
       {renderField()}
-    </div>
+    </DraggableWrapper>
   );
 };
 
