@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   DndContext,
@@ -25,6 +25,12 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
 }) => {
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
+
+  useEffect(() => {
+    if (editingSubmission) {
+      setFormData(editingSubmission);
+    }
+  }, [editingSubmission, setFormData]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),

@@ -95,6 +95,13 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
       };
 
       if (editingSubmission) {
+        // Update existing submission
+        const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
+        const updatedSubmissions = submissions.map((s: FormSubmission) => 
+          s.timestamp === editingSubmission.timestamp ? submissionData : s
+        );
+        localStorage.setItem("formSubmissions", JSON.stringify(updatedSubmissions));
+        
         onUpdate?.(submissionData);
         
         toast({
@@ -102,6 +109,7 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
           description: "Your form has been updated successfully.",
         });
       } else {
+        // Create new submission
         const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
         submissions.push(submissionData);
         localStorage.setItem("formSubmissions", JSON.stringify(submissions));
