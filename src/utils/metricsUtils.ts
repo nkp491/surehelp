@@ -55,7 +55,7 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     },
     {
       label: "Contact to Sales",
-      value: contacts > 0 ? sales.toString() : "0",
+      value: contacts > 0 && sales > 0 ? (contacts / sales).toFixed(1) : "0",
     },
     {
       label: "AP per Contact",
