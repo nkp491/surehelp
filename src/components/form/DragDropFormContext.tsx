@@ -5,12 +5,12 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
-  sortableKeyboardCoordinates,
 } from "@dnd-kit/core";
 import {
   arrayMove,
   SortableContext,
   verticalListSortingStrategy,
+  sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import { FormField } from "@/types/formTypes";
 

@@ -1,6 +1,6 @@
 import { FormField } from "@/types/formTypes";
-import DraggableFormField from "../DraggableFormField";
 import { FormSubmission } from "@/types/form";
+import DraggableFormField from "../DraggableFormField";
 
 interface FormSectionProps {
   section: string;
@@ -12,7 +12,7 @@ interface FormSectionProps {
 
 const FormSection = ({ section, fields, formData, setFormData, errors }: FormSectionProps) => {
   const handleFieldChange = (fieldId: string, value: any) => {
-    setFormData((prev) => ({ ...prev, [fieldId]: value }));
+    setFormData((prev: FormSubmission) => ({ ...prev, [fieldId]: value }));
   };
 
   return (
