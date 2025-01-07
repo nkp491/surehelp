@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Card } from "@/components/ui/card";
+import DailyReportCard from "./reports/DailyReportCard";
 import { format } from "date-fns";
 
 interface DailyMetrics {
@@ -32,13 +32,11 @@ const DailyReport = () => {
         const metrics = JSON.parse(storedMetrics);
         const today = format(new Date(), "yyyy-MM-dd");
         
-        // Check if we already have a report for today
         const existingReportIndex = dailyReports.findIndex(
           (report) => report.date === today
         );
 
         if (existingReportIndex !== -1) {
-          // Update existing report
           const updatedReports = [...dailyReports];
           updatedReports[existingReportIndex] = {
             date: today,
@@ -47,29 +45,24 @@ const DailyReport = () => {
           setDailyReports(updatedReports);
           localStorage.setItem("dailyReports", JSON.stringify(updatedReports));
         } else {
-          // Create new report
           const newReport = {
             date: today,
             metrics: { ...metrics },
           };
-          const updatedReports = [newReport, ...dailyReports].slice(0, 30); // Keep last 30 days
+          const updatedReports = [newReport, ...dailyReports].slice(0, 30);
           setDailyReports(updatedReports);
           localStorage.setItem("dailyReports", JSON.stringify(updatedReports));
         }
       }
     };
 
-    // Generate report when metrics change
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === "businessMetrics") {
         generateDailyReport();
       }
     };
 
-    // Add event listener for storage changes
     window.addEventListener("storage", handleStorageChange);
-    
-    // Generate initial report
     generateDailyReport();
 
     return () => {
@@ -77,33 +70,16 @@ const DailyReport = () => {
     };
   }, [dailyReports]);
 
-  const formatMetricValue = (metric: string, value: number) => {
-    if (metric === 'ap') {
-      return `$${(value / 100).toFixed(2)}`;
-    }
-    return value;
-  };
-
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold text-gray-900">Daily Reports</h2>
       <div className="space-y-4">
         {dailyReports.map((report) => (
-          <Card key={report.date} className="p-4">
-            <div className="space-y-2">
-              <h3 className="font-semibold text-lg">
-                Report for {format(new Date(report.date), "MMMM d, yyyy")}
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-7 gap-4">
-                {Object.entries(report.metrics).map(([metric, value]) => (
-                  <div key={metric} className="text-sm">
-                    <span className="font-medium capitalize">{metric === 'ap' ? 'AP' : metric}: </span>
-                    <span>{formatMetricValue(metric, value)}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
+          <DailyReportCard
+            key={report.date}
+            date={report.date}
+            metrics={report.metrics}
+          />
         ))}
       </div>
     </div>
