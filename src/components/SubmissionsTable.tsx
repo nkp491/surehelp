@@ -3,11 +3,19 @@ import { Button } from "@/components/ui/button";
 import { Pencil } from "lucide-react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { FormSubmission } from "@/types/form";
+import { Badge } from "@/components/ui/badge";
 
 interface SubmissionsTableProps {
   submissions: FormSubmission[];
   onEdit: (submission: FormSubmission) => void;
 }
+
+const getSubmissionStatus = (submission: FormSubmission) => {
+  if (submission.outcome === "Protected") return "bg-green-500";
+  if (submission.outcome === "Follow-up") return "bg-yellow-500";
+  if (submission.outcome === "Declined") return "bg-red-500";
+  return "bg-gray-500";
+};
 
 const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   return (
@@ -23,12 +31,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
                 <TableHead>Name</TableHead>
                 <TableHead>DOB</TableHead>
                 <TableHead>Age</TableHead>
-                <TableHead>Height</TableHead>
-                <TableHead>Weight</TableHead>
-                <TableHead>Tobacco Use</TableHead>
-                <TableHead>Medical Conditions</TableHead>
-                <TableHead>Policy Number</TableHead>
-                <TableHead>Premium</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -38,16 +41,13 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
                   <TableCell>{submission.name}</TableCell>
                   <TableCell>{submission.dob}</TableCell>
                   <TableCell>{submission.age}</TableCell>
-                  <TableCell>{submission.height}</TableCell>
-                  <TableCell>{submission.weight}</TableCell>
-                  <TableCell>{submission.tobaccoUse}</TableCell>
                   <TableCell>
-                    {Array.isArray(submission.selectedConditions) 
-                      ? submission.selectedConditions.join(", ")
-                      : submission.selectedConditions}
+                    <Badge 
+                      className={`${getSubmissionStatus(submission)} text-white`}
+                    >
+                      {submission.outcome || 'Pending'}
+                    </Badge>
                   </TableCell>
-                  <TableCell>{submission.policyNumber}</TableCell>
-                  <TableCell>{submission.premium}</TableCell>
                   <TableCell>
                     <Button
                       variant="outline"
