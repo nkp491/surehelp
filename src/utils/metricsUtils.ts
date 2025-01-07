@@ -73,6 +73,10 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     {
       label: "AP per Sit",
       value: sits > 0 ? formatCurrency(ap / 100 / sits) : "$0.00",
+    },
+    {
+      label: "AP per Appointment",
+      value: scheduled > 0 ? formatCurrency(ap / 100 / scheduled) : "$0.00",
     }
   ];
 };
