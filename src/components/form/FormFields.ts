@@ -36,8 +36,21 @@ const ASSESSMENT_NOTES_FIELDS: FormField[] = [
   { id: "beneficiaries", type: "textarea", label: "Beneficiary(ies)", placeholder: "Enter beneficiaries" },
 ];
 
+const AGENT_USE_ONLY_FIELDS: FormField[] = [
+  { id: "sourcedFrom", type: "text", label: "Sourced From", placeholder: "Enter source" },
+  { id: "leadType", type: "text", label: "Lead Type", placeholder: "Enter lead type" },
+  { id: "premium", type: "text", label: "Premium", placeholder: "Enter premium" },
+  { id: "effectiveDate", type: "date", label: "Effective Date" },
+  { id: "draftDay", type: "date", label: "Draft Day" },
+  { id: "coverageAmount", type: "currency", label: "Coverage Amount", placeholder: "Enter coverage amount" },
+  { id: "accidental", type: "text", label: "Accidental", placeholder: "Enter accidental details" },
+  { id: "carrierAndProduct", type: "text", label: "Carrier & Product", placeholder: "Enter carrier and product" },
+  { id: "policyNumber", type: "text", label: "Policy Number", placeholder: "Enter policy number" },
+];
+
 export const INITIAL_FIELDS = [
   { section: "Health Assessment", fields: HEALTH_FIELDS },
   { section: "Income Assessment", fields: INCOME_FIELDS },
   { section: "Assessment Notes", fields: ASSESSMENT_NOTES_FIELDS },
+  { section: "Agent Use Only", fields: AGENT_USE_ONLY_FIELDS },
 ];

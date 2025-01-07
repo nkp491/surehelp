@@ -23,7 +23,6 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   pensionIncome: "",
   survivorshipIncome: "",
   selectedInvestments: [],
-  // Adding the new fields
   phone: "",
   email: "",
   address: "",
@@ -32,6 +31,16 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   coverageOptions: "",
   emergencyContact: "",
   beneficiaries: "",
+  // New Agent Use Only fields
+  sourcedFrom: "",
+  leadType: "",
+  premium: "",
+  effectiveDate: "",
+  draftDay: "",
+  coverageAmount: "",
+  accidental: "",
+  carrierAndProduct: "",
+  policyNumber: "",
 };
 
 export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?: (submission: FormSubmission) => void) => {

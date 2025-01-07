@@ -27,6 +27,8 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
                 <TableHead>Weight</TableHead>
                 <TableHead>Tobacco Use</TableHead>
                 <TableHead>Medical Conditions</TableHead>
+                <TableHead>Policy Number</TableHead>
+                <TableHead>Premium</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -44,6 +46,8 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
                       ? submission.selectedConditions.join(", ")
                       : submission.selectedConditions}
                   </TableCell>
+                  <TableCell>{submission.policyNumber}</TableCell>
+                  <TableCell>{submission.premium}</TableCell>
                   <TableCell>
                     <Button
                       variant="outline"

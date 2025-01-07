@@ -26,6 +26,16 @@ export interface FormSubmission {
   coverageOptions: string;
   emergencyContact: string;
   beneficiaries: string;
+  // New Agent Use Only fields
+  sourcedFrom: string;
+  leadType: string;
+  premium: string;
+  effectiveDate: string;
+  draftDay: string;
+  coverageAmount: string;
+  accidental: string;
+  carrierAndProduct: string;
+  policyNumber: string;
   timestamp: string;
   outcome: string;
 }
