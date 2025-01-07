@@ -1,5 +1,4 @@
 import { useState } from "react";
-import DailyReport from "@/components/DailyReport";
 import BusinessMetrics from "@/components/BusinessMetrics";
 import { Button } from "@/components/ui/button";
 import { Eye, EyeOff } from "lucide-react";
@@ -34,7 +33,6 @@ const MetricsVisualization = () => {
       {isVisible && (
         <div className="space-y-8">
           <BusinessMetrics />
-          <DailyReport />
         </div>
       )}
     </div>
