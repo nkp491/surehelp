@@ -17,6 +17,11 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   prescriptionMedications: "",
   lastMedicalExam: "",
   familyMedicalConditions: "",
+  employmentStatus: [],
+  occupation: "",
+  socialSecurityIncome: "",
+  pensionIncome: "",
+  survivorshipIncome: "",
 };
 
 export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?: (submission: FormSubmission) => void) => {
