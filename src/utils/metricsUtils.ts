@@ -19,7 +19,7 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     },
     {
       label: "Leads to Scheduled",
-      value: leads > 0 ? scheduled.toString() : "0",
+      value: leads > 0 && scheduled > 0 ? (leads / scheduled).toFixed(1) : "0",
     },
     {
       label: "Leads to Sits",
