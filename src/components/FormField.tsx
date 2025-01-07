@@ -75,6 +75,35 @@ const FormField = ({
     );
   }
 
+  if (type === "currency") {
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
+        <div className="relative">
+          <span className="absolute left-3 top-2.5">$</span>
+          <Input
+            type="number"
+            value={value}
+            onChange={(e) => onChange?.(e.target.value)}
+            placeholder={placeholder}
+            className={cn(
+              "pl-7",
+              error ? "border-destructive" : "border-input"
+            )}
+            required={required}
+            readOnly={readOnly}
+            min="0"
+            step="0.01"
+          />
+        </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">

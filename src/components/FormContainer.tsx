@@ -26,7 +26,7 @@ interface FormContainerProps {
 }
 
 const FormContainer = ({ editingSubmission = null, onUpdate }: FormContainerProps) => {
-  const [fields, setFields] = useState<FormField[]>(INITIAL_FIELDS);
+  const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
 
   const sensors = useSensors(
@@ -40,12 +40,22 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: FormContainerProp
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      setFields((items) => {
-        const oldIndex = items.findIndex((item) => item.id === active.id);
-        const newIndex = items.findIndex((item) => item.id === over.id);
-
-        return arrayMove(items, oldIndex, newIndex);
-      });
+      const allFields = sections.flatMap(section => section.fields);
+      const newFields = arrayMove(
+        allFields,
+        allFields.findIndex(item => item.id === active.id),
+        allFields.findIndex(item => item.id === over.id)
+      );
+      
+      // Reconstruct sections with new field order
+      const newSections = sections.map(section => ({
+        ...section,
+        fields: newFields.filter(field => 
+          section.fields.some(originalField => originalField.id === field.id)
+        )
+      }));
+      
+      setSections(newSections);
     }
   };
 
@@ -62,24 +72,31 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: FormContainerProp
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={fields.map((field) => field.id)}
+          items={sections.flatMap(section => section.fields).map(field => field.id)}
           strategy={verticalListSortingStrategy}
         >
-          <div className="space-y-4">
-            {fields.map((field) => (
-              <DraggableFormField
-                key={field.id}
-                id={field.id}
-                fieldType={field.type}
-                label={field.label}
-                value={formData[field.id as keyof FormSubmission]}
-                onChange={(value) =>
-                  setFormData((prev) => ({ ...prev, [field.id]: value }))
-                }
-                placeholder={field.placeholder}
-                required={field.required}
-                error={errors[field.id as keyof FormSubmission]}
-              />
+          <div className="space-y-8">
+            {sections.map((section, index) => (
+              <div key={section.section} className="bg-white rounded-lg shadow-sm p-6 space-y-4">
+                <h2 className="text-xl font-semibold text-gray-900 mb-4">{section.section}</h2>
+                <div className="space-y-4">
+                  {section.fields.map((field) => (
+                    <DraggableFormField
+                      key={field.id}
+                      id={field.id}
+                      fieldType={field.type}
+                      label={field.label}
+                      value={formData[field.id as keyof FormSubmission]}
+                      onChange={(value) =>
+                        setFormData((prev) => ({ ...prev, [field.id]: value }))
+                      }
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      error={errors[field.id as keyof FormSubmission]}
+                    />
+                  ))}
+                </div>
+              </div>
             ))}
           </div>
         </SortableContext>
