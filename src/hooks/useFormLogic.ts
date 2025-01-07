@@ -22,6 +22,8 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   socialSecurityIncome: "",
   pensionIncome: "",
   survivorshipIncome: "",
+  totalIncome: "",
+  expenses: "",
   selectedInvestments: [],
   phone: "",
   email: "",

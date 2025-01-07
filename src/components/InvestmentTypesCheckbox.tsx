@@ -15,7 +15,7 @@ const InvestmentTypesCheckbox = ({
     "IRA",
     "Stocks",
     "Bonds",
-    "MF",
+    "Mutual Fund",
     "CD",
     "Savings",
     "Credit Union",

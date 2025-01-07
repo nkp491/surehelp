@@ -17,6 +17,8 @@ export interface FormSubmission {
   socialSecurityIncome: string;
   pensionIncome: string;
   survivorshipIncome: string;
+  totalIncome: string;
+  expenses: string;
   selectedInvestments: string[];
   phone: string;
   email: string;

@@ -23,6 +23,8 @@ const INCOME_FIELDS: FormField[] = [
   { id: "socialSecurityIncome", type: "currency", label: "Social Security Income", placeholder: "Enter social security income" },
   { id: "pensionIncome", type: "currency", label: "Pension Income", placeholder: "Enter pension income" },
   { id: "survivorshipIncome", type: "currency", label: "Survivorship Income", placeholder: "Enter survivorship income" },
+  { id: "totalIncome", type: "currency", label: "Total Income", placeholder: "Enter total income" },
+  { id: "expenses", type: "currency", label: "Expenses", placeholder: "Enter expenses" },
 ];
 
 const ASSESSMENT_NOTES_FIELDS: FormField[] = [
