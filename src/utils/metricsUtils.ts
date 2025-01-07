@@ -23,7 +23,7 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     },
     {
       label: "Leads to Sits",
-      value: leads > 0 ? sits.toString() : "0",
+      value: leads > 0 && sits > 0 ? (leads / sits).toFixed(1) : "0",
     },
     {
       label: "Leads to Sales",
@@ -39,7 +39,7 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     },
     {
       label: "Calls to Sits",
-      value: calls > 0 && sits > 0 ? (calls / sits).toFixed(1) : "0",
+      value: calls > 0 && sits > 0 ? (contacts / sits).toFixed(1) : "0",
     },
     {
       label: "Calls to Sales",
