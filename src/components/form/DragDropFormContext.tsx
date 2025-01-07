@@ -5,6 +5,7 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  sortableKeyboardCoordinates,
 } from "@dnd-kit/core";
 import {
   arrayMove,

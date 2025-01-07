@@ -36,7 +36,7 @@ const FormContainer = ({
               key={section.section}
               section={section.section}
               fields={section.fields}
-              formData={formData}
+              formData={formData as FormSubmission}
               setFormData={setFormData}
               errors={errors}
             />
