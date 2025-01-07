@@ -12,6 +12,11 @@ export interface FormSubmission {
   prescriptionMedications: string;
   lastMedicalExam: string;
   familyMedicalConditions: string;
+  employmentStatus: string[];
+  occupation: string;
+  socialSecurityIncome: string;
+  pensionIncome: string;
+  survivorshipIncome: string;
   timestamp: string;
   outcome: string;
 }

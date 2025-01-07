@@ -3,6 +3,7 @@ import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
 import FormField from "./FormField";
 import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
+import EmploymentStatusCheckbox from "./EmploymentStatusCheckbox";
 import { Label } from "./ui/label";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
@@ -46,6 +47,13 @@ const DraggableFormField = ({
         return (
           <MedicalConditionsCheckbox
             selectedConditions={value}
+            onChange={onChange}
+          />
+        );
+      case "employmentStatus":
+        return (
+          <EmploymentStatusCheckbox
+            selectedStatus={value}
             onChange={onChange}
           />
         );
