@@ -61,7 +61,6 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
       label: "AP per Contact",
       value: contacts > 0 ? formatCurrency(ap / 100 / contacts) : "$0.00",
     },
-    // New ratios
     {
       label: "Scheduled to Sits",
       value: scheduled > 0 ? formatPercentage(sits / scheduled) : "0%",
@@ -69,6 +68,10 @@ export const calculateRatios = (metrics: { [key: string]: number }) => {
     {
       label: "Scheduled to Sales",
       value: scheduled > 0 ? formatPercentage(sales / scheduled) : "0%",
+    },
+    {
+      label: "Sits to Sales (Close Ratio)",
+      value: sits > 0 ? formatPercentage(sales / sits) : "0%",
     },
     {
       label: "AP per Sit",
