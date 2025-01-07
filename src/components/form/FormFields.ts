@@ -19,6 +19,7 @@ const HEALTH_FIELDS: FormField[] = [
 const INCOME_FIELDS: FormField[] = [
   { id: "employmentStatus", type: "employmentStatus", label: "Employment Status" },
   { id: "occupation", type: "text", label: "Occupation/Duties", placeholder: "Enter your occupation and duties" },
+  { id: "selectedInvestments", type: "investmentTypes", label: "Investment Types" },
   { id: "socialSecurityIncome", type: "currency", label: "Social Security Income", placeholder: "Enter social security income" },
   { id: "pensionIncome", type: "currency", label: "Pension Income", placeholder: "Enter pension income" },
   { id: "survivorshipIncome", type: "currency", label: "Survivorship Income", placeholder: "Enter survivorship income" },

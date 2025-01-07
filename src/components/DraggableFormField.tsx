@@ -1,6 +1,7 @@
 import FormField from "./FormField";
 import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
 import EmploymentStatusCheckbox from "./EmploymentStatusCheckbox";
+import InvestmentTypesCheckbox from "./InvestmentTypesCheckbox";
 import TobaccoUseField from "./form-fields/TobaccoUseField";
 import DraggableWrapper from "./form-fields/DraggableWrapper";
 
@@ -38,6 +39,13 @@ const DraggableFormField = ({
         return (
           <EmploymentStatusCheckbox
             selectedStatus={value}
+            onChange={onChange}
+          />
+        );
+      case "investmentTypes":
+        return (
+          <InvestmentTypesCheckbox
+            selectedInvestments={value}
             onChange={onChange}
           />
         );
