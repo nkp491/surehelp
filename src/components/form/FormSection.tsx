@@ -11,7 +11,7 @@ interface FormSectionProps {
 }
 
 const FormSection = ({ section, fields, formData, setFormData, errors }: FormSectionProps) => {
-  const handleFieldChange = (fieldId: string, value: any) => {
+  const handleFieldChange = (fieldId: string, value: string | string[]) => {
     setFormData((prev: FormSubmission) => {
       // Handle array fields specifically
       if (
