@@ -153,8 +153,7 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
         </SortableContext>
       </DndContext>
       
-      <div className="mt-8 space-y-4">
-        <h3 className="text-lg font-medium text-center mb-4">Submit Form</h3>
+      <div className="mt-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-xl mx-auto">
           <Button 
             onClick={handleOutcomeSubmit('protected')}
