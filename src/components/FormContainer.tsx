@@ -14,6 +14,7 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
+import { Check, Clock, X } from "lucide-react";
 import DraggableFormField from "./DraggableFormField";
 import { FormSubmission } from "@/types/form";
 import { INITIAL_FIELDS } from "./form/FormFields";
@@ -152,25 +153,34 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
         </SortableContext>
       </DndContext>
       
-      <div className="mt-8 grid grid-cols-3 gap-4 max-w-xl mx-auto">
-        <Button 
-          onClick={handleOutcomeSubmit('protected')}
-          className="bg-green-600 hover:bg-green-700"
-        >
-          Protected
-        </Button>
-        <Button 
-          onClick={handleOutcomeSubmit('follow-up')}
-          className="bg-yellow-600 hover:bg-yellow-700"
-        >
-          Follow-Up
-        </Button>
-        <Button 
-          onClick={handleOutcomeSubmit('declined')}
-          className="bg-red-600 hover:bg-red-700"
-        >
-          Declined
-        </Button>
+      <div className="mt-8 space-y-4">
+        <h3 className="text-lg font-medium text-center mb-4">Submit Form</h3>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-xl mx-auto">
+          <Button 
+            onClick={handleOutcomeSubmit('protected')}
+            className="bg-green-600 hover:bg-green-700 h-auto py-4 flex flex-col items-center gap-2"
+          >
+            <Check className="h-6 w-6" />
+            <span className="font-medium">Submit as Protected</span>
+            <span className="text-xs text-green-100">Client is protected with coverage</span>
+          </Button>
+          <Button 
+            onClick={handleOutcomeSubmit('follow-up')}
+            className="bg-yellow-600 hover:bg-yellow-700 h-auto py-4 flex flex-col items-center gap-2"
+          >
+            <Clock className="h-6 w-6" />
+            <span className="font-medium">Submit for Follow-up</span>
+            <span className="text-xs text-yellow-100">Requires additional contact</span>
+          </Button>
+          <Button 
+            onClick={handleOutcomeSubmit('declined')}
+            className="bg-red-600 hover:bg-red-700 h-auto py-4 flex flex-col items-center gap-2"
+          >
+            <X className="h-6 w-6" />
+            <span className="font-medium">Submit as Declined</span>
+            <span className="text-xs text-red-100">Client declined coverage</span>
+          </Button>
+        </div>
       </div>
     </form>
   );
