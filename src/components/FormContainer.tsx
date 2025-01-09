@@ -162,7 +162,6 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
           >
             <Check className="h-6 w-6" />
             <span className="font-medium">Submit as Protected</span>
-            <span className="text-xs text-green-100">Client is protected with coverage</span>
           </Button>
           <Button 
             onClick={handleOutcomeSubmit('follow-up')}
@@ -170,7 +169,6 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
           >
             <Clock className="h-6 w-6" />
             <span className="font-medium">Submit for Follow-up</span>
-            <span className="text-xs text-yellow-100">Requires additional contact</span>
           </Button>
           <Button 
             onClick={handleOutcomeSubmit('declined')}
@@ -178,7 +176,6 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
           >
             <X className="h-6 w-6" />
             <span className="font-medium">Submit as Declined</span>
-            <span className="text-xs text-red-100">Client declined coverage</span>
           </Button>
         </div>
       </div>
