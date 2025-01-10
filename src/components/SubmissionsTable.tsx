@@ -1,11 +1,5 @@
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Pencil, User, Trash2 } from "lucide-react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
-import { FormSubmission } from "@/types/form";
-import { Badge } from "@/components/ui/badge";
-import CustomerProfile from "./CustomerProfile";
 import { useState } from "react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
@@ -18,104 +12,31 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { FormSubmission } from "@/types/form";
+import CustomerProfile from "./CustomerProfile";
+import SearchBar from "./submissions/SearchBar";
+import FilterBar from "./submissions/FilterBar";
+import SubmissionsList from "./submissions/SubmissionsList";
+import { 
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 interface SubmissionsTableProps {
   submissions: FormSubmission[];
   onEdit: (submission: FormSubmission) => void;
 }
 
-const getSubmissionStatus = (outcome: string | undefined) => {
-  switch (outcome?.toLowerCase()) {
-    case "protected":
-      return "bg-green-500";
-    case "follow-up":
-      return "bg-yellow-500";
-    case "declined":
-      return "bg-red-500";
-    default:
-      return "bg-gray-500";
-  }
-};
-
-const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile }: {
-  submissions: FormSubmission[];
-  onEdit: (submission: FormSubmission) => void;
-  onDelete: (submission: FormSubmission) => void;
-  onViewProfile: (submission: FormSubmission) => void;
-}) => {
-  return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>DOB</TableHead>
-          <TableHead>Age</TableHead>
-          <TableHead>Status</TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {submissions.map((submission, index) => (
-          <TableRow 
-            key={index}
-            className="cursor-pointer hover:bg-gray-50"
-          >
-            <TableCell>{submission.name}</TableCell>
-            <TableCell>{submission.dob}</TableCell>
-            <TableCell>{submission.age}</TableCell>
-            <TableCell>
-              <Badge 
-                className={`${getSubmissionStatus(submission.outcome)} text-white`}
-              >
-                {submission.outcome || 'Pending'}
-              </Badge>
-            </TableCell>
-            <TableCell>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(submission)}
-                  className="flex items-center gap-2"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onViewProfile(submission)}
-                  className="flex items-center gap-2"
-                >
-                  <User className="h-4 w-4" />
-                  Profile
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDelete(submission)}
-                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
-            </TableCell>
-          </TableRow>
-        ))}
-        {submissions.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
-              No submissions found
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
-  );
-};
+const ITEMS_PER_PAGE = 10;
 
 const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filters, setFilters] = useState({ status: [], dateRange: "" });
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<FormSubmission | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
@@ -143,14 +64,35 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     setSubmissionToDelete(null);
   };
 
-  const protectedSubmissions = submissions.filter(s => s.outcome?.toLowerCase() === "protected");
-  const followUpSubmissions = submissions.filter(s => s.outcome?.toLowerCase() === "follow-up");
-  const declinedSubmissions = submissions.filter(s => s.outcome?.toLowerCase() === "declined");
+  const filterSubmissions = (submissions: FormSubmission[]) => {
+    return submissions.filter((submission) => {
+      const matchesSearch = submission.name.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesStatus = filters.status.length === 0 || filters.status.includes(submission.outcome?.toLowerCase() || "");
+      return matchesSearch && matchesStatus;
+    });
+  };
+
+  const paginateSubmissions = (submissions: FormSubmission[]) => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return submissions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
+
+  const protectedSubmissions = filterSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "protected"));
+  const followUpSubmissions = filterSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "follow-up"));
+  const declinedSubmissions = filterSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined"));
+
+  const totalPages = Math.ceil(submissions.length / ITEMS_PER_PAGE);
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>Submitted Forms</CardTitle>
+        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+          <div className="flex-1">
+            <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
+          </div>
+          <FilterBar filters={filters} onFilterChange={setFilters} />
+        </div>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="protected" className="w-full">
@@ -168,7 +110,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
 
           <TabsContent value="protected">
             <SubmissionsList 
-              submissions={protectedSubmissions}
+              submissions={paginateSubmissions(protectedSubmissions)}
               onEdit={onEdit}
               onDelete={handleDelete}
               onViewProfile={setSelectedCustomer}
@@ -177,7 +119,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
 
           <TabsContent value="follow-up">
             <SubmissionsList 
-              submissions={followUpSubmissions}
+              submissions={paginateSubmissions(followUpSubmissions)}
               onEdit={onEdit}
               onDelete={handleDelete}
               onViewProfile={setSelectedCustomer}
@@ -186,13 +128,42 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
 
           <TabsContent value="declined">
             <SubmissionsList 
-              submissions={declinedSubmissions}
+              submissions={paginateSubmissions(declinedSubmissions)}
               onEdit={onEdit}
               onDelete={handleDelete}
               onViewProfile={setSelectedCustomer}
             />
           </TabsContent>
         </Tabs>
+
+        <div className="mt-4">
+          <Pagination>
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious 
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    onClick={() => setCurrentPage(page)}
+                    isActive={currentPage === page}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext 
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        </div>
 
         {selectedCustomer && (
           <CustomerProfile
