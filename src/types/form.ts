@@ -52,6 +52,13 @@ export interface FormSubmission {
   email: string;
   address: string;
   
+  // Assessment Notes
+  notes: string;
+  followUpNotes: string;
+  coverageOptions: string;
+  emergencyContact: string;
+  beneficiaries: string;
+  
   // Financial Information
   expenses: string;
   householdExpenses: string;
