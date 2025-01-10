@@ -40,6 +40,10 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   const [selectedCustomer, setSelectedCustomer] = useState<FormSubmission | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    key: keyof FormSubmission;
+    direction: 'asc' | 'desc';
+  } | null>(null);
   const { toast } = useToast();
 
   const handleDelete = (submission: FormSubmission) => {
@@ -64,6 +68,32 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     setSubmissionToDelete(null);
   };
 
+  const handleSort = (key: keyof FormSubmission) => {
+    setSortConfig((currentSort) => {
+      if (currentSort?.key === key) {
+        return {
+          key,
+          direction: currentSort.direction === 'asc' ? 'desc' : 'asc'
+        };
+      }
+      return { key, direction: 'asc' };
+    });
+  };
+
+  const sortSubmissions = (submissions: FormSubmission[]) => {
+    if (!sortConfig) return submissions;
+
+    return [...submissions].sort((a, b) => {
+      const aValue = a[sortConfig.key];
+      const bValue = b[sortConfig.key];
+
+      if (aValue === undefined || bValue === undefined) return 0;
+
+      const comparison = String(aValue).localeCompare(String(bValue));
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    });
+  };
+
   const filterSubmissions = (submissions: FormSubmission[]) => {
     return submissions.filter((submission) => {
       const matchesSearch = submission.name.toLowerCase().includes(searchTerm.toLowerCase());
@@ -77,9 +107,15 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     return submissions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   };
 
-  const protectedSubmissions = filterSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "protected"));
-  const followUpSubmissions = filterSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "follow-up"));
-  const declinedSubmissions = filterSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined"));
+  const processSubmissions = (submissions: FormSubmission[]) => {
+    const filtered = filterSubmissions(submissions);
+    const sorted = sortSubmissions(filtered);
+    return paginateSubmissions(sorted);
+  };
+
+  const protectedSubmissions = processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "protected"));
+  const followUpSubmissions = processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "follow-up"));
+  const declinedSubmissions = processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined"));
 
   const totalPages = Math.ceil(submissions.length / ITEMS_PER_PAGE);
 
@@ -110,28 +146,31 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
 
           <TabsContent value="protected">
             <SubmissionsList 
-              submissions={paginateSubmissions(protectedSubmissions)}
+              submissions={protectedSubmissions}
               onEdit={onEdit}
               onDelete={handleDelete}
               onViewProfile={setSelectedCustomer}
+              onSort={handleSort}
             />
           </TabsContent>
 
           <TabsContent value="follow-up">
             <SubmissionsList 
-              submissions={paginateSubmissions(followUpSubmissions)}
+              submissions={followUpSubmissions}
               onEdit={onEdit}
               onDelete={handleDelete}
               onViewProfile={setSelectedCustomer}
+              onSort={handleSort}
             />
           </TabsContent>
 
           <TabsContent value="declined">
             <SubmissionsList 
-              submissions={paginateSubmissions(declinedSubmissions)}
+              submissions={declinedSubmissions}
               onEdit={onEdit}
               onDelete={handleDelete}
               onViewProfile={setSelectedCustomer}
+              onSort={handleSort}
             />
           </TabsContent>
         </Tabs>

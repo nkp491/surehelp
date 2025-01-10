@@ -1,6 +1,6 @@
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Pencil, User, Trash2 } from "lucide-react";
+import { Pencil, User, Trash2, ArrowUpDown } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { FormSubmission } from "@/types/form";
 
@@ -9,6 +9,7 @@ interface SubmissionsListProps {
   onEdit: (submission: FormSubmission) => void;
   onDelete: (submission: FormSubmission) => void;
   onViewProfile: (submission: FormSubmission) => void;
+  onSort: (field: keyof FormSubmission) => void;
 }
 
 const getSubmissionStatus = (outcome: string | undefined) => {
@@ -24,15 +25,51 @@ const getSubmissionStatus = (outcome: string | undefined) => {
   }
 };
 
-const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile }: SubmissionsListProps) => {
+const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile, onSort }: SubmissionsListProps) => {
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Name</TableHead>
-          <TableHead>DOB</TableHead>
-          <TableHead>Age</TableHead>
-          <TableHead>Status</TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              onClick={() => onSort('name')}
+              className="flex items-center gap-1 hover:bg-gray-100"
+            >
+              Name
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+          </TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              onClick={() => onSort('dob')}
+              className="flex items-center gap-1 hover:bg-gray-100"
+            >
+              DOB
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+          </TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              onClick={() => onSort('age')}
+              className="flex items-center gap-1 hover:bg-gray-100"
+            >
+              Age
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+          </TableHead>
+          <TableHead>
+            <Button 
+              variant="ghost" 
+              onClick={() => onSort('outcome')}
+              className="flex items-center gap-1 hover:bg-gray-100"
+            >
+              Status
+              <ArrowUpDown className="h-4 w-4" />
+            </Button>
+          </TableHead>
           <TableHead>Actions</TableHead>
         </TableRow>
       </TableHeader>
