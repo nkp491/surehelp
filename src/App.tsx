@@ -8,15 +8,15 @@ import Index from "./pages/Index";
 import SubmittedForms from "./pages/SubmittedForms";
 import MetricsVisualization from "./pages/MetricsVisualization";
 
-const App = () => {
-  const [queryClient] = useState(() => new QueryClient());
+const queryClient = new QueryClient();
 
+const App = () => {
   return (
-    <BrowserRouter>
-      <QueryClientProvider client={queryClient}>
+    <QueryClientProvider client={queryClient}>
+      <BrowserRouter>
         <TooltipProvider>
           <Routes>
-            <Route path="/" element={<Index />}>
+            <Route path="/*" element={<Index />}>
               <Route path="submitted-forms" element={<SubmittedForms />} />
               <Route path="metrics" element={<MetricsVisualization />} />
             </Route>
@@ -24,8 +24,8 @@ const App = () => {
           <Toaster />
           <Sonner />
         </TooltipProvider>
-      </QueryClientProvider>
-    </BrowserRouter>
+      </BrowserRouter>
+    </QueryClientProvider>
   );
 };
 
