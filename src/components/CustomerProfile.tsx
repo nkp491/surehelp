@@ -1,11 +1,9 @@
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { FormSubmission } from "@/types/form";
-import { Card, CardContent } from "@/components/ui/card";
+import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { FormSubmission } from '@/types/form';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import AuditTrail from './submissions/AuditTrail';
 
 interface CustomerProfileProps {
   customer: FormSubmission;
@@ -16,67 +14,79 @@ interface CustomerProfileProps {
 const CustomerProfile = ({ customer, isOpen, onClose }: CustomerProfileProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-3xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Customer Profile</DialogTitle>
+          <DialogTitle>Customer Profile - {customer.name}</DialogTitle>
         </DialogHeader>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-4">Personal Information</h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Name:</span> {customer.name}</p>
-                <p><span className="font-medium">DOB:</span> {customer.dob}</p>
-                <p><span className="font-medium">Age:</span> {customer.age}</p>
-                <p><span className="font-medium">Height:</span> {customer.height}</p>
-                <p><span className="font-medium">Weight:</span> {customer.weight}</p>
-                <p><span className="font-medium">Tobacco Use:</span> {customer.tobaccoUse}</p>
-              </div>
-            </CardContent>
-          </Card>
+        <Tabs defaultValue="details" className="w-full">
+          <TabsList>
+            <TabsTrigger value="details">Details</TabsTrigger>
+            <TabsTrigger value="audit">Audit Trail</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="details">
+            <ScrollArea className="h-[60vh]">
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Personal Information</h3>
+                    <div className="space-y-2">
+                      <p><strong>Name:</strong> {customer.name}</p>
+                      <p><strong>DOB:</strong> {customer.dob}</p>
+                      <p><strong>Age:</strong> {customer.age}</p>
+                      <p><strong>Height:</strong> {customer.height}</p>
+                      <p><strong>Weight:</strong> {customer.weight}</p>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h3 className="text-lg font-semibold mb-2">Contact Information</h3>
+                    <div className="space-y-2">
+                      <p><strong>Phone:</strong> {customer.phone}</p>
+                      <p><strong>Email:</strong> {customer.email}</p>
+                      <p><strong>Address:</strong> {customer.address}</p>
+                    </div>
+                  </div>
+                </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-4">Medical Information</h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Medical Conditions:</span> {Array.isArray(customer.selectedConditions) ? customer.selectedConditions.join(", ") : customer.selectedConditions}</p>
-                <p><span className="font-medium">Other Conditions:</span> {customer.medicalConditions}</p>
-                <p><span className="font-medium">Hospitalizations:</span> {customer.hospitalizations}</p>
-                <p><span className="font-medium">Surgeries:</span> {customer.surgeries}</p>
-                <p><span className="font-medium">Medications:</span> {customer.prescriptionMedications}</p>
-                <p><span className="font-medium">Last Medical Exam:</span> {customer.lastMedicalExam}</p>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Medical Information</h3>
+                  <div className="space-y-2">
+                    <p><strong>Tobacco Use:</strong> {customer.tobaccoUse}</p>
+                    <p><strong>Medical Conditions:</strong> {customer.medicalConditions}</p>
+                    <p><strong>Hospitalizations:</strong> {customer.hospitalizations}</p>
+                    <p><strong>Surgeries:</strong> {customer.surgeries}</p>
+                  </div>
+                </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-4">Financial Information</h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Employment:</span> {Array.isArray(customer.employmentStatus) ? customer.employmentStatus.join(", ") : customer.employmentStatus}</p>
-                <p><span className="font-medium">Occupation:</span> {customer.occupation}</p>
-                <p><span className="font-medium">Total Income:</span> {customer.totalIncome}</p>
-                <p><span className="font-medium">Expenses:</span> {customer.expenses}</p>
-                <p><span className="font-medium">Life Insurance Amount:</span> {customer.lifeInsuranceAmount}</p>
-                <p><span className="font-medium">Home Value:</span> {customer.homeValue}</p>
-              </div>
-            </CardContent>
-          </Card>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Financial Information</h3>
+                  <div className="space-y-2">
+                    <p><strong>Employment Status:</strong> {customer.employmentStatus.join(', ')}</p>
+                    <p><strong>Occupation:</strong> {customer.occupation}</p>
+                    <p><strong>Total Income:</strong> {customer.totalIncome}</p>
+                    <p><strong>Expenses:</strong> {customer.expenses}</p>
+                  </div>
+                </div>
 
-          <Card>
-            <CardContent className="pt-6">
-              <h3 className="font-semibold mb-4">Contact Information</h3>
-              <div className="space-y-2">
-                <p><span className="font-medium">Phone:</span> {customer.phone}</p>
-                <p><span className="font-medium">Email:</span> {customer.email}</p>
-                <p><span className="font-medium">Address:</span> {customer.address}</p>
-                <p><span className="font-medium">Emergency Contact:</span> {customer.emergencyContact}</p>
-                <p><span className="font-medium">Notes:</span> {customer.notes}</p>
+                <div>
+                  <h3 className="text-lg font-semibold mb-2">Policy Information</h3>
+                  <div className="space-y-2">
+                    <p><strong>Coverage Amount:</strong> {customer.coverageAmount}</p>
+                    <p><strong>Premium:</strong> {customer.premium}</p>
+                    <p><strong>Carrier & Product:</strong> {customer.carrierAndProduct}</p>
+                    <p><strong>Policy Number:</strong> {customer.policyNumber}</p>
+                  </div>
+                </div>
               </div>
-            </CardContent>
-          </Card>
-        </div>
+            </ScrollArea>
+          </TabsContent>
+          
+          <TabsContent value="audit">
+            <AuditTrail entries={customer.auditTrail || []} />
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

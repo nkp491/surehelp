@@ -84,6 +84,28 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
     return Object.keys(newErrors).length === 0;
   };
 
+  const createAuditEntry = (previousData: any, newData: any, action: 'created' | 'updated' | 'status_changed') => {
+    const changedFields: string[] = [];
+    const previousValues: { [key: string]: any } = {};
+    const newValues: { [key: string]: any } = {};
+
+    Object.keys(newData).forEach(key => {
+      if (JSON.stringify(previousData[key]) !== JSON.stringify(newData[key])) {
+        changedFields.push(key);
+        previousValues[key] = previousData[key];
+        newValues[key] = newData[key];
+      }
+    });
+
+    return {
+      timestamp: new Date().toISOString(),
+      changedFields,
+      previousValues,
+      newValues,
+      action
+    };
+  };
+
   const handleSubmit = (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
     
@@ -96,6 +118,12 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
 
       if (editingSubmission) {
         // Update existing submission
+        const auditEntry = createAuditEntry(editingSubmission, submissionData, 'updated');
+        submissionData.auditTrail = [
+          ...(editingSubmission.auditTrail || []),
+          auditEntry
+        ];
+
         const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
         const updatedSubmissions = submissions.map((s: FormSubmission) => 
           s.timestamp === editingSubmission.timestamp ? submissionData : s
@@ -110,6 +138,9 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
         });
       } else {
         // Create new submission
+        const auditEntry = createAuditEntry({}, submissionData, 'created');
+        submissionData.auditTrail = [auditEntry];
+
         const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
         submissions.push(submissionData);
         localStorage.setItem("formSubmissions", JSON.stringify(submissions));

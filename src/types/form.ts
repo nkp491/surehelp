@@ -45,4 +45,13 @@ export interface FormSubmission {
   policyNumber: string;
   timestamp: string;
   outcome: string;
+  auditTrail?: AuditEntry[];
+}
+
+export interface AuditEntry {
+  timestamp: string;
+  changedFields: string[];
+  previousValues: { [key: string]: any };
+  newValues: { [key: string]: any };
+  action: 'created' | 'updated' | 'status_changed';
 }
