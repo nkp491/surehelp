@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
 import {
   DndContext,
   closestCenter,
@@ -14,69 +13,25 @@ import {
   sortableKeyboardCoordinates,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
-import { Check, Clock, X } from "lucide-react";
-import DraggableFormField from "./DraggableFormField";
 import { FormSubmission } from "@/types/form";
 import { INITIAL_FIELDS } from "./form/FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
+import FormButtons from "./form/FormButtons";
+import FormSection from "./form/FormSection";
 
-const FormContainer = ({ editingSubmission = null, onUpdate }: { 
+const FormContainer = ({ 
+  editingSubmission = null, 
+  onUpdate 
+}: { 
   editingSubmission?: FormSubmission | null;
   onUpdate?: (submission: FormSubmission) => void;
 }) => {
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
 
-  // Initialize form data when editing submission changes
   useEffect(() => {
     if (editingSubmission) {
-      // Create a new object with all the fields from editingSubmission
-      const submissionData = {
-        name: editingSubmission.name || "",
-        dob: editingSubmission.dob || "",
-        age: editingSubmission.age || "",
-        height: editingSubmission.height || "",
-        weight: editingSubmission.weight || "",
-        tobaccoUse: editingSubmission.tobaccoUse || "no",
-        selectedConditions: editingSubmission.selectedConditions || [],
-        medicalConditions: editingSubmission.medicalConditions || "",
-        hospitalizations: editingSubmission.hospitalizations || "",
-        surgeries: editingSubmission.surgeries || "",
-        prescriptionMedications: editingSubmission.prescriptionMedications || "",
-        lastMedicalExam: editingSubmission.lastMedicalExam || "",
-        familyMedicalConditions: editingSubmission.familyMedicalConditions || "",
-        employmentStatus: editingSubmission.employmentStatus || [],
-        occupation: editingSubmission.occupation || "",
-        selectedInvestments: editingSubmission.selectedInvestments || [],
-        socialSecurityIncome: editingSubmission.socialSecurityIncome || "",
-        pensionIncome: editingSubmission.pensionIncome || "",
-        survivorshipIncome: editingSubmission.survivorshipIncome || "",
-        totalIncome: editingSubmission.totalIncome || "",
-        expenses: editingSubmission.expenses || "",
-        lifeInsuranceAmount: editingSubmission.lifeInsuranceAmount || "",
-        rentOrMortgage: editingSubmission.rentOrMortgage || "",
-        remainingBalance: editingSubmission.remainingBalance || "",
-        yearsLeft: editingSubmission.yearsLeft || "",
-        homeValue: editingSubmission.homeValue || "",
-        equity: editingSubmission.equity || "",
-        phone: editingSubmission.phone || "",
-        email: editingSubmission.email || "",
-        address: editingSubmission.address || "",
-        notes: editingSubmission.notes || "",
-        followUpNotes: editingSubmission.followUpNotes || "",
-        coverageOptions: editingSubmission.coverageOptions || "",
-        emergencyContact: editingSubmission.emergencyContact || "",
-        beneficiaries: editingSubmission.beneficiaries || "",
-        sourcedFrom: editingSubmission.sourcedFrom || "",
-        leadType: editingSubmission.leadType || "",
-        premium: editingSubmission.premium || "",
-        effectiveDate: editingSubmission.effectiveDate || "",
-        draftDay: editingSubmission.draftDay || "",
-        coverageAmount: editingSubmission.coverageAmount || "",
-        accidental: editingSubmission.accidental || "",
-        carrierAndProduct: editingSubmission.carrierAndProduct || "",
-        policyNumber: editingSubmission.policyNumber || "",
-      };
+      const { timestamp, outcome, ...submissionData } = editingSubmission;
       setFormData(submissionData);
     }
   }, [editingSubmission, setFormData]);
@@ -127,57 +82,21 @@ const FormContainer = ({ editingSubmission = null, onUpdate }: {
           strategy={verticalListSortingStrategy}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {sections.map((section, index) => (
-              <div key={section.section} className="bg-white rounded-lg shadow-sm p-6 space-y-4">
-                <h2 className="text-xl font-semibold text-gray-900 mb-4">{section.section}</h2>
-                <div className="space-y-4">
-                  {section.fields.map((field) => (
-                    <DraggableFormField
-                      key={field.id}
-                      id={field.id}
-                      fieldType={field.type}
-                      label={field.label}
-                      value={formData[field.id as keyof FormSubmission]}
-                      onChange={(value) =>
-                        setFormData((prev) => ({ ...prev, [field.id]: value }))
-                      }
-                      placeholder={field.placeholder}
-                      required={field.required}
-                      error={errors[field.id as keyof FormSubmission]}
-                    />
-                  ))}
-                </div>
-              </div>
+            {sections.map((section) => (
+              <FormSection
+                key={section.section}
+                section={section.section}
+                fields={section.fields}
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+              />
             ))}
           </div>
         </SortableContext>
       </DndContext>
       
-      <div className="mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-xl mx-auto">
-          <Button 
-            onClick={handleOutcomeSubmit('protected')}
-            className="bg-green-600 hover:bg-green-700 h-auto py-4 flex flex-col items-center gap-2"
-          >
-            <Check className="h-6 w-6" />
-            <span className="font-medium">Submit as Protected</span>
-          </Button>
-          <Button 
-            onClick={handleOutcomeSubmit('follow-up')}
-            className="bg-yellow-600 hover:bg-yellow-700 h-auto py-4 flex flex-col items-center gap-2"
-          >
-            <Clock className="h-6 w-6" />
-            <span className="font-medium">Submit for Follow-up</span>
-          </Button>
-          <Button 
-            onClick={handleOutcomeSubmit('declined')}
-            className="bg-red-600 hover:bg-red-700 h-auto py-4 flex flex-col items-center gap-2"
-          >
-            <X className="h-6 w-6" />
-            <span className="font-medium">Submit as Declined</span>
-          </Button>
-        </div>
-      </div>
+      <FormButtons onSubmit={handleOutcomeSubmit} />
     </form>
   );
 };
