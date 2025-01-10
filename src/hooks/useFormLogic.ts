@@ -37,6 +37,7 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   // Shared Fields
   employmentStatus: [],
   occupation: "",
+  selectedInvestments: [],
   socialSecurityIncome: "",
   pensionIncome: "",
   survivorshipIncome: "",
@@ -48,7 +49,6 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   yearsLeft: "",
   homeValue: "",
   equity: "",
-  selectedInvestments: [],
   phone: "",
   email: "",
   address: "",
