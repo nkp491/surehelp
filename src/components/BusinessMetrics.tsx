@@ -4,6 +4,8 @@ import RatioCard from "./metrics/RatioCard";
 import MetricsChart from "./MetricsChart";
 import { calculateRatios } from "@/utils/metricsUtils";
 import MetricButtons from "./MetricButtons";
+import { Card } from "./ui/card";
+import { Separator } from "./ui/separator";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 type TimePeriod = "24h" | "7d" | "30d";
@@ -121,37 +123,43 @@ const BusinessMetrics = () => {
   };
 
   return (
-    <div className="w-full mb-8">
-      <h2 className="text-2xl font-bold text-gray-900 mb-4">Business Metrics</h2>
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
-        {Object.entries(metrics).map(([metric, count]) => (
-          <MetricCard
-            key={metric}
-            metric={metric}
-            value={count}
-            inputValue={metricInputs[metric] || '0'}
-            onInputChange={(value) => handleInputChange(metric as MetricType, value)}
-            isCurrency={metric === 'ap'}
-          />
-        ))}
-      </div>
+    <Card className="w-full mb-12 p-8 shadow-lg border-2">
+      <div className="space-y-6">
+        <div className="flex items-center space-x-4">
+          <h2 className="text-3xl font-bold text-gray-900">Business Metrics</h2>
+          <Separator className="flex-1" />
+        </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-        {ratios.map((ratio, index) => (
-          <RatioCard
-            key={index}
-            label={ratio.label}
-            value={ratio.value}
-          />
-        ))}
-      </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
+          {Object.entries(metrics).map(([metric, count]) => (
+            <MetricCard
+              key={metric}
+              metric={metric}
+              value={count}
+              inputValue={metricInputs[metric] || '0'}
+              onInputChange={(value) => handleInputChange(metric as MetricType, value)}
+              isCurrency={metric === 'ap'}
+            />
+          ))}
+        </div>
 
-      <MetricsChart 
-        data={chartData} 
-        timePeriod={timePeriod}
-        onTimePeriodChange={handleTimePeriodChange}
-      />
-    </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
+          {ratios.map((ratio, index) => (
+            <RatioCard
+              key={index}
+              label={ratio.label}
+              value={ratio.value}
+            />
+          ))}
+        </div>
+
+        <MetricsChart 
+          data={chartData} 
+          timePeriod={timePeriod}
+          onTimePeriodChange={handleTimePeriodChange}
+        />
+      </div>
+    </Card>
   );
 };
 
