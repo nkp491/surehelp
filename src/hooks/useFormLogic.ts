@@ -53,6 +53,7 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   spouseTotalIncome: "",
   
   // Shared/Household Fields
+  expenses: "",
   householdExpenses: "",
   lifeInsuranceAmount: "",
   rentOrMortgage: "",
