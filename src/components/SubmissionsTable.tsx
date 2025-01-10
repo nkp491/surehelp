@@ -1,22 +1,13 @@
 import { useState } from "react";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { FormSubmission } from "@/types/form";
 import CustomerProfile from "./CustomerProfile";
 import SearchBar from "./submissions/SearchBar";
 import FilterBar from "./submissions/FilterBar";
-import SubmissionsList from "./submissions/SubmissionsList";
+import { SubmissionTabs } from "./submissions/SubmissionTabs";
+import { DeleteDialog } from "./submissions/DeleteDialog";
+import { useSubmissionsTable } from "@/hooks/useSubmissionsTable";
 import { 
   Pagination,
   PaginationContent,
@@ -31,20 +22,23 @@ interface SubmissionsTableProps {
   onEdit: (submission: FormSubmission) => void;
 }
 
-const ITEMS_PER_PAGE = 10;
-
 const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [filters, setFilters] = useState({ status: [], dateRange: "" });
-  const [currentPage, setCurrentPage] = useState(1);
   const [selectedCustomer, setSelectedCustomer] = useState<FormSubmission | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
-  const [sortConfig, setSortConfig] = useState<{
-    key: keyof FormSubmission;
-    direction: 'asc' | 'desc';
-  } | null>(null);
   const { toast } = useToast();
+
+  const {
+    searchTerm,
+    setSearchTerm,
+    filters,
+    setFilters,
+    currentPage,
+    setCurrentPage,
+    handleSort,
+    processSubmissions,
+    totalPages
+  } = useSubmissionsTable(submissions);
 
   const handleDelete = (submission: FormSubmission) => {
     setSubmissionToDelete(submission);
@@ -68,56 +62,11 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     setSubmissionToDelete(null);
   };
 
-  const handleSort = (key: keyof FormSubmission) => {
-    setSortConfig((currentSort) => {
-      if (currentSort?.key === key) {
-        return {
-          key,
-          direction: currentSort.direction === 'asc' ? 'desc' : 'asc'
-        };
-      }
-      return { key, direction: 'asc' };
-    });
+  const processedSubmissions = {
+    protected: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "protected")),
+    followUp: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "follow-up")),
+    declined: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined"))
   };
-
-  const sortSubmissions = (submissions: FormSubmission[]) => {
-    if (!sortConfig) return submissions;
-
-    return [...submissions].sort((a, b) => {
-      const aValue = a[sortConfig.key];
-      const bValue = b[sortConfig.key];
-
-      if (aValue === undefined || bValue === undefined) return 0;
-
-      const comparison = String(aValue).localeCompare(String(bValue));
-      return sortConfig.direction === 'asc' ? comparison : -comparison;
-    });
-  };
-
-  const filterSubmissions = (submissions: FormSubmission[]) => {
-    return submissions.filter((submission) => {
-      const matchesSearch = submission.name.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesStatus = filters.status.length === 0 || filters.status.includes(submission.outcome?.toLowerCase() || "");
-      return matchesSearch && matchesStatus;
-    });
-  };
-
-  const paginateSubmissions = (submissions: FormSubmission[]) => {
-    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return submissions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  };
-
-  const processSubmissions = (submissions: FormSubmission[]) => {
-    const filtered = filterSubmissions(submissions);
-    const sorted = sortSubmissions(filtered);
-    return paginateSubmissions(sorted);
-  };
-
-  const protectedSubmissions = processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "protected"));
-  const followUpSubmissions = processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "follow-up"));
-  const declinedSubmissions = processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined"));
-
-  const totalPages = Math.ceil(submissions.length / ITEMS_PER_PAGE);
 
   return (
     <Card>
@@ -131,49 +80,13 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
         </div>
       </CardHeader>
       <CardContent>
-        <Tabs defaultValue="protected" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-4">
-            <TabsTrigger value="protected" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
-              Protected ({protectedSubmissions.length})
-            </TabsTrigger>
-            <TabsTrigger value="follow-up" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">
-              Follow-up ({followUpSubmissions.length})
-            </TabsTrigger>
-            <TabsTrigger value="declined" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
-              Declined ({declinedSubmissions.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="protected">
-            <SubmissionsList 
-              submissions={protectedSubmissions}
-              onEdit={onEdit}
-              onDelete={handleDelete}
-              onViewProfile={setSelectedCustomer}
-              onSort={handleSort}
-            />
-          </TabsContent>
-
-          <TabsContent value="follow-up">
-            <SubmissionsList 
-              submissions={followUpSubmissions}
-              onEdit={onEdit}
-              onDelete={handleDelete}
-              onViewProfile={setSelectedCustomer}
-              onSort={handleSort}
-            />
-          </TabsContent>
-
-          <TabsContent value="declined">
-            <SubmissionsList 
-              submissions={declinedSubmissions}
-              onEdit={onEdit}
-              onDelete={handleDelete}
-              onViewProfile={setSelectedCustomer}
-              onSort={handleSort}
-            />
-          </TabsContent>
-        </Tabs>
+        <SubmissionTabs
+          submissions={processedSubmissions}
+          onEdit={onEdit}
+          onDelete={handleDelete}
+          onViewProfile={setSelectedCustomer}
+          onSort={handleSort}
+        />
 
         <div className="mt-4">
           <Pagination>
@@ -212,22 +125,11 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
           />
         )}
 
-        <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This action cannot be undone. This will permanently delete the form submission.
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={confirmDelete} className="bg-red-600 hover:bg-red-700">
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+        <DeleteDialog
+          isOpen={deleteDialogOpen}
+          onOpenChange={setDeleteDialogOpen}
+          onConfirm={confirmDelete}
+        />
       </CardContent>
     </Card>
   );
