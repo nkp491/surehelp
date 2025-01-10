@@ -18,8 +18,10 @@ import { INITIAL_FIELDS } from "./form/FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
 import FormButtons from "./form/FormButtons";
 import FormSection from "./form/FormSection";
+import { SpouseVisibilityProvider, useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
+import SpouseToggle from "./form/SpouseToggle";
 
-const FormContainer = ({ 
+const FormContent = ({ 
   editingSubmission = null, 
   onUpdate 
 }: { 
@@ -28,6 +30,7 @@ const FormContainer = ({
 }) => {
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
+  const { showSpouse } = useSpouseVisibility();
 
   useEffect(() => {
     if (editingSubmission) {
@@ -70,19 +73,29 @@ const FormContainer = ({
     handleSubmit(e as any, outcome);
   };
 
+  const filteredSections = sections.filter(section => {
+    if (!showSpouse && (section.section.includes("Spouse"))) {
+      return false;
+    }
+    return true;
+  });
+
   return (
     <form onSubmit={(e) => e.preventDefault()} className="max-w-7xl mx-auto p-6">
+      <div className="flex justify-end mb-4">
+        <SpouseToggle />
+      </div>
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={sections.flatMap(section => section.fields).map(field => field.id)}
+          items={filteredSections.flatMap(section => section.fields).map(field => field.id)}
           strategy={verticalListSortingStrategy}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {sections.map((section) => (
+            {filteredSections.map((section) => (
               <FormSection
                 key={section.section}
                 section={section.section}
@@ -98,6 +111,17 @@ const FormContainer = ({
       
       <FormButtons onSubmit={handleOutcomeSubmit} />
     </form>
+  );
+};
+
+const FormContainer = (props: { 
+  editingSubmission?: FormSubmission | null;
+  onUpdate?: (submission: FormSubmission) => void;
+}) => {
+  return (
+    <SpouseVisibilityProvider>
+      <FormContent {...props} />
+    </SpouseVisibilityProvider>
   );
 };
 
