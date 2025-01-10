@@ -58,6 +58,7 @@ export interface FormSubmission {
   coverageOptions: string;
   emergencyContact: string;
   beneficiaries: string;
+  sourcedFrom: string;
   
   // Financial Information
   expenses: string;
