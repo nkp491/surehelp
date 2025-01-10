@@ -32,7 +32,7 @@ const SPOUSE_HEALTH_FIELDS: FormField[] = [
   { id: "spouseFamilyMedicalConditions", type: "textarea", label: "Spouse Family Medical Conditions", placeholder: "Enter family medical conditions" },
 ];
 
-const INCOME_FIELDS: FormField[] = [
+const PRIMARY_INCOME_FIELDS: FormField[] = [
   { id: "employmentStatus", type: "employmentStatus", label: "Primary Employment Status" },
   { id: "occupation", type: "text", label: "Primary Occupation/Duties", placeholder: "Enter primary occupation and duties" },
   { id: "selectedInvestments", type: "investmentTypes", label: "Primary Investment Types" },
@@ -40,8 +40,9 @@ const INCOME_FIELDS: FormField[] = [
   { id: "pensionIncome", type: "currency", label: "Primary Pension Income", placeholder: "Enter primary pension income" },
   { id: "survivorshipIncome", type: "currency", label: "Primary Survivorship Income", placeholder: "Enter primary survivorship income" },
   { id: "totalIncome", type: "currency", label: "Primary Total Income", placeholder: "Enter primary total income" },
-  
-  // Spouse Income Fields
+];
+
+const SPOUSE_INCOME_FIELDS: FormField[] = [
   { id: "spouseEmploymentStatus", type: "employmentStatus", label: "Spouse Employment Status" },
   { id: "spouseOccupation", type: "text", label: "Spouse Occupation/Duties", placeholder: "Enter spouse occupation and duties" },
   { id: "spouseSelectedInvestments", type: "investmentTypes", label: "Spouse Investment Types" },
@@ -49,8 +50,9 @@ const INCOME_FIELDS: FormField[] = [
   { id: "spousePensionIncome", type: "currency", label: "Spouse Pension Income", placeholder: "Enter spouse pension income" },
   { id: "spouseSurvivorshipIncome", type: "currency", label: "Spouse Survivorship Income", placeholder: "Enter spouse survivorship income" },
   { id: "spouseTotalIncome", type: "currency", label: "Spouse Total Income", placeholder: "Enter spouse total income" },
-  
-  // Shared/Household Fields
+];
+
+const HOUSEHOLD_INCOME_FIELDS: FormField[] = [
   { id: "householdExpenses", type: "currency", label: "Household Expenses", placeholder: "Enter household expenses" },
   { id: "lifeInsuranceAmount", type: "currency", label: "Life Insurance Amount", placeholder: "Enter life insurance amount" },
   { id: "rentOrMortgage", type: "currency", label: "Rent or Mortgage", placeholder: "Enter rent or mortgage amount" },
@@ -58,6 +60,7 @@ const INCOME_FIELDS: FormField[] = [
   { id: "yearsLeft", type: "text", label: "Years Left", placeholder: "Enter years left" },
   { id: "homeValue", type: "currency", label: "Home Value", placeholder: "Enter home value" },
   { id: "equity", type: "text", label: "Equity", placeholder: "Enter equity" },
+  { id: "expenses", type: "currency", label: "Other Expenses", placeholder: "Enter other expenses" },
 ];
 
 const ASSESSMENT_NOTES_FIELDS: FormField[] = [
@@ -86,7 +89,9 @@ const AGENT_USE_ONLY_FIELDS: FormField[] = [
 export const INITIAL_FIELDS = [
   { section: "Primary Health Assessment", fields: PRIMARY_HEALTH_FIELDS },
   { section: "Spouse Health Assessment", fields: SPOUSE_HEALTH_FIELDS },
-  { section: "Income Assessment", fields: INCOME_FIELDS },
+  { section: "Primary Income Assessment", fields: PRIMARY_INCOME_FIELDS },
+  { section: "Spouse Income Assessment", fields: SPOUSE_INCOME_FIELDS },
+  { section: "Household Income", fields: HOUSEHOLD_INCOME_FIELDS },
   { section: "Assessment Notes", fields: ASSESSMENT_NOTES_FIELDS },
   { section: "Agent Use Only", fields: AGENT_USE_ONLY_FIELDS },
 ];
