@@ -1,10 +1,10 @@
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/components/ui/table";
-import { Button } from "@/components/ui/button";
-import { Pencil, User, Trash2, ArrowUpDown, FileDown } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { FormSubmission } from "@/types/form";
 import { jsPDF } from "jspdf";
 import { useToast } from "@/components/ui/use-toast";
+import TableActions from "./TableActions";
+import StatusBadge from "./StatusBadge";
+import SubmissionsTableHeader from "./TableHeader";
 
 interface SubmissionsListProps {
   submissions: FormSubmission[];
@@ -14,20 +14,13 @@ interface SubmissionsListProps {
   onSort: (field: keyof FormSubmission) => void;
 }
 
-const getSubmissionStatus = (outcome: string | undefined) => {
-  switch (outcome?.toLowerCase()) {
-    case "protected":
-      return "bg-green-500";
-    case "follow-up":
-      return "bg-yellow-500";
-    case "declined":
-      return "bg-red-500";
-    default:
-      return "bg-gray-500";
-  }
-};
-
-const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile, onSort }: SubmissionsListProps) => {
+const SubmissionsList = ({ 
+  submissions, 
+  onEdit, 
+  onDelete, 
+  onViewProfile, 
+  onSort 
+}: SubmissionsListProps) => {
   const { toast } = useToast();
 
   const handleExportPDF = (submission: FormSubmission) => {
@@ -75,29 +68,6 @@ const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile, onSort 
       addField("Surgeries", submission.surgeries);
       addField("Medications", submission.prescriptionMedications);
 
-      // Financial Information
-      yPos += lineHeight;
-      doc.setFont(undefined, 'bold');
-      doc.text("Financial Information", 20, yPos);
-      yPos += lineHeight;
-      doc.setFont(undefined, 'normal');
-
-      addField("Employment Status", submission.employmentStatus?.join(", "));
-      addField("Occupation", submission.occupation);
-      addField("Total Income", submission.totalIncome);
-      addField("Life Insurance Amount", submission.lifeInsuranceAmount);
-
-      // Contact Information
-      yPos += lineHeight;
-      doc.setFont(undefined, 'bold');
-      doc.text("Contact Information", 20, yPos);
-      yPos += lineHeight;
-      doc.setFont(undefined, 'normal');
-
-      addField("Phone", submission.phone);
-      addField("Email", submission.email);
-      addField("Address", submission.address);
-
       // Save the PDF
       doc.save(`assessment-${submission.name}-${new Date().toISOString().split('T')[0]}.pdf`);
 
@@ -116,51 +86,7 @@ const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile, onSort 
 
   return (
     <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>
-            <Button 
-              variant="ghost" 
-              onClick={() => onSort('name')}
-              className="flex items-center gap-1 hover:bg-gray-100"
-            >
-              Name
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button 
-              variant="ghost" 
-              onClick={() => onSort('dob')}
-              className="flex items-center gap-1 hover:bg-gray-100"
-            >
-              DOB
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button 
-              variant="ghost" 
-              onClick={() => onSort('age')}
-              className="flex items-center gap-1 hover:bg-gray-100"
-            >
-              Age
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>
-            <Button 
-              variant="ghost" 
-              onClick={() => onSort('outcome')}
-              className="flex items-center gap-1 hover:bg-gray-100"
-            >
-              Status
-              <ArrowUpDown className="h-4 w-4" />
-            </Button>
-          </TableHead>
-          <TableHead>Actions</TableHead>
-        </TableRow>
-      </TableHeader>
+      <SubmissionsTableHeader onSort={onSort} />
       <TableBody>
         {submissions.map((submission, index) => (
           <TableRow key={index} className="cursor-pointer hover:bg-gray-50">
@@ -168,49 +94,16 @@ const SubmissionsList = ({ submissions, onEdit, onDelete, onViewProfile, onSort 
             <TableCell>{submission.dob}</TableCell>
             <TableCell>{submission.age}</TableCell>
             <TableCell>
-              <Badge className={`${getSubmissionStatus(submission.outcome)} text-white`}>
-                {submission.outcome || "Pending"}
-              </Badge>
+              <StatusBadge outcome={submission.outcome} />
             </TableCell>
             <TableCell>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onEdit(submission)}
-                  className="flex items-center gap-2"
-                >
-                  <Pencil className="h-4 w-4" />
-                  Edit
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onViewProfile(submission)}
-                  className="flex items-center gap-2"
-                >
-                  <User className="h-4 w-4" />
-                  Profile
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => handleExportPDF(submission)}
-                  className="flex items-center gap-2"
-                >
-                  <FileDown className="h-4 w-4" />
-                  PDF
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => onDelete(submission)}
-                  className="flex items-center gap-2 text-red-600 hover:text-red-700"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </Button>
-              </div>
+              <TableActions
+                submission={submission}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                onViewProfile={onViewProfile}
+                onExportPDF={handleExportPDF}
+              />
             </TableCell>
           </TableRow>
         ))}
