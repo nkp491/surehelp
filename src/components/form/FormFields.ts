@@ -76,7 +76,19 @@ const ASSESSMENT_NOTES_FIELDS: FormField[] = [
 
 const AGENT_USE_ONLY_FIELDS: FormField[] = [
   { id: "sourcedFrom", type: "text", label: "Sourced From", placeholder: "Enter source" },
-  { id: "leadType", type: "text", label: "Lead Type", placeholder: "Enter lead type" },
+  { 
+    id: "leadType", 
+    type: "select", 
+    label: "Lead Type", 
+    placeholder: "Select lead type",
+    options: [
+      "Mortgage Protection",
+      "Internet/Facebook",
+      "Live Transfer",
+      "Referral",
+      "Other"
+    ]
+  },
   { id: "premium", type: "text", label: "Premium", placeholder: "Enter premium" },
   { id: "effectiveDate", type: "date", label: "Effective Date" },
   { id: "draftDay", type: "date", label: "Draft Day" },

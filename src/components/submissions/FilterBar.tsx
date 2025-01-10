@@ -6,8 +6,6 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuCheckboxItem,
-  DropdownMenuGroup,
-  DropdownMenuItem,
 } from "@/components/ui/dropdown-menu";
 import { Filter } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -34,7 +32,13 @@ interface FilterBarProps {
 
 const FilterBar = ({ filters, onFilterChange }: FilterBarProps) => {
   const statuses = ["protected", "follow-up", "declined"];
-  const leadTypes = ["referral", "direct", "online", "other"];
+  const leadTypes = [
+    "Mortgage Protection",
+    "Internet/Facebook",
+    "Live Transfer",
+    "Referral",
+    "Other"
+  ];
 
   const handleDateSelect = (date: Date | undefined, type: 'from' | 'to') => {
     onFilterChange({

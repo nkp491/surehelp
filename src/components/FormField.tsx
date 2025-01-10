@@ -2,6 +2,7 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
@@ -13,6 +14,7 @@ interface FormFieldProps {
   required?: boolean;
   error?: string;
   readOnly?: boolean;
+  options?: string[];
 }
 
 const FormField = ({
@@ -24,6 +26,7 @@ const FormField = ({
   required = false,
   error,
   readOnly = false,
+  options = [],
 }: FormFieldProps) => {
   if (type === "height") {
     const [feet, inches] = value.split("'").map(v => v.replace('"', ''));
@@ -99,6 +102,34 @@ const FormField = ({
             step="0.01"
           />
         </div>
+        {error && <p className="text-sm text-destructive">{error}</p>}
+      </div>
+    );
+  }
+
+  if (type === "select" && options.length > 0) {
+    return (
+      <div className="space-y-2">
+        <Label className="text-sm font-medium">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
+        <Select
+          value={value}
+          onValueChange={onChange}
+          disabled={readOnly}
+        >
+          <SelectTrigger className={cn(error ? "border-destructive" : "border-input")}>
+            <SelectValue placeholder={placeholder} />
+          </SelectTrigger>
+          <SelectContent>
+            {options.map((option) => (
+              <SelectItem key={option} value={option}>
+                {option}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         {error && <p className="text-sm text-destructive">{error}</p>}
       </div>
     );
