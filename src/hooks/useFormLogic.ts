@@ -4,6 +4,7 @@ import { differenceInYears, parse } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 
 const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
+  // Primary Applicant Fields
   name: "",
   dob: "",
   age: "",
@@ -17,6 +18,23 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   prescriptionMedications: "",
   lastMedicalExam: "",
   familyMedicalConditions: "",
+  
+  // Spouse Fields
+  spouseName: "",
+  spouseDob: "",
+  spouseAge: "",
+  spouseHeight: "",
+  spouseWeight: "",
+  spouseTobaccoUse: "no",
+  spouseSelectedConditions: [],
+  spouseMedicalConditions: "",
+  spouseHospitalizations: "",
+  spouseSurgeries: "",
+  spousePrescriptionMedications: "",
+  spouseLastMedicalExam: "",
+  spouseFamilyMedicalConditions: "",
+
+  // Shared Fields
   employmentStatus: [],
   occupation: "",
   socialSecurityIncome: "",
@@ -63,21 +81,34 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
   }, [editingSubmission]);
 
   useEffect(() => {
+    // Calculate primary applicant age
     if (formData.dob) {
       const birthDate = parse(formData.dob, 'yyyy-MM-dd', new Date());
       const age = differenceInYears(new Date(), birthDate);
       setFormData(prev => ({ ...prev, age: age.toString() }));
     }
-  }, [formData.dob]);
+
+    // Calculate spouse age
+    if (formData.spouseDob) {
+      const spouseBirthDate = parse(formData.spouseDob, 'yyyy-MM-dd', new Date());
+      const spouseAge = differenceInYears(new Date(), spouseBirthDate);
+      setFormData(prev => ({ ...prev, spouseAge: spouseAge.toString() }));
+    }
+  }, [formData.dob, formData.spouseDob]);
 
   const validateForm = () => {
     const newErrors: Partial<typeof initialFormValues> = {};
     
     if (!formData.name) {
-      newErrors.name = "Name is required";
+      newErrors.name = "Primary applicant name is required";
     }
     if (!formData.dob) {
-      newErrors.dob = "Date of Birth is required";
+      newErrors.dob = "Primary applicant date of birth is required";
+    }
+    
+    // Only validate spouse fields if spouse name is provided
+    if (formData.spouseName && !formData.spouseDob) {
+      newErrors.spouseDob = "Spouse date of birth is required if adding spouse";
     }
     
     setErrors(newErrors);

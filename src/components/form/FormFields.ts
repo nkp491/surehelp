@@ -1,19 +1,35 @@
 import { FormField } from "@/types/formTypes";
 
-const HEALTH_FIELDS: FormField[] = [
-  { id: "name", type: "text", label: "Name", required: true },
-  { id: "dob", type: "date", label: "Date of Birth", required: true },
-  { id: "age", type: "text", label: "Age" },
-  { id: "height", type: "height", label: "Height", placeholder: "Enter your height" },
-  { id: "weight", type: "text", label: "Weight", placeholder: "Enter your weight" },
-  { id: "tobaccoUse", type: "tobaccoUse", label: "Tobacco Use" },
-  { id: "selectedConditions", type: "medicalConditions", label: "Medical Conditions" },
-  { id: "medicalConditions", type: "text", label: "Other Medical Conditions", placeholder: "Enter any other medical conditions" },
-  { id: "hospitalizations", type: "text", label: "Hospitalizations", placeholder: "Enter any hospitalizations" },
-  { id: "surgeries", type: "text", label: "Surgeries", placeholder: "Enter any surgeries" },
-  { id: "prescriptionMedications", type: "textarea", label: "Prescription Medications", placeholder: "Enter your prescription medications" },
-  { id: "lastMedicalExam", type: "date", label: "Last Medical Exam" },
-  { id: "familyMedicalConditions", type: "textarea", label: "Family Medical Conditions", placeholder: "Enter family medical conditions" },
+const PRIMARY_HEALTH_FIELDS: FormField[] = [
+  { id: "name", type: "text", label: "Primary Applicant Name", required: true },
+  { id: "dob", type: "date", label: "Primary Date of Birth", required: true },
+  { id: "age", type: "text", label: "Primary Age" },
+  { id: "height", type: "height", label: "Primary Height", placeholder: "Enter primary height" },
+  { id: "weight", type: "text", label: "Primary Weight", placeholder: "Enter primary weight" },
+  { id: "tobaccoUse", type: "tobaccoUse", label: "Primary Tobacco Use" },
+  { id: "selectedConditions", type: "medicalConditions", label: "Primary Medical Conditions" },
+  { id: "medicalConditions", type: "text", label: "Primary Other Medical Conditions", placeholder: "Enter any other medical conditions" },
+  { id: "hospitalizations", type: "text", label: "Primary Hospitalizations", placeholder: "Enter any hospitalizations" },
+  { id: "surgeries", type: "text", label: "Primary Surgeries", placeholder: "Enter any surgeries" },
+  { id: "prescriptionMedications", type: "textarea", label: "Primary Prescription Medications", placeholder: "Enter prescription medications" },
+  { id: "lastMedicalExam", type: "date", label: "Primary Last Medical Exam" },
+  { id: "familyMedicalConditions", type: "textarea", label: "Primary Family Medical Conditions", placeholder: "Enter family medical conditions" },
+];
+
+const SPOUSE_HEALTH_FIELDS: FormField[] = [
+  { id: "spouseName", type: "text", label: "Spouse Name" },
+  { id: "spouseDob", type: "date", label: "Spouse Date of Birth" },
+  { id: "spouseAge", type: "text", label: "Spouse Age" },
+  { id: "spouseHeight", type: "height", label: "Spouse Height", placeholder: "Enter spouse height" },
+  { id: "spouseWeight", type: "text", label: "Spouse Weight", placeholder: "Enter spouse weight" },
+  { id: "spouseTobaccoUse", type: "tobaccoUse", label: "Spouse Tobacco Use" },
+  { id: "spouseSelectedConditions", type: "medicalConditions", label: "Spouse Medical Conditions" },
+  { id: "spouseMedicalConditions", type: "text", label: "Spouse Other Medical Conditions", placeholder: "Enter any other medical conditions" },
+  { id: "spouseHospitalizations", type: "text", label: "Spouse Hospitalizations", placeholder: "Enter any hospitalizations" },
+  { id: "spouseSurgeries", type: "text", label: "Spouse Surgeries", placeholder: "Enter any surgeries" },
+  { id: "spousePrescriptionMedications", type: "textarea", label: "Spouse Prescription Medications", placeholder: "Enter prescription medications" },
+  { id: "spouseLastMedicalExam", type: "date", label: "Spouse Last Medical Exam" },
+  { id: "spouseFamilyMedicalConditions", type: "textarea", label: "Spouse Family Medical Conditions", placeholder: "Enter family medical conditions" },
 ];
 
 const INCOME_FIELDS: FormField[] = [
@@ -57,7 +73,8 @@ const AGENT_USE_ONLY_FIELDS: FormField[] = [
 ];
 
 export const INITIAL_FIELDS = [
-  { section: "Health Assessment", fields: HEALTH_FIELDS },
+  { section: "Primary Health Assessment", fields: PRIMARY_HEALTH_FIELDS },
+  { section: "Spouse Health Assessment", fields: SPOUSE_HEALTH_FIELDS },
   { section: "Income Assessment", fields: INCOME_FIELDS },
   { section: "Assessment Notes", fields: ASSESSMENT_NOTES_FIELDS },
   { section: "Agent Use Only", fields: AGENT_USE_ONLY_FIELDS },

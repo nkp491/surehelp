@@ -1,4 +1,5 @@
 export interface FormSubmission {
+  // Primary Applicant Fields
   name: string;
   dob: string;
   age: string;
@@ -12,8 +13,26 @@ export interface FormSubmission {
   prescriptionMedications: string;
   lastMedicalExam: string;
   familyMedicalConditions: string;
+  
+  // Spouse Fields
+  spouseName: string;
+  spouseDob: string;
+  spouseAge: string;
+  spouseHeight: string;
+  spouseWeight: string;
+  spouseTobaccoUse: string;
+  spouseSelectedConditions: string[];
+  spouseMedicalConditions: string;
+  spouseHospitalizations: string;
+  spouseSurgeries: string;
+  spousePrescriptionMedications: string;
+  spouseLastMedicalExam: string;
+  spouseFamilyMedicalConditions: string;
+
+  // Shared Fields
   employmentStatus: string[];
   occupation: string;
+  selectedInvestments: string[];
   socialSecurityIncome: string;
   pensionIncome: string;
   survivorshipIncome: string;
@@ -25,7 +44,6 @@ export interface FormSubmission {
   yearsLeft: string;
   homeValue: string;
   equity: string;
-  selectedInvestments: string[];
   phone: string;
   email: string;
   address: string;
