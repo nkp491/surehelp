@@ -20,4 +20,5 @@ export interface FormField {
   label: string;
   required?: boolean;
   placeholder?: string;
+  options?: string[];
 }
