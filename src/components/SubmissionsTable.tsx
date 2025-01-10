@@ -8,6 +8,8 @@ import FilterBar from "./submissions/FilterBar";
 import { SubmissionTabs } from "./submissions/SubmissionTabs";
 import { DeleteDialog } from "./submissions/DeleteDialog";
 import { useSubmissionsTable } from "@/hooks/useSubmissionsTable";
+import { Download } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { 
   Pagination,
   PaginationContent,
@@ -62,6 +64,42 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     setSubmissionToDelete(null);
   };
 
+  const handleExport = () => {
+    try {
+      // Convert submissions to CSV format
+      const headers = Object.keys(submissions[0]).join(',');
+      const rows = submissions.map(submission => 
+        Object.values(submission).map(value => 
+          typeof value === 'string' ? `"${value.replace(/"/g, '""')}"` : value
+        ).join(',')
+      );
+      const csv = [headers, ...rows].join('\n');
+
+      // Create and trigger download
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.setAttribute('hidden', '');
+      a.setAttribute('href', url);
+      a.setAttribute('download', `submissions-${new Date().toISOString().split('T')[0]}.csv`);
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      toast({
+        title: "Success",
+        description: "Submissions exported successfully",
+      });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to export submissions",
+        variant: "destructive",
+      });
+    }
+  };
+
   const processedSubmissions = {
     protected: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "protected")),
     followUp: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "follow-up")),
@@ -71,7 +109,17 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Submitted Forms</CardTitle>
+        <div className="flex justify-between items-center">
+          <CardTitle>Submitted Forms</CardTitle>
+          <Button
+            onClick={handleExport}
+            className="flex items-center gap-2"
+            variant="outline"
+          >
+            <Download className="h-4 w-4" />
+            Export CSV
+          </Button>
+        </div>
         <div className="flex flex-col sm:flex-row gap-4 mt-4">
           <div className="flex-1">
             <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
