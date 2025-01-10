@@ -6,6 +6,8 @@ import SubmittedForms from "./SubmittedForms";
 import MetricsVisualization from "./MetricsVisualization";
 import MetricButtons from "@/components/MetricButtons";
 import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
@@ -52,14 +54,14 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
-      <div className="container mx-auto py-12">
+      <div className="container mx-auto py-8">
         <div className="flex justify-between items-center mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Client Assessment
+            <h1 className="text-4xl font-bold text-gray-900 mb-2">
+              Business Metrics
             </h1>
             <p className="text-lg text-gray-600">
-              Fill out the form below to store your medical information
+              Track and manage your key performance indicators
             </p>
           </div>
           <div className="flex items-center gap-4">
@@ -80,19 +82,31 @@ const Index = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
-          {Object.entries(metrics).map(([metric, value]) => (
-            <MetricButtons
-              key={metric}
-              metric={metric}
-              value={value}
-              onIncrement={() => updateMetric(metric as MetricType, true)}
-              onDecrement={() => updateMetric(metric as MetricType, false)}
-            />
-          ))}
-        </div>
+        <Card className="p-6 mb-12 bg-white shadow-md">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+            {Object.entries(metrics).map(([metric, value]) => (
+              <MetricButtons
+                key={metric}
+                metric={metric}
+                value={value}
+                onIncrement={() => updateMetric(metric as MetricType, true)}
+                onDecrement={() => updateMetric(metric as MetricType, false)}
+              />
+            ))}
+          </div>
+        </Card>
+
+        <Separator className="my-12" />
         
-        <FormContainer />
+        <div className="mt-12">
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+            Client Assessment
+          </h2>
+          <p className="text-lg text-gray-600 mb-8">
+            Fill out the form below to store your medical information
+          </p>
+          <FormContainer />
+        </div>
 
         <Routes>
           <Route path="/submitted-forms" element={<SubmittedForms />} />
