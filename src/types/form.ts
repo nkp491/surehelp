@@ -47,7 +47,13 @@ export interface FormSubmission {
   spouseSurvivorshipIncome: string;
   spouseTotalIncome: string;
   
-  // Shared/Household Fields
+  // Contact Information
+  phone: string;
+  email: string;
+  address: string;
+  
+  // Financial Information
+  expenses: string;
   householdExpenses: string;
   lifeInsuranceAmount: string;
   rentOrMortgage: string;
@@ -56,6 +62,14 @@ export interface FormSubmission {
   homeValue: string;
   equity: string;
   
+  // Policy Information
+  coverageAmount: string;
+  premium: string;
+  carrierAndProduct: string;
+  policyNumber: string;
+  leadType: string;
+  
+  // Metadata
   timestamp: string;
   outcome: string;
   auditTrail?: AuditEntry[];
