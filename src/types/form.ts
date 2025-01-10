@@ -76,6 +76,9 @@ export interface FormSubmission {
   carrierAndProduct: string;
   policyNumber: string;
   leadType: string;
+  effectiveDate: string;
+  draftDay: string;
+  accidental: string;
   
   // Metadata
   timestamp: string;
