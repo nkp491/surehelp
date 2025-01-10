@@ -29,7 +29,7 @@ export interface FormSubmission {
   spouseLastMedicalExam: string;
   spouseFamilyMedicalConditions: string;
 
-  // Shared Fields
+  // Primary Income Fields
   employmentStatus: string[];
   occupation: string;
   selectedInvestments: string[];
@@ -37,30 +37,25 @@ export interface FormSubmission {
   pensionIncome: string;
   survivorshipIncome: string;
   totalIncome: string;
-  expenses: string;
+  
+  // Spouse Income Fields
+  spouseEmploymentStatus: string[];
+  spouseOccupation: string;
+  spouseSelectedInvestments: string[];
+  spouseSocialSecurityIncome: string;
+  spousePensionIncome: string;
+  spouseSurvivorshipIncome: string;
+  spouseTotalIncome: string;
+  
+  // Shared/Household Fields
+  householdExpenses: string;
   lifeInsuranceAmount: string;
   rentOrMortgage: string;
   remainingBalance: string;
   yearsLeft: string;
   homeValue: string;
   equity: string;
-  phone: string;
-  email: string;
-  address: string;
-  notes: string;
-  followUpNotes: string;
-  coverageOptions: string;
-  emergencyContact: string;
-  beneficiaries: string;
-  sourcedFrom: string;
-  leadType: string;
-  premium: string;
-  effectiveDate: string;
-  draftDay: string;
-  coverageAmount: string;
-  accidental: string;
-  carrierAndProduct: string;
-  policyNumber: string;
+  
   timestamp: string;
   outcome: string;
   auditTrail?: AuditEntry[];

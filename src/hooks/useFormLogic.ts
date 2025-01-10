@@ -34,7 +34,7 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   spouseLastMedicalExam: "",
   spouseFamilyMedicalConditions: "",
 
-  // Shared Fields
+  // Primary Income Fields
   employmentStatus: [],
   occupation: "",
   selectedInvestments: [],
@@ -42,7 +42,18 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   pensionIncome: "",
   survivorshipIncome: "",
   totalIncome: "",
-  expenses: "",
+  
+  // Spouse Income Fields
+  spouseEmploymentStatus: [],
+  spouseOccupation: "",
+  spouseSelectedInvestments: [],
+  spouseSocialSecurityIncome: "",
+  spousePensionIncome: "",
+  spouseSurvivorshipIncome: "",
+  spouseTotalIncome: "",
+  
+  // Shared/Household Fields
+  householdExpenses: "",
   lifeInsuranceAmount: "",
   rentOrMortgage: "",
   remainingBalance: "",

@@ -33,14 +33,25 @@ const SPOUSE_HEALTH_FIELDS: FormField[] = [
 ];
 
 const INCOME_FIELDS: FormField[] = [
-  { id: "employmentStatus", type: "employmentStatus", label: "Employment Status" },
-  { id: "occupation", type: "text", label: "Occupation/Duties", placeholder: "Enter your occupation and duties" },
-  { id: "selectedInvestments", type: "investmentTypes", label: "Investment Types" },
-  { id: "socialSecurityIncome", type: "currency", label: "Social Security Income", placeholder: "Enter social security income" },
-  { id: "pensionIncome", type: "currency", label: "Pension Income", placeholder: "Enter pension income" },
-  { id: "survivorshipIncome", type: "currency", label: "Survivorship Income", placeholder: "Enter survivorship income" },
-  { id: "totalIncome", type: "currency", label: "Total Income", placeholder: "Enter total income" },
-  { id: "expenses", type: "currency", label: "Expenses", placeholder: "Enter expenses" },
+  { id: "employmentStatus", type: "employmentStatus", label: "Primary Employment Status" },
+  { id: "occupation", type: "text", label: "Primary Occupation/Duties", placeholder: "Enter primary occupation and duties" },
+  { id: "selectedInvestments", type: "investmentTypes", label: "Primary Investment Types" },
+  { id: "socialSecurityIncome", type: "currency", label: "Primary Social Security Income", placeholder: "Enter primary social security income" },
+  { id: "pensionIncome", type: "currency", label: "Primary Pension Income", placeholder: "Enter primary pension income" },
+  { id: "survivorshipIncome", type: "currency", label: "Primary Survivorship Income", placeholder: "Enter primary survivorship income" },
+  { id: "totalIncome", type: "currency", label: "Primary Total Income", placeholder: "Enter primary total income" },
+  
+  // Spouse Income Fields
+  { id: "spouseEmploymentStatus", type: "employmentStatus", label: "Spouse Employment Status" },
+  { id: "spouseOccupation", type: "text", label: "Spouse Occupation/Duties", placeholder: "Enter spouse occupation and duties" },
+  { id: "spouseSelectedInvestments", type: "investmentTypes", label: "Spouse Investment Types" },
+  { id: "spouseSocialSecurityIncome", type: "currency", label: "Spouse Social Security Income", placeholder: "Enter spouse social security income" },
+  { id: "spousePensionIncome", type: "currency", label: "Spouse Pension Income", placeholder: "Enter spouse pension income" },
+  { id: "spouseSurvivorshipIncome", type: "currency", label: "Spouse Survivorship Income", placeholder: "Enter spouse survivorship income" },
+  { id: "spouseTotalIncome", type: "currency", label: "Spouse Total Income", placeholder: "Enter spouse total income" },
+  
+  // Shared/Household Fields
+  { id: "householdExpenses", type: "currency", label: "Household Expenses", placeholder: "Enter household expenses" },
   { id: "lifeInsuranceAmount", type: "currency", label: "Life Insurance Amount", placeholder: "Enter life insurance amount" },
   { id: "rentOrMortgage", type: "currency", label: "Rent or Mortgage", placeholder: "Enter rent or mortgage amount" },
   { id: "remainingBalance", type: "currency", label: "Remaining Balance", placeholder: "Enter remaining balance" },
