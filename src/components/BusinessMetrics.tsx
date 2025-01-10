@@ -1,9 +1,7 @@
 import { useState, useEffect } from "react";
 import MetricCard from "./metrics/MetricCard";
 import RatioCard from "./metrics/RatioCard";
-import MetricsChart from "./MetricsChart";
 import { calculateRatios } from "@/utils/metricsUtils";
-import MetricButtons from "./MetricButtons";
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
 
@@ -143,22 +141,14 @@ const BusinessMetrics = () => {
     }
   };
 
-  const chartData = Object.entries(metrics)
-    .filter(([name]) => name !== 'ap')
-    .map(([name, value]) => ({
-      name: name.charAt(0).toUpperCase() + name.slice(1),
-      value: value,
-    }));
-
-  const ratios = calculateRatios(metrics);
-
   const handleTimePeriodChange = (period: TimePeriod) => {
     setTimePeriod(period);
-    // Store current metrics as previous before updating
     setPreviousMetrics(metrics);
     localStorage.setItem("previousBusinessMetrics", JSON.stringify(metrics));
     calculateTrends();
   };
+
+  const ratios = calculateRatios(metrics);
 
   return (
     <Card className="w-full mb-12 p-8 shadow-lg border-2 bg-[#F1F1F1]">
@@ -194,14 +184,6 @@ const BusinessMetrics = () => {
               />
             ))}
           </div>
-        </div>
-
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <MetricsChart 
-            data={chartData} 
-            timePeriod={timePeriod}
-            onTimePeriodChange={handleTimePeriodChange}
-          />
         </div>
       </div>
     </Card>
