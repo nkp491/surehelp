@@ -14,6 +14,10 @@ interface MetricCount {
   [key: string]: number;
 }
 
+interface MetricTrends {
+  [key: string]: number;
+}
+
 const BusinessMetrics = () => {
   const [metrics, setMetrics] = useState<MetricCount>({
     leads: 0,
@@ -25,11 +29,24 @@ const BusinessMetrics = () => {
     ap: 0,
   });
 
+  const [previousMetrics, setPreviousMetrics] = useState<MetricCount>({
+    leads: 0,
+    calls: 0,
+    contacts: 0,
+    scheduled: 0,
+    sits: 0,
+    sales: 0,
+    ap: 0,
+  });
+
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
+  const [trends, setTrends] = useState<MetricTrends>({});
 
   useEffect(() => {
     const storedMetrics = localStorage.getItem("businessMetrics");
+    const storedPreviousMetrics = localStorage.getItem("previousBusinessMetrics");
+    
     if (storedMetrics) {
       const parsedMetrics = JSON.parse(storedMetrics);
       setMetrics(parsedMetrics);
@@ -41,7 +58,27 @@ const BusinessMetrics = () => {
       });
       setMetricInputs(initialInputs);
     }
+
+    if (storedPreviousMetrics) {
+      setPreviousMetrics(JSON.parse(storedPreviousMetrics));
+    }
+
+    calculateTrends();
   }, []);
+
+  const calculateTrends = () => {
+    const newTrends: MetricTrends = {};
+    Object.keys(metrics).forEach((key) => {
+      const current = metrics[key];
+      const previous = previousMetrics[key];
+      if (previous === 0) {
+        newTrends[key] = 0;
+      } else {
+        newTrends[key] = Math.round(((current - previous) / previous) * 100);
+      }
+    });
+    setTrends(newTrends);
+  };
 
   const updateMetric = (metric: MetricType, increment: boolean) => {
     setMetrics((prev) => {
@@ -117,9 +154,10 @@ const BusinessMetrics = () => {
 
   const handleTimePeriodChange = (period: TimePeriod) => {
     setTimePeriod(period);
-    // In a real application, you would fetch data for the selected time period here
-    // For now, we'll just update the state
-    console.log(`Time period changed to: ${period}`);
+    // Store current metrics as previous before updating
+    setPreviousMetrics(metrics);
+    localStorage.setItem("previousBusinessMetrics", JSON.stringify(metrics));
+    calculateTrends();
   };
 
   return (
@@ -140,6 +178,7 @@ const BusinessMetrics = () => {
                 inputValue={metricInputs[metric] || '0'}
                 onInputChange={(value) => handleInputChange(metric as MetricType, value)}
                 isCurrency={metric === 'ap'}
+                trend={trends[metric] || 0}
               />
             ))}
           </div>
