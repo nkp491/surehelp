@@ -123,41 +123,47 @@ const BusinessMetrics = () => {
   };
 
   return (
-    <Card className="w-full mb-12 p-8 shadow-lg border-2">
-      <div className="space-y-6">
-        <div className="flex items-center space-x-4">
+    <Card className="w-full mb-12 p-8 shadow-lg border-2 bg-[#F1F1F1]">
+      <div className="space-y-8">
+        <div className="flex items-center space-x-4 bg-white p-4 rounded-lg shadow-sm">
           <h2 className="text-3xl font-bold text-gray-900">Business Metrics</h2>
           <Separator className="flex-1" />
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4 mb-8">
-          {Object.entries(metrics).map(([metric, count]) => (
-            <MetricCard
-              key={metric}
-              metric={metric}
-              value={count}
-              inputValue={metricInputs[metric] || '0'}
-              onInputChange={(value) => handleInputChange(metric as MetricType, value)}
-              isCurrency={metric === 'ap'}
-            />
-          ))}
+        <div className="bg-white p-6 rounded-lg shadow-sm space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+            {Object.entries(metrics).map(([metric, count]) => (
+              <MetricCard
+                key={metric}
+                metric={metric}
+                value={count}
+                inputValue={metricInputs[metric] || '0'}
+                onInputChange={(value) => handleInputChange(metric as MetricType, value)}
+                isCurrency={metric === 'ap'}
+              />
+            ))}
+          </div>
+
+          <Separator className="my-8" />
+
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {ratios.map((ratio, index) => (
+              <RatioCard
+                key={index}
+                label={ratio.label}
+                value={ratio.value}
+              />
+            ))}
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-8">
-          {ratios.map((ratio, index) => (
-            <RatioCard
-              key={index}
-              label={ratio.label}
-              value={ratio.value}
-            />
-          ))}
+        <div className="bg-white p-6 rounded-lg shadow-sm">
+          <MetricsChart 
+            data={chartData} 
+            timePeriod={timePeriod}
+            onTimePeriodChange={handleTimePeriodChange}
+          />
         </div>
-
-        <MetricsChart 
-          data={chartData} 
-          timePeriod={timePeriod}
-          onTimePeriodChange={handleTimePeriodChange}
-        />
       </div>
     </Card>
   );

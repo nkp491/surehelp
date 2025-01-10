@@ -7,10 +7,10 @@ interface RatioCardProps {
 
 const RatioCard = ({ label, value }: RatioCardProps) => {
   return (
-    <Card className="p-4">
-      <div className="flex flex-col items-center gap-2">
-        <h3 className="font-semibold text-lg text-center">{label}</h3>
-        <span className="text-xl font-bold">{value}</span>
+    <Card className="p-6 bg-gradient-to-br from-[#1EAEDB]/10 to-[#1EAEDB]/5 hover:shadow-lg transition-all duration-200">
+      <div className="flex flex-col items-center gap-3">
+        <h3 className="font-semibold text-lg text-gray-700 text-center">{label}</h3>
+        <span className="text-xl font-bold text-[#1EAEDB]">{value}</span>
       </div>
     </Card>
   );
