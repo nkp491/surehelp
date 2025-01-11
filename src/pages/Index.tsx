@@ -20,6 +20,7 @@ const Index = () => {
   });
   const [isFormOpen, setIsFormOpen] = useState(true);
   const [showSubmissions, setShowSubmissions] = useState(false);
+  const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -37,6 +38,16 @@ const Index = () => {
     } else {
       setShowSubmissions(true);
       navigate('/submitted-forms');
+    }
+  };
+
+  const handleManagerDashboardClick = () => {
+    if (location.pathname === '/manager-dashboard') {
+      setShowManagerDashboard(false);
+      navigate('/');
+    } else {
+      setShowManagerDashboard(true);
+      navigate('/manager-dashboard');
     }
   };
 
@@ -62,7 +73,9 @@ const Index = () => {
             <Route path="/submitted-forms" element={<SubmittedForms />} />
           )}
           <Route path="/metrics" element={<Dashboard />} />
-          <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+          {showManagerDashboard && (
+            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+          )}
         </Routes>
       </div>
     </div>

@@ -20,7 +20,7 @@ const DashboardHeader = ({ showSubmissions, onSubmissionsClick }: DashboardHeade
       </div>
       <div className="flex items-center gap-4">
         <Button variant="outline" onClick={onSubmissionsClick}>
-          View Submissions
+          {showSubmissions ? 'Hide' : 'View'} Submissions
         </Button>
         <Link to="/metrics">
           <Button variant="outline">Dashboard</Button>
