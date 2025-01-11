@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
 import SubmittedForms from "./SubmittedForms";
@@ -7,30 +7,15 @@ import ManagerDashboard from "./ManagerDashboard";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection";
+import { MetricsProvider } from "@/contexts/MetricsContext";
 
 const Index = () => {
-  const [metrics, setMetrics] = useState<{[key: string]: number}>({
-    leads: 0,
-    calls: 0,
-    contacts: 0,
-    scheduled: 0,
-    sits: 0,
-    sales: 0,
-    ap: 0,
-  });
   const [isFormOpen, setIsFormOpen] = useState(true);
   const [showSubmissions, setShowSubmissions] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const storedMetrics = localStorage.getItem("businessMetrics_24h");
-    if (storedMetrics) {
-      setMetrics(JSON.parse(storedMetrics));
-    }
-  }, []);
 
   const handleSubmissionsClick = () => {
     if (location.pathname === '/submitted-forms') {
@@ -74,7 +59,20 @@ const Index = () => {
           onDashboardClick={handleDashboardClick}
         />
 
-        <MetricsSection metrics={metrics} setMetrics={setMetrics} />
+        <MetricsProvider>
+          <MetricsSection />
+          <Routes>
+            {showSubmissions && (
+              <Route path="/submitted-forms" element={<SubmittedForms />} />
+            )}
+            {showDashboard && (
+              <Route path="/metrics" element={<Dashboard />} />
+            )}
+            {showManagerDashboard && (
+              <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+            )}
+          </Routes>
+        </MetricsProvider>
 
         <Separator className="my-12" />
         
@@ -82,18 +80,6 @@ const Index = () => {
           isFormOpen={isFormOpen}
           setIsFormOpen={setIsFormOpen}
         />
-
-        <Routes>
-          {showSubmissions && (
-            <Route path="/submitted-forms" element={<SubmittedForms />} />
-          )}
-          {showDashboard && (
-            <Route path="/metrics" element={<Dashboard />} />
-          )}
-          {showManagerDashboard && (
-            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-          )}
-        </Routes>
       </div>
     </div>
   );

@@ -1,39 +1,29 @@
 import { Card } from "@/components/ui/card";
 import MetricButtons from "@/components/MetricButtons";
 import { useToast } from "@/hooks/use-toast";
+import { useMetrics } from "@/contexts/MetricsContext";
 
-interface MetricsSectionProps {
-  metrics: { [key: string]: number };
-  setMetrics: React.Dispatch<React.SetStateAction<{ [key: string]: number }>>;
-}
-
-const MetricsSection = ({ metrics, setMetrics }: MetricsSectionProps) => {
+const MetricsSection = () => {
   const { toast } = useToast();
+  const { metrics, handleInputChange } = useMetrics();
 
   const updateMetric = (metric: string, increment: boolean) => {
-    setMetrics((prev) => {
-      const currentValue = prev[metric];
-      let newValue;
-      
-      if (metric === 'ap') {
-        newValue = currentValue + (increment ? 100 : -100);
-        if (newValue < 0) newValue = 0;
-      } else {
-        newValue = currentValue + (increment ? 1 : -1);
-        if (newValue < 0) newValue = 0;
-      }
+    const currentValue = metrics[metric];
+    let newValue;
+    
+    if (metric === 'ap') {
+      newValue = currentValue + (increment ? 100 : -100);
+      if (newValue < 0) newValue = 0;
+    } else {
+      newValue = currentValue + (increment ? 1 : -1);
+      if (newValue < 0) newValue = 0;
+    }
 
-      const newMetrics = {
-        ...prev,
-        [metric]: newValue,
-      };
-
-      localStorage.setItem("businessMetrics_24h", JSON.stringify(newMetrics));
-      toast({
-        title: "Metric Updated",
-        description: `${metric.toUpperCase()} has been ${increment ? 'increased' : 'decreased'}`,
-      });
-      return newMetrics;
+    handleInputChange(metric as any, metric === 'ap' ? (newValue / 100).toString() : newValue.toString());
+    
+    toast({
+      title: "Metric Updated",
+      description: `${metric.toUpperCase()} has been ${increment ? 'increased' : 'decreased'}`,
     });
   };
 
