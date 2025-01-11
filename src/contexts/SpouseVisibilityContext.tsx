@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState } from 'react';
 
 interface SpouseVisibilityContextType {
   showSpouse: boolean;
+  setShowSpouse: (value: boolean) => void;
   toggleSpouse: () => void;
 }
 
@@ -15,7 +16,7 @@ export function SpouseVisibilityProvider({ children }: { children: React.ReactNo
   };
 
   return (
-    <SpouseVisibilityContext.Provider value={{ showSpouse, toggleSpouse }}>
+    <SpouseVisibilityContext.Provider value={{ showSpouse, setShowSpouse, toggleSpouse }}>
       {children}
     </SpouseVisibilityContext.Provider>
   );
