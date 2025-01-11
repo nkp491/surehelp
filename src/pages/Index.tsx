@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 import { Link, Routes, Route } from "react-router-dom";
 import SubmittedForms from "./SubmittedForms";
 import Dashboard from "./Dashboard";
+import ManagerDashboard from "./ManagerDashboard";
 import MetricButtons from "@/components/MetricButtons";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
@@ -77,6 +78,9 @@ const Index = () => {
             <Link to="/metrics">
               <Button variant="outline">Dashboard</Button>
             </Link>
+            <Link to="/manager-dashboard">
+              <Button variant="outline">Manager Dashboard</Button>
+            </Link>
             <Button
               onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
               className="flex items-center gap-2"
@@ -117,6 +121,7 @@ const Index = () => {
         <Routes>
           <Route path="/submitted-forms" element={<SubmittedForms />} />
           <Route path="/metrics" element={<Dashboard />} />
+          <Route path="/manager-dashboard" element={<ManagerDashboard />} />
         </Routes>
       </div>
     </div>
@@ -124,4 +129,3 @@ const Index = () => {
 };
 
 export default Index;
-
