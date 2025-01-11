@@ -1,33 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { format } from "date-fns";
-
-type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
-type TimePeriod = "24h" | "7d" | "30d" | "custom";
-
-interface MetricCount {
-  [key: string]: number;
-}
-
-interface MetricTrends {
-  [key: string]: number;
-}
-
-interface MetricsContextType {
-  metrics: MetricCount;
-  previousMetrics: MetricCount;
-  metricInputs: {[key: string]: string};
-  timePeriod: TimePeriod;
-  trends: MetricTrends;
-  dateRange: {
-    from: Date | undefined;
-    to: Date | undefined;
-  };
-  ratios: Array<{ label: string; value: string | number }>;
-  setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
-  handleTimePeriodChange: (period: TimePeriod) => void;
-  handleInputChange: (metric: MetricType, value: string) => void;
-}
+import { useMetricsStorage } from "@/hooks/useMetricsStorage";
+import { useMetricsCalculations } from "@/hooks/useMetricsCalculations";
+import { MetricType, TimePeriod, MetricCount, MetricsContextType } from "@/types/metrics";
 
 const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 
@@ -40,7 +16,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   });
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
-  const [trends, setTrends] = useState<MetricTrends>({});
+  const [trends, setTrends] = useState<{[key: string]: number}>({});
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -48,6 +24,18 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     from: undefined,
     to: undefined,
   });
+
+  const { 
+    loadDailyMetrics,
+    loadPreviousMetrics,
+    saveDailyMetrics,
+    savePeriodMetrics,
+  } = useMetricsStorage();
+
+  const {
+    calculateTrends,
+    initializeInputs,
+  } = useMetricsCalculations();
 
   useEffect(() => {
     if (timePeriod === "custom" && dateRange.from && dateRange.to) {
@@ -62,53 +50,20 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   }, [timePeriod, dateRange]);
 
   const loadMetricsForPeriod = (period: TimePeriod) => {
-    const dailyMetrics = localStorage.getItem('businessMetrics_24h');
-    const parsedDailyMetrics = dailyMetrics ? JSON.parse(dailyMetrics) : {
-      leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
-    };
-
-    if (period === '24h') {
-      setMetrics(parsedDailyMetrics);
-      initializeInputs(parsedDailyMetrics);
-    } else {
-      // For weekly and monthly views, we'll use the daily metrics as is
-      // This ensures we're not accumulating values incorrectly
-      setMetrics(parsedDailyMetrics);
-      initializeInputs(parsedDailyMetrics);
-      
-      // Store the current state for the selected period
-      localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(parsedDailyMetrics));
+    const parsedDailyMetrics = loadDailyMetrics();
+    setMetrics(parsedDailyMetrics);
+    initializeInputs(parsedDailyMetrics);
+    
+    if (period !== '24h') {
+      savePeriodMetrics(period, parsedDailyMetrics);
     }
 
-    const storedPreviousMetrics = localStorage.getItem(`previousBusinessMetrics_${period}`);
-    if (storedPreviousMetrics) {
-      setPreviousMetrics(JSON.parse(storedPreviousMetrics));
+    const previousMetricsData = loadPreviousMetrics(period);
+    if (previousMetricsData) {
+      setPreviousMetrics(previousMetricsData);
     }
 
-    calculateTrends();
-  };
-
-  const initializeInputs = (metricsData: MetricCount) => {
-    const initialInputs: {[key: string]: string} = {};
-    Object.entries(metricsData).forEach(([key, value]) => {
-      initialInputs[key] = key === 'ap' ? 
-        (value ? (value as number / 100).toFixed(2) : '0.00') : 
-        value?.toString() || '0';
-    });
-    setMetricInputs(initialInputs);
-  };
-
-  const calculateTrends = () => {
-    const newTrends: MetricTrends = {};
-    Object.keys(metrics).forEach((key) => {
-      const current = metrics[key];
-      const previous = previousMetrics[key];
-      if (previous === 0) {
-        newTrends[key] = 0;
-      } else {
-        newTrends[key] = Math.round(((current - previous) / previous) * 100);
-      }
-    });
+    const newTrends = calculateTrends(parsedDailyMetrics, previousMetricsData);
     setTrends(newTrends);
   };
 
@@ -137,8 +92,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         [metric]: value
       };
-      // Only store in localStorage for daily metrics
-      localStorage.setItem('businessMetrics_24h', JSON.stringify(newMetrics));
+      saveDailyMetrics(newMetrics);
       return newMetrics;
     });
   };
