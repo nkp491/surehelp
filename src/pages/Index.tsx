@@ -69,7 +69,7 @@ const Index = () => {
           showSubmissions={showSubmissions}
           onSubmissionsClick={handleSubmissionsClick}
           showManagerDashboard={showManagerDashboard}
-          onManagerDashboardClick={handleManagerDashboardClick}
+          onManagerDashboardClick={handleDashboardClick}
         />
 
         <MetricsSection metrics={metrics} setMetrics={setMetrics} />

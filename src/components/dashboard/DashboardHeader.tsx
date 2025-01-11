@@ -34,7 +34,7 @@ const DashboardHeader = ({
         </Button>
         <Button 
           variant={isDashboardActive ? "default" : "outline"}
-          onClick={() => window.location.href = isDashboardActive ? '/' : '/metrics'}
+          onClick={() => onManagerDashboardClick()}
         >
           {isDashboardActive ? 'Hide' : 'View'} Dashboard
         </Button>
