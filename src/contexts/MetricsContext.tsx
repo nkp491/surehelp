@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
-import { format } from "date-fns"; // Add this import
+import { format } from "date-fns";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 type TimePeriod = "24h" | "7d" | "30d" | "custom";
@@ -63,34 +63,21 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
   const loadMetricsForPeriod = (period: TimePeriod) => {
     const dailyMetrics = localStorage.getItem('businessMetrics_24h');
-    let parsedDailyMetrics = dailyMetrics ? JSON.parse(dailyMetrics) : null;
-    
+    const parsedDailyMetrics = dailyMetrics ? JSON.parse(dailyMetrics) : {
+      leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
+    };
+
     if (period === '24h') {
-      if (parsedDailyMetrics) {
-        setMetrics(parsedDailyMetrics);
-        initializeInputs(parsedDailyMetrics);
-      }
+      setMetrics(parsedDailyMetrics);
+      initializeInputs(parsedDailyMetrics);
     } else {
-      const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
-      if (storedMetrics) {
-        const parsedMetrics = JSON.parse(storedMetrics);
-        if (parsedDailyMetrics) {
-          const updatedMetrics = { ...parsedMetrics };
-          Object.keys(parsedDailyMetrics).forEach((key) => {
-            updatedMetrics[key] = (parsedMetrics[key] || 0) + parsedDailyMetrics[key];
-          });
-          setMetrics(updatedMetrics);
-          localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(updatedMetrics));
-          initializeInputs(updatedMetrics);
-        } else {
-          setMetrics(parsedMetrics);
-          initializeInputs(parsedMetrics);
-        }
-      } else if (parsedDailyMetrics) {
-        setMetrics(parsedDailyMetrics);
-        localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(parsedDailyMetrics));
-        initializeInputs(parsedDailyMetrics);
-      }
+      // For weekly and monthly views, we'll use the daily metrics as is
+      // This ensures we're not accumulating values incorrectly
+      setMetrics(parsedDailyMetrics);
+      initializeInputs(parsedDailyMetrics);
+      
+      // Store the current state for the selected period
+      localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(parsedDailyMetrics));
     }
 
     const storedPreviousMetrics = localStorage.getItem(`previousBusinessMetrics_${period}`);
@@ -150,24 +137,10 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
         ...prev,
         [metric]: value
       };
-      localStorage.setItem(`businessMetrics_${timePeriod}`, JSON.stringify(newMetrics));
-      
-      if (timePeriod === '24h') {
-        updateAccumulatedMetrics('7d', metric, value);
-        updateAccumulatedMetrics('30d', metric, value);
-      }
-      
+      // Only store in localStorage for daily metrics
+      localStorage.setItem('businessMetrics_24h', JSON.stringify(newMetrics));
       return newMetrics;
     });
-  };
-
-  const updateAccumulatedMetrics = (period: TimePeriod, metric: string, dailyValue: number) => {
-    const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
-    if (storedMetrics) {
-      const parsedMetrics = JSON.parse(storedMetrics);
-      parsedMetrics[metric] = dailyValue + (parsedMetrics[metric] || 0);
-      localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(parsedMetrics));
-    }
   };
 
   const handleTimePeriodChange = (period: TimePeriod) => {
