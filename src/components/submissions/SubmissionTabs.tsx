@@ -58,7 +58,7 @@ export const SubmissionTabs = ({
       <TabsContent value="declined">
         <SubmissionsList 
           submissions={submissions.declined}
-          onEdit={onDelete}
+          onEdit={onEdit}
           onDelete={onDelete}
           onViewProfile={onViewProfile}
           onSort={onSort}
