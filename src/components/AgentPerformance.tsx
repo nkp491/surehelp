@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { TrendingUp, TrendingDown, ChartBar, ChartLine, ChartPie } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import MetricCard from "./metrics/MetricCard";
 import RatioCard from "./metrics/RatioCard";
@@ -9,6 +8,7 @@ import MetricsChart from "./MetricsChart";
 import { calculateRatios } from "@/utils/metricsUtils";
 
 interface AgentMetrics {
+  [key: string]: number;
   leads: number;
   calls: number;
   contacts: number;
