@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import MetricsChart from "./MetricsChart";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 type TimePeriod = "24h" | "7d" | "30d" | "custom";
@@ -170,6 +171,10 @@ const BusinessMetrics = () => {
   };
 
   const ratios = calculateRatios(metrics);
+  const chartData = Object.entries(metrics).map(([key, value]) => ({
+    name: key.charAt(0).toUpperCase() + key.slice(1),
+    value: key === 'ap' ? value / 100 : value,
+  }));
 
   return (
     <Card className="w-full mb-12 p-8 shadow-lg border-2 bg-[#F1F1F1]">
@@ -275,6 +280,12 @@ const BusinessMetrics = () => {
             ))}
           </div>
         </div>
+
+        <MetricsChart 
+          data={chartData} 
+          timePeriod={timePeriod}
+          onTimePeriodChange={handleTimePeriodChange}
+        />
       </div>
     </Card>
   );
