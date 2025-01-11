@@ -7,13 +7,17 @@ interface DashboardHeaderProps {
   onSubmissionsClick: () => void;
   showManagerDashboard: boolean;
   onManagerDashboardClick: () => void;
+  showDashboard: boolean;
+  onDashboardClick: () => void;
 }
 
 const DashboardHeader = ({ 
   showSubmissions, 
   onSubmissionsClick,
   showManagerDashboard,
-  onManagerDashboardClick 
+  onManagerDashboardClick,
+  showDashboard,
+  onDashboardClick
 }: DashboardHeaderProps) => {
   const location = useLocation();
   const isDashboardActive = location.pathname === '/metrics';
@@ -35,7 +39,7 @@ const DashboardHeader = ({
         </Button>
         <Button 
           variant={isDashboardActive ? "default" : "outline"}
-          onClick={onManagerDashboardClick}
+          onClick={onDashboardClick}
         >
           {isDashboardActive ? 'Hide' : 'View'} Dashboard
         </Button>

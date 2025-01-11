@@ -70,6 +70,8 @@ const Index = () => {
           onSubmissionsClick={handleSubmissionsClick}
           showManagerDashboard={showManagerDashboard}
           onManagerDashboardClick={handleManagerDashboardClick}
+          showDashboard={showDashboard}
+          onDashboardClick={handleDashboardClick}
         />
 
         <MetricsSection metrics={metrics} setMetrics={setMetrics} />
