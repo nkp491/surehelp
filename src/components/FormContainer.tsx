@@ -30,14 +30,20 @@ const FormContent = ({
 }) => {
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
-  const { showSpouse } = useSpouseVisibility();
+  const { showSpouse, setShowSpouse } = useSpouseVisibility();
 
   useEffect(() => {
     if (editingSubmission) {
-      const { timestamp, outcome, ...submissionData } = editingSubmission;
+      // Set form data from editing submission
+      const { timestamp, outcome, auditTrail, ...submissionData } = editingSubmission;
       setFormData(submissionData);
+      
+      // Show spouse section if spouse data exists
+      if (editingSubmission.spouseName || editingSubmission.spouseDob) {
+        setShowSpouse(true);
+      }
     }
-  }, [editingSubmission, setFormData]);
+  }, [editingSubmission, setFormData, setShowSpouse]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
