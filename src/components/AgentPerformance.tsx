@@ -16,6 +16,7 @@ interface AgentMetrics {
   sits: number;
   sales: number;
   ap: number;
+  [key: string]: number; // Add this line to include the index signature
 }
 
 const mockAgents = [
