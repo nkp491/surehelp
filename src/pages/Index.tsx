@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
 import { Link, Routes, Route } from "react-router-dom";
 import SubmittedForms from "./SubmittedForms";
-import MetricsVisualization from "./MetricsVisualization";
+import Dashboard from "./Dashboard";
 import MetricButtons from "@/components/MetricButtons";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
@@ -116,7 +116,7 @@ const Index = () => {
 
         <Routes>
           <Route path="/submitted-forms" element={<SubmittedForms />} />
-          <Route path="/metrics" element={<MetricsVisualization />} />
+          <Route path="/metrics" element={<Dashboard />} />
         </Routes>
       </div>
     </div>
