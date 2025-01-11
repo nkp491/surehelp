@@ -63,6 +63,13 @@ const BusinessMetrics = () => {
           value?.toString() || '0';
       });
       setMetricInputs(initialInputs);
+    } else {
+      // If no metrics exist for the period, copy from daily metrics
+      const dailyMetrics = localStorage.getItem('businessMetrics_24h');
+      if (dailyMetrics && period !== '24h') {
+        localStorage.setItem(`businessMetrics_${period}`, dailyMetrics);
+        setMetrics(JSON.parse(dailyMetrics));
+      }
     }
 
     if (storedPreviousMetrics) {

@@ -8,6 +8,7 @@ import MetricButtons from "@/components/MetricButtons";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { useToast } from "@/components/ui/use-toast";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
@@ -21,9 +22,10 @@ const Index = () => {
     sales: 0,
     ap: 0,
   });
+  const { toast } = useToast();
 
   useEffect(() => {
-    const storedMetrics = localStorage.getItem("businessMetrics");
+    const storedMetrics = localStorage.getItem("businessMetrics_24h");
     if (storedMetrics) {
       setMetrics(JSON.parse(storedMetrics));
     }
@@ -47,7 +49,11 @@ const Index = () => {
         [metric]: newValue,
       };
 
-      localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
+      localStorage.setItem("businessMetrics_24h", JSON.stringify(newMetrics));
+      toast({
+        title: "Metric Updated",
+        description: `${metric.toUpperCase()} has been ${increment ? 'increased' : 'decreased'}`,
+      });
       return newMetrics;
     });
   };
