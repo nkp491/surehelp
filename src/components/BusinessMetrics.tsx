@@ -4,6 +4,9 @@ import RatioCard from "./metrics/RatioCard";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
+import { Button } from "./ui/button";
+import { useToast } from "./ui/use-toast";
+import { Calendar, Clock, CalendarDays } from "lucide-react";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 type TimePeriod = "24h" | "7d" | "30d";
@@ -40,10 +43,15 @@ const BusinessMetrics = () => {
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const [trends, setTrends] = useState<MetricTrends>({});
+  const { toast } = useToast();
 
   useEffect(() => {
-    const storedMetrics = localStorage.getItem("businessMetrics");
-    const storedPreviousMetrics = localStorage.getItem("previousBusinessMetrics");
+    loadMetricsForPeriod(timePeriod);
+  }, [timePeriod]);
+
+  const loadMetricsForPeriod = (period: TimePeriod) => {
+    const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
+    const storedPreviousMetrics = localStorage.getItem(`previousBusinessMetrics_${period}`);
     
     if (storedMetrics) {
       const parsedMetrics = JSON.parse(storedMetrics);
@@ -62,7 +70,7 @@ const BusinessMetrics = () => {
     }
 
     calculateTrends();
-  }, []);
+  };
 
   const calculateTrends = () => {
     const newTrends: MetricTrends = {};
@@ -76,36 +84,6 @@ const BusinessMetrics = () => {
       }
     });
     setTrends(newTrends);
-  };
-
-  const updateMetric = (metric: MetricType, increment: boolean) => {
-    setMetrics((prev) => {
-      const currentValue = prev[metric];
-      let newValue;
-      
-      if (metric === 'ap') {
-        newValue = currentValue + (increment ? 100 : -100);
-        if (newValue < 0) newValue = 0;
-      } else {
-        newValue = currentValue + (increment ? 1 : -1);
-        if (newValue < 0) newValue = 0;
-      }
-
-      const newMetrics = {
-        ...prev,
-        [metric]: newValue,
-      };
-
-      setMetricInputs(current => ({
-        ...current,
-        [metric]: metric === 'ap' ? 
-          (newValue / 100).toFixed(2) : 
-          newValue.toString()
-      }));
-
-      localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
-      return newMetrics;
-    });
   };
 
   const handleInputChange = (metric: MetricType, value: string) => {
@@ -122,7 +100,7 @@ const BusinessMetrics = () => {
             ...prev,
             [metric]: numericValue
           };
-          localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
+          localStorage.setItem(`businessMetrics_${timePeriod}`, JSON.stringify(newMetrics));
           return newMetrics;
         });
       }
@@ -134,7 +112,7 @@ const BusinessMetrics = () => {
             ...prev,
             [metric]: numericValue
           };
-          localStorage.setItem("businessMetrics", JSON.stringify(newMetrics));
+          localStorage.setItem(`businessMetrics_${timePeriod}`, JSON.stringify(newMetrics));
           return newMetrics;
         });
       }
@@ -142,10 +120,13 @@ const BusinessMetrics = () => {
   };
 
   const handleTimePeriodChange = (period: TimePeriod) => {
-    setTimePeriod(period);
     setPreviousMetrics(metrics);
-    localStorage.setItem("previousBusinessMetrics", JSON.stringify(metrics));
-    calculateTrends();
+    localStorage.setItem(`previousBusinessMetrics_${timePeriod}`, JSON.stringify(metrics));
+    setTimePeriod(period);
+    toast({
+      title: "Time Period Changed",
+      description: `Switched to ${period === "24h" ? "daily" : period === "7d" ? "weekly" : "monthly"} metrics view`,
+    });
   };
 
   const ratios = calculateRatios(metrics);
@@ -153,9 +134,34 @@ const BusinessMetrics = () => {
   return (
     <Card className="w-full mb-12 p-8 shadow-lg border-2 bg-[#F1F1F1]">
       <div className="space-y-8">
-        <div className="flex items-center space-x-4 bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
           <h2 className="text-3xl font-bold text-gray-900">Business Metrics</h2>
-          <Separator className="flex-1" />
+          <div className="flex gap-4">
+            <Button
+              variant={timePeriod === "24h" ? "default" : "outline"}
+              onClick={() => handleTimePeriodChange("24h")}
+              className="flex items-center gap-2"
+            >
+              <Clock className="h-4 w-4" />
+              Daily
+            </Button>
+            <Button
+              variant={timePeriod === "7d" ? "default" : "outline"}
+              onClick={() => handleTimePeriodChange("7d")}
+              className="flex items-center gap-2"
+            >
+              <Calendar className="h-4 w-4" />
+              Weekly
+            </Button>
+            <Button
+              variant={timePeriod === "30d" ? "default" : "outline"}
+              onClick={() => handleTimePeriodChange("30d")}
+              className="flex items-center gap-2"
+            >
+              <CalendarDays className="h-4 w-4" />
+              Monthly
+            </Button>
+          </div>
         </div>
 
         <div className="bg-white p-6 rounded-lg shadow-sm space-y-8">
