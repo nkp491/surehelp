@@ -3,6 +3,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
+declare global {
+  interface Window {
+    google: typeof google;
+  }
+}
+
 interface AddressAutocompleteFieldProps {
   value: string;
   onChange: (value: string) => void;
@@ -29,8 +35,8 @@ const AddressAutocompleteField = ({ value, onChange, error, required }: AddressA
   }, []);
 
   useEffect(() => {
-    if (isLoaded && inputRef.current) {
-      const autocomplete = new google.maps.places.Autocomplete(inputRef.current, {
+    if (isLoaded && inputRef.current && window.google) {
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
         types: ['address'],
         componentRestrictions: { country: 'US' },
       });
