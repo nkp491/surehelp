@@ -1,6 +1,6 @@
 import FormContainer from "@/components/FormContainer";
 import { Button } from "@/components/ui/button";
-import { ExternalLink } from "lucide-react";
+import { ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
 import { Link, Routes, Route } from "react-router-dom";
 import SubmittedForms from "./SubmittedForms";
 import Dashboard from "./Dashboard";
@@ -10,6 +10,11 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
@@ -23,6 +28,7 @@ const Index = () => {
     sales: 0,
     ap: 0,
   });
+  const [isFormOpen, setIsFormOpen] = useState(true);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -108,15 +114,36 @@ const Index = () => {
 
         <Separator className="my-12" />
         
-        <div className="mt-12">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
-            Client Assessment
-          </h2>
-          <p className="text-lg text-gray-600 mb-8">
-            Fill out the form below to store your medical information
-          </p>
-          <FormContainer />
-        </div>
+        <Collapsible
+          open={isFormOpen}
+          onOpenChange={setIsFormOpen}
+          className="mt-12"
+        >
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900">
+                Client Assessment
+              </h2>
+              <p className="text-lg text-gray-600">
+                Fill out the form below to store your medical information
+              </p>
+            </div>
+            <CollapsibleTrigger asChild>
+              <Button variant="ghost" size="sm" className="w-9 p-0">
+                {isFormOpen ? (
+                  <ChevronUp className="h-4 w-4" />
+                ) : (
+                  <ChevronDown className="h-4 w-4" />
+                )}
+                <span className="sr-only">Toggle form</span>
+              </Button>
+            </CollapsibleTrigger>
+          </div>
+          
+          <CollapsibleContent>
+            <FormContainer />
+          </CollapsibleContent>
+        </Collapsible>
 
         <Routes>
           <Route path="/submitted-forms" element={<SubmittedForms />} />
