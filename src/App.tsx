@@ -6,7 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 import Index from "./pages/Index";
 import SubmittedForms from "./pages/SubmittedForms";
-import MetricsVisualization from "./pages/MetricsVisualization";
+import Dashboard from "./pages/Dashboard";
 
 const queryClient = new QueryClient();
 
@@ -18,7 +18,7 @@ const App = () => {
           <Routes>
             <Route path="/*" element={<Index />}>
               <Route path="submitted-forms" element={<SubmittedForms />} />
-              <Route path="metrics" element={<MetricsVisualization />} />
+              <Route path="metrics" element={<Dashboard />} />
             </Route>
           </Routes>
           <Toaster />

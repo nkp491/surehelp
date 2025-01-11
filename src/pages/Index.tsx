@@ -75,7 +75,7 @@ const Index = () => {
               <Button variant="outline">View Submissions</Button>
             </Link>
             <Link to="/metrics">
-              <Button variant="outline">View Metrics</Button>
+              <Button variant="outline">Dashboard</Button>
             </Link>
             <Button
               onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
