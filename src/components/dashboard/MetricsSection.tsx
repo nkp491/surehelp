@@ -14,12 +14,12 @@ const MetricsSection = () => {
     if (metric === 'ap') {
       newValue = currentValue + (increment ? 100 : -100);
       if (newValue < 0) newValue = 0;
+      handleInputChange(metric as any, (newValue / 100).toString());
     } else {
       newValue = currentValue + (increment ? 1 : -1);
       if (newValue < 0) newValue = 0;
+      handleInputChange(metric as any, newValue.toString());
     }
-
-    handleInputChange(metric as any, metric === 'ap' ? (newValue / 100).toString() : newValue.toString());
     
     toast({
       title: "Metric Updated",

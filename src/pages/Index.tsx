@@ -60,18 +60,20 @@ const Index = () => {
         />
 
         <MetricsProvider>
-          <MetricsSection />
-          <Routes>
-            {showSubmissions && (
-              <Route path="/submitted-forms" element={<SubmittedForms />} />
-            )}
-            {showDashboard && (
-              <Route path="/metrics" element={<Dashboard />} />
-            )}
-            {showManagerDashboard && (
-              <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-            )}
-          </Routes>
+          <div className="space-y-8">
+            <MetricsSection />
+            <Routes>
+              {showSubmissions && (
+                <Route path="/submitted-forms" element={<SubmittedForms />} />
+              )}
+              {showDashboard && (
+                <Route path="/metrics" element={<Dashboard />} />
+              )}
+              {showManagerDashboard && (
+                <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+              )}
+            </Routes>
+          </div>
         </MetricsProvider>
 
         <Separator className="my-12" />
