@@ -6,10 +6,18 @@ import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { Button } from "./ui/button";
 import { useToast } from "./ui/use-toast";
-import { Calendar, Clock, CalendarDays } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, CalendarDays } from "lucide-react";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
-type TimePeriod = "24h" | "7d" | "30d";
+type TimePeriod = "24h" | "7d" | "30d" | "custom";
 
 interface MetricCount {
   [key: string]: number;
@@ -43,11 +51,26 @@ const BusinessMetrics = () => {
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const [trends, setTrends] = useState<MetricTrends>({});
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
   const { toast } = useToast();
 
   useEffect(() => {
-    loadMetricsForPeriod(timePeriod);
-  }, [timePeriod]);
+    if (timePeriod === "custom" && dateRange.from && dateRange.to) {
+      const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
+      const storedMetrics = localStorage.getItem(key);
+      if (storedMetrics) {
+        setMetrics(JSON.parse(storedMetrics));
+      }
+    } else {
+      loadMetricsForPeriod(timePeriod);
+    }
+  }, [timePeriod, dateRange]);
 
   const loadMetricsForPeriod = (period: TimePeriod) => {
     const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
@@ -64,7 +87,6 @@ const BusinessMetrics = () => {
       });
       setMetricInputs(initialInputs);
     } else {
-      // If no metrics exist for the period, copy from daily metrics
       const dailyMetrics = localStorage.getItem('businessMetrics_24h');
       if (dailyMetrics && period !== '24h') {
         localStorage.setItem(`businessMetrics_${period}`, dailyMetrics);
@@ -130,9 +152,20 @@ const BusinessMetrics = () => {
     setPreviousMetrics(metrics);
     localStorage.setItem(`previousBusinessMetrics_${timePeriod}`, JSON.stringify(metrics));
     setTimePeriod(period);
+    if (period !== "custom") {
+      setDateRange({ from: undefined, to: undefined });
+    }
     toast({
       title: "Time Period Changed",
-      description: `Switched to ${period === "24h" ? "daily" : period === "7d" ? "weekly" : "monthly"} metrics view`,
+      description: `Switched to ${
+        period === "24h" 
+          ? "daily" 
+          : period === "7d" 
+          ? "weekly" 
+          : period === "30d" 
+          ? "monthly" 
+          : "custom"
+      } metrics view`,
     });
   };
 
@@ -157,7 +190,7 @@ const BusinessMetrics = () => {
               onClick={() => handleTimePeriodChange("7d")}
               className="flex items-center gap-2"
             >
-              <Calendar className="h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
               Weekly
             </Button>
             <Button
@@ -168,6 +201,50 @@ const BusinessMetrics = () => {
               <CalendarDays className="h-4 w-4" />
               Monthly
             </Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant={timePeriod === "custom" ? "default" : "outline"}
+                  className={cn(
+                    "justify-start text-left font-normal",
+                    !dateRange.from && "text-muted-foreground"
+                  )}
+                  onClick={() => handleTimePeriodChange("custom")}
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateRange.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "LLL dd, y")} -{" "}
+                        {format(dateRange.to, "LLL dd, y")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "LLL dd, y")
+                    )
+                  ) : (
+                    <span>Custom Range</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="end">
+                <Calendar
+                  initialFocus
+                  mode="range"
+                  defaultMonth={dateRange.from}
+                  selected={{
+                    from: dateRange.from,
+                    to: dateRange.to,
+                  }}
+                  onSelect={(range) => {
+                    setDateRange({
+                      from: range?.from,
+                      to: range?.to,
+                    });
+                  }}
+                  numberOfMonths={2}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
