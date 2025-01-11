@@ -4,7 +4,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import AddressAutocompleteField from "./form-fields/AddressAutocompleteField";
 
 interface FormFieldProps {
   label: string;
@@ -29,17 +28,6 @@ const FormField = ({
   readOnly = false,
   options = [],
 }: FormFieldProps) => {
-  if (type === "address") {
-    return (
-      <AddressAutocompleteField
-        value={value}
-        onChange={onChange || (() => {})}
-        error={error}
-        required={required}
-      />
-    );
-  }
-
   if (type === "height") {
     const [feet, inches] = value.split("'").map(v => v.replace('"', ''));
     

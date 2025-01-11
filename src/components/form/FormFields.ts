@@ -66,7 +66,7 @@ const HOUSEHOLD_INCOME_FIELDS: FormField[] = [
 const ASSESSMENT_NOTES_FIELDS: FormField[] = [
   { id: "phone", type: "text", label: "Phone", placeholder: "Enter phone number" },
   { id: "email", type: "text", label: "Email", placeholder: "Enter email address" },
-  { id: "address", type: "address", label: "Address", placeholder: "Enter address" },
+  { id: "address", type: "text", label: "Address", placeholder: "Enter address" },
   { id: "notes", type: "textarea", label: "Notes", placeholder: "Enter general notes" },
   { id: "followUpNotes", type: "textarea", label: "Follow Up Notes", placeholder: "Enter follow up notes" },
   { id: "coverageOptions", type: "textarea", label: "Coverage Options", placeholder: "Enter coverage options" },
