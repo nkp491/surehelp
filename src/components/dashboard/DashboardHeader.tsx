@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ExternalLink } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 interface DashboardHeaderProps {
   showSubmissions: boolean;
@@ -15,6 +15,9 @@ const DashboardHeader = ({
   showManagerDashboard,
   onManagerDashboardClick 
 }: DashboardHeaderProps) => {
+  const location = useLocation();
+  const isDashboardActive = location.pathname === '/metrics';
+
   return (
     <div className="flex justify-between items-center mb-8">
       <div>
@@ -29,9 +32,12 @@ const DashboardHeader = ({
         <Button variant="outline" onClick={onSubmissionsClick}>
           {showSubmissions ? 'Hide' : 'View'} Submissions
         </Button>
-        <Link to="/metrics">
-          <Button variant="outline">Dashboard</Button>
-        </Link>
+        <Button 
+          variant={isDashboardActive ? "default" : "outline"}
+          onClick={() => window.location.href = isDashboardActive ? '/' : '/metrics'}
+        >
+          {isDashboardActive ? 'Hide' : 'View'} Dashboard
+        </Button>
         <Button variant="outline" onClick={onManagerDashboardClick}>
           {showManagerDashboard ? 'Hide' : 'View'} Manager Dashboard
         </Button>

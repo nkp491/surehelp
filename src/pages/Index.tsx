@@ -21,6 +21,7 @@ const Index = () => {
   const [isFormOpen, setIsFormOpen] = useState(true);
   const [showSubmissions, setShowSubmissions] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -51,6 +52,16 @@ const Index = () => {
     }
   };
 
+  const handleDashboardClick = () => {
+    if (location.pathname === '/metrics') {
+      setShowDashboard(false);
+      navigate('/');
+    } else {
+      setShowDashboard(true);
+      navigate('/metrics');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto py-8">
@@ -74,7 +85,9 @@ const Index = () => {
           {showSubmissions && (
             <Route path="/submitted-forms" element={<SubmittedForms />} />
           )}
-          <Route path="/metrics" element={<Dashboard />} />
+          {showDashboard && (
+            <Route path="/metrics" element={<Dashboard />} />
+          )}
           {showManagerDashboard && (
             <Route path="/manager-dashboard" element={<ManagerDashboard />} />
           )}
