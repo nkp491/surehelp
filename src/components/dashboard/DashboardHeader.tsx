@@ -17,6 +17,7 @@ const DashboardHeader = ({
 }: DashboardHeaderProps) => {
   const location = useLocation();
   const isDashboardActive = location.pathname === '/metrics';
+  const isManagerDashboardActive = location.pathname === '/manager-dashboard';
 
   return (
     <div className="flex justify-between items-center mb-8">
@@ -34,12 +35,15 @@ const DashboardHeader = ({
         </Button>
         <Button 
           variant={isDashboardActive ? "default" : "outline"}
-          onClick={() => onManagerDashboardClick()}
+          onClick={onManagerDashboardClick}
         >
           {isDashboardActive ? 'Hide' : 'View'} Dashboard
         </Button>
-        <Button variant="outline" onClick={onManagerDashboardClick}>
-          {showManagerDashboard ? 'Hide' : 'View'} Manager Dashboard
+        <Button 
+          variant={isManagerDashboardActive ? "default" : "outline"}
+          onClick={onManagerDashboardClick}
+        >
+          {isManagerDashboardActive ? 'Hide' : 'View'} Manager Dashboard
         </Button>
         <Button
           onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
