@@ -158,13 +158,13 @@ const Index = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        {showSubmissions && (
-          <Routes>
+        <Routes>
+          {showSubmissions && (
             <Route path="/submitted-forms" element={<SubmittedForms />} />
-            <Route path="/metrics" element={<Dashboard />} />
-            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-          </Routes>
-        )}
+          )}
+          <Route path="/metrics" element={<Dashboard />} />
+          <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+        </Routes>
       </div>
     </div>
   );
