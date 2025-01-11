@@ -1,7 +1,7 @@
 import FormContainer from "@/components/FormContainer";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, ChevronUp, ChevronDown } from "lucide-react";
-import { Link, Routes, Route } from "react-router-dom";
+import { Link, Routes, Route, useLocation, useNavigate } from "react-router-dom";
 import SubmittedForms from "./SubmittedForms";
 import Dashboard from "./Dashboard";
 import ManagerDashboard from "./ManagerDashboard";
@@ -29,7 +29,10 @@ const Index = () => {
     ap: 0,
   });
   const [isFormOpen, setIsFormOpen] = useState(true);
+  const [showSubmissions, setShowSubmissions] = useState(false);
   const { toast } = useToast();
+  const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const storedMetrics = localStorage.getItem("businessMetrics_24h");
@@ -65,6 +68,16 @@ const Index = () => {
     });
   };
 
+  const handleSubmissionsClick = () => {
+    if (location.pathname === '/submitted-forms') {
+      setShowSubmissions(false);
+      navigate('/');
+    } else {
+      setShowSubmissions(true);
+      navigate('/submitted-forms');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
       <div className="container mx-auto py-8">
@@ -78,9 +91,9 @@ const Index = () => {
             </p>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/submitted-forms">
-              <Button variant="outline">View Submissions</Button>
-            </Link>
+            <Button variant="outline" onClick={handleSubmissionsClick}>
+              View Submissions
+            </Button>
             <Link to="/metrics">
               <Button variant="outline">Dashboard</Button>
             </Link>
@@ -145,11 +158,13 @@ const Index = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        <Routes>
-          <Route path="/submitted-forms" element={<SubmittedForms />} />
-          <Route path="/metrics" element={<Dashboard />} />
-          <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-        </Routes>
+        {showSubmissions && (
+          <Routes>
+            <Route path="/submitted-forms" element={<SubmittedForms />} />
+            <Route path="/metrics" element={<Dashboard />} />
+            <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+          </Routes>
+        )}
       </div>
     </div>
   );
