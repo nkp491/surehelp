@@ -5,9 +5,16 @@ import { Link } from "react-router-dom";
 interface DashboardHeaderProps {
   showSubmissions: boolean;
   onSubmissionsClick: () => void;
+  showManagerDashboard: boolean;
+  onManagerDashboardClick: () => void;
 }
 
-const DashboardHeader = ({ showSubmissions, onSubmissionsClick }: DashboardHeaderProps) => {
+const DashboardHeader = ({ 
+  showSubmissions, 
+  onSubmissionsClick,
+  showManagerDashboard,
+  onManagerDashboardClick 
+}: DashboardHeaderProps) => {
   return (
     <div className="flex justify-between items-center mb-8">
       <div>
@@ -25,9 +32,9 @@ const DashboardHeader = ({ showSubmissions, onSubmissionsClick }: DashboardHeade
         <Link to="/metrics">
           <Button variant="outline">Dashboard</Button>
         </Link>
-        <Link to="/manager-dashboard">
-          <Button variant="outline">Manager Dashboard</Button>
-        </Link>
+        <Button variant="outline" onClick={onManagerDashboardClick}>
+          {showManagerDashboard ? 'Hide' : 'View'} Manager Dashboard
+        </Button>
         <Button
           onClick={() => window.open('https://insurancetoolkits.com/login', '_blank')}
           className="flex items-center gap-2"

@@ -57,6 +57,8 @@ const Index = () => {
         <DashboardHeader 
           showSubmissions={showSubmissions}
           onSubmissionsClick={handleSubmissionsClick}
+          showManagerDashboard={showManagerDashboard}
+          onManagerDashboardClick={handleManagerDashboardClick}
         />
 
         <MetricsSection metrics={metrics} setMetrics={setMetrics} />
