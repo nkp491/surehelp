@@ -8,7 +8,7 @@ import MetricButtons from "@/components/MetricButtons";
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
@@ -124,3 +124,4 @@ const Index = () => {
 };
 
 export default Index;
+
