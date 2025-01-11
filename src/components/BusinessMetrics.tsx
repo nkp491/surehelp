@@ -74,32 +74,53 @@ const BusinessMetrics = () => {
   }, [timePeriod, dateRange]);
 
   const loadMetricsForPeriod = (period: TimePeriod) => {
-    const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
-    const storedPreviousMetrics = localStorage.getItem(`previousBusinessMetrics_${period}`);
+    const dailyMetrics = localStorage.getItem('businessMetrics_24h');
+    let parsedDailyMetrics = dailyMetrics ? JSON.parse(dailyMetrics) : null;
     
-    if (storedMetrics) {
-      const parsedMetrics = JSON.parse(storedMetrics);
-      setMetrics(parsedMetrics);
-      const initialInputs: {[key: string]: string} = {};
-      Object.entries(parsedMetrics).forEach(([key, value]) => {
-        initialInputs[key] = key === 'ap' ? 
-          (value ? (value as number / 100).toFixed(2) : '0.00') : 
-          value?.toString() || '0';
-      });
-      setMetricInputs(initialInputs);
+    if (period === '24h') {
+      if (parsedDailyMetrics) {
+        setMetrics(parsedDailyMetrics);
+        initializeInputs(parsedDailyMetrics);
+      }
     } else {
-      const dailyMetrics = localStorage.getItem('businessMetrics_24h');
-      if (dailyMetrics && period !== '24h') {
-        localStorage.setItem(`businessMetrics_${period}`, dailyMetrics);
-        setMetrics(JSON.parse(dailyMetrics));
+      const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
+      if (storedMetrics) {
+        const parsedMetrics = JSON.parse(storedMetrics);
+        if (parsedDailyMetrics) {
+          const updatedMetrics = { ...parsedMetrics };
+          Object.keys(parsedDailyMetrics).forEach((key) => {
+            updatedMetrics[key] = (parsedMetrics[key] || 0) + parsedDailyMetrics[key];
+          });
+          setMetrics(updatedMetrics);
+          localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(updatedMetrics));
+          initializeInputs(updatedMetrics);
+        } else {
+          setMetrics(parsedMetrics);
+          initializeInputs(parsedMetrics);
+        }
+      } else if (parsedDailyMetrics) {
+        setMetrics(parsedDailyMetrics);
+        localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(parsedDailyMetrics));
+        initializeInputs(parsedDailyMetrics);
       }
     }
 
+    const storedPreviousMetrics = localStorage.getItem(`previousBusinessMetrics_${period}`);
     if (storedPreviousMetrics) {
       setPreviousMetrics(JSON.parse(storedPreviousMetrics));
     }
 
     calculateTrends();
+  };
+
+  const initializeInputs = (metricsData: MetricCount) => {
+    const initialInputs: {[key: string]: string} = {};
+    Object.entries(metricsData).forEach(([key, value]) => {
+      initialInputs[key] = key === 'ap' ? 
+        (value ? (value as number / 100).toFixed(2) : '0.00') : 
+        value?.toString() || '0';
+    });
+    setMetricInputs(initialInputs);
   };
 
   const calculateTrends = () => {
@@ -125,27 +146,39 @@ const BusinessMetrics = () => {
     if (metric === 'ap') {
       const numericValue = Math.round(parseFloat(value) * 100) || 0;
       if (!isNaN(numericValue)) {
-        setMetrics(prev => {
-          const newMetrics = {
-            ...prev,
-            [metric]: numericValue
-          };
-          localStorage.setItem(`businessMetrics_${timePeriod}`, JSON.stringify(newMetrics));
-          return newMetrics;
-        });
+        updateMetricValue(metric, numericValue);
       }
     } else {
       const numericValue = parseInt(value) || 0;
       if (!isNaN(numericValue)) {
-        setMetrics(prev => {
-          const newMetrics = {
-            ...prev,
-            [metric]: numericValue
-          };
-          localStorage.setItem(`businessMetrics_${timePeriod}`, JSON.stringify(newMetrics));
-          return newMetrics;
-        });
+        updateMetricValue(metric, numericValue);
       }
+    }
+  };
+
+  const updateMetricValue = (metric: MetricType, value: number) => {
+    setMetrics(prev => {
+      const newMetrics = {
+        ...prev,
+        [metric]: value
+      };
+      localStorage.setItem(`businessMetrics_${timePeriod}`, JSON.stringify(newMetrics));
+      
+      if (timePeriod === '24h') {
+        updateAccumulatedMetrics('7d', metric, value);
+        updateAccumulatedMetrics('30d', metric, value);
+      }
+      
+      return newMetrics;
+    });
+  };
+
+  const updateAccumulatedMetrics = (period: TimePeriod, metric: string, dailyValue: number) => {
+    const storedMetrics = localStorage.getItem(`businessMetrics_${period}`);
+    if (storedMetrics) {
+      const parsedMetrics = JSON.parse(storedMetrics);
+      parsedMetrics[metric] = dailyValue + (parsedMetrics[metric] || 0);
+      localStorage.setItem(`businessMetrics_${period}`, JSON.stringify(parsedMetrics));
     }
   };
 
