@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
+import { format } from "date-fns"; // Add this import
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 type TimePeriod = "24h" | "7d" | "30d" | "custom";
