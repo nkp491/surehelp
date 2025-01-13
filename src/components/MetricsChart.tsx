@@ -13,8 +13,31 @@ interface MetricsChartProps {
   onTimePeriodChange: (period: '24h' | '7d' | '30d' | 'custom') => void;
 }
 
+const formatTooltipValue = (value: number, name: string) => {
+  if (name === 'Ap') {
+    return `$${value.toFixed(2)}`;
+  }
+  return value;
+};
+
 const MetricsChart = ({ data, timePeriod, onTimePeriodChange }: MetricsChartProps) => {
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar');
+
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      return (
+        <div className="bg-white p-2 border rounded shadow">
+          <p className="font-semibold">{label}</p>
+          {payload.map((entry: any, index: number) => (
+            <p key={index} style={{ color: entry.color }}>
+              {entry.name}: {formatTooltipValue(entry.value, entry.name)}
+            </p>
+          ))}
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <Card className="p-6">
@@ -68,8 +91,8 @@ const MetricsChart = ({ data, timePeriod, onTimePeriodChange }: MetricsChartProp
             <BarChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+              <YAxis tickFormatter={(value) => (data.find(d => d.value === value)?.name === 'Ap' ? `$${value.toFixed(2)}` : value)} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend layout="vertical" verticalAlign="middle" align="right" />
               <Bar dataKey="value" fill="#8884d8">
                 {data.map((_, index) => (
@@ -81,8 +104,8 @@ const MetricsChart = ({ data, timePeriod, onTimePeriodChange }: MetricsChartProp
             <LineChart data={data} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="name" />
-              <YAxis />
-              <Tooltip />
+              <YAxis tickFormatter={(value) => (data.find(d => d.value === value)?.name === 'Ap' ? `$${value.toFixed(2)}` : value)} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend layout="vertical" verticalAlign="middle" align="right" />
               <Line type="monotone" dataKey="value" stroke="#8884d8" />
             </LineChart>
@@ -93,7 +116,7 @@ const MetricsChart = ({ data, timePeriod, onTimePeriodChange }: MetricsChartProp
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                label={({ name, value }) => `${name} ${name === 'Ap' ? `$${value.toFixed(2)}` : value}`}
                 outerRadius={150}
                 fill="#8884d8"
                 dataKey="value"
@@ -103,7 +126,7 @@ const MetricsChart = ({ data, timePeriod, onTimePeriodChange }: MetricsChartProp
                 ))}
               </Pie>
               <Legend layout="vertical" verticalAlign="middle" align="right" />
-              <Tooltip />
+              <Tooltip content={<CustomTooltip />} />
             </PieChart>
           )}
         </ResponsiveContainer>
