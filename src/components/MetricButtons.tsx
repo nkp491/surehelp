@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Plus, Minus } from "lucide-react";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
@@ -23,7 +24,7 @@ const MetricButtons = ({
 
   const formatValue = (metric: string, value: number) => {
     if (metric === 'ap') {
-      return `$${(value / 100).toFixed(2)}`;
+      return `${(value / 100).toFixed(2)}`;
     }
     return value.toString();
   };
@@ -47,15 +48,37 @@ const MetricButtons = ({
     onDecrement();
   };
 
+  const handleDirectInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    let value = e.target.value;
+    
+    if (metric === 'ap') {
+      // Convert dollar amount to cents
+      const numericValue = parseFloat(value) * 100;
+      if (!isNaN(numericValue)) {
+        handleInputChange(metric as MetricType, numericValue.toString());
+      }
+    } else {
+      // For non-currency metrics, only allow positive integers
+      const numericValue = parseInt(value);
+      if (!isNaN(numericValue) && numericValue >= 0) {
+        handleInputChange(metric as MetricType, numericValue.toString());
+      }
+    }
+  };
+
   return (
     <Card className="p-4">
       <div className="flex flex-col items-center gap-2">
         <h3 className="font-semibold text-lg capitalize">
           {formatMetricName(metric)}
         </h3>
-        <div className="text-xl font-bold mb-2">
-          {formatValue(metric, currentValue)}
-        </div>
+        <Input
+          type="text"
+          value={metric === 'ap' ? formatValue(metric, currentValue) : currentValue}
+          onChange={handleDirectInput}
+          className="text-center w-24 font-bold"
+          min="0"
+        />
         <div className="flex items-center gap-2 w-full justify-center">
           <Button
             onClick={handleDecrement}
