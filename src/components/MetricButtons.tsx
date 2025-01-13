@@ -63,10 +63,10 @@ const MetricButtons = ({
         return;
       }
 
-      // Convert the input value directly to cents
+      // Convert the input value to cents without additional multiplication
       const numericValue = parseFloat(inputValue);
       if (!isNaN(numericValue)) {
-        const cents = Math.round(numericValue * 100);
+        const cents = Math.round(numericValue * 100); // This converts $2.00 to 200 cents
         handleInputChange(metric as MetricType, cents.toString());
       }
     } else {
