@@ -22,16 +22,26 @@ const MetricButtons = ({
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
+  const formatValue = (value: number, isAP: boolean) => {
+    if (isAP) {
+      return (value / 100).toFixed(2);
+    }
+    return value.toString();
+  };
+
   const currentValue = metrics[metric as MetricType];
+  const isAP = metric === 'ap';
 
   const handleIncrement = () => {
-    handleInputChange(metric as MetricType, (currentValue + 1).toString());
+    const increment = isAP ? 100 : 1; // $1.00 for AP, 1 for others
+    handleInputChange(metric as MetricType, (currentValue + increment).toString());
     onIncrement();
   };
 
   const handleDecrement = () => {
     if (currentValue <= 0) return;
-    const newValue = Math.max(0, currentValue - 1);
+    const decrement = isAP ? 100 : 1; // $1.00 for AP, 1 for others
+    const newValue = Math.max(0, currentValue - decrement);
     handleInputChange(metric as MetricType, newValue.toString());
     onDecrement();
   };
@@ -44,11 +54,19 @@ const MetricButtons = ({
       return;
     }
 
-    // Convert input to number and validate
-    const numValue = parseInt(inputValue);
-    if (!isNaN(numValue) && numValue >= 0) {
-      // Use the exact input value without any multiplication
-      handleInputChange(metric as MetricType, numValue.toString());
+    if (isAP) {
+      // Convert dollar amount to cents
+      const dollarValue = parseFloat(inputValue);
+      if (!isNaN(dollarValue)) {
+        const centsValue = Math.round(dollarValue * 100);
+        handleInputChange(metric as MetricType, centsValue.toString());
+      }
+    } else {
+      // Handle non-AP metrics
+      const numValue = parseInt(inputValue);
+      if (!isNaN(numValue) && numValue >= 0) {
+        handleInputChange(metric as MetricType, numValue.toString());
+      }
     }
   };
 
@@ -59,12 +77,18 @@ const MetricButtons = ({
           {formatMetricName(metric)}
         </h3>
         <div className="relative">
+          {isAP && (
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500">
+              $
+            </span>
+          )}
           <Input
             type="text"
-            value={currentValue.toString()}
+            value={formatValue(currentValue, isAP)}
             onChange={handleDirectInput}
-            className="text-center w-24 font-bold"
+            className={`text-center w-24 font-bold ${isAP ? 'pl-6' : ''}`}
             min="0"
+            step={isAP ? "0.01" : "1"}
           />
         </div>
         <div className="flex items-center gap-2 w-full justify-center">
