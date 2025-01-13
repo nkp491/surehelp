@@ -6,9 +6,20 @@ import { MetricType } from "@/types/metrics";
 
 const MetricsSection = () => {
   const { toast } = useToast();
-  const { metrics } = useMetrics();
+  const { metrics, handleInputChange } = useMetrics();
 
   const updateMetric = (metric: string, increment: boolean) => {
+    const currentValue = metrics[metric as MetricType] || 0;
+    const newValue = increment 
+      ? metric === 'ap' 
+        ? currentValue + 100 
+        : currentValue + 1
+      : metric === 'ap'
+        ? Math.max(0, currentValue - 100)
+        : Math.max(0, currentValue - 1);
+
+    handleInputChange(metric as MetricType, newValue.toString());
+    
     toast({
       title: "Metric Updated",
       description: `${metric.toUpperCase()} has been ${increment ? 'increased' : 'decreased'}`,
