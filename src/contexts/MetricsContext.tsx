@@ -73,16 +73,9 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
       [metric]: value
     }));
 
-    if (metric === 'ap') {
-      const numericValue = Math.round(parseFloat(value) * 100) || 0;
-      if (!isNaN(numericValue)) {
-        updateMetricValue(metric, numericValue);
-      }
-    } else {
-      const numericValue = parseInt(value) || 0;
-      if (!isNaN(numericValue)) {
-        updateMetricValue(metric, numericValue);
-      }
+    const numericValue = parseInt(value) || 0;
+    if (!isNaN(numericValue)) {
+      updateMetricValue(metric, numericValue);
     }
   };
 
