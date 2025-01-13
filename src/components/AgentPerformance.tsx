@@ -1,22 +1,10 @@
 import { useState } from "react";
 import { Card } from "./ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
 import { useToast } from "./ui/use-toast";
-import MetricCard from "./metrics/MetricCard";
-import RatioCard from "./metrics/RatioCard";
-import MetricsChart from "./MetricsChart";
 import { calculateRatios } from "@/utils/metricsUtils";
-
-interface AgentMetrics {
-  leads: number;
-  calls: number;
-  contacts: number;
-  scheduled: number;
-  sits: number;
-  sales: number;
-  ap: number;
-  [key: string]: number;
-}
+import AgentSelector from "./agent/AgentSelector";
+import AgentMetricsDisplay from "./agent/AgentMetricsDisplay";
+import { AgentMetrics } from "@/types/agent";
 
 const mockAgents = [
   { id: "1", name: "John Doe" },
@@ -66,52 +54,19 @@ const AgentPerformance = () => {
       <Card className="p-6">
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-2xl font-bold">Agent Performance Dashboard</h2>
-          <Select value={selectedAgent} onValueChange={handleAgentChange}>
-            <SelectTrigger className="w-[200px]">
-              <SelectValue placeholder="Select an agent" />
-            </SelectTrigger>
-            <SelectContent>
-              {mockAgents.map((agent) => (
-                <SelectItem key={agent.id} value={agent.id}>
-                  {agent.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <AgentSelector
+            agents={mockAgents}
+            selectedAgent={selectedAgent}
+            onAgentChange={handleAgentChange}
+          />
         </div>
 
         {selectedAgent && (
-          <div className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-              {Object.entries(metrics).map(([metric, value]) => (
-                <MetricCard
-                  key={metric}
-                  metric={metric}
-                  value={value}
-                  inputValue={value.toString()}
-                  onInputChange={() => {}}
-                  isCurrency={metric === 'ap'}
-                  trend={10}
-                />
-              ))}
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              {ratios.slice(0, 8).map((ratio, index) => (
-                <RatioCard
-                  key={index}
-                  label={ratio.label}
-                  value={ratio.value}
-                />
-              ))}
-            </div>
-
-            <MetricsChart 
-              data={chartData}
-              timePeriod="24h"
-              onTimePeriodChange={() => {}}
-            />
-          </div>
+          <AgentMetricsDisplay
+            metrics={metrics}
+            ratios={ratios}
+            chartData={chartData}
+          />
         )}
       </Card>
     </div>
