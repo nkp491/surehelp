@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
 import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -16,8 +15,6 @@ interface MetricCardProps {
 const MetricCard = ({
   metric,
   value,
-  inputValue,
-  onInputChange,
   isCurrency = false,
   trend = 0,
 }: MetricCardProps) => {
@@ -25,17 +22,11 @@ const MetricCard = ({
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    
+  const formatValue = (value: number) => {
     if (isCurrency) {
-      value = value.replace(/[^\d.]/g, '');
-      const parts = value.split('.');
-      if (parts.length > 2) return;
-      if (parts[1]?.length > 2) return;
+      return `$${(value / 100).toFixed(2)}`;
     }
-    
-    onInputChange(value);
+    return value.toString();
   };
 
   const isAP = metric === 'ap';
@@ -75,17 +66,11 @@ const MetricCard = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <Input
-          type="text"
-          value={isCurrency ? `$${inputValue}` : inputValue}
-          onChange={handleInputChange}
-          className={`text-center w-full font-bold text-lg ${
-            isAP 
-              ? 'bg-white/10 border-white/20 text-white placeholder-white/50 focus:border-white' 
-              : 'bg-gray-50 border-gray-200 focus:border-[#9b87f5]'
-          }`}
-          placeholder={isCurrency ? "$0.00" : "0"}
-        />
+        <div className={`text-2xl font-bold ${
+          isAP ? 'text-white' : 'text-gray-900'
+        }`}>
+          {formatValue(value)}
+        </div>
       </div>
     </Card>
   );
