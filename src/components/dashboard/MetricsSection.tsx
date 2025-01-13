@@ -29,7 +29,7 @@ const MetricsSection = () => {
   return (
     <Card className="p-6 mb-12 bg-white shadow-md">
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-        {Object.entries(metrics).map(([metric]) => (
+        {Object.keys(metrics).map((metric) => (
           <MetricButtons
             key={metric}
             metric={metric}
