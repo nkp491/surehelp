@@ -16,9 +16,8 @@ const MetricButtons = ({
   metric,
   onIncrement,
   onDecrement,
-  value,
 }: MetricButtonsProps) => {
-  const { metrics } = useMetrics();
+  const { metrics, handleInputChange } = useMetrics();
   
   const formatMetricName = (metric: string) => {
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
@@ -31,8 +30,24 @@ const MetricButtons = ({
     return value.toString();
   };
 
-  // Use the value from context instead of prop
   const currentValue = metrics[metric as MetricType] || 0;
+
+  const handleIncrement = () => {
+    const newValue = metric === 'ap' 
+      ? currentValue + 100 
+      : currentValue + 1;
+    handleInputChange(metric as MetricType, newValue.toString());
+    onIncrement();
+  };
+
+  const handleDecrement = () => {
+    if (currentValue <= 0) return;
+    const newValue = metric === 'ap'
+      ? Math.max(0, currentValue - 100)
+      : Math.max(0, currentValue - 1);
+    handleInputChange(metric as MetricType, newValue.toString());
+    onDecrement();
+  };
 
   return (
     <Card className="p-4">
@@ -45,7 +60,7 @@ const MetricButtons = ({
         </div>
         <div className="flex items-center gap-2 w-full justify-center">
           <Button
-            onClick={onDecrement}
+            onClick={handleDecrement}
             variant="outline"
             size="icon"
             className="h-8 w-8"
@@ -53,7 +68,7 @@ const MetricButtons = ({
             <Minus className="h-4 w-4" />
           </Button>
           <Button
-            onClick={onIncrement}
+            onClick={handleIncrement}
             variant="outline"
             size="icon"
             className="h-8 w-8"
