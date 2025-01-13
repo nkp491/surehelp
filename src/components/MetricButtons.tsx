@@ -44,8 +44,10 @@ const MetricButtons = ({
       return;
     }
 
+    // Convert input to number and validate
     const numValue = parseInt(inputValue);
     if (!isNaN(numValue) && numValue >= 0) {
+      // Use the exact input value without any multiplication
       handleInputChange(metric as MetricType, numValue.toString());
     }
   };
