@@ -52,29 +52,23 @@ const MetricButtons = ({
     let value = e.target.value;
     
     if (metric === 'ap') {
-      // Remove all non-numeric characters except decimal point
+      // Remove any non-numeric characters except decimal point
       value = value.replace(/[^\d.]/g, '');
       
-      // Handle decimal points
+      // Ensure only one decimal point
       const parts = value.split('.');
       if (parts.length > 2) {
-        // Keep only first decimal point
         value = parts[0] + '.' + parts.slice(1).join('');
       }
       
-      // Limit decimal places to 2
+      // Limit to 2 decimal places
       if (parts[1]?.length > 2) {
         value = parts[0] + '.' + parts[1].slice(0, 2);
       }
 
-      // Convert dollar amount to cents for storage
-      if (value !== '') {
-        const dollarAmount = parseFloat(value);
-        if (!isNaN(dollarAmount)) {
-          const cents = Math.round(dollarAmount * 100);
-          handleInputChange(metric as MetricType, cents.toString());
-        }
-      }
+      // Convert to cents for storage
+      const cents = Math.round(parseFloat(value || '0') * 100);
+      handleInputChange(metric as MetricType, cents.toString());
     } else {
       // For non-currency metrics, only allow positive integers
       const numericValue = parseInt(value);
