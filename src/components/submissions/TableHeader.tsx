@@ -24,6 +24,16 @@ const SubmissionsTableHeader = ({ onSort }: TableHeaderProps) => {
         <TableHead>
           <Button 
             variant="ghost" 
+            onClick={() => onSort('timestamp')}
+            className="flex items-center gap-1 hover:bg-gray-100"
+          >
+            Date Submitted
+            <ArrowUpDown className="h-4 w-4" />
+          </Button>
+        </TableHead>
+        <TableHead>
+          <Button 
+            variant="ghost" 
             onClick={() => onSort('dob')}
             className="flex items-center gap-1 hover:bg-gray-100"
           >

@@ -87,6 +87,12 @@ export const useSubmissionsTable = (submissions: FormSubmission[]) => {
 
       if (aValue === undefined || bValue === undefined) return 0;
 
+      if (sortConfig.key === 'timestamp') {
+        const dateA = new Date(aValue as string).getTime();
+        const dateB = new Date(bValue as string).getTime();
+        return sortConfig.direction === 'asc' ? dateA - dateB : dateB - dateA;
+      }
+
       const comparison = String(aValue).localeCompare(String(bValue));
       return sortConfig.direction === 'asc' ? comparison : -comparison;
     });

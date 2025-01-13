@@ -2,6 +2,7 @@ import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { FormSubmission } from "@/types/form";
 import { jsPDF } from "jspdf";
 import { useToast } from "@/components/ui/use-toast";
+import { format } from "date-fns";
 import TableActions from "./TableActions";
 import StatusBadge from "./StatusBadge";
 import SubmissionsTableHeader from "./TableHeader";
@@ -22,6 +23,14 @@ const SubmissionsList = ({
   onSort 
 }: SubmissionsListProps) => {
   const { toast } = useToast();
+
+  const formatDate = (timestamp: string) => {
+    try {
+      return format(new Date(timestamp), 'MMM dd, yyyy h:mm a');
+    } catch (error) {
+      return 'Invalid date';
+    }
+  };
 
   const handleExportPDF = (submission: FormSubmission) => {
     try {
@@ -91,6 +100,7 @@ const SubmissionsList = ({
         {submissions.map((submission, index) => (
           <TableRow key={index} className="cursor-pointer hover:bg-gray-50">
             <TableCell>{submission.name}</TableCell>
+            <TableCell>{formatDate(submission.timestamp)}</TableCell>
             <TableCell>{submission.dob}</TableCell>
             <TableCell>{submission.age}</TableCell>
             <TableCell>
@@ -109,7 +119,7 @@ const SubmissionsList = ({
         ))}
         {submissions.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
               No submissions found
             </TableCell>
           </TableRow>
