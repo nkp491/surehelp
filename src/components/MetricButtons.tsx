@@ -26,7 +26,6 @@ const MetricButtons = ({
 
   const handleIncrement = () => {
     if (metric === 'ap') {
-      // Increment by $1.00 (100 cents)
       handleInputChange(metric as MetricType, (currentValue + 100).toString());
       onIncrement();
     } else {
@@ -39,7 +38,6 @@ const MetricButtons = ({
     if (currentValue <= 0) return;
     
     if (metric === 'ap') {
-      // Decrement by $1.00 (100 cents), but not below 0
       const newValue = Math.max(0, currentValue - 100);
       handleInputChange(metric as MetricType, newValue.toString());
       onDecrement();
@@ -65,10 +63,24 @@ const MetricButtons = ({
         return;
       }
 
-      // Convert dollar amount to cents
-      const dollars = parseFloat(inputValue);
-      if (!isNaN(dollars)) {
-        const cents = Math.round(dollars * 100);
+      // Store the exact input value in cents
+      // For example, if user types "3", we store 300 cents ($3.00)
+      // If user types "3.50", we store 350 cents ($3.50)
+      const cleanInput = inputValue.replace(/[^\d.]/g, '');
+      const parts = cleanInput.split('.');
+      let cents = 0;
+
+      if (parts.length === 1) {
+        // No decimal point, treat as whole dollars
+        cents = parseInt(parts[0]) * 100;
+      } else if (parts.length === 2) {
+        // Has decimal point
+        const dollars = parseInt(parts[0]) || 0;
+        const decimal = parts[1].padEnd(2, '0').slice(0, 2);
+        cents = (dollars * 100) + parseInt(decimal);
+      }
+
+      if (!isNaN(cents)) {
         handleInputChange(metric as MetricType, cents.toString());
       }
     } else {
@@ -84,7 +96,6 @@ const MetricButtons = ({
 
   const getDisplayValue = () => {
     if (metric === 'ap') {
-      // Convert cents to dollars with 2 decimal places
       const dollars = currentValue / 100;
       return dollars.toFixed(2);
     }
