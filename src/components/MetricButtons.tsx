@@ -24,7 +24,7 @@ const MetricButtons = ({
 
   const formatValue = (metric: string, value: number) => {
     if (metric === 'ap') {
-      return `${(value / 100).toFixed(2)}`;
+      return (value / 100).toFixed(2);
     }
     return value.toString();
   };
@@ -52,10 +52,21 @@ const MetricButtons = ({
     let value = e.target.value;
     
     if (metric === 'ap') {
-      // Convert dollar amount to cents
+      // Remove any non-numeric characters except decimal point
+      value = value.replace(/[^\d.]/g, '');
+      // Ensure only one decimal point
+      const parts = value.split('.');
+      if (parts.length > 2) {
+        value = parts[0] + '.' + parts.slice(1).join('');
+      }
+      // Limit to 2 decimal places
+      if (parts[1]?.length > 2) {
+        value = parts[0] + '.' + parts[1].slice(0, 2);
+      }
+      
       const numericValue = parseFloat(value) * 100;
       if (!isNaN(numericValue)) {
-        handleInputChange(metric as MetricType, numericValue.toString());
+        handleInputChange(metric as MetricType, Math.round(numericValue).toString());
       }
     } else {
       // For non-currency metrics, only allow positive integers
