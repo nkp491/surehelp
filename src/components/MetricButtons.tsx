@@ -22,8 +22,10 @@ const MetricButtons = ({
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
-  const formatValue = (metric: string, value: number) => {
+  // Format the display value for the input
+  const formatDisplayValue = (metric: string, value: number) => {
     if (metric === 'ap') {
+      // Convert cents to dollars for display
       return (value / 100).toFixed(2);
     }
     return value.toString();
@@ -32,19 +34,28 @@ const MetricButtons = ({
   const currentValue = metrics[metric as MetricType];
 
   const handleIncrement = () => {
-    const newValue = metric === 'ap' 
-      ? currentValue + 100 
-      : currentValue + 1;
-    handleInputChange(metric as MetricType, newValue.toString());
+    if (metric === 'ap') {
+      // For AP, increment by $1 (100 cents)
+      const newValue = currentValue + 100;
+      handleInputChange(metric as MetricType, newValue.toString());
+    } else {
+      const newValue = currentValue + 1;
+      handleInputChange(metric as MetricType, newValue.toString());
+    }
     onIncrement();
   };
 
   const handleDecrement = () => {
     if (currentValue <= 0) return;
-    const newValue = metric === 'ap'
-      ? Math.max(0, currentValue - 100)
-      : Math.max(0, currentValue - 1);
-    handleInputChange(metric as MetricType, newValue.toString());
+    
+    if (metric === 'ap') {
+      // For AP, decrement by $1 (100 cents)
+      const newValue = Math.max(0, currentValue - 100);
+      handleInputChange(metric as MetricType, newValue.toString());
+    } else {
+      const newValue = Math.max(0, currentValue - 1);
+      handleInputChange(metric as MetricType, newValue.toString());
+    }
     onDecrement();
   };
 
@@ -66,9 +77,14 @@ const MetricButtons = ({
         value = parts[0] + '.' + parts[1].slice(0, 2);
       }
 
-      // Convert to cents for storage
-      const cents = Math.round(parseFloat(value || '0') * 100);
-      handleInputChange(metric as MetricType, cents.toString());
+      // Convert to cents for storage - only if value is not empty
+      if (value !== '') {
+        const dollarAmount = parseFloat(value);
+        if (!isNaN(dollarAmount)) {
+          const cents = Math.round(dollarAmount * 100);
+          handleInputChange(metric as MetricType, cents.toString());
+        }
+      }
     } else {
       // For non-currency metrics, only allow positive integers
       const numericValue = parseInt(value);
@@ -90,7 +106,7 @@ const MetricButtons = ({
           )}
           <Input
             type="text"
-            value={metric === 'ap' ? formatValue(metric, currentValue) : currentValue}
+            value={formatDisplayValue(metric, currentValue)}
             onChange={handleDirectInput}
             className={`text-center w-24 font-bold ${metric === 'ap' ? 'pl-7' : ''}`}
             min="0"
