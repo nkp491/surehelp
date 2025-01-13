@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus, Minus } from "lucide-react";
+import { useMetrics } from "@/contexts/MetricsContext";
 
 type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
 
@@ -17,6 +18,8 @@ const MetricButtons = ({
   onDecrement,
   value,
 }: MetricButtonsProps) => {
+  const { metrics } = useMetrics();
+  
   const formatMetricName = (metric: string) => {
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
@@ -28,6 +31,9 @@ const MetricButtons = ({
     return value.toString();
   };
 
+  // Use the value from context instead of prop
+  const currentValue = metrics[metric as MetricType] || 0;
+
   return (
     <Card className="p-4">
       <div className="flex flex-col items-center gap-2">
@@ -35,7 +41,7 @@ const MetricButtons = ({
           {formatMetricName(metric)}
         </h3>
         <div className="text-xl font-bold mb-2">
-          {formatValue(metric, value)}
+          {formatValue(metric, currentValue)}
         </div>
         <div className="flex items-center gap-2 w-full justify-center">
           <Button

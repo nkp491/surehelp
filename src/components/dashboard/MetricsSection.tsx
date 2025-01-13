@@ -2,23 +2,24 @@ import { Card } from "@/components/ui/card";
 import MetricButtons from "@/components/MetricButtons";
 import { useToast } from "@/hooks/use-toast";
 import { useMetrics } from "@/contexts/MetricsContext";
+import { MetricType } from "@/types/metrics";
 
 const MetricsSection = () => {
   const { toast } = useToast();
   const { metrics, handleInputChange } = useMetrics();
 
   const updateMetric = (metric: string, increment: boolean) => {
-    const currentValue = metrics[metric];
+    const currentValue = metrics[metric as MetricType];
     let newValue;
     
     if (metric === 'ap') {
       newValue = currentValue + (increment ? 100 : -100);
       if (newValue < 0) newValue = 0;
-      handleInputChange(metric as any, (newValue / 100).toString());
+      handleInputChange(metric as MetricType, (newValue / 100).toString());
     } else {
       newValue = currentValue + (increment ? 1 : -1);
       if (newValue < 0) newValue = 0;
-      handleInputChange(metric as any, newValue.toString());
+      handleInputChange(metric as MetricType, newValue.toString());
     }
     
     toast({
