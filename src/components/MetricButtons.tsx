@@ -26,64 +26,57 @@ const MetricButtons = ({
 
   const handleIncrement = () => {
     if (metric === 'ap') {
-      const newValue = currentValue + 100;
-      handleInputChange(metric as MetricType, newValue.toString());
+      // Increment by $1.00 (100 cents)
+      handleInputChange(metric as MetricType, (currentValue + 100).toString());
+      onIncrement();
     } else {
-      const newValue = currentValue + 1;
-      handleInputChange(metric as MetricType, newValue.toString());
+      handleInputChange(metric as MetricType, (currentValue + 1).toString());
+      onIncrement();
     }
-    onIncrement();
   };
 
   const handleDecrement = () => {
     if (currentValue <= 0) return;
     
     if (metric === 'ap') {
+      // Decrement by $1.00 (100 cents), but not below 0
       const newValue = Math.max(0, currentValue - 100);
       handleInputChange(metric as MetricType, newValue.toString());
+      onDecrement();
     } else {
       const newValue = Math.max(0, currentValue - 1);
       handleInputChange(metric as MetricType, newValue.toString());
+      onDecrement();
     }
-    onDecrement();
   };
 
   const handleDirectInput = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let value = e.target.value;
-    
+    const inputValue = e.target.value;
+
     if (metric === 'ap') {
-      // Allow empty input for deletion
-      if (value === '') {
+      // Handle empty input
+      if (inputValue === '') {
         handleInputChange(metric as MetricType, '0');
         return;
       }
 
-      // Remove any non-numeric characters except decimal point
-      value = value.replace(/[^\d.]/g, '');
-      
-      // Ensure only one decimal point
-      const parts = value.split('.');
-      if (parts.length > 2) {
-        value = parts[0] + '.' + parts.slice(1).join('');
+      // Only allow numbers and one decimal point
+      if (!/^\d*\.?\d*$/.test(inputValue)) {
+        return;
       }
 
-      // Limit to 2 decimal places
-      if (parts[1]?.length > 2) {
-        value = parts[0] + '.' + parts[1].slice(0, 2);
-      }
-
-      // Convert to cents for storage
-      const dollarAmount = parseFloat(value);
-      if (!isNaN(dollarAmount)) {
-        const cents = Math.round(dollarAmount * 100);
+      // Convert dollar amount to cents
+      const dollars = parseFloat(inputValue);
+      if (!isNaN(dollars)) {
+        const cents = Math.round(dollars * 100);
         handleInputChange(metric as MetricType, cents.toString());
       }
     } else {
-      // For non-currency metrics, only allow positive integers
-      const numericValue = parseInt(value);
-      if (!isNaN(numericValue) && numericValue >= 0) {
-        handleInputChange(metric as MetricType, numericValue.toString());
-      } else if (value === '') {
+      // For non-AP metrics, only allow positive integers
+      const numValue = parseInt(inputValue);
+      if (!isNaN(numValue) && numValue >= 0) {
+        handleInputChange(metric as MetricType, numValue.toString());
+      } else if (inputValue === '') {
         handleInputChange(metric as MetricType, '0');
       }
     }
@@ -91,7 +84,9 @@ const MetricButtons = ({
 
   const getDisplayValue = () => {
     if (metric === 'ap') {
-      return (currentValue / 100).toFixed(2);
+      // Convert cents to dollars with 2 decimal places
+      const dollars = currentValue / 100;
+      return dollars.toFixed(2);
     }
     return currentValue.toString();
   };
