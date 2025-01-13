@@ -14,20 +14,20 @@ const SubmissionsTableHeader = ({ onSort }: TableHeaderProps) => {
         <TableHead>
           <Button 
             variant="ghost" 
-            onClick={() => onSort('name')}
+            onClick={() => onSort('timestamp')}
             className="flex items-center gap-1 hover:bg-gray-100"
           >
-            Name
+            Date Submitted
             <ArrowUpDown className="h-4 w-4" />
           </Button>
         </TableHead>
         <TableHead>
           <Button 
             variant="ghost" 
-            onClick={() => onSort('timestamp')}
+            onClick={() => onSort('name')}
             className="flex items-center gap-1 hover:bg-gray-100"
           >
-            Date Submitted
+            Name
             <ArrowUpDown className="h-4 w-4" />
           </Button>
         </TableHead>

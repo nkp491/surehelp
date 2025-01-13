@@ -26,7 +26,7 @@ const SubmissionsList = ({
 
   const formatDate = (timestamp: string) => {
     try {
-      return format(new Date(timestamp), 'MMM dd, yyyy h:mm a');
+      return format(new Date(timestamp), 'MMM dd, yyyy');
     } catch (error) {
       return 'Invalid date';
     }
@@ -98,8 +98,8 @@ const SubmissionsList = ({
       <TableBody>
         {submissions.map((submission, index) => (
           <TableRow key={index} className="cursor-pointer hover:bg-gray-50">
-            <TableCell>{submission.name}</TableCell>
             <TableCell>{formatDate(submission.timestamp)}</TableCell>
+            <TableCell>{submission.name}</TableCell>
             <TableCell>{submission.dob}</TableCell>
             <TableCell>
               <StatusBadge outcome={submission.outcome} />
