@@ -9,7 +9,7 @@ const MetricsSection = () => {
   const { metrics, handleInputChange } = useMetrics();
 
   const updateMetric = (metric: string, increment: boolean) => {
-    const currentValue = metrics[metric as MetricType] || 0;
+    const currentValue = metrics[metric as MetricType];
     const newValue = increment 
       ? metric === 'ap' 
         ? currentValue + 100 

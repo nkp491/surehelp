@@ -28,7 +28,7 @@ const MetricButtons = ({
     return value.toString();
   };
 
-  const currentValue = metrics[metric as MetricType] || 0;
+  const currentValue = metrics[metric as MetricType];
 
   const handleIncrement = () => {
     const newValue = metric === 'ap' 
