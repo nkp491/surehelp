@@ -44,16 +44,6 @@ const SubmissionsTableHeader = ({ onSort }: TableHeaderProps) => {
         <TableHead>
           <Button 
             variant="ghost" 
-            onClick={() => onSort('age')}
-            className="flex items-center gap-1 hover:bg-gray-100"
-          >
-            Age
-            <ArrowUpDown className="h-4 w-4" />
-          </Button>
-        </TableHead>
-        <TableHead>
-          <Button 
-            variant="ghost" 
             onClick={() => onSort('outcome')}
             className="flex items-center gap-1 hover:bg-gray-100"
           >

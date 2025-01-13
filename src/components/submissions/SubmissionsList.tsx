@@ -60,7 +60,6 @@ const SubmissionsList = ({
 
       addField("Name", submission.name);
       addField("Date of Birth", submission.dob);
-      addField("Age", submission.age);
       addField("Height", submission.height);
       addField("Weight", submission.weight);
 
@@ -102,7 +101,6 @@ const SubmissionsList = ({
             <TableCell>{submission.name}</TableCell>
             <TableCell>{formatDate(submission.timestamp)}</TableCell>
             <TableCell>{submission.dob}</TableCell>
-            <TableCell>{submission.age}</TableCell>
             <TableCell>
               <StatusBadge outcome={submission.outcome} />
             </TableCell>
@@ -119,7 +117,7 @@ const SubmissionsList = ({
         ))}
         {submissions.length === 0 && (
           <TableRow>
-            <TableCell colSpan={6} className="text-center py-8 text-gray-500">
+            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
               No submissions found
             </TableCell>
           </TableRow>
