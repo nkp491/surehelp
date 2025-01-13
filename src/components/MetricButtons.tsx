@@ -26,7 +26,7 @@ const MetricButtons = ({
 
   const handleIncrement = () => {
     if (metric === 'ap') {
-      const newValue = currentValue + 100; // Add $1.00
+      const newValue = currentValue + 100;
       handleInputChange(metric as MetricType, newValue.toString());
     } else {
       const newValue = currentValue + 1;
@@ -39,7 +39,7 @@ const MetricButtons = ({
     if (currentValue <= 0) return;
     
     if (metric === 'ap') {
-      const newValue = Math.max(0, currentValue - 100); // Subtract $1.00
+      const newValue = Math.max(0, currentValue - 100);
       handleInputChange(metric as MetricType, newValue.toString());
     } else {
       const newValue = Math.max(0, currentValue - 1);
@@ -52,6 +52,12 @@ const MetricButtons = ({
     let value = e.target.value;
     
     if (metric === 'ap') {
+      // Allow empty input for deletion
+      if (value === '') {
+        handleInputChange(metric as MetricType, '0');
+        return;
+      }
+
       // Remove any non-numeric characters except decimal point
       value = value.replace(/[^\d.]/g, '');
       
@@ -60,8 +66,13 @@ const MetricButtons = ({
       if (parts.length > 2) {
         value = parts[0] + '.' + parts.slice(1).join('');
       }
-      
-      // Convert the dollar amount to cents directly
+
+      // Limit to 2 decimal places
+      if (parts[1]?.length > 2) {
+        value = parts[0] + '.' + parts[1].slice(0, 2);
+      }
+
+      // Convert to cents for storage
       const dollarAmount = parseFloat(value);
       if (!isNaN(dollarAmount)) {
         const cents = Math.round(dollarAmount * 100);
@@ -72,11 +83,12 @@ const MetricButtons = ({
       const numericValue = parseInt(value);
       if (!isNaN(numericValue) && numericValue >= 0) {
         handleInputChange(metric as MetricType, numericValue.toString());
+      } else if (value === '') {
+        handleInputChange(metric as MetricType, '0');
       }
     }
   };
 
-  // Format display value for AP (convert cents to dollars)
   const getDisplayValue = () => {
     if (metric === 'ap') {
       return (currentValue / 100).toFixed(2);
