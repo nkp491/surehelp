@@ -23,6 +23,14 @@ const MetricCard = ({
   };
 
   const formatValue = (value: number) => {
+    if (metric === 'ap') {
+      return new Intl.NumberFormat('en-US', {
+        style: 'currency',
+        currency: 'USD',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2,
+      }).format(value / 100);
+    }
     return value.toString();
   };
 
