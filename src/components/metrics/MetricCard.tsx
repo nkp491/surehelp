@@ -23,9 +23,6 @@ const MetricCard = ({
   };
 
   const formatValue = (value: number) => {
-    if (isCurrency) {
-      return `$${(value / 100).toFixed(2)}`;
-    }
     return value.toString();
   };
 

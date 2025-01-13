@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Card } from "./ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./ui/select";
-import { TrendingUp, TrendingDown, ChartBar, ChartLine, ChartPie } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import MetricCard from "./metrics/MetricCard";
 import RatioCard from "./metrics/RatioCard";
@@ -16,7 +15,7 @@ interface AgentMetrics {
   sits: number;
   sales: number;
   ap: number;
-  [key: string]: number; // Add this line to include the index signature
+  [key: string]: number;
 }
 
 const mockAgents = [
@@ -40,7 +39,6 @@ const AgentPerformance = () => {
 
   const handleAgentChange = (agentId: string) => {
     setSelectedAgent(agentId);
-    // Mock data - in a real app, this would fetch from your backend
     const mockMetrics = {
       leads: Math.floor(Math.random() * 100),
       calls: Math.floor(Math.random() * 200),
@@ -60,7 +58,7 @@ const AgentPerformance = () => {
   const ratios = calculateRatios(metrics);
   const chartData = Object.entries(metrics).map(([key, value]) => ({
     name: key.charAt(0).toUpperCase() + key.slice(1),
-    value: key === 'ap' ? value / 100 : value,
+    value: value,
   }));
 
   return (
@@ -90,7 +88,7 @@ const AgentPerformance = () => {
                   key={metric}
                   metric={metric}
                   value={value}
-                  inputValue={metric === 'ap' ? (value / 100).toFixed(2) : value.toString()}
+                  inputValue={value.toString()}
                   onInputChange={() => {}}
                   isCurrency={metric === 'ap'}
                   trend={10}
