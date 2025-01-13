@@ -1,4 +1,4 @@
-import { MetricCount, TimePeriod } from "@/types/metrics";
+import { MetricCount, TimePeriod } from '@/types/metrics';
 
 export const useMetricsStorage = () => {
   const loadDailyMetrics = (): MetricCount => {

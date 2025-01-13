@@ -1,29 +1,28 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+import { createContext, useContext, useEffect, ReactNode } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { format } from "date-fns";
 import { useMetricsStorage } from "@/hooks/useMetricsStorage";
 import { useMetricsCalculations } from "@/hooks/useMetricsCalculations";
-import { MetricType, TimePeriod, MetricCount, MetricsContextType } from "@/types/metrics";
+import { useMetricsState } from "@/hooks/useMetricsState";
+import { MetricType, TimePeriod, MetricsContextType } from "@/types/metrics";
 
 const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 
 export const MetricsProvider = ({ children }: { children: ReactNode }) => {
-  const [metrics, setMetrics] = useState<MetricCount>({
-    leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
-  });
-  const [previousMetrics, setPreviousMetrics] = useState<MetricCount>({
-    leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
-  });
-  const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
-  const [trends, setTrends] = useState<{[key: string]: number}>({});
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
+  const {
+    metrics,
+    previousMetrics,
+    metricInputs,
+    timePeriod,
+    trends,
+    dateRange,
+    setMetrics,
+    setPreviousMetrics,
+    setTrends,
+    setDateRange,
+    handleInputChange,
+    setTimePeriod,
+  } = useMetricsState();
 
   const { 
     loadDailyMetrics,
@@ -65,29 +64,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
     const newTrends = calculateTrends(parsedDailyMetrics, previousMetricsData);
     setTrends(newTrends);
-  };
-
-  const handleInputChange = (metric: MetricType, value: string) => {
-    setMetricInputs(prev => ({
-      ...prev,
-      [metric]: value
-    }));
-
-    const numericValue = parseInt(value) || 0;
-    if (!isNaN(numericValue)) {
-      updateMetricValue(metric, numericValue);
-    }
-  };
-
-  const updateMetricValue = (metric: MetricType, value: number) => {
-    setMetrics(prev => {
-      const newMetrics = {
-        ...prev,
-        [metric]: value
-      };
-      saveDailyMetrics(newMetrics);
-      return newMetrics;
-    });
   };
 
   const handleTimePeriodChange = (period: TimePeriod) => {
