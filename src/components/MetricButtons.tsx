@@ -25,69 +25,29 @@ const MetricButtons = ({
   const currentValue = metrics[metric as MetricType];
 
   const handleIncrement = () => {
-    if (metric === 'ap') {
-      const newValue = currentValue + 100; // Add $1.00
-      handleInputChange(metric as MetricType, newValue.toString());
-      onIncrement();
-    } else {
-      handleInputChange(metric as MetricType, (currentValue + 1).toString());
-      onIncrement();
-    }
+    handleInputChange(metric as MetricType, (currentValue + 1).toString());
+    onIncrement();
   };
 
   const handleDecrement = () => {
     if (currentValue <= 0) return;
-    
-    if (metric === 'ap') {
-      const newValue = Math.max(0, currentValue - 100); // Subtract $1.00
-      handleInputChange(metric as MetricType, newValue.toString());
-      onDecrement();
-    } else {
-      const newValue = Math.max(0, currentValue - 1);
-      handleInputChange(metric as MetricType, newValue.toString());
-      onDecrement();
-    }
+    const newValue = Math.max(0, currentValue - 1);
+    handleInputChange(metric as MetricType, newValue.toString());
+    onDecrement();
   };
 
   const handleDirectInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const inputValue = e.target.value;
 
-    if (metric === 'ap') {
-      // Allow empty input for deletion
-      if (inputValue === '') {
-        handleInputChange(metric as MetricType, '0');
-        return;
-      }
-
-      // Only allow numbers and one decimal point
-      if (!/^\d*\.?\d*$/.test(inputValue)) {
-        return;
-      }
-
-      // Convert dollar amount directly to cents
-      const dollarAmount = parseFloat(inputValue);
-      if (!isNaN(dollarAmount)) {
-        const cents = Math.round(dollarAmount * 100);
-        handleInputChange(metric as MetricType, cents.toString());
-      }
-    } else {
-      // For non-AP metrics, only allow positive integers
-      if (inputValue === '') {
-        handleInputChange(metric as MetricType, '0');
-        return;
-      }
-      const numValue = parseInt(inputValue);
-      if (!isNaN(numValue) && numValue >= 0) {
-        handleInputChange(metric as MetricType, numValue.toString());
-      }
+    if (inputValue === '') {
+      handleInputChange(metric as MetricType, '0');
+      return;
     }
-  };
 
-  const getDisplayValue = () => {
-    if (metric === 'ap') {
-      return (currentValue / 100).toFixed(2);
+    const numValue = parseInt(inputValue);
+    if (!isNaN(numValue) && numValue >= 0) {
+      handleInputChange(metric as MetricType, numValue.toString());
     }
-    return currentValue.toString();
   };
 
   return (
@@ -97,14 +57,11 @@ const MetricButtons = ({
           {formatMetricName(metric)}
         </h3>
         <div className="relative">
-          {metric === 'ap' && (
-            <span className="absolute left-3 top-2.5">$</span>
-          )}
           <Input
             type="text"
-            value={getDisplayValue()}
+            value={currentValue.toString()}
             onChange={handleDirectInput}
-            className={`text-center w-24 font-bold ${metric === 'ap' ? 'pl-7' : ''}`}
+            className="text-center w-24 font-bold"
             min="0"
           />
         </div>
