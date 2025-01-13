@@ -22,21 +22,11 @@ const MetricButtons = ({
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
-  // Format the display value for the input
-  const formatDisplayValue = (metric: string, value: number) => {
-    if (metric === 'ap') {
-      // Convert cents to dollars for display
-      return (value / 100).toFixed(2);
-    }
-    return value.toString();
-  };
-
   const currentValue = metrics[metric as MetricType];
 
   const handleIncrement = () => {
     if (metric === 'ap') {
-      // For AP, increment by $1 (100 cents)
-      const newValue = currentValue + 100;
+      const newValue = currentValue + 100; // Add $1.00
       handleInputChange(metric as MetricType, newValue.toString());
     } else {
       const newValue = currentValue + 1;
@@ -49,8 +39,7 @@ const MetricButtons = ({
     if (currentValue <= 0) return;
     
     if (metric === 'ap') {
-      // For AP, decrement by $1 (100 cents)
-      const newValue = Math.max(0, currentValue - 100);
+      const newValue = Math.max(0, currentValue - 100); // Subtract $1.00
       handleInputChange(metric as MetricType, newValue.toString());
     } else {
       const newValue = Math.max(0, currentValue - 1);
@@ -72,18 +61,11 @@ const MetricButtons = ({
         value = parts[0] + '.' + parts.slice(1).join('');
       }
       
-      // Limit to 2 decimal places
-      if (parts[1]?.length > 2) {
-        value = parts[0] + '.' + parts[1].slice(0, 2);
-      }
-
-      // Convert to cents for storage - only if value is not empty
-      if (value !== '') {
-        const dollarAmount = parseFloat(value);
-        if (!isNaN(dollarAmount)) {
-          const cents = Math.round(dollarAmount * 100);
-          handleInputChange(metric as MetricType, cents.toString());
-        }
+      // Convert the dollar amount to cents directly
+      const dollarAmount = parseFloat(value);
+      if (!isNaN(dollarAmount)) {
+        const cents = Math.round(dollarAmount * 100);
+        handleInputChange(metric as MetricType, cents.toString());
       }
     } else {
       // For non-currency metrics, only allow positive integers
@@ -92,6 +74,14 @@ const MetricButtons = ({
         handleInputChange(metric as MetricType, numericValue.toString());
       }
     }
+  };
+
+  // Format display value for AP (convert cents to dollars)
+  const getDisplayValue = () => {
+    if (metric === 'ap') {
+      return (currentValue / 100).toFixed(2);
+    }
+    return currentValue.toString();
   };
 
   return (
@@ -106,7 +96,7 @@ const MetricButtons = ({
           )}
           <Input
             type="text"
-            value={formatDisplayValue(metric, currentValue)}
+            value={getDisplayValue()}
             onChange={handleDirectInput}
             className={`text-center w-24 font-bold ${metric === 'ap' ? 'pl-7' : ''}`}
             min="0"
