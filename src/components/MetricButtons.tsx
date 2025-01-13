@@ -2,14 +2,12 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Plus, Minus } from "lucide-react";
 import { useMetrics } from "@/contexts/MetricsContext";
-
-type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" | "sales" | "ap";
+import { MetricType } from "@/types/metrics";
 
 interface MetricButtonsProps {
   metric: string;
   onIncrement: () => void;
   onDecrement: () => void;
-  value: number;
 }
 
 const MetricButtons = ({
