@@ -52,21 +52,28 @@ const MetricButtons = ({
     let value = e.target.value;
     
     if (metric === 'ap') {
-      // Remove any non-numeric characters except decimal point
+      // Remove all non-numeric characters except decimal point
       value = value.replace(/[^\d.]/g, '');
-      // Ensure only one decimal point
+      
+      // Handle decimal points
       const parts = value.split('.');
       if (parts.length > 2) {
+        // Keep only first decimal point
         value = parts[0] + '.' + parts.slice(1).join('');
       }
-      // Limit to 2 decimal places
+      
+      // Limit decimal places to 2
       if (parts[1]?.length > 2) {
         value = parts[0] + '.' + parts[1].slice(0, 2);
       }
-      
-      const numericValue = parseFloat(value) * 100;
-      if (!isNaN(numericValue)) {
-        handleInputChange(metric as MetricType, Math.round(numericValue).toString());
+
+      // Convert dollar amount to cents for storage
+      if (value !== '') {
+        const dollarAmount = parseFloat(value);
+        if (!isNaN(dollarAmount)) {
+          const cents = Math.round(dollarAmount * 100);
+          handleInputChange(metric as MetricType, cents.toString());
+        }
       }
     } else {
       // For non-currency metrics, only allow positive integers
@@ -83,13 +90,18 @@ const MetricButtons = ({
         <h3 className="font-semibold text-lg capitalize">
           {formatMetricName(metric)}
         </h3>
-        <Input
-          type="text"
-          value={metric === 'ap' ? formatValue(metric, currentValue) : currentValue}
-          onChange={handleDirectInput}
-          className="text-center w-24 font-bold"
-          min="0"
-        />
+        <div className="relative">
+          {metric === 'ap' && (
+            <span className="absolute left-3 top-2.5">$</span>
+          )}
+          <Input
+            type="text"
+            value={metric === 'ap' ? formatValue(metric, currentValue) : currentValue}
+            onChange={handleDirectInput}
+            className={`text-center w-24 font-bold ${metric === 'ap' ? 'pl-7' : ''}`}
+            min="0"
+          />
+        </div>
         <div className="flex items-center gap-2 w-full justify-center">
           <Button
             onClick={handleDecrement}
