@@ -63,24 +63,10 @@ const MetricButtons = ({
         return;
       }
 
-      // Store the exact input value in cents
-      // For example, if user types "3", we store 300 cents ($3.00)
-      // If user types "3.50", we store 350 cents ($3.50)
-      const cleanInput = inputValue.replace(/[^\d.]/g, '');
-      const parts = cleanInput.split('.');
-      let cents = 0;
-
-      if (parts.length === 1) {
-        // No decimal point, treat as whole dollars
-        cents = parseInt(parts[0]) * 100;
-      } else if (parts.length === 2) {
-        // Has decimal point
-        const dollars = parseInt(parts[0]) || 0;
-        const decimal = parts[1].padEnd(2, '0').slice(0, 2);
-        cents = (dollars * 100) + parseInt(decimal);
-      }
-
-      if (!isNaN(cents)) {
+      // Convert the input value directly to cents
+      const numericValue = parseFloat(inputValue);
+      if (!isNaN(numericValue)) {
+        const cents = Math.round(numericValue * 100);
         handleInputChange(metric as MetricType, cents.toString());
       }
     } else {
