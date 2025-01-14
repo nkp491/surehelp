@@ -4,22 +4,22 @@
  
 @layer base {
   :root {
-    --background: 39 100% 98%; /* #faf7f0 background for better readability */
+    --background: 39 100% 98%; /* #fbfaf8 background for better readability */
     --foreground: 201 28% 38%; /* #2A6F97 for text - good contrast */
 
     --card: 196 41% 59%; /* #6CAEC2 */
-    --card-foreground: 39 100% 98%; /* #faf7f0 text on card for contrast */
+    --card-foreground: 39 100% 98%; /* #fbfaf8 text on card for contrast */
  
-    --popover: 39 100% 98%; /* #faf7f0 background for popover */
+    --popover: 39 100% 98%; /* #fbfaf8 background for popover */
     --popover-foreground: 201 28% 38%; /* #2A6F97 */
  
     --primary: 201 28% 38%; /* #2A6F97 */
-    --primary-foreground: 39 100% 98%; /* #faf7f0 */
+    --primary-foreground: 39 100% 98%; /* #fbfaf8 */
  
     --secondary: 196 41% 59%; /* #6CAEC2 */
-    --secondary-foreground: 39 100% 98%; /* #faf7f0 */
+    --secondary-foreground: 39 100% 98%; /* #fbfaf8 */
  
-    --muted: 39 100% 98%; /* #faf7f0 */
+    --muted: 39 100% 98%; /* #fbfaf8 */
     --muted-foreground: 201 28% 38%; /* #2A6F97 */
  
     --accent: 39 82% 91%; /* #FDF0D5 */
