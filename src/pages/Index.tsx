@@ -48,7 +48,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-[#6CAEC2]">
       <div className="container mx-auto py-8">
         <DashboardHeader 
           showSubmissions={showSubmissions}
