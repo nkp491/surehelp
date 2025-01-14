@@ -11,7 +11,7 @@ interface FormSectionProps {
 
 const FormSection = ({ section, fields, formData, setFormData, errors }: FormSectionProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 space-y-4">
+    <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">{section}</h2>
       <div className="space-y-4">
         {fields.map((field) => (
