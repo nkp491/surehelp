@@ -16,14 +16,14 @@ const BusinessMetricsContent = () => {
   }));
 
   return (
-    <Card className="w-full mb-12 p-8 shadow-lg border-2 bg-[#F1F1F1]">
+    <Card className="w-full mb-12 p-8 shadow-lg border-2 border-[#FFF9EE] bg-[#F1F1F1]">
       <div className="space-y-8">
-        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#FFF9EE]">
           <h2 className="text-3xl font-bold text-gray-900">Business Metrics</h2>
           <TimeControls />
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm space-y-8">
+        <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 border border-[#FFF9EE]">
           <MetricsGrid />
           <Separator className="my-8" />
           <RatiosGrid />
