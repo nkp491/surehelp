@@ -4,33 +4,33 @@
  
 @layer base {
   :root {
-    --background: 201 28% 38%; /* #2A6F97 */
-    --foreground: 0 0% 85%; /* #D9D9D9 */
+    --background: 0 0% 100%; /* White background for better readability */
+    --foreground: 201 28% 38%; /* #2A6F97 for text - good contrast */
 
     --card: 196 41% 59%; /* #6CAEC2 */
-    --card-foreground: 201 28% 38%; /* #2A6F97 */
+    --card-foreground: 0 0% 100%; /* White text on card for contrast */
  
-    --popover: 39 82% 91%; /* #FDF0D5 */
+    --popover: 0 0% 100%; /* White background for popover */
     --popover-foreground: 201 28% 38%; /* #2A6F97 */
  
     --primary: 201 28% 38%; /* #2A6F97 */
-    --primary-foreground: 0 0% 85%; /* #D9D9D9 */
+    --primary-foreground: 0 0% 100%; /* White */
  
     --secondary: 196 41% 59%; /* #6CAEC2 */
-    --secondary-foreground: 201 28% 38%; /* #2A6F97 */
+    --secondary-foreground: 0 0% 100%; /* White */
  
     --muted: 39 100% 97%; /* #FFF9EE */
     --muted-foreground: 201 28% 38%; /* #2A6F97 */
  
-    --accent: 43 100% 98%; /* #FFFCF6 */
+    --accent: 39 82% 91%; /* #FDF0D5 */
     --accent-foreground: 201 28% 38%; /* #2A6F97 */
  
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
 
-    --border: 201 28% 38%; /* #2A6F97 */
-    --input: 0 0% 85%; /* #D9D9D9 */
-    --ring: 196 41% 59%; /* #6CAEC2 */
+    --border: 196 41% 59%; /* #6CAEC2 */
+    --input: 0 0% 100%; /* White background for inputs */
+    --ring: 201 28% 38%; /* #2A6F97 */
  
     --radius: 0.5rem;
   }
