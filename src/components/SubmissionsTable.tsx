@@ -107,7 +107,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   };
 
   return (
-    <Card>
+    <Card className="bg-[#faf7f0]">
       <CardHeader>
         <div className="flex justify-between items-center">
           <CardTitle>Submitted Forms</CardTitle>
