@@ -110,7 +110,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     <Card className="bg-[#faf7f0]">
       <CardHeader>
         <div className="flex justify-between items-center">
-          <CardTitle>Submitted Forms</CardTitle>
+          <CardTitle className="text-[#2A6F97]">Submitted Forms</CardTitle>
           <Button
             onClick={handleExport}
             className="flex items-center gap-2"
