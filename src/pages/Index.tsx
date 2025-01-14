@@ -49,7 +49,7 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="bg-[#2A6F97] p-4 flex justify-start items-center">
+      <div className="bg-white p-4 flex justify-start items-center">
         <img 
           src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
           alt="SureHelp Logo" 
