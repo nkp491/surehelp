@@ -48,7 +48,7 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-white to-gray-50">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       <div className="bg-[#2A6F97] p-4 flex justify-center items-center">
         <img 
           src="/lovable-uploads/9d60127b-0766-4e4c-bf00-96a75a4681e6.png" 
