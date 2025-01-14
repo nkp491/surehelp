@@ -73,12 +73,12 @@ const MetricButtons = ({
   return (
     <Card className="p-4">
       <div className="flex flex-col items-center gap-2">
-        <h3 className="font-semibold text-lg capitalize text-primary">
+        <h3 className="font-semibold text-lg capitalize text-[#FFF9EE]">
           {formatMetricName(metric)}
         </h3>
         <div className="relative">
           {isAP && (
-            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-primary">
+            <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-[#FFF9EE]">
               $
             </span>
           )}
@@ -86,7 +86,7 @@ const MetricButtons = ({
             type="text"
             value={formatValue(currentValue, isAP)}
             onChange={handleDirectInput}
-            className={`text-center w-24 font-bold text-primary ${isAP ? 'pl-6' : ''}`}
+            className={`text-center w-24 font-bold text-[#FFF9EE] ${isAP ? 'pl-6' : ''}`}
             min="0"
             step={isAP ? "0.01" : "1"}
           />
