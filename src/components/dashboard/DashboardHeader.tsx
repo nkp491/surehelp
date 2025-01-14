@@ -26,7 +26,7 @@ const DashboardHeader = ({
   return (
     <div className="flex justify-between items-center mb-8">
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 mb-2">
           Business Metrics
         </h1>
         <p className="text-lg text-gray-600">
