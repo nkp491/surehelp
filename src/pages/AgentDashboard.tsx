@@ -2,7 +2,7 @@ import AgentPerformance from "@/components/AgentPerformance";
 
 const AgentDashboard = () => {
   return (
-    <div className="min-h-screen bg-[#6CAEC2]">
+    <div className="min-h-screen bg-gray-50">
       <AgentPerformance />
     </div>
   );
