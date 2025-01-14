@@ -4,7 +4,7 @@
  
 @layer base {
   :root {
-    --background: 196 29% 59%;
+    --background: 196 29% 59%; /* This is the HSL equivalent of #6CAEC2 */
     --foreground: 222.2 84% 4.9%;
 
     --card: 0 0% 100%;
@@ -41,6 +41,6 @@
     @apply border-border;
   }
   body {
-    @apply bg-[#6CAEC2] text-foreground;
+    @apply bg-background text-foreground;
   }
 }
