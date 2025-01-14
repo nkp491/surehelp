@@ -1,90 +1,21 @@
-import { useState } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
-import { Separator } from "@/components/ui/separator";
-import SubmittedForms from "./SubmittedForms";
-import Dashboard from "./Dashboard";
-import ManagerDashboard from "./ManagerDashboard";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import MetricsSection from "@/components/dashboard/MetricsSection";
-import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection";
-import { MetricsProvider } from "@/contexts/MetricsContext";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 
-const Index = () => {
-  const [isFormOpen, setIsFormOpen] = useState(true);
-  const [showSubmissions, setShowSubmissions] = useState(false);
-  const [showManagerDashboard, setShowManagerDashboard] = useState(false);
-  const [showDashboard, setShowDashboard] = useState(false);
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const handleSubmissionsClick = () => {
-    if (location.pathname === '/submitted-forms') {
-      setShowSubmissions(false);
-      navigate('/');
-    } else {
-      setShowSubmissions(true);
-      navigate('/submitted-forms');
-    }
-  };
-
-  const handleManagerDashboardClick = () => {
-    if (location.pathname === '/manager-dashboard') {
-      setShowManagerDashboard(false);
-      navigate('/');
-    } else {
-      setShowManagerDashboard(true);
-      navigate('/manager-dashboard');
-    }
-  };
-
-  const handleDashboardClick = () => {
-    if (location.pathname === '/metrics') {
-      setShowDashboard(false);
-      navigate('/');
-    } else {
-      setShowDashboard(true);
-      navigate('/metrics');
-    }
-  };
-
+export default function Index() {
   return (
-    <div className="min-h-screen bg-[#6CAEC2]">
-      <div className="container mx-auto py-8">
-        <DashboardHeader 
-          showSubmissions={showSubmissions}
-          onSubmissionsClick={handleSubmissionsClick}
-          showManagerDashboard={showManagerDashboard}
-          onManagerDashboardClick={handleManagerDashboardClick}
-          showDashboard={showDashboard}
-          onDashboardClick={handleDashboardClick}
-        />
-
-        <MetricsProvider>
-          <div className="space-y-8">
-            <MetricsSection />
-            <Routes>
-              {showSubmissions && (
-                <Route path="/submitted-forms" element={<SubmittedForms />} />
-              )}
-              {showDashboard && (
-                <Route path="/metrics" element={<Dashboard />} />
-              )}
-              {showManagerDashboard && (
-                <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-              )}
-            </Routes>
-          </div>
-        </MetricsProvider>
-
-        <Separator className="my-12" />
-        
-        <AssessmentFormSection 
-          isFormOpen={isFormOpen}
-          setIsFormOpen={setIsFormOpen}
-        />
+    <div className="min-h-screen bg-[#6CAEC2] flex items-center justify-center">
+      <div className="text-center space-y-6">
+        <h1 className="text-4xl font-bold text-white">Welcome to the Dashboard</h1>
+        <p className="text-white/80">Choose your role to continue</p>
+        <div className="space-x-4">
+          <Button asChild>
+            <Link to="/manager">Manager Dashboard</Link>
+          </Button>
+          <Button asChild>
+            <Link to="/agent">Agent Dashboard</Link>
+          </Button>
+        </div>
       </div>
     </div>
   );
-};
-
-export default Index;
+}
