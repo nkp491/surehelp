@@ -98,9 +98,9 @@ const SubmissionsList = ({
       <TableBody>
         {submissions.map((submission, index) => (
           <TableRow key={index} className="cursor-pointer hover:bg-gray-50">
-            <TableCell>{formatDate(submission.timestamp)}</TableCell>
-            <TableCell>{submission.name}</TableCell>
-            <TableCell>{submission.dob}</TableCell>
+            <TableCell className="text-[#2A6F97]">{formatDate(submission.timestamp)}</TableCell>
+            <TableCell className="text-[#2A6F97]">{submission.name}</TableCell>
+            <TableCell className="text-[#2A6F97]">{submission.dob}</TableCell>
             <TableCell>
               <StatusBadge outcome={submission.outcome} />
             </TableCell>
@@ -117,7 +117,7 @@ const SubmissionsList = ({
         ))}
         {submissions.length === 0 && (
           <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+            <TableCell colSpan={5} className="text-center py-8 text-[#2A6F97]">
               No submissions found
             </TableCell>
           </TableRow>
