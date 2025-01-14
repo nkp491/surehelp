@@ -17,7 +17,7 @@ const MetricsChart = ({ data, timePeriod, onTimePeriodChange }: MetricsChartProp
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar');
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 border-[#FFF9EE]">
       <ChartControls
         timePeriod={timePeriod}
         chartType={chartType}
