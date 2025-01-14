@@ -71,7 +71,7 @@ const MetricButtons = ({
   };
 
   return (
-    <Card className="p-4">
+    <Card className="bg-[#FFF9EE] p-4">
       <div className="flex flex-col items-center gap-2">
         <h3 className="font-semibold text-lg capitalize text-primary">
           {formatMetricName(metric)}
