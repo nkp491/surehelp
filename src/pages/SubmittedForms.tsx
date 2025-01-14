@@ -47,7 +47,12 @@ const SubmittedForms = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-3xl font-bold mb-8 text-[#2A6F97]">Submitted Forms</h1>
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Submitted Forms</h2>
+          <p className="text-muted-foreground mt-1">View and manage all form submissions in one place</p>
+        </div>
+      </div>
       
       {editingSubmission && (
         <div className="mb-8">
