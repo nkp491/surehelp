@@ -8,15 +8,17 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // First try to sign out locally and globally to ensure complete session cleanup
-      await Promise.all([
-        supabase.auth.signOut({ scope: 'local' }).catch(() => {
-          console.log("Local sign out failed, proceeding with cleanup");
-        }),
-        supabase.auth.signOut({ scope: 'global' }).catch(() => {
-          console.log("Global sign out failed, proceeding with cleanup");
-        })
-      ]);
+      // First check if we have a valid session
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (session) {
+        // Only attempt to sign out if we have a valid session
+        await supabase.auth.signOut();
+      }
+    } catch (error) {
+      console.error("Error during logout:", error);
+    } finally {
+      // Always clean up, regardless of session state or errors
       
       // Clear ALL Supabase-related items from localStorage
       Object.keys(localStorage).forEach(key => {
@@ -37,18 +39,7 @@ const Header = () => {
         description: "Logged out successfully",
       });
       
-      // Force reload to clear any cached state
-      window.location.href = '/auth';
-    } catch (error) {
-      console.error("Error during logout cleanup:", error);
-      
-      // Ensure we clean up and redirect even if there's an error
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('supabase.auth.')) {
-          localStorage.removeItem(key);
-        }
-      });
-      
+      // Force a full page reload to clear any cached state
       window.location.href = '/auth';
     }
   };
