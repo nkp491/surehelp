@@ -13,7 +13,12 @@ const ManagerDashboard = () => {
 
   return (
     <div className="container mx-auto py-8">
-      <h1 className="text-4xl font-bold text-gray-900 mb-8">Manager Dashboard</h1>
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Manager Dashboard</h2>
+          <p className="text-muted-foreground mt-1">Manage your team and view performance metrics</p>
+        </div>
+      </div>
       
       <Collapsible
         open={isOpen}
