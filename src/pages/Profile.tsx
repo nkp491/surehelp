@@ -1,13 +1,12 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import ProfileHeader from "@/components/profile/ProfileHeader";
+import ProfileImage from "@/components/profile/ProfileImage";
+import PersonalInfo from "@/components/profile/PersonalInfo";
+import PrivacySettings from "@/components/profile/PrivacySettings";
+import NotificationPreferences from "@/components/profile/NotificationPreferences";
 
 interface Profile {
   id: string;
@@ -36,7 +35,7 @@ const Profile = () => {
 
   useEffect(() => {
     getProfile();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         navigate("/auth");
       }
@@ -62,7 +61,6 @@ const Profile = () => {
 
       if (error) throw error;
       
-      // Parse the JSON fields from the database
       const parsedProfile: Profile = {
         ...data,
         privacy_settings: typeof data.privacy_settings === 'string' 
@@ -171,171 +169,33 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold">Profile Settings</h1>
-        <Button variant="outline" onClick={signOut}>Sign Out</Button>
-      </div>
-
+      <ProfileHeader onSignOut={signOut} />
+      
       <div className="space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Profile Picture</CardTitle>
-          </CardHeader>
-          <CardContent className="flex items-center space-x-4">
-            <Avatar className="h-24 w-24">
-              <AvatarImage src={profile?.profile_image_url || ""} />
-              <AvatarFallback>
-                {profile?.first_name?.[0]?.toUpperCase() || "U"}
-              </AvatarFallback>
-            </Avatar>
-            <div>
-              <Input
-                type="file"
-                accept="image/*"
-                onChange={uploadAvatar}
-                disabled={uploading}
-              />
-              <p className="text-sm text-gray-500 mt-1">
-                {uploading ? "Uploading..." : "Click to upload a new profile picture"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+        <ProfileImage
+          imageUrl={profile?.profile_image_url}
+          firstName={profile?.first_name}
+          onUpload={uploadAvatar}
+          uploading={uploading}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Personal Information</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="firstName">First Name</Label>
-                <Input
-                  id="firstName"
-                  value={profile?.first_name || ""}
-                  onChange={(e) => updateProfile({ first_name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  value={profile?.last_name || ""}
-                  onChange={(e) => updateProfile({ last_name: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                value={profile?.email || ""}
-                onChange={(e) => updateProfile({ email: e.target.value })}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Phone</Label>
-              <Input
-                id="phone"
-                type="tel"
-                value={profile?.phone || ""}
-                onChange={(e) => updateProfile({ phone: e.target.value })}
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <PersonalInfo
+          firstName={profile?.first_name}
+          lastName={profile?.last_name}
+          email={profile?.email}
+          phone={profile?.phone}
+          onUpdate={updateProfile}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Privacy Settings</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="showEmail">Show email to others</Label>
-              <Switch
-                id="showEmail"
-                checked={profile?.privacy_settings.show_email}
-                onCheckedChange={(checked) =>
-                  updateProfile({
-                    privacy_settings: {
-                      ...profile?.privacy_settings,
-                      show_email: checked,
-                    },
-                  })
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="showPhone">Show phone number to others</Label>
-              <Switch
-                id="showPhone"
-                checked={profile?.privacy_settings.show_phone}
-                onCheckedChange={(checked) =>
-                  updateProfile({
-                    privacy_settings: {
-                      ...profile?.privacy_settings,
-                      show_phone: checked,
-                    },
-                  })
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="showPhoto">Show profile photo to others</Label>
-              <Switch
-                id="showPhoto"
-                checked={profile?.privacy_settings.show_photo}
-                onCheckedChange={(checked) =>
-                  updateProfile({
-                    privacy_settings: {
-                      ...profile?.privacy_settings,
-                      show_photo: checked,
-                    },
-                  })
-                }
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <PrivacySettings
+          settings={profile?.privacy_settings || { show_email: false, show_phone: false, show_photo: true }}
+          onUpdate={updateProfile}
+        />
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Notification Preferences</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <Label htmlFor="emailNotifications">Email notifications</Label>
-              <Switch
-                id="emailNotifications"
-                checked={profile?.notification_preferences.email_notifications}
-                onCheckedChange={(checked) =>
-                  updateProfile({
-                    notification_preferences: {
-                      ...profile?.notification_preferences,
-                      email_notifications: checked,
-                    },
-                  })
-                }
-              />
-            </div>
-            <div className="flex items-center justify-between">
-              <Label htmlFor="phoneNotifications">Phone notifications</Label>
-              <Switch
-                id="phoneNotifications"
-                checked={profile?.notification_preferences.phone_notifications}
-                onCheckedChange={(checked) =>
-                  updateProfile({
-                    notification_preferences: {
-                      ...profile?.notification_preferences,
-                      phone_notifications: checked,
-                    },
-                  })
-                }
-              />
-            </div>
-          </CardContent>
-        </Card>
+        <NotificationPreferences
+          preferences={profile?.notification_preferences || { email_notifications: true, phone_notifications: false }}
+          onUpdate={updateProfile}
+        />
       </div>
     </div>
   );
