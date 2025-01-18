@@ -27,9 +27,6 @@ const MetricsTable = ({
   onValueChange,
 }: MetricsTableProps) => {
   const formatValue = (value: number, metric: keyof MetricCount) => {
-    if (metric === 'ap') {
-      return (value / 100).toFixed(2);
-    }
     return value.toString();
   };
 
@@ -38,31 +35,35 @@ const MetricsTable = ({
       <Table>
         <MetricsTableHeader onSort={onSort} />
         <TableBody>
-          {history.map(({ date, metrics }) => (
-            <TableRow key={date}>
-              <EditableMetricCell
-                isEditing={false}
-                value={format(new Date(date), 'MMM dd, yyyy')}
-                onChange={() => {}}
-                metric="date"
-              />
-              {Object.entries(metrics).map(([metric, value]) => (
+          {history.map(({ date, metrics }) => {
+            const currentValues = editingRow === date ? editedValues : metrics;
+            
+            return (
+              <TableRow key={date}>
                 <EditableMetricCell
-                  key={metric}
-                  isEditing={editingRow === date}
-                  value={formatValue(value, metric as keyof MetricCount)}
-                  onChange={(newValue) => onValueChange(metric as keyof MetricCount, newValue)}
-                  metric={metric}
+                  isEditing={false}
+                  value={format(new Date(date), 'MMM dd, yyyy')}
+                  onChange={() => {}}
+                  metric="date"
                 />
-              ))}
-              <MetricRowActions
-                isEditing={editingRow === date}
-                onEdit={() => onEdit(date, metrics)}
-                onSave={() => onSave(date)}
-                onCancel={onCancel}
-              />
-            </TableRow>
-          ))}
+                {Object.entries(metrics).map(([metric, _]) => (
+                  <EditableMetricCell
+                    key={metric}
+                    isEditing={editingRow === date}
+                    value={currentValues ? formatValue(currentValues[metric as keyof MetricCount], metric as keyof MetricCount) : '0'}
+                    onChange={(newValue) => onValueChange(metric as keyof MetricCount, newValue)}
+                    metric={metric}
+                  />
+                ))}
+                <MetricRowActions
+                  isEditing={editingRow === date}
+                  onEdit={() => onEdit(date, metrics)}
+                  onSave={() => onSave(date)}
+                  onCancel={onCancel}
+                />
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>

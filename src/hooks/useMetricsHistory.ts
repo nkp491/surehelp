@@ -116,7 +116,7 @@ export const useMetricsHistory = () => {
 
   const handleEdit = (date: string, metrics: MetricCount) => {
     setEditingRow(date);
-    setEditedValues(metrics);
+    setEditedValues({ ...metrics });
   };
 
   const handleSave = async (date: string) => {
@@ -126,9 +126,15 @@ export const useMetricsHistory = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
+      // Convert string values to numbers and handle AP conversion
+      const processedValues = Object.entries(editedValues).reduce((acc, [key, value]) => ({
+        ...acc,
+        [key]: key === 'ap' ? Math.round(parseFloat(value.toString()) * 100) : parseInt(value.toString())
+      }), {});
+
       const { error } = await supabase
         .from('daily_metrics')
-        .update(editedValues)
+        .update(processedValues)
         .eq('date', date)
         .eq('user_id', user.user.id);
 
@@ -160,15 +166,13 @@ export const useMetricsHistory = () => {
   const handleValueChange = (metric: keyof MetricCount, value: string) => {
     if (!editedValues) return;
 
-    let numericValue = parseInt(value) || 0;
-    if (metric === 'ap') {
-      numericValue = Math.round(parseFloat(value) * 100) || 0;
-    }
+    let numericValue = value === '' ? 0 : parseFloat(value);
+    if (isNaN(numericValue)) return;
 
-    setEditedValues({
-      ...editedValues,
+    setEditedValues(prev => ({
+      ...prev!,
       [metric]: numericValue
-    });
+    }));
   };
 
   const sortedHistory = [...history].sort((a, b) => {
