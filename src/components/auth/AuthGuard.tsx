@@ -41,6 +41,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
             description: "Please sign in again",
             variant: "destructive",
           });
+          // Clear any stale session data
+          await supabase.auth.signOut({ scope: 'local' });
           navigate("/auth");
         }
       }
@@ -53,7 +55,9 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
       console.log("AuthGuard state change:", { event, session });
       
-      if (event === 'SIGNED_OUT' || !session) {
+      if (event === 'SIGNED_OUT') {
+        // Clear local session data and redirect
+        localStorage.removeItem('supabase.auth.token');
         navigate("/auth");
       } else if (event === 'SIGNED_IN') {
         setIsLoading(false);

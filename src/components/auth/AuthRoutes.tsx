@@ -26,6 +26,8 @@ export const AuthRoutes = () => {
         if (mounted) {
           setIsAuthenticated(false);
           setIsLoading(false);
+          // Clear any stale session data
+          await supabase.auth.signOut({ scope: 'local' });
         }
       }
     };
@@ -39,6 +41,7 @@ export const AuthRoutes = () => {
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
+        localStorage.removeItem('supabase.auth.token');
         return;
       }
       
@@ -54,6 +57,7 @@ export const AuthRoutes = () => {
         } else {
           console.error("Session refresh error:", error);
           setIsAuthenticated(false);
+          await supabase.auth.signOut({ scope: 'local' });
         }
       }
     });
