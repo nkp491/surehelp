@@ -15,43 +15,47 @@ const PersonalInfo = ({ firstName, lastName, email, phone, onUpdate }: PersonalI
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Personal Information</CardTitle>
+        <CardTitle className="text-foreground">Personal Information</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
-            <Label htmlFor="firstName">First Name</Label>
+            <Label htmlFor="firstName" className="text-foreground">First Name</Label>
             <Input
               id="firstName"
               value={firstName || ""}
               onChange={(e) => onUpdate({ first_name: e.target.value })}
+              className="text-foreground"
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="lastName">Last Name</Label>
+            <Label htmlFor="lastName" className="text-foreground">Last Name</Label>
             <Input
               id="lastName"
               value={lastName || ""}
               onChange={(e) => onUpdate({ last_name: e.target.value })}
+              className="text-foreground"
             />
           </div>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="email">Email</Label>
+          <Label htmlFor="email" className="text-foreground">Email</Label>
           <Input
             id="email"
             type="email"
             value={email || ""}
             onChange={(e) => onUpdate({ email: e.target.value })}
+            className="text-foreground"
           />
         </div>
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone" className="text-foreground">Phone</Label>
           <Input
             id="phone"
             type="tel"
             value={phone || ""}
             onChange={(e) => onUpdate({ phone: e.target.value })}
+            className="text-foreground"
           />
         </div>
       </CardContent>

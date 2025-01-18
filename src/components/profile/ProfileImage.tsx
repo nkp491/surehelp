@@ -14,12 +14,12 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Profile Picture</CardTitle>
+        <CardTitle className="text-foreground">Profile Picture</CardTitle>
       </CardHeader>
       <CardContent className="flex items-center space-x-4">
         <Avatar className="h-24 w-24">
           <AvatarImage src={imageUrl || ""} />
-          <AvatarFallback>
+          <AvatarFallback className="text-foreground">
             {firstName?.[0]?.toUpperCase() || "U"}
           </AvatarFallback>
         </Avatar>
@@ -29,8 +29,9 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
             accept="image/*"
             onChange={onUpload}
             disabled={uploading}
+            className="text-foreground"
           />
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-foreground mt-1">
             {uploading ? "Uploading..." : "Click to upload a new profile picture"}
           </p>
         </div>

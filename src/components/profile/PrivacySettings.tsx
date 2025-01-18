@@ -16,11 +16,11 @@ const PrivacySettings = ({ settings, onUpdate }: PrivacySettingsProps) => {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Privacy Settings</CardTitle>
+        <CardTitle className="text-foreground">Privacy Settings</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label htmlFor="showEmail">Show email to others</Label>
+          <Label htmlFor="showEmail" className="text-foreground">Show email to others</Label>
           <Switch
             id="showEmail"
             checked={settings.show_email}
@@ -35,7 +35,7 @@ const PrivacySettings = ({ settings, onUpdate }: PrivacySettingsProps) => {
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="showPhone">Show phone number to others</Label>
+          <Label htmlFor="showPhone" className="text-foreground">Show phone number to others</Label>
           <Switch
             id="showPhone"
             checked={settings.show_phone}
@@ -50,7 +50,7 @@ const PrivacySettings = ({ settings, onUpdate }: PrivacySettingsProps) => {
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="showPhoto">Show profile photo to others</Label>
+          <Label htmlFor="showPhoto" className="text-foreground">Show profile photo to others</Label>
           <Switch
             id="showPhoto"
             checked={settings.show_photo}
