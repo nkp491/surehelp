@@ -1,8 +1,12 @@
 import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import MetricButtons from "@/components/MetricButtons";
 import { useToast } from "@/hooks/use-toast";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
+import { Check } from "lucide-react";
 
 const MetricsSection = () => {
   const { toast } = useToast();
@@ -26,19 +30,63 @@ const MetricsSection = () => {
     });
   };
 
+  const handleDoneForDay = async () => {
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const today = format(new Date(), 'yyyy-MM-dd');
+      
+      const { error } = await supabase
+        .from('daily_metrics')
+        .upsert({
+          user_id: user.user.id,
+          date: today,
+          ...metrics
+        }, {
+          onConflict: 'user_id,date'
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Today's metrics have been saved to history",
+      });
+    } catch (error) {
+      console.error('Error saving daily metrics:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save today's metrics",
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
-    <Card className="p-6 mb-12 bg-white shadow-md">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-        {Object.keys(metrics).map((metric) => (
-          <MetricButtons
-            key={metric}
-            metric={metric}
-            onIncrement={() => updateMetric(metric, true)}
-            onDecrement={() => updateMetric(metric, false)}
-          />
-        ))}
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <Button 
+          onClick={handleDoneForDay}
+          className="bg-green-600 hover:bg-green-700 text-white"
+        >
+          <Check className="mr-2 h-4 w-4" />
+          Done for Today
+        </Button>
       </div>
-    </Card>
+      <Card className="p-6 mb-12 bg-white shadow-md">
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+          {Object.keys(metrics).map((metric) => (
+            <MetricButtons
+              key={metric}
+              metric={metric}
+              onIncrement={() => updateMetric(metric, true)}
+              onDecrement={() => updateMetric(metric, false)}
+            />
+          ))}
+        </div>
+      </Card>
+    </div>
   );
 };
 
