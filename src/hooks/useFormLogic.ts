@@ -161,10 +161,13 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
       };
 
       try {
+        const user = await supabase.auth.getUser();
+        if (!user.data.user) throw new Error("No authenticated user found");
+
         if (editingSubmission) {
           // Update existing submission
           const auditEntry = createAuditEntry(editingSubmission, submissionData, 'updated');
-          submissionData.auditTrail = [
+          const auditTrail = [
             ...(editingSubmission.auditTrail || []),
             auditEntry
           ];
@@ -172,13 +175,11 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
           const { error } = await supabase
             .from('submissions')
             .update({
-              data: {
+              data: JSON.stringify({
                 ...submissionData,
-                timestamp: undefined,
-                outcome: undefined
-              },
-              outcome: submissionData.outcome,
-              timestamp: submissionData.timestamp
+                auditTrail
+              }),
+              outcome: submissionData.outcome
             })
             .eq('timestamp', editingSubmission.timestamp);
 
@@ -193,16 +194,16 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
         } else {
           // Create new submission
           const auditEntry = createAuditEntry({}, submissionData, 'created');
-          submissionData.auditTrail = [auditEntry];
+          const auditTrail = [auditEntry];
 
           const { error } = await supabase
             .from('submissions')
             .insert({
-              data: {
+              user_id: user.data.user.id,
+              data: JSON.stringify({
                 ...submissionData,
-                timestamp: undefined,
-                outcome: undefined
-              },
+                auditTrail
+              }),
               outcome: submissionData.outcome,
               timestamp: submissionData.timestamp
             });

@@ -25,7 +25,7 @@ const SubmittedForms = () => {
 
       // Transform the data to match FormSubmission type
       const transformedData = data.map(submission => ({
-        ...submission.data,
+        ...(JSON.parse(submission.data as string) as Omit<FormSubmission, 'timestamp' | 'outcome'>),
         timestamp: submission.timestamp,
         outcome: submission.outcome
       }));
@@ -51,13 +51,12 @@ const SubmittedForms = () => {
       const { error } = await supabase
         .from('submissions')
         .update({
-          data: {
+          data: JSON.stringify({
             ...updatedSubmission,
             timestamp: undefined,
             outcome: undefined
-          },
-          outcome: updatedSubmission.outcome,
-          timestamp: updatedSubmission.timestamp
+          }),
+          outcome: updatedSubmission.outcome
         })
         .eq('timestamp', updatedSubmission.timestamp);
 
