@@ -1,9 +1,14 @@
-import { MetricCount, TimePeriod } from '@/types/metrics';
+import { MetricCount, TimePeriod, DatabaseMetric } from '@/types/metrics';
 import { supabase } from '@/integrations/supabase/client';
 import { startOfDay, subDays, format } from 'date-fns';
 
 export const useMetricsStorage = () => {
-  const loadDailyMetrics = async () => {
+  const extractMetricData = (data: DatabaseMetric): MetricCount => {
+    const { leads, calls, contacts, scheduled, sits, sales, ap } = data;
+    return { leads, calls, contacts, scheduled, sits, sales, ap };
+  };
+
+  const loadDailyMetrics = async (): Promise<MetricCount> => {
     const today = startOfDay(new Date());
     const { data, error } = await supabase
       .from('daily_metrics')
@@ -18,12 +23,12 @@ export const useMetricsStorage = () => {
       };
     }
 
-    return data || {
+    return data ? extractMetricData(data as DatabaseMetric) : {
       leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
     };
   };
 
-  const loadPreviousMetrics = async (period: TimePeriod) => {
+  const loadPreviousMetrics = async (period: TimePeriod): Promise<MetricCount> => {
     const today = startOfDay(new Date());
     let startDate;
 
@@ -52,7 +57,7 @@ export const useMetricsStorage = () => {
     }
 
     // Aggregate metrics for the period
-    return data.reduce((acc, curr) => ({
+    return (data as DatabaseMetric[]).reduce((acc, curr) => ({
       leads: acc.leads + (curr.leads || 0),
       calls: acc.calls + (curr.calls || 0),
       contacts: acc.contacts + (curr.contacts || 0),
@@ -67,7 +72,13 @@ export const useMetricsStorage = () => {
 
   const saveDailyMetrics = async (metrics: MetricCount) => {
     const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
+    const user = supabase.auth.getUser();
     
+    if (!user) {
+      console.error('No user found');
+      return;
+    }
+
     const { data: existingMetrics } = await supabase
       .from('daily_metrics')
       .select('*')
@@ -84,7 +95,11 @@ export const useMetricsStorage = () => {
     } else {
       const { error } = await supabase
         .from('daily_metrics')
-        .insert([{ ...metrics, date: today }]);
+        .insert([{ 
+          ...metrics, 
+          date: today,
+          user_id: (await user).data.user?.id 
+        }]);
 
       if (error) console.error('Error inserting daily metrics:', error);
     }

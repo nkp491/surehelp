@@ -4,7 +4,7 @@ import { format } from "date-fns";
 import { useMetricsStorage } from "@/hooks/useMetricsStorage";
 import { useMetricsCalculations } from "@/hooks/useMetricsCalculations";
 import { useMetricsState } from "@/hooks/useMetricsState";
-import { MetricType, TimePeriod, MetricsContextType } from "@/types/metrics";
+import { MetricType, TimePeriod, MetricsContextType, MetricCount } from "@/types/metrics";
 
 const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 

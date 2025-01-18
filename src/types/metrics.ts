@@ -2,7 +2,21 @@ export type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" |
 export type TimePeriod = "24h" | "7d" | "30d" | "custom";
 
 export interface MetricCount {
-  [key: string]: number;
+  leads: number;
+  calls: number;
+  contacts: number;
+  scheduled: number;
+  sits: number;
+  sales: number;
+  ap: number;
+}
+
+export interface DatabaseMetric extends MetricCount {
+  id: string;
+  user_id: string;
+  date: string;
+  created_at: string;
+  updated_at: string;
 }
 
 export interface MetricTrends {
