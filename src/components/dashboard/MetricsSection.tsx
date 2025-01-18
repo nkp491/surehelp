@@ -68,10 +68,11 @@ const MetricsSection = () => {
       <div className="flex justify-end">
         <Button 
           onClick={handleDoneForDay}
+          size="icon"
           className="bg-green-600 hover:bg-green-700 text-white"
+          title="Save today's metrics"
         >
-          <Check className="mr-2 h-4 w-4" />
-          Done for Today
+          <Check className="h-4 w-4" />
         </Button>
       </div>
       <Card className="p-6 mb-12 bg-white shadow-md">
