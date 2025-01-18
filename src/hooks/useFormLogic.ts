@@ -1,8 +1,11 @@
 import { useState, useEffect } from "react";
 import { FormSubmission } from "@/types/form";
-import { differenceInYears, parse } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { useAgeCalculation } from "./useAgeCalculation";
+import { useIncomeCalculation } from "./useIncomeCalculation";
+import { useFormValidation } from "./useFormValidation";
+import { useAuditTrail } from "./useAuditTrail";
 
 const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   // Primary Applicant Fields
@@ -81,107 +84,46 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   policyNumber: "",
 };
 
-export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?: (submission: FormSubmission) => void) => {
+export const useFormLogic = (
+  editingSubmission: FormSubmission | null,
+  onUpdate?: (submission: FormSubmission) => void
+) => {
   const { toast } = useToast();
   const [formData, setFormData] = useState<typeof initialFormValues>(initialFormValues);
   const [errors, setErrors] = useState<Partial<typeof initialFormValues>>({});
 
-  // Calculate total income when income-related fields change
+  const { age, spouseAge } = useAgeCalculation(formData.dob, formData.spouseDob);
+  const { totalIncome, spouseTotalIncome } = useIncomeCalculation(formData);
+  const { validateForm } = useFormValidation();
+  const { createAuditEntry } = useAuditTrail();
+
+  // Update ages and incomes in form data when calculated
   useEffect(() => {
-    const calculateTotalIncome = () => {
-      const socialSecurity = parseFloat(formData.socialSecurityIncome) || 0;
-      const pension = parseFloat(formData.pensionIncome) || 0;
-      const survivorship = parseFloat(formData.survivorshipIncome) || 0;
-      const total = socialSecurity + pension + survivorship;
-      
-      setFormData(prev => ({
-        ...prev,
-        totalIncome: total.toFixed(2)
-      }));
-    };
+    setFormData(prev => ({
+      ...prev,
+      age,
+      spouseAge,
+      totalIncome,
+      spouseTotalIncome
+    }));
+  }, [age, spouseAge, totalIncome, spouseTotalIncome]);
 
-    calculateTotalIncome();
-  }, [formData.socialSecurityIncome, formData.pensionIncome, formData.survivorshipIncome]);
-
-  // Calculate spouse total income when spouse income-related fields change
+  // Load editing submission data
   useEffect(() => {
-    const calculateSpouseTotalIncome = () => {
-      const socialSecurity = parseFloat(formData.spouseSocialSecurityIncome) || 0;
-      const pension = parseFloat(formData.spousePensionIncome) || 0;
-      const survivorship = parseFloat(formData.spouseSurvivorshipIncome) || 0;
-      const total = socialSecurity + pension + survivorship;
-      
-      setFormData(prev => ({
-        ...prev,
-        spouseTotalIncome: total.toFixed(2)
-      }));
-    };
-
-    calculateSpouseTotalIncome();
-  }, [formData.spouseSocialSecurityIncome, formData.spousePensionIncome, formData.spouseSurvivorshipIncome]);
-
-  // Calculate primary applicant age
-  useEffect(() => {
-    if (formData.dob) {
-      const birthDate = parse(formData.dob, 'yyyy-MM-dd', new Date());
-      const age = differenceInYears(new Date(), birthDate);
-      setFormData(prev => ({ ...prev, age: age.toString() }));
+    if (editingSubmission) {
+      const { timestamp, outcome, ...submissionData } = editingSubmission;
+      setFormData(submissionData);
     }
-
-    // Calculate spouse age
-    if (formData.spouseDob) {
-      const spouseBirthDate = parse(formData.spouseDob, 'yyyy-MM-dd', new Date());
-      const spouseAge = differenceInYears(new Date(), spouseBirthDate);
-      setFormData(prev => ({ ...prev, spouseAge: spouseAge.toString() }));
-    }
-  }, [formData.dob, formData.spouseDob]);
-
-  const validateForm = () => {
-    const newErrors: Partial<typeof initialFormValues> = {};
-    
-    if (!formData.name) {
-      newErrors.name = "Primary applicant name is required";
-    }
-    if (!formData.dob) {
-      newErrors.dob = "Primary applicant date of birth is required";
-    }
-    
-    // Only validate spouse fields if spouse name is provided
-    if (formData.spouseName && !formData.spouseDob) {
-      newErrors.spouseDob = "Spouse date of birth is required if adding spouse";
-    }
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  const createAuditEntry = (previousData: any, newData: any, action: 'created' | 'updated' | 'status_changed') => {
-    const changedFields: string[] = [];
-    const previousValues: { [key: string]: any } = {};
-    const newValues: { [key: string]: any } = {};
-
-    Object.keys(newData).forEach(key => {
-      if (JSON.stringify(previousData[key]) !== JSON.stringify(newData[key])) {
-        changedFields.push(key);
-        previousValues[key] = previousData[key];
-        newValues[key] = newData[key];
-      }
-    });
-
-    return {
-      timestamp: new Date().toISOString(),
-      changedFields,
-      previousValues,
-      newValues,
-      action
-    };
-  };
+  }, [editingSubmission]);
 
   const handleSubmit = async (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
     
-    if (validateForm()) {
-      const submissionData: FormSubmission = {
+    const validationErrors = validateForm(formData);
+    setErrors(validationErrors);
+    
+    if (Object.keys(validationErrors).length === 0) {
+      const submissionData = {
         ...formData,
         outcome,
         timestamp: editingSubmission?.timestamp || new Date().toISOString()
@@ -192,7 +134,6 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
         if (!user.data.user) throw new Error("No authenticated user found");
 
         if (editingSubmission) {
-          // Update existing submission
           const auditEntry = createAuditEntry(editingSubmission, submissionData, 'updated');
           const auditTrail = [
             ...(editingSubmission.auditTrail || []),
@@ -219,7 +160,6 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
             description: "Your form has been updated successfully.",
           });
         } else {
-          // Create new submission
           const auditEntry = createAuditEntry({}, submissionData, 'created');
           const auditTrail = [auditEntry];
 
