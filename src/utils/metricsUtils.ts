@@ -1,3 +1,5 @@
+import { MetricCount } from "@/types/metrics";
+
 export const formatCurrency = (value: number) => {
   return new Intl.NumberFormat('en-US', {
     style: 'currency',
@@ -9,7 +11,7 @@ export const formatPercentage = (value: number) => {
   return `${(value * 100).toFixed(1)}%`;
 };
 
-export const calculateRatios = (metrics: { [key: string]: number }) => {
+export const calculateRatios = (metrics: MetricCount) => {
   const { leads, calls, contacts, scheduled, sits, sales, ap } = metrics;
   
   return [
