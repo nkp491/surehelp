@@ -37,34 +37,26 @@ const Index = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
+  // Update state based on current route
+  useEffect(() => {
+    setShowSubmissions(location.pathname === '/submitted-forms');
+    setShowManagerDashboard(location.pathname === '/manager-dashboard');
+    setShowDashboard(location.pathname === '/metrics');
+  }, [location.pathname]);
+
   const handleSubmissionsClick = () => {
-    if (location.pathname === '/submitted-forms') {
-      setShowSubmissions(false);
-      navigate('/');
-    } else {
-      setShowSubmissions(true);
-      navigate('/submitted-forms');
-    }
+    setShowSubmissions(!showSubmissions);
+    navigate(showSubmissions ? '/' : '/submitted-forms');
   };
 
   const handleManagerDashboardClick = () => {
-    if (location.pathname === '/manager-dashboard') {
-      setShowManagerDashboard(false);
-      navigate('/');
-    } else {
-      setShowManagerDashboard(true);
-      navigate('/manager-dashboard');
-    }
+    setShowManagerDashboard(!showManagerDashboard);
+    navigate(showManagerDashboard ? '/' : '/manager-dashboard');
   };
 
   const handleDashboardClick = () => {
-    if (location.pathname === '/metrics') {
-      setShowDashboard(false);
-      navigate('/');
-    } else {
-      setShowDashboard(true);
-      navigate('/metrics');
-    }
+    setShowDashboard(!showDashboard);
+    navigate(showDashboard ? '/' : '/metrics');
   };
 
   return (
@@ -94,18 +86,10 @@ const Index = () => {
 
         <MetricsProvider>
           <div className="space-y-8">
-            <MetricsSection />
-            <Routes>
-              {showSubmissions && (
-                <Route path="/submitted-forms" element={<SubmittedForms />} />
-              )}
-              {showDashboard && (
-                <Route path="/metrics" element={<Dashboard />} />
-              )}
-              {showManagerDashboard && (
-                <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-              )}
-            </Routes>
+            {location.pathname === '/' && <MetricsSection />}
+            {location.pathname === '/metrics' && <Dashboard />}
+            {location.pathname === '/submitted-forms' && <SubmittedForms />}
+            {location.pathname === '/manager-dashboard' && <ManagerDashboard />}
           </div>
         </MetricsProvider>
 
