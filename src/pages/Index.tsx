@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Header from "@/components/layout/Header";
 import MainContent from "@/components/layout/MainContent";
@@ -9,14 +9,15 @@ const Index = () => {
   const [showSubmissions, setShowSubmissions] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
+  const [showAssessment, setShowAssessment] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Update state based on current route
   useEffect(() => {
     setShowSubmissions(location.pathname === '/submitted-forms');
     setShowManagerDashboard(location.pathname === '/manager-dashboard');
     setShowDashboard(location.pathname === '/metrics');
+    setShowAssessment(location.pathname === '/assessment');
   }, [location.pathname]);
 
   return (
@@ -39,6 +40,11 @@ const Index = () => {
             onDashboardClick={() => {
               setShowDashboard(!showDashboard);
               navigate(showDashboard ? '/' : '/metrics');
+            }}
+            showAssessment={showAssessment}
+            onAssessmentClick={() => {
+              setShowAssessment(!showAssessment);
+              navigate(showAssessment ? '/' : '/assessment');
             }}
           />
           <MainContent />

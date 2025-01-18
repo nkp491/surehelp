@@ -14,8 +14,10 @@ function App() {
         <Route path="/" element={<Index />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/profile" element={<Profile />} />
-        <Route path="/metrics" element={<Dashboard />} />
-        <Route path="/submitted-forms" element={<SubmittedForms />} />
+        <Route path="/metrics" element={<Index />} />
+        <Route path="/submitted-forms" element={<Index />} />
+        <Route path="/manager-dashboard" element={<Index />} />
+        <Route path="/assessment" element={<Index />} />
       </Routes>
       <Toaster />
     </Router>

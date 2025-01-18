@@ -3,6 +3,7 @@ import Dashboard from "@/pages/Dashboard";
 import SubmittedForms from "@/pages/SubmittedForms";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import Profile from "@/pages/Profile";
+import FormContainer from "@/components/FormContainer";
 
 const MainContent = () => {
   const location = useLocation();
@@ -17,6 +18,8 @@ const MainContent = () => {
         return <ManagerDashboard />;
       case '/profile':
         return <Profile />;
+      case '/assessment':
+        return <FormContainer />;
       default:
         return <Dashboard />;
     }
