@@ -61,7 +61,19 @@ const Profile = () => {
         .single();
 
       if (error) throw error;
-      setProfile(data);
+      
+      // Parse the JSON fields from the database
+      const parsedProfile: Profile = {
+        ...data,
+        privacy_settings: typeof data.privacy_settings === 'string' 
+          ? JSON.parse(data.privacy_settings)
+          : data.privacy_settings,
+        notification_preferences: typeof data.notification_preferences === 'string'
+          ? JSON.parse(data.notification_preferences)
+          : data.notification_preferences
+      };
+      
+      setProfile(parsedProfile);
     } catch (error) {
       console.error("Error loading profile:", error);
       toast({
