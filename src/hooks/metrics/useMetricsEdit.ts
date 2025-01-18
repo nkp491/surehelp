@@ -20,10 +20,13 @@ export const useMetricsEdit = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
+      // Process values before saving
       const processedValues = Object.entries(editedValues).reduce((acc, [key, value]) => ({
         ...acc,
-        [key]: key === 'ap' ? Math.round(parseFloat(value.toString()) * 100) : parseInt(value.toString())
-      }), {});
+        [key]: key === 'ap' 
+          ? Math.round(Number(value)) // AP is already in cents from EditableMetricCell
+          : Math.round(Number(value))
+      }), {} as MetricCount);
 
       const { error } = await supabase
         .from('daily_metrics')
@@ -58,12 +61,9 @@ export const useMetricsEdit = () => {
   const handleValueChange = (metric: keyof MetricCount, value: string) => {
     if (!editedValues) return;
 
-    let numericValue = value === '' ? 0 : parseFloat(value);
-    if (isNaN(numericValue)) return;
-
     setEditedValues(prev => ({
       ...prev!,
-      [metric]: numericValue
+      [metric]: value // Store the value as is, conversion is handled in EditableMetricCell
     }));
   };
 
