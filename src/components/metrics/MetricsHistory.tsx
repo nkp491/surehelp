@@ -210,7 +210,7 @@ const MetricsHistory = () => {
             <Button variant="outline" className="flex items-center gap-2">
               <Plus className="h-4 w-4" />
               <CalendarIcon className="h-4 w-4" />
-              Add Backdated Metrics
+              Add
             </Button>
           </PopoverTrigger>
           <PopoverContent className="w-auto p-0" align="end">
