@@ -8,21 +8,28 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
+      // First clear local storage
+      localStorage.removeItem('supabase.auth.token');
+      
+      // Then sign out locally first
+      await supabase.auth.signOut({ scope: 'local' });
       
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
       
-      navigate("/auth");
+      navigate("/auth", { replace: true });
     } catch (error) {
       console.error("Error logging out:", error);
+      // Even if there's an error, we want to clear local state and redirect
+      localStorage.removeItem('supabase.auth.token');
+      navigate("/auth", { replace: true });
+      
       toast({
-        title: "Error",
-        description: "Failed to log out",
-        variant: "destructive",
+        title: "Notice",
+        description: "You have been logged out",
+        variant: "default",
       });
     }
   };
