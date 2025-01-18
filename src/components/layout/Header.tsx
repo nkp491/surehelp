@@ -126,7 +126,7 @@ const Header = () => {
               Profile Settings
             </DropdownMenuItem>
             <DropdownMenuItem onClick={handleLogout}>
-              Logout
+              Sign Out
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
