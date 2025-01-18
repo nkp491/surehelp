@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
 import PersonalInfo from "@/components/profile/PersonalInfo";
@@ -28,7 +27,6 @@ interface Profile {
 
 const Profile = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -74,11 +72,6 @@ const Profile = () => {
       setProfile(parsedProfile);
     } catch (error) {
       console.error("Error loading profile:", error);
-      toast({
-        title: "Error",
-        description: "Error loading profile",
-        variant: "destructive",
-      });
     } finally {
       setLoading(false);
     }
@@ -101,17 +94,8 @@ const Profile = () => {
       if (error) throw error;
       
       setProfile(prev => prev ? { ...prev, ...updates } : null);
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
-      });
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast({
-        title: "Error",
-        description: "Error updating profile",
-        variant: "destructive",
-      });
     }
   }
 
@@ -140,11 +124,6 @@ const Profile = () => {
       await updateProfile({ profile_image_url: publicUrl });
     } catch (error) {
       console.error("Error uploading avatar:", error);
-      toast({
-        title: "Error",
-        description: "Error uploading avatar",
-        variant: "destructive",
-      });
     } finally {
       setUploading(false);
     }
@@ -153,11 +132,7 @@ const Profile = () => {
   async function signOut() {
     const { error } = await supabase.auth.signOut();
     if (error) {
-      toast({
-        title: "Error",
-        description: "Error signing out",
-        variant: "destructive",
-      });
+      console.error("Error signing out:", error);
     } else {
       navigate("/auth");
     }
