@@ -55,8 +55,15 @@ const MetricButtons = ({
     }
 
     if (isAP) {
-      // Convert dollar amount to cents
-      const dollarValue = parseFloat(inputValue);
+      // Remove any non-numeric characters except decimal point
+      const cleanedValue = inputValue.replace(/[^\d.]/g, '');
+      
+      // Ensure only one decimal point
+      const parts = cleanedValue.split('.');
+      const sanitizedValue = parts[0] + (parts.length > 1 ? '.' + parts[1] : '');
+      
+      // Convert to cents (multiply by 100 and round to nearest cent)
+      const dollarValue = parseFloat(sanitizedValue);
       if (!isNaN(dollarValue)) {
         const centsValue = Math.round(dollarValue * 100);
         handleInputChange(metric as MetricType, centsValue.toString());
