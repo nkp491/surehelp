@@ -66,7 +66,7 @@ const DashboardHeader = ({
         className="min-w-[120px] flex items-center gap-2"
       >
         <Users className="h-4 w-4" />
-        Manager
+        Team
       </Button>
     </div>
   );
