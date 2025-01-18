@@ -5,13 +5,19 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { MetricCount } from '@/types/metrics';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit2, Save, X } from 'lucide-react';
+import { Edit2, Save, X, ArrowUpDown } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+
+type SortConfig = {
+  key: string;
+  direction: 'asc' | 'desc';
+};
 
 const MetricsHistory = () => {
   const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<MetricCount | null>(null);
+  const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'desc' });
   const { toast } = useToast();
 
   useEffect(() => {
@@ -55,6 +61,25 @@ const MetricsHistory = () => {
       });
     }
   };
+
+  const handleSort = (key: string) => {
+    setSortConfig(prevConfig => ({
+      key,
+      direction: prevConfig.key === key && prevConfig.direction === 'asc' ? 'desc' : 'asc'
+    }));
+  };
+
+  const sortedHistory = [...history].sort((a, b) => {
+    if (sortConfig.key === 'date') {
+      const comparison = new Date(a.date).getTime() - new Date(b.date).getTime();
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    } else {
+      const aValue = a.metrics[sortConfig.key as keyof MetricCount];
+      const bValue = b.metrics[sortConfig.key as keyof MetricCount];
+      const comparison = aValue - bValue;
+      return sortConfig.direction === 'asc' ? comparison : -comparison;
+    }
+  });
 
   const handleEdit = (date: string, metrics: MetricCount) => {
     setEditingRow(date);
@@ -104,7 +129,6 @@ const MetricsHistory = () => {
 
     let numericValue = parseInt(value) || 0;
     if (metric === 'ap') {
-      // Convert dollar input to cents
       numericValue = Math.round(parseFloat(value) * 100) || 0;
     }
 
@@ -121,24 +145,53 @@ const MetricsHistory = () => {
     return value.toString();
   };
 
+  const renderSortIcon = (key: string) => {
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        className="h-8 w-8 p-0"
+        onClick={() => handleSort(key)}
+      >
+        <ArrowUpDown className="h-4 w-4 text-[#2A6F97]" />
+      </Button>
+    );
+  };
+
   return (
     <div className="overflow-x-auto">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead className="text-[#2A6F97]">Date</TableHead>
-            <TableHead className="text-[#2A6F97]">Leads</TableHead>
-            <TableHead className="text-[#2A6F97]">Calls</TableHead>
-            <TableHead className="text-[#2A6F97]">Contacts</TableHead>
-            <TableHead className="text-[#2A6F97]">Scheduled</TableHead>
-            <TableHead className="text-[#2A6F97]">Sits</TableHead>
-            <TableHead className="text-[#2A6F97]">Sales</TableHead>
-            <TableHead className="text-[#2A6F97]">AP</TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Date {renderSortIcon('date')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Leads {renderSortIcon('leads')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Calls {renderSortIcon('calls')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Contacts {renderSortIcon('contacts')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Scheduled {renderSortIcon('scheduled')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Sits {renderSortIcon('sits')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              Sales {renderSortIcon('sales')}
+            </TableHead>
+            <TableHead className="text-[#2A6F97]">
+              AP {renderSortIcon('ap')}
+            </TableHead>
             <TableHead className="text-[#2A6F97]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {history.map(({ date, metrics }) => (
+          {sortedHistory.map(({ date, metrics }) => (
             <TableRow key={date}>
               <TableCell className="text-[#2A6F97]">{format(new Date(date), 'MMM dd, yyyy')}</TableCell>
               {Object.entries(metrics).map(([metric, value]) => (
