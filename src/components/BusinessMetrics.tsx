@@ -38,7 +38,7 @@ const BusinessMetricsContent = () => {
           />
 
           <div className="bg-white p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
-            <h3 className="text-xl font-semibold mb-4">Metrics History</h3>
+            <h3 className="text-xl font-semibold mb-4 text-foreground">Metrics History</h3>
             <MetricsHistory />
           </div>
         </div>
