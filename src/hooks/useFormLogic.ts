@@ -86,15 +86,42 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
   const [formData, setFormData] = useState<typeof initialFormValues>(initialFormValues);
   const [errors, setErrors] = useState<Partial<typeof initialFormValues>>({});
 
+  // Calculate total income when income-related fields change
   useEffect(() => {
-    if (editingSubmission) {
-      const { timestamp, outcome, ...rest } = editingSubmission;
-      setFormData(rest);
-    }
-  }, [editingSubmission]);
+    const calculateTotalIncome = () => {
+      const socialSecurity = parseFloat(formData.socialSecurityIncome) || 0;
+      const pension = parseFloat(formData.pensionIncome) || 0;
+      const survivorship = parseFloat(formData.survivorshipIncome) || 0;
+      const total = socialSecurity + pension + survivorship;
+      
+      setFormData(prev => ({
+        ...prev,
+        totalIncome: total.toFixed(2)
+      }));
+    };
 
+    calculateTotalIncome();
+  }, [formData.socialSecurityIncome, formData.pensionIncome, formData.survivorshipIncome]);
+
+  // Calculate spouse total income when spouse income-related fields change
   useEffect(() => {
-    // Calculate primary applicant age
+    const calculateSpouseTotalIncome = () => {
+      const socialSecurity = parseFloat(formData.spouseSocialSecurityIncome) || 0;
+      const pension = parseFloat(formData.spousePensionIncome) || 0;
+      const survivorship = parseFloat(formData.spouseSurvivorshipIncome) || 0;
+      const total = socialSecurity + pension + survivorship;
+      
+      setFormData(prev => ({
+        ...prev,
+        spouseTotalIncome: total.toFixed(2)
+      }));
+    };
+
+    calculateSpouseTotalIncome();
+  }, [formData.spouseSocialSecurityIncome, formData.spousePensionIncome, formData.spouseSurvivorshipIncome]);
+
+  // Calculate primary applicant age
+  useEffect(() => {
     if (formData.dob) {
       const birthDate = parse(formData.dob, 'yyyy-MM-dd', new Date());
       const age = differenceInYears(new Date(), birthDate);
