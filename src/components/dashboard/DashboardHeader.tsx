@@ -29,25 +29,11 @@ const DashboardHeader = ({
   return (
     <div className="flex flex-wrap gap-4 mb-8">
       <Button
-        variant={showDashboard ? "default" : "outline"}
-        onClick={onDashboardClick}
+        variant={location.pathname === '/profile' ? "default" : "outline"}
+        onClick={() => navigate("/profile")}
         className="min-w-[120px]"
       >
-        Metrics
-      </Button>
-      <Button
-        variant={showSubmissions ? "default" : "outline"}
-        onClick={onSubmissionsClick}
-        className="min-w-[120px]"
-      >
-        Submissions
-      </Button>
-      <Button
-        variant={showManagerDashboard ? "default" : "outline"}
-        onClick={onManagerDashboardClick}
-        className="min-w-[120px]"
-      >
-        Manager
+        Profile
       </Button>
       <Button
         variant={showAssessment ? "default" : "outline"}
@@ -58,11 +44,25 @@ const DashboardHeader = ({
         Assessment
       </Button>
       <Button
-        variant={location.pathname === '/profile' ? "default" : "outline"}
-        onClick={() => navigate("/profile")}
+        variant={showSubmissions ? "default" : "outline"}
+        onClick={onSubmissionsClick}
         className="min-w-[120px]"
       >
-        Profile
+        Submissions
+      </Button>
+      <Button
+        variant={showDashboard ? "default" : "outline"}
+        onClick={onDashboardClick}
+        className="min-w-[120px]"
+      >
+        Metrics
+      </Button>
+      <Button
+        variant={showManagerDashboard ? "default" : "outline"}
+        onClick={onManagerDashboardClick}
+        className="min-w-[120px]"
+      >
+        Manager
       </Button>
     </div>
   );
