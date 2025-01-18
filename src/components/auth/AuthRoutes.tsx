@@ -7,6 +7,7 @@ import Profile from "@/pages/Profile";
 
 export const AuthRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -17,6 +18,8 @@ export const AuthRoutes = () => {
       } catch (error) {
         console.error("Session check error:", error);
         setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -38,18 +41,8 @@ export const AuthRoutes = () => {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Render auth page immediately without waiting
-  if (window.location.pathname === '/auth') {
-    return (
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="*" element={<Navigate to="/auth" replace />} />
-      </Routes>
-    );
-  }
-
-  // Show loading only for protected routes when checking auth
-  if (isAuthenticated === null) {
+  // Show loading only when checking auth status and not on auth page
+  if (isLoading && window.location.pathname !== '/auth') {
     return <div>Loading...</div>;
   }
 
@@ -82,6 +75,10 @@ export const AuthRoutes = () => {
       <Route 
         path="/assessment" 
         element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
+      />
+      <Route 
+        path="*" 
+        element={<Navigate to="/auth" replace />} 
       />
     </Routes>
   );

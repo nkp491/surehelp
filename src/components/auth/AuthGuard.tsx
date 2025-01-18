@@ -29,13 +29,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           return;
         }
 
-        // Verify the session is still valid
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.error("User verification error:", userError);
-          throw userError || new Error("No user found");
-        }
-
         setIsLoading(false);
       } catch (error) {
         console.error("AuthGuard error:", error);
@@ -61,7 +54,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   }, [navigate, toast]);
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
   }
 
   return <>{children}</>;

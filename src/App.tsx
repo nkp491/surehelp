@@ -3,7 +3,6 @@ import { Toaster } from "@/components/ui/toaster";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
 import { AuthRoutes } from "@/components/auth/AuthRoutes";
-import "./App.css";
 
 function App() {
   return (
