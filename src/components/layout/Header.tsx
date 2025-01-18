@@ -8,34 +8,48 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // First try to sign out locally
-      await supabase.auth.signOut({ scope: 'local' }).catch(() => {
-        // Ignore error if session is already invalid
-        console.log("Local sign out failed, proceeding with cleanup");
+      // First try to sign out locally and globally to ensure complete session cleanup
+      await Promise.all([
+        supabase.auth.signOut({ scope: 'local' }).catch(() => {
+          console.log("Local sign out failed, proceeding with cleanup");
+        }),
+        supabase.auth.signOut({ scope: 'global' }).catch(() => {
+          console.log("Global sign out failed, proceeding with cleanup");
+        })
+      ]);
+      
+      // Clear ALL Supabase-related items from localStorage
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('supabase.auth.')) {
+          localStorage.removeItem(key);
+        }
       });
       
-      // Then clear any remaining session data
-      localStorage.removeItem('supabase.auth.token');
+      // Clear any session cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
       
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
       
-      // Use replace to prevent going back to the authenticated state
-      navigate("/auth", { replace: true });
+      // Force reload to clear any cached state
+      window.location.href = '/auth';
     } catch (error) {
       console.error("Error during logout cleanup:", error);
       
       // Ensure we clean up and redirect even if there's an error
-      localStorage.removeItem('supabase.auth.token');
-      navigate("/auth", { replace: true });
-      
-      toast({
-        title: "Notice",
-        description: "You have been logged out",
-        variant: "default",
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('supabase.auth.')) {
+          localStorage.removeItem(key);
+        }
       });
+      
+      window.location.href = '/auth';
     }
   };
 

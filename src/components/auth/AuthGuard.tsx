@@ -25,7 +25,13 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         
         if (!session) {
           if (mounted) {
-            navigate("/auth");
+            // Clear any stale auth data
+            Object.keys(localStorage).forEach(key => {
+              if (key.startsWith('supabase.auth.')) {
+                localStorage.removeItem(key);
+              }
+            });
+            navigate("/auth", { replace: true });
           }
           return;
         }
@@ -42,8 +48,12 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
             variant: "destructive",
           });
           // Clear any stale session data
-          await supabase.auth.signOut({ scope: 'local' });
-          navigate("/auth");
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('supabase.auth.')) {
+              localStorage.removeItem(key);
+            }
+          });
+          navigate("/auth", { replace: true });
         }
       }
     };
@@ -56,9 +66,13 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       console.log("AuthGuard state change:", { event, session });
       
       if (event === 'SIGNED_OUT') {
-        // Clear local session data and redirect
-        localStorage.removeItem('supabase.auth.token');
-        navigate("/auth");
+        // Clear ALL auth-related data
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('supabase.auth.')) {
+            localStorage.removeItem(key);
+          }
+        });
+        navigate("/auth", { replace: true });
       } else if (event === 'SIGNED_IN') {
         setIsLoading(false);
       }
