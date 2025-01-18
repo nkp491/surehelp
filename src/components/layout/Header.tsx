@@ -8,21 +8,26 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // First clear local storage
-      localStorage.removeItem('supabase.auth.token');
+      // First try to sign out locally
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {
+        // Ignore error if session is already invalid
+        console.log("Local sign out failed, proceeding with cleanup");
+      });
       
-      // Then sign out locally first
-      await supabase.auth.signOut({ scope: 'local' });
+      // Then clear any remaining session data
+      localStorage.removeItem('supabase.auth.token');
       
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
       
+      // Use replace to prevent going back to the authenticated state
       navigate("/auth", { replace: true });
     } catch (error) {
-      console.error("Error logging out:", error);
-      // Even if there's an error, we want to clear local state and redirect
+      console.error("Error during logout cleanup:", error);
+      
+      // Ensure we clean up and redirect even if there's an error
       localStorage.removeItem('supabase.auth.token');
       navigate("/auth", { replace: true });
       
