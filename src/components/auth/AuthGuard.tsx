@@ -29,6 +29,13 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           return;
         }
 
+        // Verify the session is still valid
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("User verification error:", userError);
+          throw userError || new Error("No user found");
+        }
+
         setIsLoading(false);
       } catch (error) {
         console.error("AuthGuard error:", error);

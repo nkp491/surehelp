@@ -15,19 +15,39 @@ function AppRoutes() {
 
   useEffect(() => {
     // Check initial session
-    supabase.auth.getSession().then(({ data: { session }, error }) => {
-      console.log("Initial session check:", { session, error });
-      setIsAuthenticated(!!session);
-    });
+    const checkSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Initial session check:", { session, error });
+        if (error) throw error;
+        setIsAuthenticated(!!session);
+      } catch (error) {
+        console.error("Session check error:", error);
+        setIsAuthenticated(false);
+      }
+    };
+
+    checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", { event, session });
-      setIsAuthenticated(!!session);
       
-      // If session expired or user signed out, refresh the page to clear any stale data
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
-        window.location.reload();
+      if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+        window.location.href = '/auth';
+        return;
+      }
+      
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        if (error || !currentSession) {
+          console.error("Session refresh error:", error);
+          setIsAuthenticated(false);
+          window.location.href = '/auth';
+          return;
+        }
+        setIsAuthenticated(true);
       }
     });
 
