@@ -30,7 +30,7 @@ const DashboardHeader = ({
     <div className="flex flex-wrap gap-4 mb-8">
       <Button
         variant={showDashboard ? "default" : "outline"}
-        onClick={handleMetricsClick}
+        onClick={onDashboardClick}
         className="min-w-[120px]"
       >
         Metrics
