@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate, useLocation } from "react-router-dom";
-import { FileText } from "lucide-react";
+import { User, FileText, ClipboardList, BarChart, Users } from "lucide-react";
 
 interface DashboardHeaderProps {
   showSubmissions: boolean;
@@ -31,8 +31,9 @@ const DashboardHeader = ({
       <Button
         variant={location.pathname === '/profile' ? "default" : "outline"}
         onClick={() => navigate("/profile")}
-        className="min-w-[120px]"
+        className="min-w-[120px] flex items-center gap-2"
       >
+        <User className="h-4 w-4" />
         Profile
       </Button>
       <Button
@@ -46,22 +47,25 @@ const DashboardHeader = ({
       <Button
         variant={showSubmissions ? "default" : "outline"}
         onClick={onSubmissionsClick}
-        className="min-w-[120px]"
+        className="min-w-[120px] flex items-center gap-2"
       >
+        <ClipboardList className="h-4 w-4" />
         Submissions
       </Button>
       <Button
         variant={showDashboard ? "default" : "outline"}
         onClick={onDashboardClick}
-        className="min-w-[120px]"
+        className="min-w-[120px] flex items-center gap-2"
       >
+        <BarChart className="h-4 w-4" />
         Metrics
       </Button>
       <Button
         variant={showManagerDashboard ? "default" : "outline"}
         onClick={onManagerDashboardClick}
-        className="min-w-[120px]"
+        className="min-w-[120px] flex items-center gap-2"
       >
+        <Users className="h-4 w-4" />
         Manager
       </Button>
     </div>
