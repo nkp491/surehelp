@@ -19,7 +19,6 @@ function AppRoutes() {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log("Initial session check:", { session, error });
-        if (error) throw error;
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Session check error:", error);
@@ -35,7 +34,6 @@ function AppRoutes() {
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
-        window.location.href = '/auth';
         return;
       }
       
@@ -44,7 +42,6 @@ function AppRoutes() {
         if (error || !currentSession) {
           console.error("Session refresh error:", error);
           setIsAuthenticated(false);
-          window.location.href = '/auth';
           return;
         }
         setIsAuthenticated(true);
@@ -54,8 +51,8 @@ function AppRoutes() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show loading state while checking authentication
-  if (isAuthenticated === null) {
+  // Only show loading state for authenticated routes
+  if (isAuthenticated === null && window.location.pathname !== '/auth') {
     return <div>Loading...</div>;
   }
 
