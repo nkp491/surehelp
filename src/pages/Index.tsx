@@ -6,7 +6,6 @@ import MainContent from "@/components/layout/MainContent";
 import AuthGuard from "@/components/auth/AuthGuard";
 
 const Index = () => {
-  const [isFormOpen, setIsFormOpen] = useState(true);
   const [showSubmissions, setShowSubmissions] = useState(false);
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
@@ -42,10 +41,7 @@ const Index = () => {
               navigate(showDashboard ? '/' : '/metrics');
             }}
           />
-          <MainContent 
-            isFormOpen={isFormOpen}
-            setIsFormOpen={setIsFormOpen}
-          />
+          <MainContent />
         </div>
       </div>
     </AuthGuard>
