@@ -51,6 +51,7 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   // Spouse Income Fields
   spouseEmploymentStatus: [],
   spouseOccupation: "",
+  spouseEmploymentIncome: "",
   spouseSelectedInvestments: [],
   spouseSocialSecurityIncome: "",
   spousePensionIncome: "",

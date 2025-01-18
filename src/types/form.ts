@@ -32,6 +32,7 @@ export interface FormSubmission {
   // Primary Income Fields
   employmentStatus: string[];
   occupation: string;
+  employmentIncome: string;
   selectedInvestments: string[];
   socialSecurityIncome: string;
   pensionIncome: string;
@@ -41,6 +42,7 @@ export interface FormSubmission {
   // Spouse Income Fields
   spouseEmploymentStatus: string[];
   spouseOccupation: string;
+  spouseEmploymentIncome: string;
   spouseSelectedInvestments: string[];
   spouseSocialSecurityIncome: string;
   spousePensionIncome: string;
