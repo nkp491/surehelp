@@ -24,7 +24,7 @@ const ChartControls = ({
           Metrics Visualization
         </h2>
       </div>
-      <div className="flex flex-col sm:flex-row justify-end gap-4">
+      <div className="flex flex-col sm:flex-row gap-4">
         <div className="flex gap-2">
           {chartTypes.map((type) => (
             <Button
