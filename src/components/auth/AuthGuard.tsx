@@ -13,44 +13,46 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkAuth = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
         
-        if (error) {
-          console.error("Session error:", error);
-          throw error;
+        if (sessionError) {
+          throw sessionError;
         }
         
         if (!session) {
-          console.log("No session found, redirecting to /auth");
-          navigate("/auth");
+          if (mounted) {
+            navigate("/auth");
+          }
           return;
         }
 
-        // Verify the session is still valid
-        const { data: { user }, error: userError } = await supabase.auth.getUser();
-        if (userError || !user) {
-          console.error("User verification error:", userError);
-          throw userError || new Error("User not found");
+        if (mounted) {
+          setIsLoading(false);
         }
-
-        setIsLoading(false);
       } catch (error) {
         console.error("AuthGuard error:", error);
-        toast({
-          title: "Authentication Error",
-          description: "Please sign in again",
-          variant: "destructive",
-        });
-        navigate("/auth");
+        if (mounted) {
+          toast({
+            title: "Authentication Error",
+            description: "Please sign in again",
+            variant: "destructive",
+          });
+          navigate("/auth");
+        }
       }
     };
     
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
       console.log("AuthGuard state change:", { event, session });
+      
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
       } else if (event === 'SIGNED_IN') {
@@ -58,7 +60,10 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, toast]);
 
   if (isLoading) {

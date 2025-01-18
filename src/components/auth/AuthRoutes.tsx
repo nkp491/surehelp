@@ -10,22 +10,31 @@ export const AuthRoutes = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    let mounted = true;
+
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
         if (error) throw error;
-        setIsAuthenticated(!!session);
+        
+        if (mounted) {
+          setIsAuthenticated(!!session);
+          setIsLoading(false);
+        }
       } catch (error) {
         console.error("Session check error:", error);
-        setIsAuthenticated(false);
-      } finally {
-        setIsLoading(false);
+        if (mounted) {
+          setIsAuthenticated(false);
+          setIsLoading(false);
+        }
       }
     };
 
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+
       console.log("Auth state change:", { event, session });
       
       if (event === 'SIGNED_OUT') {
@@ -33,7 +42,12 @@ export const AuthRoutes = () => {
         return;
       }
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
+        setIsAuthenticated(true);
+        return;
+      }
+
+      if (event === 'TOKEN_REFRESHED') {
         const { data: { session: currentSession }, error } = await supabase.auth.getSession();
         if (!error && currentSession) {
           setIsAuthenticated(true);
@@ -44,7 +58,10 @@ export const AuthRoutes = () => {
       }
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   if (isLoading && window.location.pathname !== '/auth') {
