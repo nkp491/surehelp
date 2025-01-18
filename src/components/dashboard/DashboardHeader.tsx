@@ -58,7 +58,7 @@ const DashboardHeader = ({
         className="min-w-[120px] flex items-center gap-2"
       >
         <BarChart className="h-4 w-4" />
-        Dashboards
+        Dashboard
       </Button>
       <Button
         variant={showManagerDashboard ? "default" : "outline"}
