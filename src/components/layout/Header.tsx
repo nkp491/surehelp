@@ -6,53 +6,73 @@ const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  const clearAllStorageAndCookies = () => {
+    try {
+      // Clear ALL Supabase-related items from localStorage
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('supabase.auth.')) {
+          localStorage.removeItem(key);
+        }
+      });
+      
+      // Clear any session cookies
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+
+      // Clear session storage
+      sessionStorage.clear();
+    } catch (error) {
+      console.error("Error clearing storage:", error);
+    }
+  };
+
   const handleLogout = async () => {
     try {
-      // First check if we have a valid session
+      // First try to get the current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
         console.error("Session check error:", sessionError);
+        // If there's a session error, just clear everything and redirect
+        clearAllStorageAndCookies();
+        window.location.replace('/auth');
+        return;
       }
 
-      if (session) {
-        // Only attempt to sign out if we have a valid session
-        const { error: signOutError } = await supabase.auth.signOut({ scope: 'global' });
-        if (signOutError) {
-          console.error("Sign out error:", signOutError);
-        }
+      if (!session) {
+        console.log("No active session found");
+        clearAllStorageAndCookies();
+        window.location.replace('/auth');
+        return;
       }
+
+      // If we have a valid session, try to sign out
+      const { error: signOutError } = await supabase.auth.signOut({
+        scope: 'local'
+      });
+
+      if (signOutError) {
+        console.error("Sign out error:", signOutError);
+        // Even if sign out fails, clear local data
+        clearAllStorageAndCookies();
+        window.location.replace('/auth');
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
+
+      clearAllStorageAndCookies();
+      window.location.replace('/auth');
     } catch (error) {
       console.error("Error during logout:", error);
-    } finally {
-      // Always clean up local storage and cookies, regardless of session state or errors
-      try {
-        // Clear ALL Supabase-related items from localStorage
-        Object.keys(localStorage).forEach(key => {
-          if (key.startsWith('supabase.auth.')) {
-            localStorage.removeItem(key);
-          }
-        });
-        
-        // Clear any session cookies
-        document.cookie.split(";").forEach((c) => {
-          document.cookie = c
-            .replace(/^ +/, "")
-            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-        });
-
-        // Clear session storage
-        sessionStorage.clear();
-        
-        toast({
-          title: "Success",
-          description: "Logged out successfully",
-        });
-      } catch (cleanupError) {
-        console.error("Error during cleanup:", cleanupError);
-      }
-      
-      // Force a complete page reload to clear any cached state
+      // If anything fails, make sure we clear everything and redirect
+      clearAllStorageAndCookies();
       window.location.replace('/auth');
     }
   };
