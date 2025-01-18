@@ -9,38 +9,51 @@ const Header = () => {
   const handleLogout = async () => {
     try {
       // First check if we have a valid session
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
+      if (sessionError) {
+        console.error("Session check error:", sessionError);
+      }
+
       if (session) {
         // Only attempt to sign out if we have a valid session
-        await supabase.auth.signOut();
+        const { error: signOutError } = await supabase.auth.signOut({ scope: 'global' });
+        if (signOutError) {
+          console.error("Sign out error:", signOutError);
+        }
       }
     } catch (error) {
       console.error("Error during logout:", error);
     } finally {
-      // Always clean up, regardless of session state or errors
+      // Always clean up local storage and cookies, regardless of session state or errors
+      try {
+        // Clear ALL Supabase-related items from localStorage
+        Object.keys(localStorage).forEach(key => {
+          if (key.startsWith('supabase.auth.')) {
+            localStorage.removeItem(key);
+          }
+        });
+        
+        // Clear any session cookies
+        document.cookie.split(";").forEach((c) => {
+          document.cookie = c
+            .replace(/^ +/, "")
+            .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+        });
+
+        // Clear session storage
+        sessionStorage.clear();
+        
+        toast({
+          title: "Success",
+          description: "Logged out successfully",
+        });
+      } catch (cleanupError) {
+        console.error("Error during cleanup:", cleanupError);
+      }
       
-      // Clear ALL Supabase-related items from localStorage
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('supabase.auth.')) {
-          localStorage.removeItem(key);
-        }
-      });
-      
-      // Clear any session cookies
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-      
-      toast({
-        title: "Success",
-        description: "Logged out successfully",
-      });
-      
-      // Force a full page reload to clear any cached state
-      window.location.href = '/auth';
+      // Force a complete page reload to clear any cached state
+      window.location.replace('/auth');
     }
   };
 
