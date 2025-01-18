@@ -24,6 +24,11 @@ function AppRoutes() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state change:", { event, session });
       setIsAuthenticated(!!session);
+      
+      // If session expired or user signed out, refresh the page to clear any stale data
+      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+        window.location.reload();
+      }
     });
 
     return () => subscription.unsubscribe();
