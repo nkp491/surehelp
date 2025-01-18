@@ -37,42 +37,46 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   } = useMetricsCalculations();
 
   useEffect(() => {
-    if (timePeriod === "custom" && dateRange.from && dateRange.to) {
-      const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
-      const storedMetrics = localStorage.getItem(key);
-      if (storedMetrics) {
-        setMetrics(JSON.parse(storedMetrics));
+    const initializeMetrics = async () => {
+      if (timePeriod === "custom" && dateRange.from && dateRange.to) {
+        const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
+        const storedMetrics = localStorage.getItem(key);
+        if (storedMetrics) {
+          setMetrics(JSON.parse(storedMetrics));
+        }
+      } else {
+        const dailyMetrics = await loadDailyMetrics();
+        setMetrics(dailyMetrics);
+        initializeInputs(dailyMetrics);
+        
+        if (timePeriod !== '24h') {
+          await savePeriodMetrics(timePeriod, dailyMetrics);
+        }
+
+        const previousMetricsData = await loadPreviousMetrics(timePeriod);
+        if (previousMetricsData) {
+          setPreviousMetrics(previousMetricsData);
+          const newTrends = calculateTrends(dailyMetrics, previousMetricsData);
+          setTrends(newTrends);
+        }
       }
-    } else {
-      loadMetricsForPeriod(timePeriod);
-    }
+    };
+
+    initializeMetrics();
   }, [timePeriod, dateRange]);
 
-  const loadMetricsForPeriod = (period: TimePeriod) => {
-    const parsedDailyMetrics = loadDailyMetrics();
-    setMetrics(parsedDailyMetrics);
-    initializeInputs(parsedDailyMetrics);
-    
-    if (period !== '24h') {
-      savePeriodMetrics(period, parsedDailyMetrics);
-    }
-
-    const previousMetricsData = loadPreviousMetrics(period);
-    if (previousMetricsData) {
-      setPreviousMetrics(previousMetricsData);
-    }
-
-    const newTrends = calculateTrends(parsedDailyMetrics, previousMetricsData);
-    setTrends(newTrends);
-  };
-
-  const handleTimePeriodChange = (period: TimePeriod) => {
+  const handleTimePeriodChange = async (period: TimePeriod) => {
     setPreviousMetrics(metrics);
-    localStorage.setItem(`previousBusinessMetrics_${timePeriod}`, JSON.stringify(metrics));
+    await saveDailyMetrics(metrics);
     setTimePeriod(period);
     if (period !== "custom") {
       setDateRange({ from: undefined, to: undefined });
     }
+  };
+
+  const handleMetricInputChange = async (metric: MetricType, value: string) => {
+    handleInputChange(metric, value);
+    await saveDailyMetrics(metrics);
   };
 
   const ratios = calculateRatios(metrics);
@@ -87,7 +91,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     ratios,
     setDateRange,
     handleTimePeriodChange,
-    handleInputChange,
+    handleInputChange: handleMetricInputChange,
   };
 
   return (

@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      daily_metrics: {
+        Row: {
+          ap: number | null
+          calls: number | null
+          contacts: number | null
+          created_at: string
+          date: string
+          id: string
+          leads: number | null
+          sales: number | null
+          scheduled: number | null
+          sits: number | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          ap?: number | null
+          calls?: number | null
+          contacts?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          leads?: number | null
+          sales?: number | null
+          scheduled?: number | null
+          sits?: number | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          ap?: number | null
+          calls?: number | null
+          contacts?: number | null
+          created_at?: string
+          date?: string
+          id?: string
+          leads?: number | null
+          sales?: number | null
+          scheduled?: number | null
+          sits?: number | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

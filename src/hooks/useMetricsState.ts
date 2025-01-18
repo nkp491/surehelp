@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { MetricCount, MetricType, TimePeriod } from '@/types/metrics';
-import { format } from 'date-fns';
 
 export const useMetricsState = () => {
   const [metrics, setMetrics] = useState<MetricCount>({
@@ -23,14 +22,10 @@ export const useMetricsState = () => {
   });
 
   const updateMetricValue = (metric: MetricType, value: number) => {
-    setMetrics(prev => {
-      const newMetrics = {
-        ...prev,
-        [metric]: value
-      };
-      localStorage.setItem('businessMetrics_24h', JSON.stringify(newMetrics));
-      return newMetrics;
-    });
+    setMetrics(prev => ({
+      ...prev,
+      [metric]: value
+    }));
   };
 
   const handleInputChange = (metric: MetricType, value: string) => {
