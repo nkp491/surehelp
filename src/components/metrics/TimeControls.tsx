@@ -6,7 +6,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { useMetrics } from "@/contexts/MetricsContext";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Clock, CalendarIcon, CalendarDays } from "lucide-react";
 import { useToast } from "../ui/use-toast";
@@ -61,24 +60,16 @@ const TimeControls = () => {
         <PopoverTrigger asChild>
           <Button
             variant={timePeriod === "custom" ? "default" : "outline"}
-            className={cn(
-              "justify-start text-left font-normal",
-              !dateRange.from && "text-muted-foreground"
-            )}
+            className="flex items-center gap-2"
             onClick={() => handlePeriodChange("custom")}
           >
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {dateRange.from ? (
-              dateRange.to ? (
-                <>
-                  {format(dateRange.from, "LLL dd, y")} -{" "}
-                  {format(dateRange.to, "LLL dd, y")}
-                </>
-              ) : (
-                format(dateRange.from, "LLL dd, y")
-              )
+            <CalendarIcon className="h-4 w-4" />
+            {dateRange.from && dateRange.to ? (
+              <>
+                {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
+              </>
             ) : (
-              <span>Custom Range</span>
+              "Custom"
             )}
           </Button>
         </PopoverTrigger>
