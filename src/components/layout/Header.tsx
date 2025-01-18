@@ -1,7 +1,31 @@
 import { useNavigate } from "react-router-dom";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 const Header = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const handleLogout = async () => {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      
+      toast({
+        title: "Success",
+        description: "Logged out successfully",
+      });
+      
+      navigate("/auth");
+    } catch (error) {
+      console.error("Error logging out:", error);
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="bg-gray-50 p-4 flex justify-between items-center">
@@ -11,10 +35,10 @@ const Header = () => {
         className="h-16 object-contain"
       />
       <button
-        onClick={() => navigate("/profile")}
-        className="text-blue-600 hover:text-blue-800"
+        onClick={handleLogout}
+        className="text-[#D9D9D9] hover:text-[#D9D9D9]/80 transition-colors"
       >
-        Profile Settings
+        Logout
       </button>
     </div>
   );
