@@ -17,8 +17,8 @@ function AppRoutes() {
     // Check initial session
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Initial session check:", { session, error });
+        const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial session check:", { session });
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Session check error:", error);
@@ -29,7 +29,7 @@ function AppRoutes() {
     checkSession();
 
     // Listen for auth changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state change:", { event, session });
       
       if (event === 'SIGNED_OUT') {
@@ -38,12 +38,6 @@ function AppRoutes() {
       }
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        if (error || !currentSession) {
-          console.error("Session refresh error:", error);
-          setIsAuthenticated(false);
-          return;
-        }
         setIsAuthenticated(true);
       }
     });
@@ -51,8 +45,18 @@ function AppRoutes() {
     return () => subscription.unsubscribe();
   }, []);
 
-  // Only show loading state for authenticated routes
-  if (isAuthenticated === null && window.location.pathname !== '/auth') {
+  // Render auth page immediately without waiting
+  if (window.location.pathname === '/auth') {
+    return (
+      <Routes>
+        <Route path="/auth" element={<Auth />} />
+        <Route path="*" element={<Navigate to="/auth" replace />} />
+      </Routes>
+    );
+  }
+
+  // Show loading only for protected routes when checking auth
+  if (isAuthenticated === null) {
     return <div>Loading...</div>;
   }
 
