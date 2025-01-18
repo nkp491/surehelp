@@ -1,5 +1,6 @@
 import { FormSubmission } from "@/types/form";
 import { SpouseVisibilityProvider } from "@/contexts/SpouseVisibilityContext";
+import { MetricsProvider } from "@/contexts/MetricsContext";
 import FormContent from "@/components/form/FormContent";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 
@@ -10,12 +11,14 @@ interface FormContainerProps {
 
 const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   return (
-    <SpouseVisibilityProvider>
-      <div className="space-y-8">
-        <MetricsSection />
-        <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
-      </div>
-    </SpouseVisibilityProvider>
+    <MetricsProvider>
+      <SpouseVisibilityProvider>
+        <div className="space-y-8">
+          <MetricsSection />
+          <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
+        </div>
+      </SpouseVisibilityProvider>
+    </MetricsProvider>
   );
 };
 
