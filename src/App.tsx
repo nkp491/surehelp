@@ -1,12 +1,18 @@
-import { BrowserRouter as Router } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import "./App.css";
 import Index from "./pages/Index";
+import Auth from "./pages/Auth";
+import Profile from "./pages/Profile";
 
 function App() {
   return (
     <Router>
-      <Index />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth" element={<Auth />} />
+        <Route path="/profile" element={<Profile />} />
+      </Routes>
       <Toaster />
     </Router>
   );

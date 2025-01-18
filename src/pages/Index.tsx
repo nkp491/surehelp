@@ -1,6 +1,7 @@
-import { useState } from "react";
-import { Routes, Route, useLocation, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Separator } from "@/components/ui/separator";
+import { supabase } from "@/integrations/supabase/client";
 import SubmittedForms from "./SubmittedForms";
 import Dashboard from "./Dashboard";
 import ManagerDashboard from "./ManagerDashboard";
@@ -16,6 +17,25 @@ const Index = () => {
   const [showDashboard, setShowDashboard] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        navigate("/auth");
+      }
+    };
+    
+    checkAuth();
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!session) {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   const handleSubmissionsClick = () => {
     if (location.pathname === '/submitted-forms') {
@@ -49,12 +69,18 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <div className="bg-gray-50 p-4 flex justify-start items-center">
+      <div className="bg-gray-50 p-4 flex justify-between items-center">
         <img 
           src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
           alt="SureHelp Logo" 
           className="h-16 object-contain"
         />
+        <button
+          onClick={() => navigate("/profile")}
+          className="text-blue-600 hover:text-blue-800"
+        >
+          Profile Settings
+        </button>
       </div>
       <div className="container mx-auto py-8">
         <DashboardHeader 
