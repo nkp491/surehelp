@@ -11,9 +11,29 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
+    // Check initial session
+    const checkSession = async () => {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log("Initial session check:", { session, error });
+      if (session) {
+        navigate("/assessment");
+      }
+      if (error) {
+        console.error("Session check error:", error);
+        setErrorMessage(getErrorMessage(error));
+      }
+    };
+    
+    checkSession();
+
+    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", { event, session });
       if (event === "SIGNED_IN" && session) {
         navigate("/assessment");
+      }
+      if (event === "SIGNED_OUT") {
+        setErrorMessage("");
       }
     });
 
@@ -21,13 +41,16 @@ const Auth = () => {
   }, [navigate]);
 
   const getErrorMessage = (error: AuthError) => {
+    console.error("Auth error:", error);
     switch (error.message) {
       case "Invalid login credentials":
         return "Invalid email or password. Please check your credentials and try again.";
       case "Email not confirmed":
         return "Please verify your email address before signing in.";
+      case "Invalid Refresh Token: Refresh Token Not Found":
+        return "Your session has expired. Please sign in again.";
       default:
-        return error.message;
+        return `Authentication error: ${error.message}`;
     }
   };
 

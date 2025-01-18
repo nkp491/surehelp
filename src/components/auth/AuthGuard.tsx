@@ -11,8 +11,14 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session }, error } = await supabase.auth.getSession();
+      console.log("AuthGuard session check:", { session, error });
       if (!session) {
+        console.log("No session found, redirecting to /auth");
+        navigate("/auth");
+      }
+      if (error) {
+        console.error("AuthGuard error:", error);
         navigate("/auth");
       }
     };
@@ -20,6 +26,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     checkAuth();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("AuthGuard state change:", { event, session });
       if (!session) {
         navigate("/auth");
       }
