@@ -1,11 +1,21 @@
 import { Button } from "@/components/ui/button";
-import { ChartType, TimePeriod } from "@/types/metrics";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import { useState } from "react";
+import { useToast } from "@/components/ui/use-toast";
 
 interface ChartControlsProps {
-  chartType: ChartType;
-  timePeriod: TimePeriod;
-  onChartTypeChange: (type: ChartType) => void;
-  onTimePeriodChange: (period: TimePeriod) => void;
+  chartType: "bar" | "line" | "pie";
+  timePeriod: "24h" | "7d" | "30d" | "custom";
+  onChartTypeChange: (type: "bar" | "line" | "pie") => void;
+  onTimePeriodChange: (period: "24h" | "7d" | "30d" | "custom") => void;
 }
 
 const ChartControls = ({
@@ -14,8 +24,27 @@ const ChartControls = ({
   onChartTypeChange,
   onTimePeriodChange,
 }: ChartControlsProps) => {
-  const chartTypes: ChartType[] = ["bar", "line", "pie"];
-  const timePeriods: TimePeriod[] = ["24h", "7d", "30d", "custom"];
+  const chartTypes: ("bar" | "line" | "pie")[] = ["bar", "line", "pie"];
+  const timePeriods: ("24h" | "7d" | "30d")[] = ["24h", "7d", "30d"];
+  const { toast } = useToast();
+  const [date, setDate] = useState<{
+    from: Date | undefined;
+    to: Date | undefined;
+  }>({
+    from: undefined,
+    to: undefined,
+  });
+
+  const handleDateSelect = (selectedDate: { from: Date | undefined; to: Date | undefined }) => {
+    setDate(selectedDate);
+    if (selectedDate.from && selectedDate.to) {
+      onTimePeriodChange("custom");
+      toast({
+        title: "Date Range Selected",
+        description: `Selected range: ${format(selectedDate.from, "PPP")} to ${format(selectedDate.to, "PPP")}`,
+      });
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -24,7 +53,7 @@ const ChartControls = ({
           Metrics Visualization
         </h2>
       </div>
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-4 justify-end">
         <div className="flex gap-2">
           {chartTypes.map((type) => (
             <Button
@@ -45,9 +74,44 @@ const ChartControls = ({
               onClick={() => onTimePeriodChange(period)}
               className="capitalize"
             >
-              {period === "24h" ? "24H" : period === "7d" ? "7D" : period === "30d" ? "30D" : "Custom"}
+              {period === "24h" ? "24H" : period === "7d" ? "7D" : "30D"}
             </Button>
           ))}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={timePeriod === "custom" ? "default" : "outline"}
+                className={cn(
+                  "justify-start text-left font-normal",
+                  !date.from && "text-muted-foreground"
+                )}
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {date.from ? (
+                  date.to ? (
+                    <>
+                      {format(date.from, "LLL dd, y")} -{" "}
+                      {format(date.to, "LLL dd, y")}
+                    </>
+                  ) : (
+                    format(date.from, "LLL dd, y")
+                  )
+                ) : (
+                  <span>Custom Range</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={date.from}
+                selected={date}
+                onSelect={handleDateSelect}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
       </div>
     </div>
