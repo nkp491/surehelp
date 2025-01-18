@@ -35,7 +35,9 @@ const ChartControls = ({
     to: undefined,
   });
 
-  const handleDateSelect = (selectedDate: { from: Date | undefined; to: Date | undefined }) => {
+  const handleDateSelect = (selectedDate: { from: Date | undefined; to: Date | undefined } | undefined) => {
+    if (!selectedDate) return;
+    
     setDate(selectedDate);
     if (selectedDate.from && selectedDate.to) {
       onTimePeriodChange("custom");
