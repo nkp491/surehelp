@@ -4,25 +4,36 @@ import SubmittedForms from "@/pages/SubmittedForms";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import Profile from "@/pages/Profile";
 import FormContainer from "@/components/FormContainer";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 const MainContent = () => {
   const location = useLocation();
 
   const renderContent = () => {
-    switch (location.pathname) {
-      case '/metrics':
-        return <Dashboard />;
-      case '/submitted-forms':
-        return <SubmittedForms />;
-      case '/manager-dashboard':
-        return <ManagerDashboard />;
-      case '/profile':
-        return <Profile />;
-      case '/assessment':
-        return <FormContainer />;
-      default:
-        return <Dashboard />;
+    // Only render auth-protected content
+    const protectedContent = () => {
+      switch (location.pathname) {
+        case '/metrics':
+          return <Dashboard />;
+        case '/submitted-forms':
+          return <SubmittedForms />;
+        case '/manager-dashboard':
+          return <ManagerDashboard />;
+        case '/profile':
+          return <Profile />;
+        case '/assessment':
+          return <FormContainer />;
+        default:
+          return <Dashboard />;
+      }
+    };
+
+    // Wrap all protected routes with AuthGuard
+    if (location.pathname !== '/auth') {
+      return <AuthGuard>{protectedContent()}</AuthGuard>;
     }
+
+    return protectedContent();
   };
 
   return (

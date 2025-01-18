@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -8,17 +9,34 @@ interface AuthGuardProps {
 
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const checkAuth = async () => {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      console.log("AuthGuard session check:", { session, error });
-      if (!session) {
-        console.log("No session found, redirecting to /auth");
-        navigate("/auth");
-      }
-      if (error) {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("AuthGuard session check:", { session, error });
+        
+        if (error) {
+          console.error("Session error:", error);
+          throw error;
+        }
+        
+        if (!session) {
+          console.log("No session found, redirecting to /auth");
+          navigate("/auth");
+          return;
+        }
+
+        setIsLoading(false);
+      } catch (error) {
         console.error("AuthGuard error:", error);
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
         navigate("/auth");
       }
     };
@@ -27,13 +45,17 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("AuthGuard state change:", { event, session });
-      if (!session) {
+      if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
 
   return <>{children}</>;
 };
