@@ -56,7 +56,6 @@ export const useMetricsStorage = () => {
       };
     }
 
-    // Aggregate metrics for the period
     return (data as DatabaseMetric[]).reduce((acc, curr) => ({
       leads: acc.leads + (curr.leads || 0),
       calls: acc.calls + (curr.calls || 0),
@@ -72,36 +71,26 @@ export const useMetricsStorage = () => {
 
   const saveDailyMetrics = async (metrics: MetricCount) => {
     const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
-    const user = supabase.auth.getUser();
+    const user = await supabase.auth.getUser();
     
-    if (!user) {
+    if (!user.data.user) {
       console.error('No user found');
       return;
     }
 
-    const { data: existingMetrics } = await supabase
+    const { error } = await supabase
       .from('daily_metrics')
-      .select('*')
-      .eq('date', today)
-      .maybeSingle();
+      .upsert({
+        user_id: user.data.user.id,
+        date: today,
+        ...metrics
+      }, {
+        onConflict: 'user_id,date'
+      });
 
-    if (existingMetrics) {
-      const { error } = await supabase
-        .from('daily_metrics')
-        .update(metrics)
-        .eq('date', today);
-
-      if (error) console.error('Error updating daily metrics:', error);
-    } else {
-      const { error } = await supabase
-        .from('daily_metrics')
-        .insert([{ 
-          ...metrics, 
-          date: today,
-          user_id: (await user).data.user?.id 
-        }]);
-
-      if (error) console.error('Error inserting daily metrics:', error);
+    if (error) {
+      console.error('Error upserting daily metrics:', error);
+      throw error;
     }
   };
 
