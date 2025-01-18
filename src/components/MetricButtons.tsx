@@ -26,7 +26,8 @@ const MetricButtons = ({
 
   const handleIncrement = () => {
     const increment = isAP ? 100 : 1;
-    handleInputChange(metric as MetricType, (currentValue + increment).toString());
+    const newValue = currentValue + increment;
+    handleInputChange(metric as MetricType, newValue.toString());
     onIncrement();
   };
 
