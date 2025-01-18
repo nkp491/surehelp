@@ -4,6 +4,10 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
 import { MetricCount } from '@/types/metrics';
 import { Table, TableBody, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { CalendarIcon, Plus } from 'lucide-react';
 import MetricsTableHeader from './MetricsTableHeader';
 import EditableMetricCell from './EditableMetricCell';
 import MetricRowActions from './MetricRowActions';
@@ -18,6 +22,7 @@ const MetricsHistory = () => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<MetricCount | null>(null);
   const [sortConfig, setSortConfig] = useState<SortConfig>({ key: 'date', direction: 'desc' });
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -57,6 +62,58 @@ const MetricsHistory = () => {
       toast({
         title: "Error",
         description: "Failed to load metrics history",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleAddBackdatedMetrics = async () => {
+    if (!selectedDate) {
+      toast({
+        title: "Error",
+        description: "Please select a date",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user) return;
+
+      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+      const initialMetrics = {
+        leads: 0,
+        calls: 0,
+        contacts: 0,
+        scheduled: 0,
+        sits: 0,
+        sales: 0,
+        ap: 0,
+      };
+
+      const { error } = await supabase
+        .from('daily_metrics')
+        .insert({
+          user_id: user.user.id,
+          date: formattedDate,
+          ...initialMetrics
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Success",
+        description: "Backdated metrics entry added",
+      });
+
+      setSelectedDate(undefined);
+      loadHistory();
+    } catch (error) {
+      console.error('Error adding backdated metrics:', error);
+      toast({
+        title: "Error",
+        description: "Failed to add backdated metrics",
         variant: "destructive",
       });
     }
@@ -146,37 +203,68 @@ const MetricsHistory = () => {
   };
 
   return (
-    <div className="overflow-x-auto">
-      <Table>
-        <MetricsTableHeader onSort={handleSort} />
-        <TableBody>
-          {sortedHistory.map(({ date, metrics }) => (
-            <TableRow key={date}>
-              <EditableMetricCell
-                isEditing={false}
-                value={format(new Date(date), 'MMM dd, yyyy')}
-                onChange={() => {}}
-                metric="date"
-              />
-              {Object.entries(metrics).map(([metric, value]) => (
+    <div className="space-y-4">
+      <div className="flex justify-end mb-4">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button variant="outline" className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              <CalendarIcon className="h-4 w-4" />
+              Add Backdated Metrics
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={setSelectedDate}
+              initialFocus
+            />
+            <div className="p-2 border-t">
+              <Button 
+                className="w-full"
+                onClick={handleAddBackdatedMetrics}
+                disabled={!selectedDate}
+              >
+                Add Entry
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      </div>
+
+      <div className="overflow-x-auto">
+        <Table>
+          <MetricsTableHeader onSort={handleSort} />
+          <TableBody>
+            {sortedHistory.map(({ date, metrics }) => (
+              <TableRow key={date}>
                 <EditableMetricCell
-                  key={metric}
-                  isEditing={editingRow === date}
-                  value={formatValue(value, metric as keyof MetricCount)}
-                  onChange={(newValue) => handleValueChange(metric as keyof MetricCount, newValue)}
-                  metric={metric}
+                  isEditing={false}
+                  value={format(new Date(date), 'MMM dd, yyyy')}
+                  onChange={() => {}}
+                  metric="date"
                 />
-              ))}
-              <MetricRowActions
-                isEditing={editingRow === date}
-                onEdit={() => handleEdit(date, metrics)}
-                onSave={() => handleSave(date)}
-                onCancel={handleCancel}
-              />
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+                {Object.entries(metrics).map(([metric, value]) => (
+                  <EditableMetricCell
+                    key={metric}
+                    isEditing={editingRow === date}
+                    value={formatValue(value, metric as keyof MetricCount)}
+                    onChange={(newValue) => handleValueChange(metric as keyof MetricCount, newValue)}
+                    metric={metric}
+                  />
+                ))}
+                <MetricRowActions
+                  isEditing={editingRow === date}
+                  onEdit={() => handleEdit(date, metrics)}
+                  onSave={() => handleSave(date)}
+                  onCancel={handleCancel}
+                />
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   );
 };
