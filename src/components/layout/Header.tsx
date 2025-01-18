@@ -1,28 +1,60 @@
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { User } from "lucide-react";
+import { useEffect, useState } from "react";
 
 const Header = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const [profileData, setProfileData] = useState<{
+    first_name?: string | null;
+    profile_image_url?: string | null;
+  }>({});
+
+  useEffect(() => {
+    fetchProfileData();
+  }, []);
+
+  const fetchProfileData = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.id) {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('first_name, profile_image_url')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) throw error;
+        setProfileData(data);
+      }
+    } catch (error) {
+      console.error("Error fetching profile data:", error);
+    }
+  };
 
   const clearAllStorageAndCookies = () => {
     try {
-      // Clear ALL Supabase-related items from localStorage
       Object.keys(localStorage).forEach(key => {
         if (key.startsWith('supabase.auth.')) {
           localStorage.removeItem(key);
         }
       });
       
-      // Clear any session cookies
       document.cookie.split(";").forEach((c) => {
         document.cookie = c
           .replace(/^ +/, "")
           .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
       });
 
-      // Clear session storage
       sessionStorage.clear();
     } catch (error) {
       console.error("Error clearing storage:", error);
@@ -31,12 +63,10 @@ const Header = () => {
 
   const handleLogout = async () => {
     try {
-      // First try to get the current session
       const { data: { session }, error: sessionError } = await supabase.auth.getSession();
       
       if (sessionError) {
         console.error("Session check error:", sessionError);
-        // If there's a session error, just clear everything and redirect
         clearAllStorageAndCookies();
         window.location.replace('/auth');
         return;
@@ -49,14 +79,12 @@ const Header = () => {
         return;
       }
 
-      // If we have a valid session, try to sign out
       const { error: signOutError } = await supabase.auth.signOut({
         scope: 'local'
       });
 
       if (signOutError) {
         console.error("Sign out error:", signOutError);
-        // Even if sign out fails, clear local data
         clearAllStorageAndCookies();
         window.location.replace('/auth');
         return;
@@ -71,7 +99,6 @@ const Header = () => {
       window.location.replace('/auth');
     } catch (error) {
       console.error("Error during logout:", error);
-      // If anything fails, make sure we clear everything and redirect
       clearAllStorageAndCookies();
       window.location.replace('/auth');
     }
@@ -84,12 +111,26 @@ const Header = () => {
         alt="SureHelp Logo" 
         className="h-16 object-contain"
       />
-      <button
-        onClick={handleLogout}
-        className="text-[#D9D9D9] hover:text-[#D9D9D9]/80 transition-colors"
-      >
-        Logout
-      </button>
+      <div className="flex items-center gap-4">
+        <DropdownMenu>
+          <DropdownMenuTrigger className="focus:outline-none">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={profileData.profile_image_url || ""} />
+              <AvatarFallback className="bg-primary text-primary-foreground">
+                {profileData.first_name?.[0]?.toUpperCase() || <User className="h-6 w-6" />}
+              </AvatarFallback>
+            </Avatar>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => navigate("/profile")}>
+              Profile Settings
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={handleLogout}>
+              Logout
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
     </div>
   );
 };

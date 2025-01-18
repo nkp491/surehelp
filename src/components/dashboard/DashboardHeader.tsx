@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
-import { useNavigate, useLocation } from "react-router-dom";
-import { User, FileText, ClipboardList, BarChart, Users } from "lucide-react";
+import { useLocation } from "react-router-dom";
+import { FileText, ClipboardList, BarChart, Users } from "lucide-react";
 
 interface DashboardHeaderProps {
   showSubmissions: boolean;
@@ -23,19 +23,10 @@ const DashboardHeader = ({
   showAssessment,
   onAssessmentClick,
 }: DashboardHeaderProps) => {
-  const navigate = useNavigate();
   const location = useLocation();
 
   return (
     <div className="flex flex-wrap gap-4 mb-8">
-      <Button
-        variant={location.pathname === '/profile' ? "default" : "outline"}
-        onClick={() => navigate("/profile")}
-        className="min-w-[120px] flex items-center gap-2"
-      >
-        <User className="h-4 w-4" />
-        Profile
-      </Button>
       <Button
         variant={showAssessment ? "default" : "outline"}
         onClick={onAssessmentClick}
