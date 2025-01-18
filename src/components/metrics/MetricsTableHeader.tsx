@@ -21,11 +21,11 @@ const MetricsTableHeader = ({ onSort }: MetricsTableHeaderProps) => {
     <TableHeader>
       <TableRow>
         {headers.map(({ key, label }) => (
-          <TableHead key={key} className="text-[#2A6F97]">
+          <TableHead key={key} className="text-[#2A6F97] font-bold">
             {label} <MetricsSortButton onSort={() => onSort(key)} />
           </TableHead>
         ))}
-        <TableHead className="text-[#2A6F97]">Actions</TableHead>
+        <TableHead className="text-[#2A6F97] font-bold">Actions</TableHead>
       </TableRow>
     </TableHeader>
   );
