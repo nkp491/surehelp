@@ -13,7 +13,7 @@ const Auth = () => {
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "SIGNED_IN" && session) {
-        navigate("/profile");
+        navigate("/assessment");
       }
     });
 
@@ -41,7 +41,7 @@ const Auth = () => {
             className="h-16 object-contain mb-8"
           />
           <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-          <p className="text-gray-600">Please sign in to your account</p>
+          <p className="text-lg text-gray-600">Please sign in to your account</p>
         </div>
 
         {errorMessage && (
