@@ -25,10 +25,14 @@ const MetricInput = ({ metric, currentValue, onInputChange, isAP }: MetricInputP
     }
 
     if (isAP) {
+      // Remove any non-numeric characters except decimal point
       const cleanedValue = inputValue.replace(/[^\d.]/g, '');
-      const parts = cleanedValue.split('.');
-      const sanitizedValue = parts[0] + (parts.length > 1 ? '.' + parts[1] : '');
       
+      // Ensure only one decimal point
+      const parts = cleanedValue.split('.');
+      const sanitizedValue = parts[0] + (parts.length > 1 ? '.' + parts[1].slice(0, 2) : '');
+      
+      // Convert dollar amount to cents
       const dollarValue = parseFloat(sanitizedValue);
       if (!isNaN(dollarValue)) {
         const centsValue = Math.round(dollarValue * 100);
