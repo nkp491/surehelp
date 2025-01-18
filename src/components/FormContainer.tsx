@@ -1,17 +1,12 @@
-import { FormSubmission } from "@/types/form";
-import { SpouseVisibilityProvider } from "@/contexts/SpouseVisibilityContext";
-import FormContent from "./form/FormContent";
+import FormContent from "@/components/form/FormContent";
+import MetricsSection from "@/components/dashboard/MetricsSection";
 
-interface FormContainerProps {
-  editingSubmission?: FormSubmission | null;
-  onUpdate?: (submission: FormSubmission) => void;
-}
-
-const FormContainer = (props: FormContainerProps) => {
+const FormContainer = () => {
   return (
-    <SpouseVisibilityProvider>
-      <FormContent {...props} />
-    </SpouseVisibilityProvider>
+    <div className="space-y-8">
+      <MetricsSection />
+      <FormContent />
+    </div>
   );
 };
 
