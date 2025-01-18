@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import Header from "@/components/layout/Header";
 import MainContent from "@/components/layout/MainContent";
@@ -11,6 +11,7 @@ const Index = () => {
   const [showManagerDashboard, setShowManagerDashboard] = useState(false);
   const [showDashboard, setShowDashboard] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
 
   // Update state based on current route
   useEffect(() => {
