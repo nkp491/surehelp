@@ -102,7 +102,7 @@ const ManagerDashboard = () => {
               <ul className="list-disc list-inside mb-4 space-y-2">
                 <li>Team-wide announcements</li>
                 <li>Important updates sharing</li>
-                <li>Team discussion threads</li>
+                <li>Team/Manager messages</li>
                 <li>File and resource sharing</li>
               </ul>
               <Button 
