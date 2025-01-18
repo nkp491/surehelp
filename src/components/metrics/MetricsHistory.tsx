@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
 import { MetricCount } from '@/types/metrics';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Edit2, Save, X, ArrowUpDown } from 'lucide-react';
-import { Input } from '@/components/ui/input';
+import { Table, TableBody, TableRow } from '@/components/ui/table';
+import MetricsTableHeader from './MetricsTableHeader';
+import EditableMetricCell from './EditableMetricCell';
+import MetricRowActions from './MetricRowActions';
 
 type SortConfig = {
   key: string;
@@ -145,97 +145,34 @@ const MetricsHistory = () => {
     return value.toString();
   };
 
-  const renderSortIcon = (key: string) => {
-    return (
-      <Button
-        variant="ghost"
-        size="sm"
-        className="h-8 w-8 p-0"
-        onClick={() => handleSort(key)}
-      >
-        <ArrowUpDown className="h-4 w-4 text-[#2A6F97]" />
-      </Button>
-    );
-  };
-
   return (
     <div className="overflow-x-auto">
       <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="text-[#2A6F97]">
-              Date {renderSortIcon('date')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              Leads {renderSortIcon('leads')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              Calls {renderSortIcon('calls')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              Contacts {renderSortIcon('contacts')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              Scheduled {renderSortIcon('scheduled')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              Sits {renderSortIcon('sits')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              Sales {renderSortIcon('sales')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">
-              AP {renderSortIcon('ap')}
-            </TableHead>
-            <TableHead className="text-[#2A6F97]">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+        <MetricsTableHeader onSort={handleSort} />
         <TableBody>
           {sortedHistory.map(({ date, metrics }) => (
             <TableRow key={date}>
-              <TableCell className="text-[#2A6F97]">{format(new Date(date), 'MMM dd, yyyy')}</TableCell>
+              <EditableMetricCell
+                isEditing={false}
+                value={format(new Date(date), 'MMM dd, yyyy')}
+                onChange={() => {}}
+                metric="date"
+              />
               {Object.entries(metrics).map(([metric, value]) => (
-                <TableCell key={metric} className="text-[#2A6F97]">
-                  {editingRow === date ? (
-                    <Input
-                      type="text"
-                      value={formatValue(editedValues?.[metric as keyof MetricCount] || 0, metric as keyof MetricCount)}
-                      onChange={(e) => handleValueChange(metric as keyof MetricCount, e.target.value)}
-                      className="w-24"
-                    />
-                  ) : (
-                    formatValue(value, metric as keyof MetricCount)
-                  )}
-                </TableCell>
+                <EditableMetricCell
+                  key={metric}
+                  isEditing={editingRow === date}
+                  value={formatValue(value, metric as keyof MetricCount)}
+                  onChange={(newValue) => handleValueChange(metric as keyof MetricCount, newValue)}
+                  metric={metric}
+                />
               ))}
-              <TableCell>
-                {editingRow === date ? (
-                  <div className="flex gap-2">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleSave(date)}
-                    >
-                      <Save className="h-4 w-4 text-[#2A6F97]" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={handleCancel}
-                    >
-                      <X className="h-4 w-4 text-[#2A6F97]" />
-                    </Button>
-                  </div>
-                ) : (
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handleEdit(date, metrics)}
-                  >
-                    <Edit2 className="h-4 w-4 text-[#2A6F97]" />
-                  </Button>
-                )}
-              </TableCell>
+              <MetricRowActions
+                isEditing={editingRow === date}
+                onEdit={() => handleEdit(date, metrics)}
+                onSave={() => handleSave(date)}
+                onCancel={handleCancel}
+              />
             </TableRow>
           ))}
         </TableBody>
