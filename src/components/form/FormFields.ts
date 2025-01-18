@@ -35,6 +35,7 @@ const SPOUSE_HEALTH_FIELDS: FormField[] = [
 const PRIMARY_INCOME_FIELDS: FormField[] = [
   { id: "employmentStatus", type: "employmentStatus", label: "Primary Employment Status" },
   { id: "occupation", type: "text", label: "Primary Occupation/Duties", placeholder: "Enter primary occupation and duties" },
+  { id: "employmentIncome", type: "currency", label: "Primary Employment Income", placeholder: "Enter primary employment income" },
   { id: "selectedInvestments", type: "investmentTypes", label: "Primary Investment Types" },
   { id: "socialSecurityIncome", type: "currency", label: "Primary Social Security Income", placeholder: "Enter primary social security income" },
   { id: "pensionIncome", type: "currency", label: "Primary Pension Income", placeholder: "Enter primary pension income" },

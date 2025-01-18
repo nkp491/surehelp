@@ -41,6 +41,7 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   // Primary Income Fields
   employmentStatus: [],
   occupation: "",
+  employmentIncome: "",
   selectedInvestments: [],
   socialSecurityIncome: "",
   pensionIncome: "",

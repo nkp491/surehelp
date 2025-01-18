@@ -1,9 +1,11 @@
 import { useState, useEffect } from "react";
 
 interface IncomeFields {
+  employmentIncome: string;
   socialSecurityIncome: string;
   pensionIncome: string;
   survivorshipIncome: string;
+  spouseEmploymentIncome: string;
   spouseSocialSecurityIncome: string;
   spousePensionIncome: string;
   spouseSurvivorshipIncome: string;
@@ -14,20 +16,32 @@ export const useIncomeCalculation = (formData: IncomeFields) => {
   const [spouseTotalIncome, setSpouseTotalIncome] = useState("0.00");
 
   useEffect(() => {
+    const employment = parseFloat(formData.employmentIncome) || 0;
     const socialSecurity = parseFloat(formData.socialSecurityIncome) || 0;
     const pension = parseFloat(formData.pensionIncome) || 0;
     const survivorship = parseFloat(formData.survivorshipIncome) || 0;
-    const total = socialSecurity + pension + survivorship;
+    const total = employment + socialSecurity + pension + survivorship;
     setTotalIncome(total.toFixed(2));
-  }, [formData.socialSecurityIncome, formData.pensionIncome, formData.survivorshipIncome]);
+  }, [
+    formData.employmentIncome,
+    formData.socialSecurityIncome,
+    formData.pensionIncome,
+    formData.survivorshipIncome
+  ]);
 
   useEffect(() => {
+    const employment = parseFloat(formData.spouseEmploymentIncome) || 0;
     const socialSecurity = parseFloat(formData.spouseSocialSecurityIncome) || 0;
     const pension = parseFloat(formData.spousePensionIncome) || 0;
     const survivorship = parseFloat(formData.spouseSurvivorshipIncome) || 0;
-    const total = socialSecurity + pension + survivorship;
+    const total = employment + socialSecurity + pension + survivorship;
     setSpouseTotalIncome(total.toFixed(2));
-  }, [formData.spouseSocialSecurityIncome, formData.spousePensionIncome, formData.spouseSurvivorshipIncome]);
+  }, [
+    formData.spouseEmploymentIncome,
+    formData.spouseSocialSecurityIncome,
+    formData.spousePensionIncome,
+    formData.spouseSurvivorshipIncome
+  ]);
 
   return { totalIncome, spouseTotalIncome };
 };
