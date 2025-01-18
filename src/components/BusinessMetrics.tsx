@@ -37,7 +37,7 @@ const BusinessMetricsContent = () => {
             onTimePeriodChange={handleTimePeriodChange}
           />
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-[#fbfaf8] text-[#2A6F97]">
+          <div className="bg-[#FFF9EE] p-6 rounded-lg shadow-sm border border-[#fbfaf8] text-[#2A6F97]">
             <h3 className="text-xl font-semibold mb-4">Metrics History</h3>
             <MetricsHistory />
           </div>
