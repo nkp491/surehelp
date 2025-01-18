@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { FormSubmission } from "@/types/form";
 
 const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
@@ -52,7 +52,20 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   spouseSurvivorshipIncome: "",
   spouseTotalIncome: "",
   
-  // Shared/Household Fields
+  // Contact Information
+  phone: "",
+  email: "",
+  address: "",
+  
+  // Assessment Notes
+  notes: "",
+  followUpNotes: "",
+  coverageOptions: "",
+  emergencyContact: "",
+  beneficiaries: "",
+  sourcedFrom: "",
+  
+  // Financial Information
   expenses: "",
   householdExpenses: "",
   lifeInsuranceAmount: "",
@@ -61,30 +74,22 @@ const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   yearsLeft: "",
   homeValue: "",
   equity: "",
-  phone: "",
-  email: "",
-  address: "",
-  notes: "",
-  followUpNotes: "",
-  coverageOptions: "",
-  emergencyContact: "",
-  beneficiaries: "",
-  sourcedFrom: "",
-  leadType: "",
-  premium: "",
-  effectiveDate: "",
-  draftDay: "",
+  
+  // Policy Information
   coverageAmount: "",
-  accidental: "",
+  premium: "",
   carrierAndProduct: "",
   policyNumber: "",
+  leadType: "",
+  effectiveDate: "",
+  draftDay: "",
+  accidental: "",
 };
 
 export const useFormState = (editingSubmission: FormSubmission | null) => {
   const [formData, setFormData] = useState<typeof initialFormValues>(initialFormValues);
   const [errors, setErrors] = useState<Partial<typeof initialFormValues>>({});
 
-  // Load editing submission data
   useEffect(() => {
     if (editingSubmission) {
       const { timestamp, outcome, ...submissionData } = editingSubmission;

@@ -1,12 +1,14 @@
+import { useEffect } from "react";
 import { FormSubmission } from "@/types/form";
 import { useAgeCalculation } from "./useAgeCalculation";
 import { useIncomeCalculation } from "./useIncomeCalculation";
 import { useFormValidation } from "./useFormValidation";
 import { useFormState } from "./useFormState";
 import { useFormSubmission } from "./useFormSubmission";
+import { toast } from "@/hooks/use-toast";
 
 export const useFormLogic = (
-  editingSubmission: FormSubmission | null,
+  editingSubmission: FormSubmission | null = null,
   onUpdate?: (submission: FormSubmission) => void
 ) => {
   const {
@@ -28,7 +30,6 @@ export const useFormLogic = (
     onUpdate
   );
 
-  // Update ages and incomes in form data when calculated
   useEffect(() => {
     setFormData(prev => ({
       ...prev,
@@ -37,7 +38,7 @@ export const useFormLogic = (
       totalIncome,
       spouseTotalIncome
     }));
-  }, [age, spouseAge, totalIncome, spouseTotalIncome]);
+  }, [age, spouseAge, totalIncome, spouseTotalIncome, setFormData]);
 
   const handleSubmit = async (e: React.FormEvent, outcome: string) => {
     const validationErrors = validateForm(formData);

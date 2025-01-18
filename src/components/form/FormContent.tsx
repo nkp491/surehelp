@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   DndContext,
   closestCenter,
@@ -26,21 +26,10 @@ interface FormContentProps {
   onUpdate?: (submission: FormSubmission) => void;
 }
 
-const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
+const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) => {
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { showSpouse, setShowSpouse } = useSpouseVisibility();
-
-  useEffect(() => {
-    if (editingSubmission) {
-      const { timestamp, outcome, auditTrail, ...submissionData } = editingSubmission;
-      setFormData(submissionData);
-      
-      if (editingSubmission.spouseName || editingSubmission.spouseDob) {
-        setShowSpouse(true);
-      }
-    }
-  }, [editingSubmission, setFormData, setShowSpouse]);
 
   const sensors = useSensors(
     useSensor(PointerSensor),
