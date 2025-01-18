@@ -12,8 +12,8 @@ export const AuthRoutes = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Initial session check:", { session });
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) throw error;
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Session check error:", error);
@@ -25,7 +25,7 @@ export const AuthRoutes = () => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", { event, session });
       
       if (event === 'SIGNED_OUT') {
@@ -34,14 +34,19 @@ export const AuthRoutes = () => {
       }
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(true);
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        if (!error && currentSession) {
+          setIsAuthenticated(true);
+        } else {
+          console.error("Session refresh error:", error);
+          setIsAuthenticated(false);
+        }
       }
     });
 
     return () => subscription.unsubscribe();
   }, []);
 
-  // Show loading only when checking auth status and not on auth page
   if (isLoading && window.location.pathname !== '/auth') {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background/50">

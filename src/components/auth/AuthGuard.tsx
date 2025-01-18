@@ -16,7 +16,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     const checkAuth = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("AuthGuard session check:", { session, error });
         
         if (error) {
           console.error("Session error:", error);
@@ -27,6 +26,13 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           console.log("No session found, redirecting to /auth");
           navigate("/auth");
           return;
+        }
+
+        // Verify the session is still valid
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+        if (userError || !user) {
+          console.error("User verification error:", userError);
+          throw userError || new Error("User not found");
         }
 
         setIsLoading(false);
@@ -43,10 +49,12 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("AuthGuard state change:", { event, session });
       if (event === 'SIGNED_OUT' || !session) {
         navigate("/auth");
+      } else if (event === 'SIGNED_IN') {
+        setIsLoading(false);
       }
     });
 
@@ -54,7 +62,11 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   }, [navigate, toast]);
 
   if (isLoading) {
-    return <div className="flex items-center justify-center min-h-screen">Loading...</div>;
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background/50">
+        <div className="text-lg font-medium">Loading...</div>
+      </div>
+    );
   }
 
   return <>{children}</>;
