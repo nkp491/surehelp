@@ -6,6 +6,7 @@ import MetricsGrid from "./metrics/MetricsGrid";
 import RatiosGrid from "./metrics/RatiosGrid";
 import MetricsChart from "./MetricsChart";
 import { useMetrics } from "@/contexts/MetricsContext";
+import MetricsHistory from "./metrics/MetricsHistory";
 
 const BusinessMetricsContent = () => {
   const { metrics, timePeriod, handleTimePeriodChange } = useMetrics();
@@ -35,6 +36,11 @@ const BusinessMetricsContent = () => {
             timePeriod={timePeriod}
             onTimePeriodChange={handleTimePeriodChange}
           />
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
+            <h3 className="text-xl font-semibold mb-4">Metrics History</h3>
+            <MetricsHistory />
+          </div>
         </div>
       </Card>
     </div>
