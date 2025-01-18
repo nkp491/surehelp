@@ -126,23 +126,23 @@ const MetricsHistory = () => {
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Leads</TableHead>
-            <TableHead>Calls</TableHead>
-            <TableHead>Contacts</TableHead>
-            <TableHead>Scheduled</TableHead>
-            <TableHead>Sits</TableHead>
-            <TableHead>Sales</TableHead>
-            <TableHead>AP</TableHead>
-            <TableHead>Actions</TableHead>
+            <TableHead className="text-[#2A6F97]">Date</TableHead>
+            <TableHead className="text-[#2A6F97]">Leads</TableHead>
+            <TableHead className="text-[#2A6F97]">Calls</TableHead>
+            <TableHead className="text-[#2A6F97]">Contacts</TableHead>
+            <TableHead className="text-[#2A6F97]">Scheduled</TableHead>
+            <TableHead className="text-[#2A6F97]">Sits</TableHead>
+            <TableHead className="text-[#2A6F97]">Sales</TableHead>
+            <TableHead className="text-[#2A6F97]">AP</TableHead>
+            <TableHead className="text-[#2A6F97]">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {history.map(({ date, metrics }) => (
             <TableRow key={date}>
-              <TableCell>{format(new Date(date), 'MMM dd, yyyy')}</TableCell>
+              <TableCell className="text-[#2A6F97]">{format(new Date(date), 'MMM dd, yyyy')}</TableCell>
               {Object.entries(metrics).map(([metric, value]) => (
-                <TableCell key={metric}>
+                <TableCell key={metric} className="text-[#2A6F97]">
                   {editingRow === date ? (
                     <Input
                       type="text"
@@ -163,14 +163,14 @@ const MetricsHistory = () => {
                       size="icon"
                       onClick={() => handleSave(date)}
                     >
-                      <Save className="h-4 w-4" />
+                      <Save className="h-4 w-4 text-[#2A6F97]" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={handleCancel}
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-4 w-4 text-[#2A6F97]" />
                     </Button>
                   </div>
                 ) : (
@@ -179,7 +179,7 @@ const MetricsHistory = () => {
                     size="icon"
                     onClick={() => handleEdit(date, metrics)}
                   >
-                    <Edit2 className="h-4 w-4" />
+                    <Edit2 className="h-4 w-4 text-[#2A6F97]" />
                   </Button>
                 )}
               </TableCell>
