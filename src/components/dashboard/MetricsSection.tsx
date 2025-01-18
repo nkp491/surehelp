@@ -49,6 +49,10 @@ const MetricsSection = () => {
 
       if (error) throw error;
 
+      // Emit a custom event to notify MetricsHistory to refresh
+      const refreshEvent = new CustomEvent('refreshMetricsHistory');
+      window.dispatchEvent(refreshEvent);
+
       toast({
         title: "Success",
         description: "Today's metrics have been saved to history",

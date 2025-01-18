@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from 'react';
 import { useMetricsLoad } from './metrics/useMetricsLoad';
 import { useMetricsSort } from './metrics/useMetricsSort';
 import { useMetricsEdit } from './metrics/useMetricsEdit';
@@ -32,5 +33,6 @@ export const useMetricsHistory = () => {
     handleSave,
     handleCancel,
     handleValueChange,
+    loadHistory, // Expose loadHistory function
   };
 };

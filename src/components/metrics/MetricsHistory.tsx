@@ -1,6 +1,7 @@
 import { useMetricsHistory } from '@/hooks/useMetricsHistory';
 import AddMetricsButton from './AddMetricsButton';
 import MetricsTable from './MetricsTable';
+import { useEffect } from 'react';
 
 const MetricsHistory = () => {
   const {
@@ -15,7 +16,20 @@ const MetricsHistory = () => {
     handleSave,
     handleCancel,
     handleValueChange,
+    loadHistory,
   } = useMetricsHistory();
+
+  useEffect(() => {
+    // Listen for refresh events
+    const handleRefresh = () => {
+      loadHistory();
+    };
+
+    window.addEventListener('refreshMetricsHistory', handleRefresh);
+    return () => {
+      window.removeEventListener('refreshMetricsHistory', handleRefresh);
+    };
+  }, [loadHistory]);
 
   return (
     <div className="space-y-4">
