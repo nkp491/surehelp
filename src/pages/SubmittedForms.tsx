@@ -3,6 +3,7 @@ import { FormSubmission } from "@/types/form";
 import SubmissionsTable from "@/components/SubmissionsTable";
 import FormContainer from "@/components/FormContainer";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const SubmittedForms = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
@@ -13,14 +14,25 @@ const SubmittedForms = () => {
     loadSubmissions();
   }, []);
 
-  const loadSubmissions = () => {
+  const loadSubmissions = async () => {
     try {
-      const storedSubmissions = localStorage.getItem("formSubmissions");
-      if (storedSubmissions) {
-        setSubmissions(JSON.parse(storedSubmissions));
-      }
+      const { data, error } = await supabase
+        .from('submissions')
+        .select('*')
+        .order('timestamp', { ascending: false });
+
+      if (error) throw error;
+
+      // Transform the data to match FormSubmission type
+      const transformedData = data.map(submission => ({
+        ...submission.data,
+        timestamp: submission.timestamp,
+        outcome: submission.outcome
+      }));
+
+      setSubmissions(transformedData);
     } catch (error) {
-      console.error("Error loading data from localStorage:", error);
+      console.error("Error loading submissions:", error);
       toast({
         title: "Error",
         description: "Failed to load submissions",
@@ -30,19 +42,41 @@ const SubmittedForms = () => {
   };
 
   const handleEdit = (submission: FormSubmission) => {
-    console.log("Editing submission:", submission);
     setEditingSubmission(submission);
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const handleUpdate = (updatedSubmission: FormSubmission) => {
-    console.log("Updated submission:", updatedSubmission);
-    loadSubmissions();
-    setEditingSubmission(null);
-    toast({
-      title: "Success",
-      description: "Submission updated successfully",
-    });
+  const handleUpdate = async (updatedSubmission: FormSubmission) => {
+    try {
+      const { error } = await supabase
+        .from('submissions')
+        .update({
+          data: {
+            ...updatedSubmission,
+            timestamp: undefined,
+            outcome: undefined
+          },
+          outcome: updatedSubmission.outcome,
+          timestamp: updatedSubmission.timestamp
+        })
+        .eq('timestamp', updatedSubmission.timestamp);
+
+      if (error) throw error;
+
+      loadSubmissions();
+      setEditingSubmission(null);
+      toast({
+        title: "Success",
+        description: "Submission updated successfully",
+      });
+    } catch (error) {
+      console.error("Error updating submission:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update submission",
+        variant: "destructive",
+      });
+    }
   };
 
   return (

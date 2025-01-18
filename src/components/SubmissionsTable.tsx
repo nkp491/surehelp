@@ -10,6 +10,7 @@ import { DeleteDialog } from "./submissions/DeleteDialog";
 import { useSubmissionsTable } from "@/hooks/useSubmissionsTable";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
 import { 
   Pagination,
   PaginationContent,
@@ -47,18 +48,30 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     setDeleteDialogOpen(true);
   };
 
-  const confirmDelete = () => {
+  const confirmDelete = async () => {
     if (submissionToDelete) {
-      const updatedSubmissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]")
-        .filter((s: FormSubmission) => s.timestamp !== submissionToDelete.timestamp);
-      localStorage.setItem("formSubmissions", JSON.stringify(updatedSubmissions));
-      
-      toast({
-        title: "Success",
-        description: "Form submission deleted successfully",
-      });
+      try {
+        const { error } = await supabase
+          .from('submissions')
+          .delete()
+          .eq('timestamp', submissionToDelete.timestamp);
 
-      window.location.reload();
+        if (error) throw error;
+
+        toast({
+          title: "Success",
+          description: "Form submission deleted successfully",
+        });
+
+        window.location.reload();
+      } catch (error) {
+        console.error("Error deleting submission:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete submission",
+          variant: "destructive",
+        });
+      }
     }
     setDeleteDialogOpen(false);
     setSubmissionToDelete(null);

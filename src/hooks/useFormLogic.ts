@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { FormSubmission } from "@/types/form";
 import { differenceInYears, parse } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 const initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'> = {
   // Primary Applicant Fields
@@ -149,7 +150,7 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
     };
   };
 
-  const handleSubmit = (e: React.FormEvent, outcome: string) => {
+  const handleSubmit = async (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
     
     if (validateForm()) {
@@ -159,42 +160,70 @@ export const useFormLogic = (editingSubmission: FormSubmission | null, onUpdate?
         timestamp: editingSubmission?.timestamp || new Date().toISOString()
       };
 
-      if (editingSubmission) {
-        // Update existing submission
-        const auditEntry = createAuditEntry(editingSubmission, submissionData, 'updated');
-        submissionData.auditTrail = [
-          ...(editingSubmission.auditTrail || []),
-          auditEntry
-        ];
+      try {
+        if (editingSubmission) {
+          // Update existing submission
+          const auditEntry = createAuditEntry(editingSubmission, submissionData, 'updated');
+          submissionData.auditTrail = [
+            ...(editingSubmission.auditTrail || []),
+            auditEntry
+          ];
 
-        const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
-        const updatedSubmissions = submissions.map((s: FormSubmission) => 
-          s.timestamp === editingSubmission.timestamp ? submissionData : s
-        );
-        localStorage.setItem("formSubmissions", JSON.stringify(updatedSubmissions));
-        
-        onUpdate?.(submissionData);
-        
-        toast({
-          title: "Success!",
-          description: "Your form has been updated successfully.",
-        });
-      } else {
-        // Create new submission
-        const auditEntry = createAuditEntry({}, submissionData, 'created');
-        submissionData.auditTrail = [auditEntry];
+          const { error } = await supabase
+            .from('submissions')
+            .update({
+              data: {
+                ...submissionData,
+                timestamp: undefined,
+                outcome: undefined
+              },
+              outcome: submissionData.outcome,
+              timestamp: submissionData.timestamp
+            })
+            .eq('timestamp', editingSubmission.timestamp);
 
-        const submissions = JSON.parse(localStorage.getItem("formSubmissions") || "[]");
-        submissions.push(submissionData);
-        localStorage.setItem("formSubmissions", JSON.stringify(submissions));
+          if (error) throw error;
+          
+          onUpdate?.(submissionData);
+          
+          toast({
+            title: "Success!",
+            description: "Your form has been updated successfully.",
+          });
+        } else {
+          // Create new submission
+          const auditEntry = createAuditEntry({}, submissionData, 'created');
+          submissionData.auditTrail = [auditEntry];
+
+          const { error } = await supabase
+            .from('submissions')
+            .insert({
+              data: {
+                ...submissionData,
+                timestamp: undefined,
+                outcome: undefined
+              },
+              outcome: submissionData.outcome,
+              timestamp: submissionData.timestamp
+            });
+
+          if (error) throw error;
+          
+          toast({
+            title: "Success!",
+            description: `Form submitted with outcome: ${outcome}`,
+          });
+        }
         
+        setFormData(initialFormValues);
+      } catch (error) {
+        console.error("Error saving submission:", error);
         toast({
-          title: "Success!",
-          description: `Form submitted with outcome: ${outcome}`,
+          title: "Error",
+          description: "Failed to save submission. Please try again.",
+          variant: "destructive",
         });
       }
-      
-      setFormData(initialFormValues);
     } else {
       toast({
         title: "Error",
