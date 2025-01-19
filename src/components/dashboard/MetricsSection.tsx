@@ -75,7 +75,7 @@ const MetricsSection = () => {
               className="bg-[#6CAEC2] hover:bg-[#6CAEC2]/90 text-white px-4 py-2 rounded-md flex items-center gap-2"
               title="Save today's metrics"
             >
-              Save Metrics
+              Log Metrics
             </button>
           </div>
           <MetricsButtonGrid 
