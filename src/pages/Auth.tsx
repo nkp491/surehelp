@@ -55,7 +55,7 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white flex flex-col items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
         <div className="flex flex-col items-center">
           <img 
@@ -73,7 +73,7 @@ const Auth = () => {
           </Alert>
         )}
 
-        <div className="bg-white p-8 rounded-lg shadow-md">
+        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md">
           <SupabaseAuth 
             supabaseClient={supabase}
             appearance={{ 
