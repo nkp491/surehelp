@@ -75,10 +75,12 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
       console.log("Auth state change:", { event, session });
       
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         clearAuthData();
         navigate("/auth", { replace: true });
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      } else if (event === 'SIGNED_IN') {
+        setIsLoading(false);
+      } else if (event === 'TOKEN_REFRESHED') {
         setIsLoading(false);
       }
     });
