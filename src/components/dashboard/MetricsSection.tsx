@@ -4,7 +4,6 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import MetricsHeader from "../metrics/MetricsHeader";
 import MetricsButtonGrid from "../metrics/MetricsButtonGrid";
 
 const MetricsSection = () => {
@@ -31,15 +30,15 @@ const MetricsSection = () => {
 
   const handleDoneForDay = async () => {
     try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
+      const { data: userResponse } = await supabase.auth.getUser();
+      if (!userResponse.user) return;
 
       const today = format(new Date(), 'yyyy-MM-dd');
       
       const { error } = await supabase
         .from('daily_metrics')
         .upsert({
-          user_id: user.user.id,
+          user_id: userResponse.user.id,
           date: today,
           ...metrics
         }, {
@@ -69,7 +68,16 @@ const MetricsSection = () => {
     <div className="space-y-4">
       <Card className="p-6 mb-12 bg-white shadow-md">
         <div className="flex flex-col space-y-6">
-          <MetricsHeader onSave={handleDoneForDay} />
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-[#2A6F97]">Performance Tracker</h2>
+            <button
+              onClick={handleDoneForDay}
+              className="bg-[#6CAEC2] hover:bg-[#6CAEC2]/90 text-white px-4 py-2 rounded-md flex items-center gap-2"
+              title="Save today's metrics"
+            >
+              Save Metrics
+            </button>
+          </div>
           <MetricsButtonGrid 
             metrics={metrics}
             onMetricUpdate={updateMetric}
