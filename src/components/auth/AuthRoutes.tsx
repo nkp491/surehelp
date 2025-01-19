@@ -63,14 +63,18 @@ export const AuthRoutes = () => {
     };
   }, [toast]);
 
-  // Only show loading state for a brief moment during initial load
-  if (isLoading && isAuthenticated === null) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background/50">
-        <div className="text-lg font-medium">Loading...</div>
-      </div>
-    );
-  }
+  // Loading state is now rendered within each protected route
+  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
+    if (isLoading) {
+      return (
+        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
+          <div className="text-lg font-medium">Loading...</div>
+        </div>
+      );
+    }
+    
+    return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
+  };
 
   return (
     <Routes>
@@ -84,23 +88,23 @@ export const AuthRoutes = () => {
       />
       <Route 
         path="/profile" 
-        element={isAuthenticated ? <Profile /> : <Navigate to="/auth" replace />} 
+        element={<ProtectedRoute><Profile /></ProtectedRoute>} 
       />
       <Route 
         path="/metrics" 
-        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
+        element={<ProtectedRoute><Index /></ProtectedRoute>} 
       />
       <Route 
         path="/submitted-forms" 
-        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
+        element={<ProtectedRoute><Index /></ProtectedRoute>} 
       />
       <Route 
         path="/manager-dashboard" 
-        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
+        element={<ProtectedRoute><Index /></ProtectedRoute>} 
       />
       <Route 
         path="/assessment" 
-        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
+        element={<ProtectedRoute><Index /></ProtectedRoute>} 
       />
       <Route 
         path="*" 
