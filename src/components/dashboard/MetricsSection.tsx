@@ -72,7 +72,7 @@ const MetricsSection = () => {
       <Card className="p-6 mb-12 bg-white shadow-md">
         <div className="flex flex-col space-y-6">
           <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-[#2A6F97]">Today's Metrics</h2>
+            <h2 className="text-lg font-semibold text-[#2A6F97]">KPI Tracker</h2>
             <Button 
               onClick={handleDoneForDay}
               className="bg-[#6CAEC2] hover:bg-[#6CAEC2]/90 text-white flex items-center gap-2"
