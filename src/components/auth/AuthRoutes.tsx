@@ -4,12 +4,10 @@ import { supabase } from "@/integrations/supabase/client";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
-import { useToast } from "@/hooks/use-toast";
 
 export const AuthRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
 
   useEffect(() => {
     let mounted = true;
@@ -28,32 +26,39 @@ export const AuthRoutes = () => {
         if (mounted) {
           setIsAuthenticated(false);
           setIsLoading(false);
-          toast({
-            title: "Session Error",
-            description: "There was an error checking your session. Please try signing in again.",
-            variant: "destructive",
-          });
+          // Clear any stale session data
+          await supabase.auth.signOut({ scope: 'local' });
         }
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
       console.log("Auth state change:", { event, session });
       
       if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
-        setIsLoading(false);
+        localStorage.removeItem('supabase.auth.token');
         return;
       }
       
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_IN') {
         setIsAuthenticated(true);
-        setIsLoading(false);
         return;
+      }
+
+      if (event === 'TOKEN_REFRESHED') {
+        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
+        if (!error && currentSession) {
+          setIsAuthenticated(true);
+        } else {
+          console.error("Session refresh error:", error);
+          setIsAuthenticated(false);
+          await supabase.auth.signOut({ scope: 'local' });
+        }
       }
     });
 
@@ -61,20 +66,15 @@ export const AuthRoutes = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [toast]);
+  }, []);
 
-  // Loading state is now rendered within each protected route
-  const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-    if (isLoading) {
-      return (
-        <div className="flex items-center justify-center min-h-[calc(100vh-4rem)]">
-          <div className="text-lg font-medium">Loading...</div>
-        </div>
-      );
-    }
-    
-    return isAuthenticated ? <>{children}</> : <Navigate to="/auth" replace />;
-  };
+  if (isLoading && window.location.pathname !== '/auth') {
+    return (
+      <div className="fixed inset-0 flex items-center justify-center bg-background/50">
+        <div className="text-lg font-medium">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <Routes>
@@ -88,23 +88,23 @@ export const AuthRoutes = () => {
       />
       <Route 
         path="/profile" 
-        element={<ProtectedRoute><Profile /></ProtectedRoute>} 
+        element={isAuthenticated ? <Profile /> : <Navigate to="/auth" replace />} 
       />
       <Route 
         path="/metrics" 
-        element={<ProtectedRoute><Index /></ProtectedRoute>} 
+        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
       />
       <Route 
         path="/submitted-forms" 
-        element={<ProtectedRoute><Index /></ProtectedRoute>} 
+        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
       />
       <Route 
         path="/manager-dashboard" 
-        element={<ProtectedRoute><Index /></ProtectedRoute>} 
+        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
       />
       <Route 
         path="/assessment" 
-        element={<ProtectedRoute><Index /></ProtectedRoute>} 
+        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
       />
       <Route 
         path="*" 
