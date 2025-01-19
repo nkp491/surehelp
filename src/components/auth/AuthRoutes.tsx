@@ -10,67 +10,47 @@ export const AuthRoutes = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    let mounted = true;
-
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
-        
-        if (mounted) {
-          setIsAuthenticated(!!session);
-          setIsLoading(false);
-        }
+        const { data: { session } } = await supabase.auth.getSession();
+        setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Session check error:", error);
-        if (mounted) {
-          setIsAuthenticated(false);
-          setIsLoading(false);
-          // Clear any stale session data
-          await supabase.auth.signOut({ scope: 'local' });
-        }
+        setIsAuthenticated(false);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", event, session);
 
-      console.log("Auth state change:", { event, session });
-      
-      if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-        localStorage.removeItem('supabase.auth.token');
-        return;
-      }
-      
-      if (event === 'SIGNED_IN') {
-        setIsAuthenticated(true);
-        return;
-      }
-
-      if (event === 'TOKEN_REFRESHED') {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        if (!error && currentSession) {
+      switch (event) {
+        case "SIGNED_IN":
           setIsAuthenticated(true);
-        } else {
-          console.error("Session refresh error:", error);
+          setIsLoading(false);
+          break;
+        case "SIGNED_OUT":
           setIsAuthenticated(false);
-          await supabase.auth.signOut({ scope: 'local' });
-        }
+          setIsLoading(false);
+          break;
+        case "TOKEN_REFRESHED":
+          setIsAuthenticated(!!session);
+          setIsLoading(false);
+          break;
       }
     });
 
     return () => {
-      mounted = false;
       subscription.unsubscribe();
     };
   }, []);
 
-  if (isLoading && window.location.pathname !== '/auth') {
+  if (isLoading) {
     return (
-      <div className="fixed inset-0 flex items-center justify-center bg-background/50">
+      <div className="flex items-center justify-center min-h-screen">
         <div className="text-lg font-medium">Loading...</div>
       </div>
     );
