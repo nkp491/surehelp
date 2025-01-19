@@ -1,6 +1,5 @@
 import BusinessMetrics from "@/components/BusinessMetrics";
 import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection";
-import { MetricsProvider } from "@/contexts/MetricsContext";
 
 const Assessment = () => {
   return (
@@ -13,9 +12,7 @@ const Assessment = () => {
         </div>
       </div>
       
-      <MetricsProvider>
-        <BusinessMetrics />
-      </MetricsProvider>
+      <BusinessMetrics />
       
       {/* Client Assessment Section */}
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
@@ -25,10 +22,7 @@ const Assessment = () => {
         </div>
       </div>
       
-      <AssessmentFormSection 
-        isFormOpen={true}
-        setIsFormOpen={() => {}} // Form will always be open in this view
-      />
+      <AssessmentFormSection />
     </div>
   );
 };
