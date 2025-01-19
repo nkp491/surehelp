@@ -53,10 +53,16 @@ const LeadExpenseReport = () => {
 
   const handleSubmit = async (formData: LeadExpenseFormData) => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      
+      if (!user) {
+        throw new Error("No authenticated user found");
+      }
+
       if (editingExpense) {
         const { error } = await supabase
           .from("lead_expenses")
-          .update(formData)
+          .update({ ...formData })
           .eq("id", editingExpense.id);
 
         if (error) throw error;
@@ -66,7 +72,9 @@ const LeadExpenseReport = () => {
           description: "Expense updated successfully",
         });
       } else {
-        const { error } = await supabase.from("lead_expenses").insert(formData);
+        const { error } = await supabase
+          .from("lead_expenses")
+          .insert({ ...formData, user_id: user.id });
 
         if (error) throw error;
 
