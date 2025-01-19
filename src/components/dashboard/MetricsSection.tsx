@@ -4,6 +4,8 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
+import MetricsHeader from "../metrics/MetricsHeader";
+import MetricsButtonGrid from "../metrics/MetricsButtonGrid";
 
 const MetricsSection = () => {
   const { toast } = useToast();
@@ -37,7 +39,7 @@ const MetricsSection = () => {
       const { error } = await supabase
         .from('daily_metrics')
         .upsert({
-          user_id: user.data.user.id,
+          user_id: user.user.id,
           date: today,
           ...metrics
         }, {
@@ -67,42 +69,11 @@ const MetricsSection = () => {
     <div className="space-y-4">
       <Card className="p-6 mb-12 bg-white shadow-md">
         <div className="flex flex-col space-y-6">
-          <div className="flex justify-between items-center">
-            <div>
-              <h2 className="text-2xl font-bold">Daily Metrics</h2>
-              <p className="text-muted-foreground">Track your daily performance metrics</p>
-            </div>
-            <button
-              onClick={handleDoneForDay}
-              className="bg-primary text-white px-4 py-2 rounded hover:bg-primary/90"
-            >
-              Save Today's Metrics
-            </button>
-          </div>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {Object.keys(metrics).map((metric) => (
-              <div key={metric} className="flex flex-col space-y-2">
-                <label className="font-medium capitalize">{metric}</label>
-                <div className="flex space-x-2">
-                  <button
-                    onClick={() => updateMetric(metric, false)}
-                    className="px-3 py-1 bg-red-100 text-red-600 rounded hover:bg-red-200"
-                  >
-                    -
-                  </button>
-                  <span className="px-3 py-1 bg-gray-100 rounded">
-                    {metrics[metric as MetricType]}
-                  </span>
-                  <button
-                    onClick={() => updateMetric(metric, true)}
-                    className="px-3 py-1 bg-green-100 text-green-600 rounded hover:bg-green-200"
-                  >
-                    +
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+          <MetricsHeader onSave={handleDoneForDay} />
+          <MetricsButtonGrid 
+            metrics={metrics}
+            onMetricUpdate={updateMetric}
+          />
         </div>
       </Card>
     </div>

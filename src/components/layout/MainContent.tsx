@@ -13,6 +13,8 @@ const MainContent = () => {
     // Only render auth-protected content
     const protectedContent = () => {
       switch (location.pathname) {
+        case '/metrics':
+          return <Dashboard />;
         case '/submitted-forms':
           return <SubmittedForms />;
         case '/manager-dashboard':
