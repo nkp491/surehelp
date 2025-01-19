@@ -22,7 +22,7 @@ const LeadExpenseReport = () => {
   } = useExpenseManagement();
 
   return (
-    <Card className="p-6">
+    <Card className="p-6 bg-[#FFFCF6]">
       <ExpenseHeader onAddClick={() => setIsFormOpen(true)} />
       <ExpenseTable
         expenses={expenses}
