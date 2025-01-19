@@ -18,7 +18,7 @@ const BusinessMetricsContent = () => {
 
   return (
     <div className="space-y-8">
-      <Card className="w-full mb-12 p-8 shadow-lg border-2 border-[#fbfaf8] bg-[#F1F1F1]">
+      <Card className="w-full p-8 shadow-lg border-2 border-[#fbfaf8] bg-[#F1F1F1]">
         <div className="space-y-8">
           <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8]">
             <TimeControls />
