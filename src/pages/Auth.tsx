@@ -11,14 +11,6 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState("");
 
   useEffect(() => {
-    // Clear any stale auth data on mount
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('sb-')) {
-        localStorage.removeItem(key);
-      }
-    });
-
-    // Check initial session
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       console.log("Initial session check:", { session, error });

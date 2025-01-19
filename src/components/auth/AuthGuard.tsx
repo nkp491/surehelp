@@ -22,12 +22,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           localStorage.removeItem(key);
         }
       });
-      // Clear any session cookies
-      document.cookie.split(";").forEach(c => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
     };
 
     const handleAuthError = (error: any) => {
@@ -59,15 +53,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           return;
         }
 
-        // Attempt to refresh the session
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) {
-          if (refreshError.message.includes('refresh_token_not_found')) {
-            throw new Error('Session expired');
-          }
-          throw refreshError;
-        }
-
         if (mounted) {
           setIsLoading(false);
         }
@@ -83,7 +68,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
       console.log("Auth state change:", { event, session });
       
-      if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      if (event === 'SIGNED_OUT') {
         clearAuthData();
         navigate("/auth", { replace: true });
       } else if (event === 'SIGNED_IN') {
