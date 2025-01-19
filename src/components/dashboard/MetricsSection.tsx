@@ -1,12 +1,11 @@
 import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import MetricButtons from "@/components/MetricButtons";
 import { useToast } from "@/hooks/use-toast";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import { supabase } from "@/integrations/supabase/client";
 import { format } from "date-fns";
-import { Check } from "lucide-react";
+import MetricsHeader from "../metrics/MetricsHeader";
+import MetricsButtonGrid from "../metrics/MetricsButtonGrid";
 
 const MetricsSection = () => {
   const { toast } = useToast();
@@ -49,7 +48,6 @@ const MetricsSection = () => {
 
       if (error) throw error;
 
-      // Emit a custom event to notify MetricsHistory to refresh
       const refreshEvent = new CustomEvent('refreshMetricsHistory');
       window.dispatchEvent(refreshEvent);
 
@@ -71,27 +69,11 @@ const MetricsSection = () => {
     <div className="space-y-4">
       <Card className="p-6 mb-12 bg-white shadow-md">
         <div className="flex flex-col space-y-6">
-          <div className="flex justify-between items-center">
-            <h2 className="text-lg font-semibold text-[#2A6F97]">Performance Tracker</h2>
-            <Button 
-              onClick={handleDoneForDay}
-              className="bg-[#6CAEC2] hover:bg-[#6CAEC2]/90 text-white flex items-center gap-2"
-              title="Save today's metrics"
-            >
-              <Check className="h-4 w-4" />
-              Save Metrics
-            </Button>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-            {Object.keys(metrics).map((metric) => (
-              <MetricButtons
-                key={metric}
-                metric={metric}
-                onIncrement={() => updateMetric(metric, true)}
-                onDecrement={() => updateMetric(metric, false)}
-              />
-            ))}
-          </div>
+          <MetricsHeader onSave={handleDoneForDay} />
+          <MetricsButtonGrid 
+            metrics={metrics}
+            onMetricUpdate={updateMetric}
+          />
         </div>
       </Card>
     </div>
