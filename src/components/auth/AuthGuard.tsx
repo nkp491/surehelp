@@ -24,10 +24,10 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       });
     };
 
-    const handleAuthError = (error: any) => {
-      console.error("Auth error:", error);
+    const handleAuthError = async () => {
       if (mounted) {
         clearAuthData();
+        await supabase.auth.signOut();
         toast({
           title: "Session Expired",
           description: "Please sign in again",
@@ -53,25 +53,34 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           return;
         }
 
+        // Attempt to refresh the session
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          throw refreshError;
+        }
+
         if (mounted) {
           setIsLoading(false);
         }
       } catch (error) {
-        handleAuthError(error);
+        console.error("Auth error:", error);
+        await handleAuthError();
       }
     };
     
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
       console.log("Auth state change:", { event, session });
       
-      if (event === 'SIGNED_OUT') {
+      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
         clearAuthData();
         navigate("/auth", { replace: true });
       } else if (event === 'SIGNED_IN') {
+        setIsLoading(false);
+      } else if (event === 'TOKEN_REFRESHED') {
         setIsLoading(false);
       }
     });
