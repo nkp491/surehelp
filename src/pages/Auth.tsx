@@ -4,11 +4,13 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import type { AuthError } from "@supabase/supabase-js";
 
 const Auth = () => {
   const navigate = useNavigate();
   const [errorMessage, setErrorMessage] = useState("");
+  const [view, setView] = useState<"sign_in" | "sign_up">("sign_up");
 
   useEffect(() => {
     const checkSession = async () => {
@@ -25,7 +27,6 @@ const Auth = () => {
     
     checkSession();
 
-    // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log("Auth state change:", { event, session });
       if (event === "SIGNED_IN" && session) {
@@ -62,8 +63,20 @@ const Auth = () => {
             alt="Logo" 
             className="h-16 object-contain mb-8"
           />
-          <h2 className="text-2xl font-bold text-gray-900">Welcome back</h2>
-          <p className="text-lg text-gray-600">Please sign in to your account</p>
+          <Tabs defaultValue="sign_up" className="w-full" onValueChange={(value) => setView(value as "sign_in" | "sign_up")}>
+            <TabsList className="grid w-full grid-cols-2 mb-8">
+              <TabsTrigger value="sign_up">Sign Up</TabsTrigger>
+              <TabsTrigger value="sign_in">Sign In</TabsTrigger>
+            </TabsList>
+            <TabsContent value="sign_up">
+              <h2 className="text-2xl font-bold text-gray-900 text-center">Create an account</h2>
+              <p className="text-lg text-gray-600 text-center mb-6">Get started with your journey</p>
+            </TabsContent>
+            <TabsContent value="sign_in">
+              <h2 className="text-2xl font-bold text-gray-900 text-center">Welcome back</h2>
+              <p className="text-lg text-gray-600 text-center mb-6">Sign in to your account</p>
+            </TabsContent>
+          </Tabs>
         </div>
 
         {errorMessage && (
@@ -75,6 +88,7 @@ const Auth = () => {
         <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md">
           <SupabaseAuth 
             supabaseClient={supabase}
+            view={view}
             appearance={{ 
               theme: ThemeSupa,
               variables: {
