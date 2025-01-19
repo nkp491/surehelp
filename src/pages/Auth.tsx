@@ -70,7 +70,7 @@ const Auth = () => {
             </TabsList>
             <TabsContent value="sign_up">
               <h2 className="text-2xl font-bold text-gray-900 text-center">Create an account</h2>
-              <p className="text-lg text-gray-600 text-center mb-6">Get started with your journey</p>
+              <p className="text-lg text-gray-600 text-center mb-6">Start tracking and organizing your workflow</p>
             </TabsContent>
             <TabsContent value="sign_in">
               <h2 className="text-2xl font-bold text-gray-900 text-center">Welcome back</h2>
