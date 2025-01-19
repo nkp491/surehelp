@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -8,16 +8,30 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "lucide-react";
+import { User, FileText, ClipboardList, BarChart, Users } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
 
 const Header = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [profileData, setProfileData] = useState<{
     first_name?: string | null;
     profile_image_url?: string | null;
   }>({});
+
+  const [showAssessment, setShowAssessment] = useState(false);
+  const [showSubmissions, setShowSubmissions] = useState(false);
+  const [showDashboard, setShowDashboard] = useState(false);
+  const [showManagerDashboard, setShowManagerDashboard] = useState(false);
+
+  useEffect(() => {
+    setShowAssessment(location.pathname === '/assessment');
+    setShowSubmissions(location.pathname === '/submitted-forms');
+    setShowDashboard(location.pathname === '/metrics');
+    setShowManagerDashboard(location.pathname === '/manager-dashboard');
+  }, [location.pathname]);
 
   useEffect(() => {
     fetchProfileData();
@@ -66,36 +80,50 @@ const Header = () => {
     <header className="bg-white border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="flex justify-between items-center h-16">
-          {/* Logo and Left Navigation */}
+          {/* Logo and Navigation */}
           <div className="flex items-center space-x-8">
             <img 
               src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
               alt="SureHelp Logo" 
               className="h-8 w-auto"
             />
-            <nav className="hidden md:flex space-x-8">
-              <button 
-                onClick={() => navigate('/metrics')}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+            <nav className="hidden md:flex space-x-4">
+              <Button
+                variant={showAssessment ? "default" : "outline"}
+                onClick={() => navigate('/assessment')}
+                className="min-w-[120px] flex items-center gap-2"
               >
-                Support
-              </button>
-              <button 
+                <FileText className="h-4 w-4" />
+                Assessment
+              </Button>
+              <Button
+                variant={showSubmissions ? "default" : "outline"}
                 onClick={() => navigate('/submitted-forms')}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                className="min-w-[120px] flex items-center gap-2"
               >
-                Forms
-              </button>
-              <button 
-                onClick={() => navigate('/manager-dashboard')}
-                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+                <ClipboardList className="h-4 w-4" />
+                Submissions
+              </Button>
+              <Button
+                variant={showDashboard ? "default" : "outline"}
+                onClick={() => navigate('/metrics')}
+                className="min-w-[120px] flex items-center gap-2"
               >
+                <BarChart className="h-4 w-4" />
                 Dashboard
-              </button>
+              </Button>
+              <Button
+                variant={showManagerDashboard ? "default" : "outline"}
+                onClick={() => navigate('/manager-dashboard')}
+                className="min-w-[120px] flex items-center gap-2"
+              >
+                <Users className="h-4 w-4" />
+                Team
+              </Button>
             </nav>
           </div>
 
-          {/* Right side - Profile */}
+          {/* Profile Section */}
           <div className="flex items-center space-x-4">
             <DropdownMenu>
               <DropdownMenuTrigger className="focus:outline-none">
