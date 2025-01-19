@@ -4,8 +4,8 @@ import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import type { AuthError } from "@supabase/supabase-js";
+import AuthHeader from "@/components/auth/AuthHeader";
+import { getErrorMessage } from "@/utils/authErrors";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -40,44 +40,10 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate]);
 
-  const getErrorMessage = (error: AuthError) => {
-    console.error("Auth error:", error);
-    switch (error.message) {
-      case "Invalid login credentials":
-        return "Invalid email or password. Please check your credentials and try again.";
-      case "Email not confirmed":
-        return "Please verify your email address before signing in.";
-      case "Invalid Refresh Token: Refresh Token Not Found":
-        return "Your session has expired. Please sign in again.";
-      default:
-        return `Authentication error: ${error.message}`;
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white flex flex-col items-center justify-center p-4">
       <div className="w-full max-w-md space-y-8">
-        <div className="flex flex-col items-center">
-          <img 
-            src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
-            alt="Logo" 
-            className="h-16 object-contain mb-8"
-          />
-          <Tabs defaultValue="sign_up" className="w-full" onValueChange={(value) => setView(value as "sign_in" | "sign_up")}>
-            <TabsList className="grid w-full grid-cols-2 mb-8">
-              <TabsTrigger value="sign_up">Sign Up</TabsTrigger>
-              <TabsTrigger value="sign_in">Sign In</TabsTrigger>
-            </TabsList>
-            <TabsContent value="sign_up">
-              <h2 className="text-2xl font-bold text-gray-900 text-center">Create an account</h2>
-              <p className="text-lg text-gray-600 text-center mb-6">Start tracking and organizing your workflow</p>
-            </TabsContent>
-            <TabsContent value="sign_in">
-              <h2 className="text-2xl font-bold text-gray-900 text-center">Welcome back</h2>
-              <p className="text-lg text-gray-600 text-center mb-6">Sign in to your account</p>
-            </TabsContent>
-          </Tabs>
-        </div>
+        <AuthHeader view={view} onViewChange={setView} />
 
         {errorMessage && (
           <Alert variant="destructive">
