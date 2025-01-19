@@ -1,8 +1,8 @@
 import MetricButtons from "@/components/MetricButtons";
-import { MetricType } from "@/types/metrics";
+import { MetricCount, MetricType } from "@/types/metrics";
 
 interface MetricsButtonGridProps {
-  metrics: Record<string, number>;
+  metrics: MetricCount;
   onMetricUpdate: (metric: string, increment: boolean) => void;
 }
 
