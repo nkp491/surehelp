@@ -69,26 +69,29 @@ const MetricsSection = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex justify-end">
-        <Button 
-          onClick={handleDoneForDay}
-          size="icon"
-          className="bg-green-600 hover:bg-green-700 text-white"
-          title="Save today's metrics"
-        >
-          <Check className="h-4 w-4" />
-        </Button>
-      </div>
       <Card className="p-6 mb-12 bg-white shadow-md">
-        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-          {Object.keys(metrics).map((metric) => (
-            <MetricButtons
-              key={metric}
-              metric={metric}
-              onIncrement={() => updateMetric(metric, true)}
-              onDecrement={() => updateMetric(metric, false)}
-            />
-          ))}
+        <div className="flex flex-col space-y-6">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-[#2A6F97]">Today's Metrics</h2>
+            <Button 
+              onClick={handleDoneForDay}
+              className="bg-[#6CAEC2] hover:bg-[#6CAEC2]/90 text-white flex items-center gap-2"
+              title="Save today's metrics"
+            >
+              <Check className="h-4 w-4" />
+              Save Metrics
+            </Button>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
+            {Object.keys(metrics).map((metric) => (
+              <MetricButtons
+                key={metric}
+                metric={metric}
+                onIncrement={() => updateMetric(metric, true)}
+                onDecrement={() => updateMetric(metric, false)}
+              />
+            ))}
+          </div>
         </div>
       </Card>
     </div>
