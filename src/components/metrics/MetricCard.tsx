@@ -53,11 +53,11 @@ const MetricCard = ({
 
   return (
     <Card className={`p-6 transition-all duration-200 hover:shadow-lg ${
-      isAP ? 'bg-gradient-to-br from-[#9b87f5] to-[#7E69AB] text-white' : 'bg-white'
+      isAP ? 'bg-gradient-to-br from-[#9b87f5] to-[#7E69AB] text-[#2A6F97]' : 'bg-white'
     }`}>
       <div className="flex flex-col items-center gap-3">
         <div className="flex items-center gap-2">
-          <h3 className={`font-semibold text-lg ${isAP ? 'text-white text-xl' : 'text-gray-700'}`}>
+          <h3 className={`font-semibold text-lg ${isAP ? 'text-[#2A6F97] text-xl' : 'text-gray-700'}`}>
             {formatMetricName(metric)}
           </h3>
           <TooltipProvider>
@@ -72,7 +72,7 @@ const MetricCard = ({
           </TooltipProvider>
         </div>
         <div className={`text-2xl font-bold ${
-          isAP ? 'text-white' : 'text-gray-900'
+          isAP ? 'text-[#2A6F97]' : 'text-gray-900'
         }`}>
           {formatValue(value)}
         </div>
