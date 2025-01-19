@@ -1,7 +1,10 @@
+import { useState } from "react";
 import BusinessMetrics from "@/components/BusinessMetrics";
 import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection";
 
 const Assessment = () => {
+  const [isFormOpen, setIsFormOpen] = useState(true); // Form starts open by default
+
   return (
     <div className="container mx-auto py-8 space-y-8">
       {/* Business Metrics Section */}
@@ -22,7 +25,10 @@ const Assessment = () => {
         </div>
       </div>
       
-      <AssessmentFormSection />
+      <AssessmentFormSection 
+        isFormOpen={isFormOpen}
+        setIsFormOpen={setIsFormOpen}
+      />
     </div>
   );
 };
