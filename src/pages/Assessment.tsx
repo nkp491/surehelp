@@ -1,19 +1,28 @@
 import BusinessMetrics from "@/components/BusinessMetrics";
 import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection";
+import { MetricsProvider } from "@/contexts/MetricsContext";
 
 const Assessment = () => {
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Business Metrics</h1>
-        <p className="text-gray-600">Track and manage your key performance indicators</p>
+      {/* Business Metrics Section */}
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Business Metrics</h2>
+          <p className="text-muted-foreground mt-1">Track and analyze your key performance indicators</p>
+        </div>
       </div>
       
-      <BusinessMetrics />
+      <MetricsProvider>
+        <BusinessMetrics />
+      </MetricsProvider>
       
-      <div className="mt-12 mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Client Assessment</h1>
-        <p className="text-gray-600">Complete the assessment form for your client</p>
+      {/* Client Assessment Section */}
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
+        <div>
+          <h2 className="text-2xl font-bold text-gray-900">Client Assessment</h2>
+          <p className="text-muted-foreground mt-1">Complete the assessment form for your client</p>
+        </div>
       </div>
       
       <AssessmentFormSection 

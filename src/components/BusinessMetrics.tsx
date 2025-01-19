@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import TimeControls from "@/components/metrics/TimeControls";
 import MetricsHistory from "@/components/metrics/MetricsHistory";
-import { MetricsProvider } from "@/contexts/MetricsContext";
 
 const BusinessMetrics = () => {
   const [showHistory, setShowHistory] = useState(false);
