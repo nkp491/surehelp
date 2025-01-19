@@ -2,9 +2,11 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
+import { useToast } from "@/hooks/use-toast";
 
 export const useProfileManagement = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
@@ -50,6 +52,11 @@ export const useProfileManagement = () => {
       setProfile(parsedProfile);
     } catch (error) {
       console.error("Error loading profile:", error);
+      toast({
+        title: "Error loading profile",
+        description: "There was a problem loading your profile. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setLoading(false);
     }
@@ -72,8 +79,18 @@ export const useProfileManagement = () => {
       if (error) throw error;
       
       setProfile(prev => prev ? { ...prev, ...updates } : null);
+      
+      toast({
+        title: "Profile updated",
+        description: "Your profile has been updated successfully.",
+      });
     } catch (error) {
       console.error("Error updating profile:", error);
+      toast({
+        title: "Error updating profile",
+        description: "There was a problem updating your profile. Please try again.",
+        variant: "destructive",
+      });
     }
   }
 
@@ -82,26 +99,38 @@ export const useProfileManagement = () => {
       setUploading(true);
       
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("You must select an image to upload.");
+        throw new Error('You must select an image to upload.');
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split(".").pop();
-      const filePath = `${profile?.id}-${Math.random()}.${fileExt}`;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
+      // Upload image to storage
       const { error: uploadError } = await supabase.storage
-        .from("profile_images")
-        .upload(filePath, file);
+        .from('profile_images')
+        .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from("profile_images")
-        .getPublicUrl(filePath);
+        .from('profile_images')
+        .getPublicUrl(fileName);
 
+      // Update profile with new image URL
       await updateProfile({ profile_image_url: publicUrl });
-    } catch (error) {
-      console.error("Error uploading avatar:", error);
+
+      toast({
+        title: "Success",
+        description: "Profile picture updated successfully",
+      });
+    } catch (error: any) {
+      toast({
+        title: "Error uploading image",
+        description: error.message,
+        variant: "destructive",
+      });
     } finally {
       setUploading(false);
     }
@@ -111,6 +140,11 @@ export const useProfileManagement = () => {
     const { error } = await supabase.auth.signOut();
     if (error) {
       console.error("Error signing out:", error);
+      toast({
+        title: "Error signing out",
+        description: "There was a problem signing out. Please try again.",
+        variant: "destructive",
+      });
     } else {
       navigate("/auth");
     }

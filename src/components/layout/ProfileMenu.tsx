@@ -21,6 +21,26 @@ const ProfileMenu = () => {
 
   useEffect(() => {
     fetchProfileData();
+
+    // Subscribe to profile changes
+    const channel = supabase
+      .channel('profile_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'profiles'
+        },
+        (payload) => {
+          setProfileData(payload.new as any);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   const fetchProfileData = async () => {
@@ -67,7 +87,7 @@ const ProfileMenu = () => {
           <Avatar className="h-8 w-8">
             <AvatarImage src={profileData.profile_image_url || ''} />
             <AvatarFallback>
-              <User className="h-4 w-4" />
+              {profileData.first_name?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
             </AvatarFallback>
           </Avatar>
         </DropdownMenuTrigger>
