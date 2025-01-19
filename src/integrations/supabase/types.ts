@@ -54,6 +54,42 @@ export type Database = {
         }
         Relationships: []
       }
+      lead_expenses: {
+        Row: {
+          created_at: string
+          id: string
+          lead_count: number
+          lead_type: string[]
+          purchase_date: string
+          source: string
+          total_cost: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lead_count: number
+          lead_type?: string[]
+          purchase_date: string
+          source: string
+          total_cost: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lead_count?: number
+          lead_type?: string[]
+          purchase_date?: string
+          source?: string
+          total_cost?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

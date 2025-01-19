@@ -1,4 +1,5 @@
 import BusinessMetrics from "@/components/BusinessMetrics";
+import LeadExpenseReport from "@/components/lead-expenses/LeadExpenseReport";
 
 const MetricsVisualization = () => {
   return (
@@ -11,6 +12,7 @@ const MetricsVisualization = () => {
       </div>
       <div className="space-y-8">
         <BusinessMetrics />
+        <LeadExpenseReport />
       </div>
     </div>
   );
