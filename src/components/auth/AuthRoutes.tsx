@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
+import Assessment from "@/pages/Assessment";
 
 export const AuthRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -26,7 +27,6 @@ export const AuthRoutes = () => {
         if (mounted) {
           setIsAuthenticated(false);
           setIsLoading(false);
-          // Clear any stale session data
           await supabase.auth.signOut({ scope: 'local' });
         }
       }
@@ -45,20 +45,10 @@ export const AuthRoutes = () => {
         return;
       }
       
-      if (event === 'SIGNED_IN') {
+      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
+        setIsLoading(false);
         return;
-      }
-
-      if (event === 'TOKEN_REFRESHED') {
-        const { data: { session: currentSession }, error } = await supabase.auth.getSession();
-        if (!error && currentSession) {
-          setIsAuthenticated(true);
-        } else {
-          console.error("Session refresh error:", error);
-          setIsAuthenticated(false);
-          await supabase.auth.signOut({ scope: 'local' });
-        }
       }
     });
 
@@ -68,7 +58,7 @@ export const AuthRoutes = () => {
     };
   }, []);
 
-  if (isLoading && window.location.pathname !== '/auth') {
+  if (isLoading) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-background/50">
         <div className="text-lg font-medium">Loading...</div>
@@ -104,7 +94,7 @@ export const AuthRoutes = () => {
       />
       <Route 
         path="/assessment" 
-        element={isAuthenticated ? <Index /> : <Navigate to="/auth" replace />} 
+        element={isAuthenticated ? <Assessment /> : <Navigate to="/auth" replace />} 
       />
       <Route 
         path="*" 
