@@ -14,6 +14,7 @@ interface MetricsTableProps {
   onCancel: () => void;
   onSort: (key: string) => void;
   onValueChange: (metric: keyof MetricCount, value: string) => void;
+  onDelete: (date: string) => void;
 }
 
 const MetricsTable = ({
@@ -25,6 +26,7 @@ const MetricsTable = ({
   onCancel,
   onSort,
   onValueChange,
+  onDelete,
 }: MetricsTableProps) => {
   const formatValue = (value: number, metric: keyof MetricCount) => {
     return value.toString();
@@ -60,6 +62,7 @@ const MetricsTable = ({
                   onEdit={() => onEdit(date, metrics)}
                   onSave={() => onSave(date)}
                   onCancel={onCancel}
+                  onDelete={() => onDelete(date)}
                 />
               </TableRow>
             );
