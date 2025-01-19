@@ -41,97 +41,89 @@ const Header = () => {
     }
   };
 
-  const clearAllStorageAndCookies = () => {
-    try {
-      Object.keys(localStorage).forEach(key => {
-        if (key.startsWith('supabase.auth.')) {
-          localStorage.removeItem(key);
-        }
-      });
-      
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-
-      sessionStorage.clear();
-    } catch (error) {
-      console.error("Error clearing storage:", error);
-    }
-  };
-
   const handleLogout = async () => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
-      if (sessionError) {
-        console.error("Session check error:", sessionError);
-        clearAllStorageAndCookies();
-        window.location.replace('/auth');
-        return;
-      }
-
-      if (!session) {
-        console.log("No active session found");
-        clearAllStorageAndCookies();
-        window.location.replace('/auth');
-        return;
-      }
-
-      const { error: signOutError } = await supabase.auth.signOut({
-        scope: 'local'
-      });
-
-      if (signOutError) {
-        console.error("Sign out error:", signOutError);
-        clearAllStorageAndCookies();
-        window.location.replace('/auth');
-        return;
-      }
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
 
       toast({
         title: "Success",
         description: "Logged out successfully",
       });
 
-      clearAllStorageAndCookies();
-      window.location.replace('/auth');
+      navigate('/auth');
     } catch (error) {
       console.error("Error during logout:", error);
-      clearAllStorageAndCookies();
-      window.location.replace('/auth');
+      toast({
+        title: "Error",
+        description: "Failed to log out",
+        variant: "destructive",
+      });
     }
   };
 
   return (
-    <div className="bg-gray-50 p-4 flex justify-between items-center">
-      <img 
-        src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
-        alt="SureHelp Logo" 
-        className="h-16 object-contain"
-      />
-      <div className="flex items-center gap-4">
-        <DropdownMenu>
-          <DropdownMenuTrigger className="focus:outline-none">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={profileData.profile_image_url || ""} />
-              <AvatarFallback className="bg-primary text-primary-foreground">
-                {profileData.first_name?.[0]?.toUpperCase() || <User className="h-6 w-6" />}
-              </AvatarFallback>
-            </Avatar>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => navigate("/profile")}>
-              Profile Settings
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={handleLogout}>
-              Sign Out
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+    <header className="bg-white border-b border-gray-200">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo and Left Navigation */}
+          <div className="flex items-center space-x-8">
+            <img 
+              src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
+              alt="SureHelp Logo" 
+              className="h-8 w-auto"
+            />
+            <nav className="hidden md:flex space-x-8">
+              <button 
+                onClick={() => navigate('/metrics')}
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+              >
+                Support
+              </button>
+              <button 
+                onClick={() => navigate('/submitted-forms')}
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+              >
+                Forms
+              </button>
+              <button 
+                onClick={() => navigate('/manager-dashboard')}
+                className="text-gray-600 hover:text-gray-900 px-3 py-2 text-sm font-medium"
+              >
+                Dashboard
+              </button>
+            </nav>
+          </div>
+
+          {/* Right side - Profile */}
+          <div className="flex items-center space-x-4">
+            <DropdownMenu>
+              <DropdownMenuTrigger className="focus:outline-none">
+                <div className="flex items-center space-x-2">
+                  <Avatar className="h-8 w-8">
+                    <AvatarImage src={profileData.profile_image_url || ""} />
+                    <AvatarFallback className="bg-primary text-primary-foreground">
+                      {profileData.first_name?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-gray-700">
+                    {profileData.first_name || "Profile"}
+                  </span>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  Profile Settings
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={handleLogout}>
+                  Sign Out
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
       </div>
-    </div>
+    </header>
   );
 };
 
