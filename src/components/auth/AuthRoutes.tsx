@@ -13,6 +13,7 @@ export const AuthRoutes = () => {
     const checkSession = async () => {
       try {
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("Initial session check:", { session });
         setIsAuthenticated(!!session);
       } catch (error) {
         console.error("Session check error:", error);
