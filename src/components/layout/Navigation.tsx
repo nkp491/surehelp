@@ -19,11 +19,16 @@ const Navigation = () => {
     setShowManagerDashboard(location.pathname === '/manager-dashboard');
   }, [location.pathname]);
 
+  const handleNavigation = (path: string) => {
+    // Prevent default behavior and use React Router navigation
+    navigate(path);
+  };
+
   return (
     <nav className="hidden md:flex space-x-4">
       <Button
         variant={showAssessment ? "default" : "outline"}
-        onClick={() => navigate('/assessment')}
+        onClick={() => handleNavigation('/assessment')}
         className="min-w-[120px] flex items-center gap-2"
       >
         <FileText className="h-4 w-4" />
@@ -31,7 +36,7 @@ const Navigation = () => {
       </Button>
       <Button
         variant={showSubmissions ? "default" : "outline"}
-        onClick={() => navigate('/submitted-forms')}
+        onClick={() => handleNavigation('/submitted-forms')}
         className="min-w-[120px] flex items-center gap-2"
       >
         <ClipboardList className="h-4 w-4" />
@@ -39,7 +44,7 @@ const Navigation = () => {
       </Button>
       <Button
         variant={showDashboard ? "default" : "outline"}
-        onClick={() => navigate('/metrics')}
+        onClick={() => handleNavigation('/metrics')}
         className="min-w-[120px] flex items-center gap-2"
       >
         <BarChart className="h-4 w-4" />
@@ -47,7 +52,7 @@ const Navigation = () => {
       </Button>
       <Button
         variant={showManagerDashboard ? "default" : "outline"}
-        onClick={() => navigate('/manager-dashboard')}
+        onClick={() => handleNavigation('/manager-dashboard')}
         className="min-w-[120px] flex items-center gap-2"
       >
         <Users className="h-4 w-4" />

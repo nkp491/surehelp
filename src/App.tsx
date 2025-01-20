@@ -8,8 +8,10 @@ function App() {
   return (
     <SessionContextProvider supabaseClient={supabase}>
       <Router>
-        <AuthRoutes />
-        <Toaster />
+        <div className="app-container">
+          <AuthRoutes />
+          <Toaster />
+        </div>
       </Router>
     </SessionContextProvider>
   );
