@@ -109,7 +109,14 @@ const ManagerDashboard = () => {
         .eq('status', 'pending' as InvitationStatus);
 
       if (error) throw error;
-      setInvitations(invitationsData || []);
+      
+      // Explicitly cast the response to TeamInvitation[]
+      const typedInvitations = (invitationsData || []).map(inv => ({
+        ...inv,
+        status: inv.status as InvitationStatus
+      })) as TeamInvitation[];
+      
+      setInvitations(typedInvitations);
     } catch (error) {
       console.error('Error loading invitations:', error);
       toast({
