@@ -1,15 +1,10 @@
-import { useEffect } from 'react';
+import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { MetricCount } from '@/types/metrics';
 
-export const useMetricsRealtime = (
-  setMetrics: (metrics: MetricCount) => void,
-  loadDailyMetrics: () => Promise<MetricCount>,
-  initializeInputs: (metrics: MetricCount) => void
-) => {
+export const useMetricsRealtime = (metrics: Record<string, number>) => {
   useEffect(() => {
     const channel = supabase
-      .channel('metrics-context-updates')
+      .channel('metrics-updates')
       .on(
         'postgres_changes',
         {
@@ -17,10 +12,15 @@ export const useMetricsRealtime = (
           schema: 'public',
           table: 'daily_metrics'
         },
-        async () => {
-          const dailyMetrics = await loadDailyMetrics();
-          setMetrics(dailyMetrics);
-          initializeInputs(dailyMetrics);
+        (payload) => {
+          console.log('[MetricsRealtime] Real-time update received:', {
+            type: 'realtime_update',
+            payload,
+            currentMetrics: { ...metrics },
+            timestamp: new Date().toISOString()
+          });
+          const refreshEvent = new CustomEvent('refreshMetricsHistory');
+          window.dispatchEvent(refreshEvent);
         }
       )
       .subscribe();
@@ -28,5 +28,5 @@ export const useMetricsRealtime = (
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [setMetrics, loadDailyMetrics, initializeInputs]);
+  }, [metrics]);
 };
