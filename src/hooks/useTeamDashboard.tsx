@@ -10,15 +10,21 @@ export const useTeamDashboard = () => {
   const { toast } = useToast();
 
   const createTeamIfNeeded = async (userId: string) => {
-    // Check if user already has a team as manager
-    const { data: existingTeam } = await supabase
-      .from('team_members')
-      .select('team_id')
-      .eq('user_id', userId)
-      .eq('role', 'manager')
-      .single();
+    try {
+      // First check if user already has a team as manager
+      const { data: existingTeam, error: teamError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', userId)
+        .eq('role', 'manager')
+        .maybeSingle();
 
-    if (!existingTeam) {
+      if (teamError) throw teamError;
+
+      if (existingTeam?.team_id) {
+        return existingTeam.team_id;
+      }
+
       // Get user's profile for team name
       const { data: profile } = await supabase
         .from('profiles')
@@ -27,7 +33,7 @@ export const useTeamDashboard = () => {
         .single();
 
       // Create new team
-      const { data: newTeam, error: teamError } = await supabase
+      const { data: newTeam, error: createTeamError } = await supabase
         .from('teams')
         .insert([
           { name: `${profile?.first_name || 'New'}'s Team` }
@@ -35,10 +41,7 @@ export const useTeamDashboard = () => {
         .select()
         .single();
 
-      if (teamError) {
-        console.error('Error creating team:', teamError);
-        return null;
-      }
+      if (createTeamError) throw createTeamError;
 
       // Add user as team manager
       const { error: memberError } = await supabase
@@ -51,15 +54,13 @@ export const useTeamDashboard = () => {
           }
         ]);
 
-      if (memberError) {
-        console.error('Error adding team member:', memberError);
-        return null;
-      }
+      if (memberError) throw memberError;
 
       return newTeam.id;
+    } catch (error) {
+      console.error('Error creating team:', error);
+      throw error;
     }
-
-    return existingTeam.team_id;
   };
 
   const loadTeamMembers = async () => {
