@@ -54,42 +54,6 @@ export type Database = {
         }
         Relationships: []
       }
-      lead_expenses: {
-        Row: {
-          created_at: string
-          id: string
-          lead_count: number
-          lead_type: string[]
-          purchase_date: string
-          source: string
-          total_cost: number
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          id?: string
-          lead_count: number
-          lead_type?: string[]
-          purchase_date: string
-          source: string
-          total_cost: number
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          id?: string
-          lead_count?: number
-          lead_type?: string[]
-          purchase_date?: string
-          source?: string
-          total_cost?: number
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
       profiles: {
         Row: {
           created_at: string
@@ -101,7 +65,6 @@ export type Database = {
           phone: string | null
           privacy_settings: Json | null
           profile_image_url: string | null
-          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
         }
         Insert: {
@@ -114,7 +77,6 @@ export type Database = {
           phone?: string | null
           privacy_settings?: Json | null
           profile_image_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Update: {
@@ -127,7 +89,6 @@ export type Database = {
           phone?: string | null
           privacy_settings?: Json | null
           profile_image_url?: string | null
-          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Relationships: []
@@ -170,7 +131,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      user_role: "agent" | "manager"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never

@@ -12,8 +12,7 @@ export const AuthRoutes = () => {
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        if (error) throw error;
+        const { data: { session } } = await supabase.auth.getSession();
         console.log("Initial session check:", { session });
         setIsAuthenticated(!!session);
       } catch (error) {
@@ -26,18 +25,22 @@ export const AuthRoutes = () => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change:", { event, session });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log("Auth state change:", event, session);
 
-      if (event === 'SIGNED_IN') {
-        setIsAuthenticated(true);
-        setIsLoading(false);
-      } else if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-        setIsLoading(false);
-      } else if (event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(!!session);
-        setIsLoading(false);
+      switch (event) {
+        case "SIGNED_IN":
+          setIsAuthenticated(true);
+          setIsLoading(false);
+          break;
+        case "SIGNED_OUT":
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          break;
+        case "TOKEN_REFRESHED":
+          setIsAuthenticated(!!session);
+          setIsLoading(false);
+          break;
       }
     });
 

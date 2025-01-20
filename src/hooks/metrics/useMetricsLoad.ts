@@ -12,21 +12,14 @@ export const useMetricsLoad = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
-      console.log('Loading metrics history for user:', user.user.id);
-
       const { data, error } = await supabase
         .from('daily_metrics')
         .select('*')
         .eq('user_id', user.user.id)
         .order('date', { ascending: false })
-        .limit(100); // Increased from 10 to 100
+        .limit(10);
 
-      if (error) {
-        console.error('Error fetching metrics:', error);
-        throw error;
-      }
-
-      console.log('Fetched metrics:', data);
+      if (error) throw error;
 
       const formattedHistory = data.map(entry => ({
         date: entry.date,

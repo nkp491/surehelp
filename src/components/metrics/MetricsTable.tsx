@@ -29,14 +29,7 @@ const MetricsTable = ({
   onDelete,
 }: MetricsTableProps) => {
   const formatValue = (value: number, metric: keyof MetricCount) => {
-    if (metric === 'ap') {
-      return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
     return value.toString();
-  };
-
-  const isEmptyRecord = (metrics: MetricCount) => {
-    return Object.values(metrics).every(value => value === 0);
   };
 
   return (
@@ -46,19 +39,14 @@ const MetricsTable = ({
         <TableBody>
           {history.map(({ date, metrics }) => {
             const currentValues = editingRow === date ? editedValues : metrics;
-            const isEmpty = isEmptyRecord(metrics);
             
             return (
-              <TableRow 
-                key={date}
-                className={isEmpty ? "bg-gray-50" : ""}
-              >
+              <TableRow key={date}>
                 <EditableMetricCell
                   isEditing={false}
                   value={format(new Date(date), 'MMM dd, yyyy')}
                   onChange={() => {}}
                   metric="date"
-                  className={isEmpty ? "text-gray-500 italic" : ""}
                 />
                 {Object.entries(metrics).map(([metric, _]) => (
                   <EditableMetricCell
@@ -67,7 +55,6 @@ const MetricsTable = ({
                     value={currentValues ? formatValue(currentValues[metric as keyof MetricCount], metric as keyof MetricCount) : '0'}
                     onChange={(newValue) => onValueChange(metric as keyof MetricCount, newValue)}
                     metric={metric}
-                    className={isEmpty ? "text-gray-500 italic" : ""}
                   />
                 ))}
                 <MetricRowActions

@@ -38,30 +38,22 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => {
     const initializeMetrics = async () => {
-      console.log('Initializing metrics with time period:', timePeriod);
-      console.log('Date range:', dateRange);
-      
       if (timePeriod === "custom" && dateRange.from && dateRange.to) {
         const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
-        console.log('Loading custom range metrics with key:', key);
         const storedMetrics = localStorage.getItem(key);
         if (storedMetrics) {
           setMetrics(JSON.parse(storedMetrics));
         }
       } else {
-        console.log('Loading daily metrics');
         const dailyMetrics = await loadDailyMetrics();
-        console.log('Loaded daily metrics:', dailyMetrics);
         setMetrics(dailyMetrics);
         initializeInputs(dailyMetrics);
         
         if (timePeriod !== '24h') {
-          console.log('Saving period metrics for:', timePeriod);
           await savePeriodMetrics(timePeriod, dailyMetrics);
         }
 
         const previousMetricsData = await loadPreviousMetrics(timePeriod);
-        console.log('Loaded previous metrics:', previousMetricsData);
         if (previousMetricsData) {
           setPreviousMetrics(previousMetricsData);
           const newTrends = calculateTrends(dailyMetrics, previousMetricsData);
@@ -74,7 +66,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   }, [timePeriod, dateRange]);
 
   const handleTimePeriodChange = async (period: TimePeriod) => {
-    console.log('Changing time period to:', period);
     setPreviousMetrics(metrics);
     await saveDailyMetrics(metrics);
     setTimePeriod(period);
@@ -84,7 +75,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const handleMetricInputChange = async (metric: MetricType, value: string) => {
-    console.log('Handling metric input change:', metric, value);
     handleInputChange(metric, value);
     await saveDailyMetrics(metrics);
   };
