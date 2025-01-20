@@ -2,7 +2,7 @@ export type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" |
 export type TimePeriod = "24h" | "7d" | "30d" | "custom";
 export type ChartType = "bar" | "line" | "pie";
 
-export interface MetricCount {
+export interface MetricCount extends Record<string, number> {
   leads: number;
   calls: number;
   contacts: number;
@@ -12,12 +12,19 @@ export interface MetricCount {
   ap: number;
 }
 
-export interface DatabaseMetric extends MetricCount {
+export interface DatabaseMetric {
   id: string;
   user_id: string;
   date: string;
   created_at: string;
   updated_at: string;
+  leads: number;
+  calls: number;
+  contacts: number;
+  scheduled: number;
+  sits: number;
+  sales: number;
+  ap: number;
 }
 
 export interface MetricTrends {
