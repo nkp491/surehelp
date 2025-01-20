@@ -4,12 +4,13 @@ import SubmissionsTable from "@/components/SubmissionsTable";
 import FormContainer from "@/components/FormContainer";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 
 const SubmittedForms = () => {
   const [editingSubmission, setEditingSubmission] = useState<FormSubmission | null>(null);
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   const { data: submissions = [], isLoading } = useQuery({
     queryKey: ['submissions'],
@@ -39,7 +40,7 @@ const SubmittedForms = () => {
       }
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    cacheTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
+    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes (formerly cacheTime)
   });
 
   const handleEdit = (submission: FormSubmission) => {
