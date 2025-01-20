@@ -24,7 +24,8 @@ export const useHistoricalMetrics = () => {
       .from('daily_metrics')
       .select('*')
       .gte('date', format(startDate, 'yyyy-MM-dd'))
-      .lt('date', format(today, 'yyyy-MM-dd'));
+      .lt('date', format(today, 'yyyy-MM-dd'))
+      .order('date', { ascending: false });
 
     if (error) {
       console.error('[HistoricalMetrics] Error loading metrics:', error);
