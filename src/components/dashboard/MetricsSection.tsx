@@ -25,7 +25,12 @@ const MetricsSection = () => {
           table: 'daily_metrics'
         },
         (payload) => {
-          console.log('[MetricsSection] Real-time update received:', payload);
+          console.log('[MetricsSection] Real-time update received:', {
+            type: 'realtime_update',
+            payload,
+            currentMetrics: { ...metrics },
+            timestamp: new Date().toISOString()
+          });
           // Emit refresh event to update metrics display
           const refreshEvent = new CustomEvent('refreshMetricsHistory');
           window.dispatchEvent(refreshEvent);
@@ -49,10 +54,13 @@ const MetricsSection = () => {
         : Math.max(0, currentValue - 1);
 
     console.log('[MetricsSection] Updating metric:', {
+      action: 'update_metric',
       metric,
       currentValue,
       newValue,
-      increment
+      increment,
+      allMetrics: { ...metrics },
+      timestamp: new Date().toISOString()
     });
 
     handleInputChange(metric as MetricType, newValue.toString());
@@ -65,7 +73,11 @@ const MetricsSection = () => {
 
   const handleDoneForDay = async () => {
     try {
-      console.log('[MetricsSection] Saving metrics:', metrics);
+      console.log('[MetricsSection] Saving metrics:', {
+        action: 'save_metrics',
+        metrics: { ...metrics },
+        timestamp: new Date().toISOString()
+      });
       
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
@@ -86,8 +98,10 @@ const MetricsSection = () => {
       if (error) throw error;
 
       console.log('[MetricsSection] Metrics saved successfully:', {
+        action: 'save_success',
         saved: metrics,
-        response: data
+        response: data,
+        timestamp: new Date().toISOString()
       });
 
       toast({
@@ -95,7 +109,12 @@ const MetricsSection = () => {
         description: "Today's metrics have been saved to history",
       });
     } catch (error) {
-      console.error('[MetricsSection] Error saving daily metrics:', error);
+      console.error('[MetricsSection] Error saving daily metrics:', {
+        action: 'save_error',
+        error,
+        metrics: { ...metrics },
+        timestamp: new Date().toISOString()
+      });
       toast({
         title: "Error",
         description: "Failed to save today's metrics",
