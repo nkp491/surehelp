@@ -24,9 +24,11 @@ const Profile = () => {
   const { teamInvitations, isLoading: teamLoading } = useTeamManagement();
 
   const handleRoleChange = async (checked: boolean) => {
+    console.log('Changing role to:', checked ? 'manager' : 'agent');
     await updateProfile({
       role: checked ? 'manager' : 'agent'
     });
+    console.log('Role updated in profile. New profile:', profile);
   };
 
   if (loading || teamLoading) {
