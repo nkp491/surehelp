@@ -1,4 +1,5 @@
-import { Alert, AlertCircle, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 const PerformanceTab = () => {
