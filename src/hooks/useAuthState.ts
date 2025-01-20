@@ -70,7 +70,7 @@ export const useAuthState = () => {
 
       console.log("Auth state change:", { event, session });
       
-      if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      if (event === 'SIGNED_OUT') {
         clearAuthData();
         navigate("/auth", { replace: true });
       } else if (event === 'SIGNED_IN') {
