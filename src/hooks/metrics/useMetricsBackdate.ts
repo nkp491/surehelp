@@ -22,7 +22,27 @@ export const useMetricsBackdate = () => {
       if (!user.user) return;
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
+
+      // First check if an entry already exists for this date
+      const { data: existingEntry } = await supabase
+        .from('daily_metrics')
+        .select('id')
+        .eq('user_id', user.user.id)
+        .eq('date', formattedDate)
+        .maybeSingle();
+
+      if (existingEntry) {
+        toast({
+          title: "Entry Exists",
+          description: "An entry already exists for this date. Please edit the existing entry instead.",
+          variant: "destructive",
+        });
+        return;
+      }
+
       const initialMetrics = {
+        user_id: user.user.id,
+        date: formattedDate,
         leads: 0,
         calls: 0,
         contacts: 0,
@@ -34,20 +54,21 @@ export const useMetricsBackdate = () => {
 
       const { error } = await supabase
         .from('daily_metrics')
-        .insert({
-          user_id: user.user.id,
-          date: formattedDate,
-          ...initialMetrics
-        });
+        .insert(initialMetrics);
 
       if (error) throw error;
 
       toast({
         title: "Success",
-        description: "Backdated metrics entry added",
+        description: "Backdated metrics entry added successfully",
       });
 
       setSelectedDate(undefined);
+      
+      // Trigger a refresh of the metrics history
+      const refreshEvent = new CustomEvent('refreshMetricsHistory');
+      window.dispatchEvent(refreshEvent);
+
     } catch (error) {
       console.error('Error adding backdated metrics:', error);
       toast({
