@@ -2,7 +2,7 @@ export type MetricType = "leads" | "calls" | "contacts" | "scheduled" | "sits" |
 export type TimePeriod = "24h" | "7d" | "30d" | "custom";
 export type ChartType = "bar" | "line" | "pie";
 
-export interface MetricCount extends Record<string, number> {
+export interface MetricCount {
   leads: number;
   calls: number;
   contacts: number;

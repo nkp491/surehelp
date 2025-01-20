@@ -23,9 +23,7 @@ export const useMetricsEdit = () => {
       // Process values before saving
       const processedValues = Object.entries(editedValues).reduce((acc, [key, value]) => ({
         ...acc,
-        [key]: key === 'ap' 
-          ? Math.round(Number(value)) // AP is already in cents from EditableMetricCell
-          : Math.round(Number(value))
+        [key]: Math.round(Number(value))
       }), {} as MetricCount);
 
       const { error } = await supabase
@@ -61,10 +59,13 @@ export const useMetricsEdit = () => {
   const handleValueChange = (metric: keyof MetricCount, value: string) => {
     if (!editedValues) return;
 
-    setEditedValues(prev => ({
-      ...prev!,
-      [metric]: value // Store the value as is, conversion is handled in EditableMetricCell
-    }));
+    setEditedValues(prev => {
+      if (!prev) return prev;
+      return {
+        ...prev,
+        [metric]: metric === 'ap' ? Math.round(Number(value)) : Number(value)
+      };
+    });
   };
 
   return {
