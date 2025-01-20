@@ -7,10 +7,36 @@ import { MetricType } from "@/types/metrics";
 import { supabase } from "@/integrations/supabase/client";
 import { format, startOfDay } from "date-fns";
 import { Check } from "lucide-react";
+import { useEffect } from "react";
 
 const MetricsSection = () => {
   const { toast } = useToast();
   const { metrics, handleInputChange } = useMetrics();
+
+  useEffect(() => {
+    // Subscribe to real-time updates
+    const channel = supabase
+      .channel('metrics-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'daily_metrics'
+        },
+        (payload) => {
+          console.log('Real-time update received:', payload);
+          // Emit refresh event to update metrics display
+          const refreshEvent = new CustomEvent('refreshMetricsHistory');
+          window.dispatchEvent(refreshEvent);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const updateMetric = (metric: string, increment: boolean) => {
     const currentValue = metrics[metric as MetricType];
@@ -35,7 +61,6 @@ const MetricsSection = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
-      // Get the current date in user's timezone and format it
       const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
       
       const { error } = await supabase
@@ -49,10 +74,6 @@ const MetricsSection = () => {
         });
 
       if (error) throw error;
-
-      // Emit a custom event to notify MetricsHistory to refresh
-      const refreshEvent = new CustomEvent('refreshMetricsHistory');
-      window.dispatchEvent(refreshEvent);
 
       toast({
         title: "Success",

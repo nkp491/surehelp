@@ -5,6 +5,7 @@ import { useMetricsStorage } from "@/hooks/useMetricsStorage";
 import { useMetricsCalculations } from "@/hooks/useMetricsCalculations";
 import { useMetricsState } from "@/hooks/useMetricsState";
 import { MetricType, TimePeriod, MetricsContextType, MetricCount } from "@/types/metrics";
+import { supabase } from "@/integrations/supabase/client";
 
 const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 
@@ -35,6 +36,30 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     calculateTrends,
     initializeInputs,
   } = useMetricsCalculations();
+
+  useEffect(() => {
+    // Listen for real-time updates
+    const channel = supabase
+      .channel('metrics-context-updates')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'daily_metrics'
+        },
+        async () => {
+          const dailyMetrics = await loadDailyMetrics();
+          setMetrics(dailyMetrics);
+          initializeInputs(dailyMetrics);
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   useEffect(() => {
     const initializeMetrics = async () => {
