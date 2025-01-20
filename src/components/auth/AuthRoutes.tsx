@@ -34,6 +34,7 @@ export const AuthRoutes = () => {
           setIsLoading(false);
           break;
         case "SIGNED_OUT":
+        case "USER_DELETED":
           setIsAuthenticated(false);
           setIsLoading(false);
           break;
