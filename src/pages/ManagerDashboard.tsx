@@ -1,21 +1,20 @@
 import { useState, useEffect } from "react";
 import { AlertCircle, Users, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface TeamMember {
   id: string;
   user_id: string;
   role: 'manager' | 'member';
-  profile?: {
-    first_name: string;
-    last_name: string;
-    email: string;
-  };
+  profile: {
+    first_name: string | null;
+    last_name: string | null;
+    email: string | null;
+  } | null;
   metrics?: {
     leads: number;
     calls: number;
@@ -38,18 +37,31 @@ const ManagerDashboard = () => {
 
   const loadTeamMembers = async () => {
     try {
+      // First get team members with their profiles
       const { data: teamMembersData, error: teamError } = await supabase
         .from('team_members')
         .select(`
           *,
-          profile:profiles(first_name, last_name, email)
+          user:user_id (
+            profile:profiles (
+              first_name,
+              last_name,
+              email
+            )
+          )
         `);
 
       if (teamError) throw teamError;
 
+      // Transform the data to match our interface
+      const membersWithProfiles = teamMembersData.map(member => ({
+        ...member,
+        profile: member.user?.profile || null
+      }));
+
       // Fetch metrics for each team member
       const membersWithMetrics = await Promise.all(
-        teamMembersData.map(async (member) => {
+        membersWithProfiles.map(async (member) => {
           const { data: metricsData } = await supabase
             .from('daily_metrics')
             .select('*')
@@ -144,7 +156,9 @@ const ManagerDashboard = () => {
                       </div>
                       <div className="text-center">
                         <p className="text-sm text-gray-500">AP</p>
-                        <p className="font-semibold">${member.metrics?.ap ? (member.metrics.ap / 100).toFixed(2) : '0.00'}</p>
+                        <p className="font-semibold">
+                          ${member.metrics?.ap ? (member.metrics.ap / 100).toFixed(2) : '0.00'}
+                        </p>
                       </div>
                     </div>
                   </div>
