@@ -15,7 +15,7 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
         title="Save today's metrics"
       >
         <Check className="h-4 w-4" />
-        Save Metrics
+        Log
       </Button>
     </div>
   );
