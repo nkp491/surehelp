@@ -27,6 +27,7 @@ const MetricButtons = ({
   const handleIncrement = () => {
     const increment = isAP ? 100 : 1;
     const newValue = currentValue + increment;
+    console.log(`[MetricButtons] Incrementing ${metric} from ${currentValue} to ${newValue}`);
     handleInputChange(metric as MetricType, newValue.toString());
     onIncrement();
   };
@@ -35,6 +36,7 @@ const MetricButtons = ({
     if (currentValue <= 0) return;
     const decrement = isAP ? 100 : 1;
     const newValue = Math.max(0, currentValue - decrement);
+    console.log(`[MetricButtons] Decrementing ${metric} from ${currentValue} to ${newValue}`);
     handleInputChange(metric as MetricType, newValue.toString());
     onDecrement();
   };
@@ -48,7 +50,10 @@ const MetricButtons = ({
         <MetricInput
           metric={metric}
           currentValue={currentValue}
-          onInputChange={(value) => handleInputChange(metric as MetricType, value)}
+          onInputChange={(value) => {
+            console.log(`[MetricButtons] Direct input change for ${metric}: ${value}`);
+            handleInputChange(metric as MetricType, value);
+          }}
           isAP={isAP}
         />
         <MetricControls

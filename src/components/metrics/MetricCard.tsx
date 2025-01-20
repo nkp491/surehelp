@@ -18,6 +18,8 @@ const MetricCard = ({
   isCurrency = false,
   trend = 0,
 }: MetricCardProps) => {
+  console.log(`[MetricCard] Rendering ${metric} with value:`, value);
+
   const formatMetricName = (metric: string) => {
     return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
