@@ -5,8 +5,9 @@ export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'cancelled'
 export interface TeamInvitation {
   id: string;
   team_id: string;
-  inviter_id: string;
-  invitee_id: string;
+  inviter_id: string | null;
+  invitee_id: string | null;
+  invitee_email: string | null;
   status: InvitationStatus;
   created_at: string;
   updated_at: string;

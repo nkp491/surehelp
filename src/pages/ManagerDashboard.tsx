@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, TeamInvitation } from "@/types/team";
+import { TeamMember, TeamInvitation, InvitationStatus } from "@/types/team";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
@@ -53,7 +53,7 @@ const ManagerDashboard = () => {
       if (teamError) throw teamError;
 
       // Transform the data to match our interface
-      const membersWithProfiles = membersData.map(member => ({
+      const membersWithProfiles = (membersData || []).map(member => ({
         ...member,
         profile: member.profiles || {
           first_name: null,
@@ -84,7 +84,7 @@ const ManagerDashboard = () => {
               sales: null,
               ap: null
             }
-          };
+          } as TeamMember;
         })
       );
 
@@ -106,10 +106,10 @@ const ManagerDashboard = () => {
       const { data: invitationsData, error } = await supabase
         .from('team_invitations')
         .select('*')
-        .eq('status', 'pending');
+        .eq('status', 'pending' as InvitationStatus);
 
       if (error) throw error;
-      setInvitations(invitationsData);
+      setInvitations(invitationsData || []);
     } catch (error) {
       console.error('Error loading invitations:', error);
       toast({
