@@ -29,6 +29,9 @@ const MetricsTable = ({
   onDelete,
 }: MetricsTableProps) => {
   const formatValue = (value: number, metric: keyof MetricCount) => {
+    if (metric === 'ap') {
+      return value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
     return value.toString();
   };
 
@@ -55,6 +58,7 @@ const MetricsTable = ({
                   value={format(new Date(date), 'MMM dd, yyyy')}
                   onChange={() => {}}
                   metric="date"
+                  className={isEmpty ? "text-gray-500 italic" : ""}
                 />
                 {Object.entries(metrics).map(([metric, _]) => (
                   <EditableMetricCell

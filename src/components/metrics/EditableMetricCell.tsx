@@ -28,7 +28,7 @@ const EditableMetricCell = ({
           min="0"
         />
       ) : (
-        <span>{value}</span>
+        <span>{metric === 'ap' && value !== '0' ? `$${value}` : value}</span>
       )}
     </TableCell>
   );
