@@ -16,9 +16,13 @@ const SubmittedForms = () => {
     queryKey: ['submissions'],
     queryFn: async () => {
       try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('No authenticated user');
+
         const { data, error } = await supabase
           .from('submissions')
           .select('*')
+          .eq('user_id', user.id)
           .order('timestamp', { ascending: false });
 
         if (error) throw error;
@@ -67,7 +71,6 @@ const SubmittedForms = () => {
         description: "Submission updated successfully",
       });
       
-      // Invalidate the submissions query to trigger a refresh
       await queryClient.invalidateQueries({ queryKey: ['submissions'] });
       setEditingSubmission(null);
     } catch (error) {
