@@ -48,6 +48,10 @@ export const calculateRatios = (metrics: MetricCount) => {
       value: calls > 0 && sales > 0 ? (calls / sales).toFixed(1) : "0",
     },
     {
+      label: "AP per Call",
+      value: calls > 0 ? formatCurrency(ap / 100 / calls) : "$0.00",
+    },
+    {
       label: "Contact to Scheduled",
       value: contacts > 0 && scheduled > 0 ? (contacts / scheduled).toFixed(1) : "0",
     },
