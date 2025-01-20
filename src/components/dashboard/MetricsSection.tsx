@@ -25,7 +25,7 @@ const MetricsSection = () => {
           table: 'daily_metrics'
         },
         (payload) => {
-          console.log('Real-time update received:', payload);
+          console.log('[MetricsSection] Real-time update received:', payload);
           // Emit refresh event to update metrics display
           const refreshEvent = new CustomEvent('refreshMetricsHistory');
           window.dispatchEvent(refreshEvent);
@@ -48,6 +48,13 @@ const MetricsSection = () => {
         ? Math.max(0, currentValue - 100)
         : Math.max(0, currentValue - 1);
 
+    console.log('[MetricsSection] Updating metric:', {
+      metric,
+      currentValue,
+      newValue,
+      increment
+    });
+
     handleInputChange(metric as MetricType, newValue.toString());
     
     toast({
@@ -58,12 +65,14 @@ const MetricsSection = () => {
 
   const handleDoneForDay = async () => {
     try {
+      console.log('[MetricsSection] Saving metrics:', metrics);
+      
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
       const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
       
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from('daily_metrics')
         .upsert({
           user_id: user.user.id,
@@ -71,16 +80,22 @@ const MetricsSection = () => {
           ...metrics
         }, {
           onConflict: 'user_id,date'
-        });
+        })
+        .select();
 
       if (error) throw error;
+
+      console.log('[MetricsSection] Metrics saved successfully:', {
+        saved: metrics,
+        response: data
+      });
 
       toast({
         title: "Success",
         description: "Today's metrics have been saved to history",
       });
     } catch (error) {
-      console.error('Error saving daily metrics:', error);
+      console.error('[MetricsSection] Error saving daily metrics:', error);
       toast({
         title: "Error",
         description: "Failed to save today's metrics",
