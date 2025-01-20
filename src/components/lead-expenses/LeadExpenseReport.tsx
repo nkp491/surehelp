@@ -1,13 +1,9 @@
 import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Edit2, Trash2 } from "lucide-react";
-import { format } from "date-fns";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import LeadExpenseForm from "./LeadExpenseForm";
+import AddExpenseDialog from "./AddExpenseDialog";
+import DeleteExpenseDialog from "./DeleteExpenseDialog";
+import ExpenseTable from "./ExpenseTable";
 
 interface LeadExpense {
   id: string;
@@ -82,111 +78,39 @@ const LeadExpenseReport = () => {
     <div className="space-y-4 bg-[#FFFCF6] p-6 rounded-lg">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Lead Expense Report</h2>
-        <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="h-4 w-4 mr-2" />
-              Add Expense
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add Lead Expense</DialogTitle>
-            </DialogHeader>
-            <LeadExpenseForm
-              onSuccess={() => {
-                loadExpenses();
-                setIsAddOpen(false);
-              }}
-            />
-          </DialogContent>
-        </Dialog>
+        <AddExpenseDialog
+          isOpen={isAddOpen}
+          onOpenChange={setIsAddOpen}
+          onSuccess={() => {
+            loadExpenses();
+            setIsAddOpen(false);
+          }}
+        />
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Date</TableHead>
-              <TableHead>Source</TableHead>
-              <TableHead>Lead Types</TableHead>
-              <TableHead>Lead Count</TableHead>
-              <TableHead>Total Cost</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {expenses.map((expense) => (
-              <TableRow key={expense.id}>
-                <TableCell>{format(new Date(expense.purchase_date), 'MMM dd, yyyy')}</TableCell>
-                <TableCell>{expense.source}</TableCell>
-                <TableCell>{expense.lead_type.join(', ')}</TableCell>
-                <TableCell>{expense.lead_count}</TableCell>
-                <TableCell>${expense.total_cost}</TableCell>
-                <TableCell>
-                  <div className="flex gap-2">
-                    <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
-                      <DialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => setSelectedExpense(expense)}
-                        >
-                          <Edit2 className="h-4 w-4" />
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Edit Lead Expense</DialogTitle>
-                        </DialogHeader>
-                        {selectedExpense && (
-                          <LeadExpenseForm
-                            initialData={selectedExpense}
-                            isEditing
-                            onSuccess={() => {
-                              loadExpenses();
-                              setIsEditOpen(false);
-                              setSelectedExpense(null);
-                            }}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
+      <ExpenseTable
+        expenses={expenses}
+        onEdit={(expense) => setSelectedExpense(expense)}
+        onDelete={(expense) => {
+          setSelectedExpense(expense);
+          setIsDeleteOpen(true);
+        }}
+        isEditOpen={isEditOpen}
+        setIsEditOpen={setIsEditOpen}
+        selectedExpense={selectedExpense}
+        onSuccess={() => {
+          loadExpenses();
+          setIsEditOpen(false);
+          setSelectedExpense(null);
+        }}
+      />
 
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        setSelectedExpense(expense);
-                        setIsDeleteOpen(true);
-                      }}
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      <AlertDialog open={isDeleteOpen} onOpenChange={setIsDeleteOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the lead expense record.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel onClick={() => setSelectedExpense(null)}>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-red-600 hover:bg-red-700">
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteExpenseDialog
+        isOpen={isDeleteOpen}
+        onOpenChange={setIsDeleteOpen}
+        onConfirm={handleDelete}
+        onCancel={() => setSelectedExpense(null)}
+      />
     </div>
   );
 };
