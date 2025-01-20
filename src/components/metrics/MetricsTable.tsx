@@ -32,6 +32,10 @@ const MetricsTable = ({
     return value.toString();
   };
 
+  const isEmptyRecord = (metrics: MetricCount) => {
+    return Object.values(metrics).every(value => value === 0);
+  };
+
   return (
     <div className="overflow-x-auto">
       <Table>
@@ -39,9 +43,13 @@ const MetricsTable = ({
         <TableBody>
           {history.map(({ date, metrics }) => {
             const currentValues = editingRow === date ? editedValues : metrics;
+            const isEmpty = isEmptyRecord(metrics);
             
             return (
-              <TableRow key={date}>
+              <TableRow 
+                key={date}
+                className={isEmpty ? "bg-gray-50" : ""}
+              >
                 <EditableMetricCell
                   isEditing={false}
                   value={format(new Date(date), 'MMM dd, yyyy')}
@@ -55,6 +63,7 @@ const MetricsTable = ({
                     value={currentValues ? formatValue(currentValues[metric as keyof MetricCount], metric as keyof MetricCount) : '0'}
                     onChange={(newValue) => onValueChange(metric as keyof MetricCount, newValue)}
                     metric={metric}
+                    className={isEmpty ? "text-gray-500 italic" : ""}
                   />
                 ))}
                 <MetricRowActions
