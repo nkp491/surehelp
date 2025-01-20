@@ -18,13 +18,16 @@ export const AuthRoutes = () => {
         
         if (sessionError) {
           console.error("Session error:", sessionError);
-          throw sessionError;
+          setIsAuthenticated(false);
+          setIsLoading(false);
+          return;
         }
 
         if (!session) {
           // Clear any stale auth data
           await supabase.auth.signOut();
           setIsAuthenticated(false);
+          setIsLoading(false);
           return;
         }
 
@@ -40,20 +43,30 @@ export const AuthRoutes = () => {
             description: "Please sign in again",
             variant: "destructive",
           });
+          setIsLoading(false);
           return;
         }
 
         setIsAuthenticated(true);
+        setIsLoading(false);
       } catch (error) {
         console.error("Auth error:", error);
+        // Handle any unexpected errors by signing out
+        await supabase.auth.signOut();
         setIsAuthenticated(false);
-      } finally {
         setIsLoading(false);
+        toast({
+          title: "Authentication Error",
+          description: "Please sign in again",
+          variant: "destructive",
+        });
       }
     };
 
+    // Initial session check
     checkSession();
 
+    // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", event, session);
 
@@ -72,6 +85,10 @@ export const AuthRoutes = () => {
           break;
         case "USER_UPDATED":
           setIsAuthenticated(!!session);
+          setIsLoading(false);
+          break;
+        case "USER_DELETED":
+          setIsAuthenticated(false);
           setIsLoading(false);
           break;
       }
