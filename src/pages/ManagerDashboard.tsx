@@ -114,28 +114,37 @@ const ManagerDashboard = () => {
 
   const handleInviteMember = async () => {
     try {
-      // First, check if the user exists
-      const { data: userData, error: userError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('email', inviteEmail)
+      // Get the team ID for the current manager
+      const { data: teamData } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('role', 'manager')
         .single();
 
-      if (userError || !userData) {
+      if (!teamData?.team_id) {
         toast({
           title: "Error",
-          description: "User not found with this email",
+          description: "You need to be a team manager to invite members",
           variant: "destructive",
         });
         return;
       }
 
+      // Check if user exists (but don't require it)
+      const { data: userData } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', inviteEmail)
+        .single();
+
       // Create the invitation
       const { error: inviteError } = await supabase
         .from('team_invitations')
         .insert({
-          invitee_id: userData.id,
-          team_id: teamMembers[0]?.team_id, // Assuming manager is part of only one team
+          team_id: teamData.team_id,
+          invitee_id: userData?.id || null,
+          invitee_email: inviteEmail,
           status: 'pending'
         });
 
