@@ -75,7 +75,7 @@ const LeadExpenseReport = () => {
   };
 
   return (
-    <div className="space-y-4 bg-[#FFFCF6] p-6 rounded-lg">
+    <div className="space-y-4 bg-[#FFFCF6] p-6 rounded-lg border border-[#D9D9D9]">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Lead Expense Report</h2>
         <AddExpenseDialog
