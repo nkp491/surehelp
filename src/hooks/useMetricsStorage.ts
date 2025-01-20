@@ -10,6 +10,8 @@ export const useMetricsStorage = () => {
 
   const loadDailyMetrics = async (): Promise<MetricCount> => {
     const today = startOfDay(new Date());
+    console.log('[MetricsStorage] Loading daily metrics for:', format(today, 'yyyy-MM-dd'));
+    
     const { data, error } = await supabase
       .from('daily_metrics')
       .select('*')
@@ -17,15 +19,18 @@ export const useMetricsStorage = () => {
       .maybeSingle();
 
     if (error) {
-      console.error('Error loading daily metrics:', error);
+      console.error('[MetricsStorage] Error loading daily metrics:', error);
       return {
         leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
       };
     }
 
-    return data ? extractMetricData(data as DatabaseMetric) : {
+    const metrics = data ? extractMetricData(data as DatabaseMetric) : {
       leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
     };
+    
+    console.log('[MetricsStorage] Loaded daily metrics:', metrics);
+    return metrics;
   };
 
   const loadPreviousMetrics = async (period: TimePeriod): Promise<MetricCount> => {
@@ -43,6 +48,8 @@ export const useMetricsStorage = () => {
         startDate = subDays(today, 1);
     }
 
+    console.log('[MetricsStorage] Loading previous metrics from:', format(startDate, 'yyyy-MM-dd'));
+
     const { data, error } = await supabase
       .from('daily_metrics')
       .select('*')
@@ -50,13 +57,13 @@ export const useMetricsStorage = () => {
       .lt('date', format(today, 'yyyy-MM-dd'));
 
     if (error) {
-      console.error('Error loading previous metrics:', error);
+      console.error('[MetricsStorage] Error loading previous metrics:', error);
       return {
         leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
       };
     }
 
-    return (data as DatabaseMetric[]).reduce((acc, curr) => ({
+    const metrics = (data as DatabaseMetric[]).reduce((acc, curr) => ({
       leads: acc.leads + (curr.leads || 0),
       calls: acc.calls + (curr.calls || 0),
       contacts: acc.contacts + (curr.contacts || 0),
@@ -67,16 +74,21 @@ export const useMetricsStorage = () => {
     }), {
       leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
     });
+
+    console.log('[MetricsStorage] Loaded previous metrics:', metrics);
+    return metrics;
   };
 
   const saveDailyMetrics = async (metrics: MetricCount) => {
-    const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
+    console.log('[MetricsStorage] Saving daily metrics:', metrics);
     const user = await supabase.auth.getUser();
     
     if (!user.data.user) {
-      console.error('No user found');
+      console.error('[MetricsStorage] No user found');
       return;
     }
+
+    const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
 
     const { error } = await supabase
       .from('daily_metrics')
@@ -89,9 +101,11 @@ export const useMetricsStorage = () => {
       });
 
     if (error) {
-      console.error('Error upserting daily metrics:', error);
+      console.error('[MetricsStorage] Error saving daily metrics:', error);
       throw error;
     }
+
+    console.log('[MetricsStorage] Successfully saved daily metrics');
   };
 
   const savePeriodMetrics = async (period: TimePeriod, metrics: MetricCount) => {
