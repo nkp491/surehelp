@@ -14,7 +14,10 @@ export const useMetricsHistory = () => {
   const loadHistory = useCallback(async () => {
     try {
       const { data: userResponse } = await supabase.auth.getUser();
-      if (!userResponse.user) return;
+      if (!userResponse.user) {
+        console.error('No authenticated user found');
+        return;
+      }
 
       const { data, error } = await supabase
         .from('daily_metrics')
@@ -22,7 +25,10 @@ export const useMetricsHistory = () => {
         .eq('user_id', userResponse.user.id)
         .order('date', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error loading metrics history:', error);
+        throw error;
+      }
 
       const formattedHistory = data.map(entry => ({
         date: entry.date,
@@ -53,7 +59,10 @@ export const useMetricsHistory = () => {
 
     try {
       const { data: userResponse } = await supabase.auth.getUser();
-      if (!userResponse.user) return;
+      if (!userResponse.user) {
+        console.error('No authenticated user found');
+        return;
+      }
 
       const formattedDate = format(selectedDate, 'yyyy-MM-dd');
       
