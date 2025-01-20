@@ -44,7 +44,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   useMetricsInitialization(
     timePeriod,
     dateRange,
-    metrics,
     setMetrics,
     setPreviousMetrics,
     setTrends,

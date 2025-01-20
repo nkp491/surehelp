@@ -1,16 +1,16 @@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { MetricType } from "@/types/metrics";
+import { MetricCount, MetricType } from "@/types/metrics";
 import { format, startOfDay } from "date-fns";
 
 export const useMetricsUpdates = (
-  metrics: Record<string, number>,
+  metrics: MetricCount,
   handleInputChange: (metric: MetricType, value: string) => void
 ) => {
   const { toast } = useToast();
 
-  const updateMetric = (metric: string, increment: boolean) => {
-    const currentValue = metrics[metric as MetricType];
+  const updateMetric = (metric: MetricType, increment: boolean) => {
+    const currentValue = metrics[metric];
     const newValue = increment 
       ? metric === 'ap' 
         ? currentValue + 100 
@@ -29,7 +29,7 @@ export const useMetricsUpdates = (
       timestamp: new Date().toISOString()
     });
 
-    handleInputChange(metric as MetricType, newValue.toString());
+    handleInputChange(metric, newValue.toString());
     
     toast({
       title: "Metric Updated",
