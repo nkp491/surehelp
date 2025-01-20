@@ -113,7 +113,7 @@ const ManagerDashboard = () => {
       // Explicitly cast the response to TeamInvitation[]
       const typedInvitations = (invitationsData || []).map(inv => ({
         ...inv,
-        status: inv.status as InvitationStatus
+        status: (inv.status || 'pending') as InvitationStatus
       })) as TeamInvitation[];
       
       setInvitations(typedInvitations);
