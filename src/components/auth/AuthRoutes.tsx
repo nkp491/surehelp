@@ -32,7 +32,7 @@ export const AuthRoutes = () => {
       if (event === 'SIGNED_IN') {
         setIsAuthenticated(true);
         setIsLoading(false);
-      } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         setIsLoading(false);
       } else if (event === 'TOKEN_REFRESHED') {
