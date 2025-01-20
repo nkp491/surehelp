@@ -23,21 +23,37 @@ const ManagerDashboard = () => {
 
   const loadTeamMembers = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user);
+
+      if (!user) {
+        console.error('No user found');
+        return;
+      }
+
       // First get the manager's team
-      const { data: teamData } = await supabase
+      const { data: teamData, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', user.id)
         .eq('role', 'manager')
         .single();
 
+      console.log('Team data:', teamData, 'Team error:', teamError);
+
+      if (teamError) {
+        console.error('Error fetching team:', teamError);
+        return;
+      }
+
       if (!teamData?.team_id) {
+        console.log('No team found for manager');
         setTeamMembers([]);
         return;
       }
 
       // Then get all members of that team with their profile information
-      const { data: membersData, error: teamError } = await supabase
+      const { data: membersData, error: membersError } = await supabase
         .from('team_members')
         .select(`
           *,
@@ -49,7 +65,9 @@ const ManagerDashboard = () => {
         `)
         .eq('team_id', teamData.team_id);
 
-      if (teamError) throw teamError;
+      console.log('Members data:', membersData, 'Members error:', membersError);
+
+      if (membersError) throw membersError;
 
       // Transform the data to match our interface
       const membersWithProfiles = (membersData || []).map(member => ({
@@ -102,10 +120,31 @@ const ManagerDashboard = () => {
 
   const loadInvitations = async () => {
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Get the team ID first
+      const { data: teamData } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id)
+        .eq('role', 'manager')
+        .single();
+
+      console.log('Team data for invitations:', teamData);
+
+      if (!teamData?.team_id) {
+        console.log('No team found for invitations');
+        return;
+      }
+
       const { data: invitationsData, error } = await supabase
         .from('team_invitations')
         .select('*')
-        .eq('status', 'pending' as InvitationStatus);
+        .eq('team_id', teamData.team_id)
+        .eq('status', 'pending');
+
+      console.log('Invitations data:', invitationsData, 'Error:', error);
 
       if (error) throw error;
       
@@ -127,21 +166,23 @@ const ManagerDashboard = () => {
 
   const handleInviteMember = async (email: string) => {
     try {
-      // Get the team ID for the current manager
-      const { data: teamData } = await supabase
+      console.log('Inviting member with email:', email);
+
+      // Get the current user and their team
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('No authenticated user');
+
+      const { data: teamData, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
-        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('user_id', user.id)
         .eq('role', 'manager')
         .single();
 
-      if (!teamData?.team_id) {
-        toast({
-          title: "Error",
-          description: "You need to be a team manager to invite members",
-          variant: "destructive",
-        });
-        return;
+      console.log('Team data for invitation:', teamData, 'Team error:', teamError);
+
+      if (teamError || !teamData?.team_id) {
+        throw new Error('Failed to get team information');
       }
 
       // Check if user exists (but don't require it)
@@ -151,15 +192,20 @@ const ManagerDashboard = () => {
         .eq('email', email)
         .single();
 
+      console.log('User data for invitation:', userData);
+
       // Create the invitation
       const { error: inviteError } = await supabase
         .from('team_invitations')
         .insert({
           team_id: teamData.team_id,
+          inviter_id: user.id,
           invitee_id: userData?.id || null,
           invitee_email: email,
           status: 'pending'
         });
+
+      console.log('Invitation error:', inviteError);
 
       if (inviteError) throw inviteError;
 
@@ -173,7 +219,7 @@ const ManagerDashboard = () => {
       console.error('Error inviting member:', error);
       toast({
         title: "Error",
-        description: "Failed to send invitation",
+        description: "Failed to send invitation. Please ensure you have manager permissions.",
         variant: "destructive",
       });
     }
