@@ -1,120 +1,179 @@
-import { AlertCircle, ChevronUp, ChevronDown, MessageSquare } from "lucide-react";
+import { useState, useEffect } from "react";
+import { AlertCircle, Users, TrendingUp } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
-import { 
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import { useState } from "react";
+import { Card } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+
+interface TeamMember {
+  id: string;
+  user_id: string;
+  role: 'manager' | 'member';
+  profile?: {
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  metrics?: {
+    leads: number;
+    calls: number;
+    contacts: number;
+    scheduled: number;
+    sits: number;
+    sales: number;
+    ap: number;
+  };
+}
 
 const ManagerDashboard = () => {
-  const [isDashboardOpen, setIsDashboardOpen] = useState(true);
-  const [isBulletinOpen, setIsBulletinOpen] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
+
+  useEffect(() => {
+    loadTeamMembers();
+  }, []);
+
+  const loadTeamMembers = async () => {
+    try {
+      const { data: teamMembersData, error: teamError } = await supabase
+        .from('team_members')
+        .select(`
+          *,
+          profile:profiles(first_name, last_name, email)
+        `);
+
+      if (teamError) throw teamError;
+
+      // Fetch metrics for each team member
+      const membersWithMetrics = await Promise.all(
+        teamMembersData.map(async (member) => {
+          const { data: metricsData } = await supabase
+            .from('daily_metrics')
+            .select('*')
+            .eq('user_id', member.user_id)
+            .order('date', { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...member,
+            metrics: metricsData || {
+              leads: 0,
+              calls: 0,
+              contacts: 0,
+              scheduled: 0,
+              sits: 0,
+              sales: 0,
+              ap: 0
+            }
+          };
+        })
+      );
+
+      setTeamMembers(membersWithMetrics);
+    } catch (error) {
+      console.error('Error loading team members:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load team members",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="container mx-auto py-8 space-y-8">
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8]">
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Team Dashboard</h2>
           <p className="text-muted-foreground mt-1">Manage your team and view performance metrics</p>
         </div>
       </div>
-      
-      <Collapsible
-        open={isDashboardOpen}
-        onOpenChange={setIsDashboardOpen}
-        className="max-w-2xl mx-auto"
-      >
-        <Alert variant="default">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
+
+      <Tabs defaultValue="members" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="members" className="flex items-center gap-2">
+            <Users className="h-4 w-4" />
+            Team Members
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <TrendingUp className="h-4 w-4" />
+            Performance
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="members" className="space-y-4">
+          {isLoading ? (
+            <Card className="p-8">
+              <div className="animate-pulse space-y-4">
+                <div className="h-4 bg-gray-200 rounded w-1/4"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            </Card>
+          ) : teamMembers.length > 0 ? (
+            <Card className="p-6">
+              <div className="space-y-4">
+                {teamMembers.map((member) => (
+                  <div
+                    key={member.id}
+                    className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
+                  >
+                    <div>
+                      <h3 className="font-semibold">
+                        {member.profile?.first_name} {member.profile?.last_name}
+                      </h3>
+                      <p className="text-sm text-gray-500">{member.profile?.email}</p>
+                      <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+                        {member.role}
+                      </span>
+                    </div>
+                    <div className="flex gap-4">
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500">Leads</p>
+                        <p className="font-semibold">{member.metrics?.leads || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500">Sales</p>
+                        <p className="font-semibold">{member.metrics?.sales || 0}</p>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm text-gray-500">AP</p>
+                        <p className="font-semibold">${member.metrics?.ap ? (member.metrics.ap / 100).toFixed(2) : '0.00'}</p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ) : (
+            <Alert>
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Team Account Required</AlertTitle>
-            </div>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-9 p-0">
-                {isDashboardOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-                <span className="sr-only">Toggle content</span>
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent>
-            <AlertDescription className="mt-4">
-              <p className="mb-4">
-                The Team Dashboard is exclusively available to Team Account holders. Upgrade to unlock powerful features including:
-              </p>
-              <ul className="list-disc list-inside mb-4 space-y-2">
-                <li>Team performance analytics</li>
-                <li>Agent productivity tracking</li>
-                <li>Custom reporting tools</li>
-                <li>Team collaboration features</li>
-              </ul>
-              <Button 
-                onClick={() => window.open('https://example.com/upgrade', '_blank')}
-                className="mt-2"
-              >
-                Upgrade to Team Account
-              </Button>
-            </AlertDescription>
-          </CollapsibleContent>
-        </Alert>
-      </Collapsible>
+              <AlertTitle>No team members found</AlertTitle>
+              <AlertDescription>
+                Start building your team by adding members.
+              </AlertDescription>
+            </Alert>
+          )}
+        </TabsContent>
 
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Team Bulletin</h2>
-          <p className="text-muted-foreground mt-1">Share updates and communicate with your team</p>
-        </div>
-      </div>
-
-      <Collapsible
-        open={isBulletinOpen}
-        onOpenChange={setIsBulletinOpen}
-        className="max-w-2xl mx-auto"
-      >
-        <Alert variant="default">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <MessageSquare className="h-4 w-4" />
-              <AlertTitle>Team Account Required</AlertTitle>
-            </div>
-            <CollapsibleTrigger asChild>
-              <Button variant="ghost" size="sm" className="w-9 p-0">
-                {isBulletinOpen ? (
-                  <ChevronUp className="h-4 w-4" />
-                ) : (
-                  <ChevronDown className="h-4 w-4" />
-                )}
-                <span className="sr-only">Toggle content</span>
-              </Button>
-            </CollapsibleTrigger>
-          </div>
-          <CollapsibleContent>
-            <AlertDescription className="mt-4">
-              <p className="mb-4">
-                The Team Bulletin is exclusively available to Team Account holders. Upgrade to unlock communication features including:
-              </p>
-              <ul className="list-disc list-inside mb-4 space-y-2">
-                <li>Team-wide announcements</li>
-                <li>Important updates sharing</li>
-                <li>Team/Manager messages</li>
-                <li>File and resource sharing</li>
-              </ul>
-              <Button 
-                onClick={() => window.open('https://example.com/upgrade', '_blank')}
-                className="mt-2"
-              >
-                Upgrade to Team Account
-              </Button>
-            </AlertDescription>
-          </CollapsibleContent>
-        </Alert>
-      </Collapsible>
+        <TabsContent value="performance">
+          <Card className="p-6">
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Coming Soon</AlertTitle>
+              <AlertDescription>
+                Team performance analytics and reporting features are coming soon.
+              </AlertDescription>
+            </Alert>
+          </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };
