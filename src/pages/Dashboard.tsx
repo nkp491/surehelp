@@ -1,6 +1,7 @@
 import BusinessMetrics from "@/components/BusinessMetrics";
+import LeadExpenseReport from "@/components/lead-expenses/LeadExpenseReport";
 
-const MetricsVisualization = () => {
+const Dashboard = () => {
   return (
     <div className="container mx-auto py-8">
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
@@ -11,9 +12,10 @@ const MetricsVisualization = () => {
       </div>
       <div className="space-y-8">
         <BusinessMetrics />
+        <LeadExpenseReport />
       </div>
     </div>
   );
 };
 
-export default MetricsVisualization;
+export default Dashboard;
