@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
@@ -8,15 +9,43 @@ import Profile from "@/pages/Profile";
 export const AuthRoutes = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        console.log("Initial session check:", { session });
-        setIsAuthenticated(!!session);
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        
+        if (sessionError) {
+          console.error("Session error:", sessionError);
+          throw sessionError;
+        }
+
+        if (!session) {
+          // Clear any stale auth data
+          await supabase.auth.signOut();
+          setIsAuthenticated(false);
+          return;
+        }
+
+        // Attempt to refresh the session
+        const { error: refreshError } = await supabase.auth.refreshSession();
+        if (refreshError) {
+          console.error("Refresh error:", refreshError);
+          // If refresh fails, sign out and clear session
+          await supabase.auth.signOut();
+          setIsAuthenticated(false);
+          toast({
+            title: "Session Expired",
+            description: "Please sign in again",
+            variant: "destructive",
+          });
+          return;
+        }
+
+        setIsAuthenticated(true);
       } catch (error) {
-        console.error("Session check error:", error);
+        console.error("Auth error:", error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
@@ -25,7 +54,7 @@ export const AuthRoutes = () => {
 
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", event, session);
 
       switch (event) {
@@ -41,13 +70,17 @@ export const AuthRoutes = () => {
           setIsAuthenticated(!!session);
           setIsLoading(false);
           break;
+        case "USER_UPDATED":
+          setIsAuthenticated(!!session);
+          setIsLoading(false);
+          break;
       }
     });
 
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   if (isLoading) {
     return (
