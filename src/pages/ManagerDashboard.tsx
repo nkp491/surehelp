@@ -16,8 +16,8 @@ const ManagerDashboard = () => {
     <div className="container mx-auto py-8 space-y-8">
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Team Dashboard</h2>
-          <p className="text-muted-foreground mt-1">Manage your team and view performance metrics</p>
+          <h2 className="text-2xl font-bold text-gray-900">Manager Dashboard</h2>
+          <p className="text-muted-foreground mt-1">View performance metrics and manage your settings</p>
         </div>
       </div>
       
@@ -30,7 +30,7 @@ const ManagerDashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <AlertCircle className="h-4 w-4" />
-              <AlertTitle>Team Account Required</AlertTitle>
+              <AlertTitle>Manager Features Coming Soon</AlertTitle>
             </div>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -46,20 +46,14 @@ const ManagerDashboard = () => {
           <CollapsibleContent>
             <AlertDescription className="mt-4">
               <p className="mb-4">
-                The Team Dashboard is exclusively available to Team Account holders. Upgrade to unlock powerful features including:
+                We're working on new features specifically designed for managers. Stay tuned for updates including:
               </p>
               <ul className="list-disc list-inside mb-4 space-y-2">
-                <li>Team performance analytics</li>
-                <li>Agent productivity tracking</li>
+                <li>Performance analytics</li>
+                <li>Productivity tracking</li>
                 <li>Custom reporting tools</li>
-                <li>Team collaboration features</li>
+                <li>Advanced management features</li>
               </ul>
-              <Button 
-                onClick={() => window.open('https://example.com/upgrade', '_blank')}
-                className="mt-2"
-              >
-                Upgrade to Team Account
-              </Button>
             </AlertDescription>
           </CollapsibleContent>
         </Alert>
@@ -67,8 +61,8 @@ const ManagerDashboard = () => {
 
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Team Bulletin</h2>
-          <p className="text-muted-foreground mt-1">Share updates and communicate with your team</p>
+          <h2 className="text-2xl font-bold text-gray-900">Announcements</h2>
+          <p className="text-muted-foreground mt-1">Important updates and communications</p>
         </div>
       </div>
 
@@ -81,7 +75,7 @@ const ManagerDashboard = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="h-4 w-4" />
-              <AlertTitle>Team Account Required</AlertTitle>
+              <AlertTitle>Communication Features Coming Soon</AlertTitle>
             </div>
             <CollapsibleTrigger asChild>
               <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -97,20 +91,14 @@ const ManagerDashboard = () => {
           <CollapsibleContent>
             <AlertDescription className="mt-4">
               <p className="mb-4">
-                The Team Bulletin is exclusively available to Team Account holders. Upgrade to unlock communication features including:
+                We're developing new communication features. Coming soon:
               </p>
               <ul className="list-disc list-inside mb-4 space-y-2">
-                <li>Team-wide announcements</li>
-                <li>Important updates sharing</li>
-                <li>Team/Manager messages</li>
-                <li>File and resource sharing</li>
+                <li>Important announcements</li>
+                <li>Updates sharing</li>
+                <li>Direct messaging</li>
+                <li>Resource sharing</li>
               </ul>
-              <Button 
-                onClick={() => window.open('https://example.com/upgrade', '_blank')}
-                className="mt-2"
-              >
-                Upgrade to Team Account
-              </Button>
             </AlertDescription>
           </CollapsibleContent>
         </Alert>
