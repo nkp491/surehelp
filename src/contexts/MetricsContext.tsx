@@ -1,11 +1,11 @@
-import { createContext, useContext, useEffect, ReactNode } from "react";
+import { createContext, useContext, ReactNode } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
-import { format } from "date-fns";
 import { useMetricsStorage } from "@/hooks/useMetricsStorage";
 import { useMetricsCalculations } from "@/hooks/useMetricsCalculations";
 import { useMetricsState } from "@/hooks/useMetricsState";
-import { MetricType, TimePeriod, MetricsContextType, MetricCount } from "@/types/metrics";
-import { supabase } from "@/integrations/supabase/client";
+import { MetricType, TimePeriod, MetricsContextType } from "@/types/metrics";
+import { useMetricsRealtime } from "@/hooks/useMetricsRealtime";
+import { useMetricsInitialization } from "@/hooks/useMetricsInitialization";
 
 const MetricsContext = createContext<MetricsContextType | undefined>(undefined);
 
@@ -37,58 +37,22 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     initializeInputs,
   } = useMetricsCalculations();
 
-  useEffect(() => {
-    // Listen for real-time updates
-    const channel = supabase
-      .channel('metrics-context-updates')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'daily_metrics'
-        },
-        async () => {
-          const dailyMetrics = await loadDailyMetrics();
-          setMetrics(dailyMetrics);
-          initializeInputs(dailyMetrics);
-        }
-      )
-      .subscribe();
+  // Initialize real-time updates
+  useMetricsRealtime(setMetrics, loadDailyMetrics, initializeInputs);
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, []);
-
-  useEffect(() => {
-    const initializeMetrics = async () => {
-      if (timePeriod === "custom" && dateRange.from && dateRange.to) {
-        const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
-        const storedMetrics = localStorage.getItem(key);
-        if (storedMetrics) {
-          setMetrics(JSON.parse(storedMetrics));
-        }
-      } else {
-        const dailyMetrics = await loadDailyMetrics();
-        setMetrics(dailyMetrics);
-        initializeInputs(dailyMetrics);
-        
-        if (timePeriod !== '24h') {
-          await savePeriodMetrics(timePeriod, dailyMetrics);
-        }
-
-        const previousMetricsData = await loadPreviousMetrics(timePeriod);
-        if (previousMetricsData) {
-          setPreviousMetrics(previousMetricsData);
-          const newTrends = calculateTrends(dailyMetrics, previousMetricsData);
-          setTrends(newTrends);
-        }
-      }
-    };
-
-    initializeMetrics();
-  }, [timePeriod, dateRange]);
+  // Initialize metrics data
+  useMetricsInitialization(
+    timePeriod,
+    dateRange,
+    setMetrics,
+    setPreviousMetrics,
+    setTrends,
+    loadDailyMetrics,
+    loadPreviousMetrics,
+    savePeriodMetrics,
+    initializeInputs,
+    calculateTrends
+  );
 
   const handleTimePeriodChange = async (period: TimePeriod) => {
     setPreviousMetrics(metrics);
