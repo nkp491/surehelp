@@ -5,7 +5,6 @@ export interface Profile {
   email: string | null;
   phone: string | null;
   profile_image_url: string | null;
-  role: 'agent' | 'manager' | null;
   privacy_settings: {
     show_email: boolean;
     show_phone: boolean;
