@@ -3,7 +3,7 @@ import { BrowserRouter as Router } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionContextProvider, Session } from "@supabase/auth-helpers-react";
 import { supabase } from "@/integrations/supabase/client";
-import AuthRoutes from "@/components/auth/AuthRoutes";
+import { AuthRoutes } from "@/components/auth/AuthRoutes";
 import { useState, useEffect } from "react";
 
 function App() {
