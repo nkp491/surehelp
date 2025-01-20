@@ -5,7 +5,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import { format, startOfDay } from "date-fns";
 import { Check } from "lucide-react";
 
 const MetricsSection = () => {
@@ -35,7 +35,8 @@ const MetricsSection = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
-      const today = format(new Date(), 'yyyy-MM-dd');
+      // Get the current date in user's timezone and format it
+      const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
       
       const { error } = await supabase
         .from('daily_metrics')
