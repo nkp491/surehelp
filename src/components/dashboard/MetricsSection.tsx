@@ -3,15 +3,11 @@ import MetricButtons from "@/components/MetricButtons";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import { useMetricsUpdates } from "@/hooks/useMetricsUpdates";
-import { useMetricsRealtime } from "@/hooks/useMetricsRealtime";
 import MetricsHeader from "@/components/metrics/MetricsHeader";
 
 const MetricsSection = () => {
   const { metrics, handleInputChange } = useMetrics();
   const { updateMetric, saveDailyMetrics } = useMetricsUpdates(metrics, handleInputChange);
-  
-  // Initialize real-time updates
-  useMetricsRealtime(metrics);
 
   return (
     <div className="space-y-4">
@@ -19,7 +15,7 @@ const MetricsSection = () => {
         <div className="flex flex-col space-y-6">
           <MetricsHeader onSave={saveDailyMetrics} />
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-            {Object.keys(metrics).map((metric) => (
+            {(Object.keys(metrics) as MetricType[]).map((metric) => (
               <MetricButtons
                 key={metric}
                 metric={metric}

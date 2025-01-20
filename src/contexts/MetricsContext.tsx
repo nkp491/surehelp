@@ -38,12 +38,13 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   } = useMetricsCalculations();
 
   // Initialize real-time updates
-  useMetricsRealtime(setMetrics, loadDailyMetrics, initializeInputs);
+  useMetricsRealtime(metrics);
 
   // Initialize metrics data
   useMetricsInitialization(
     timePeriod,
     dateRange,
+    metrics,
     setMetrics,
     setPreviousMetrics,
     setTrends,
