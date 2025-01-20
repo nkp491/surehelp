@@ -101,6 +101,7 @@ export type Database = {
           phone: string | null
           privacy_settings: Json | null
           profile_image_url: string | null
+          role: Database["public"]["Enums"]["user_role"] | null
           updated_at: string
         }
         Insert: {
@@ -113,6 +114,7 @@ export type Database = {
           phone?: string | null
           privacy_settings?: Json | null
           profile_image_url?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Update: {
@@ -125,6 +127,7 @@ export type Database = {
           phone?: string | null
           privacy_settings?: Json | null
           profile_image_url?: string | null
+          role?: Database["public"]["Enums"]["user_role"] | null
           updated_at?: string
         }
         Relationships: []
@@ -158,6 +161,44 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      team_invitations: {
+        Row: {
+          created_at: string
+          id: string
+          invitee_id: string | null
+          inviter_id: string | null
+          status: string | null
+          team_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          invitee_id?: string | null
+          inviter_id?: string | null
+          status?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          invitee_id?: string | null
+          inviter_id?: string | null
+          status?: string | null
+          team_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       team_members: {
         Row: {
@@ -227,6 +268,7 @@ export type Database = {
     }
     Enums: {
       team_role: "manager" | "member"
+      user_role: "agent" | "manager"
     }
     CompositeTypes: {
       [_ in never]: never
