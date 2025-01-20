@@ -68,8 +68,8 @@ export const AuthRoutes = () => {
 
     // Set up auth state change listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change:", event, session);
-
+      console.log("Auth state change:", { event, session });
+      
       switch (event) {
         case "SIGNED_IN":
           setIsAuthenticated(true);
@@ -85,10 +85,6 @@ export const AuthRoutes = () => {
           break;
         case "USER_UPDATED":
           setIsAuthenticated(!!session);
-          setIsLoading(false);
-          break;
-        case "USER_DELETED":
-          setIsAuthenticated(false);
           setIsLoading(false);
           break;
       }
