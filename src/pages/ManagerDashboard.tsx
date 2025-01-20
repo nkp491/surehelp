@@ -40,7 +40,11 @@ const ManagerDashboard = () => {
       // Transform the data to match our interface
       const membersWithProfiles = teamMembersData.map(member => ({
         ...member,
-        profile: member.profiles
+        profile: member.profiles || {
+          first_name: null,
+          last_name: null,
+          email: null
+        }
       }));
 
       // Fetch metrics for each team member
@@ -55,21 +59,28 @@ const ManagerDashboard = () => {
             .single();
 
           return {
-            ...member,
+            id: member.id,
+            team_id: member.team_id,
+            user_id: member.user_id,
+            role: member.role,
+            joined_at: member.joined_at,
+            created_at: member.created_at,
+            updated_at: member.updated_at,
+            profile: member.profile,
             metrics: metricsData || {
-              leads: 0,
-              calls: 0,
-              contacts: 0,
-              scheduled: 0,
-              sits: 0,
-              sales: 0,
-              ap: 0
+              leads: null,
+              calls: null,
+              contacts: null,
+              scheduled: null,
+              sits: null,
+              sales: null,
+              ap: null
             }
-          };
+          } as TeamMember;
         })
       );
 
-      setTeamMembers(membersWithMetrics as TeamMember[]);
+      setTeamMembers(membersWithMetrics);
     } catch (error) {
       console.error('Error loading team members:', error);
       toast({
