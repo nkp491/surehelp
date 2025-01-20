@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
-import { AlertCircle, Users, TrendingUp, UserPlus } from "lucide-react";
+import { useState, useEffect } from 'react';
+import { AlertCircle, Users, TrendingUp, UserPlus } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, TeamInvitation, InvitationStatus } from "@/types/team";
+import { TeamMember, TeamInvitation } from "@/types/team";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
@@ -24,7 +24,21 @@ const ManagerDashboard = () => {
 
   const loadTeamMembers = async () => {
     try {
-      const { data: teamMembersData, error: teamError } = await supabase
+      // First get the manager's team
+      const { data: teamData } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', (await supabase.auth.getUser()).data.user?.id)
+        .eq('role', 'manager')
+        .single();
+
+      if (!teamData?.team_id) {
+        setTeamMembers([]);
+        return;
+      }
+
+      // Then get all members of that team with their profile information
+      const { data: membersData, error: teamError } = await supabase
         .from('team_members')
         .select(`
           *,
@@ -33,12 +47,13 @@ const ManagerDashboard = () => {
             last_name,
             email
           )
-        `);
+        `)
+        .eq('team_id', teamData.team_id);
 
       if (teamError) throw teamError;
 
       // Transform the data to match our interface
-      const membersWithProfiles = teamMembersData.map(member => ({
+      const membersWithProfiles = membersData.map(member => ({
         ...member,
         profile: member.profiles || {
           first_name: null,
@@ -59,14 +74,7 @@ const ManagerDashboard = () => {
             .single();
 
           return {
-            id: member.id,
-            team_id: member.team_id,
-            user_id: member.user_id,
-            role: member.role,
-            joined_at: member.joined_at,
-            created_at: member.created_at,
-            updated_at: member.updated_at,
-            profile: member.profile,
+            ...member,
             metrics: metricsData || {
               leads: null,
               calls: null,
@@ -76,7 +84,7 @@ const ManagerDashboard = () => {
               sales: null,
               ap: null
             }
-          } as TeamMember;
+          };
         })
       );
 
@@ -98,10 +106,10 @@ const ManagerDashboard = () => {
       const { data: invitationsData, error } = await supabase
         .from('team_invitations')
         .select('*')
-        .eq('status', 'pending' as InvitationStatus);
+        .eq('status', 'pending');
 
       if (error) throw error;
-      setInvitations(invitationsData as TeamInvitation[]);
+      setInvitations(invitationsData);
     } catch (error) {
       console.error('Error loading invitations:', error);
       toast({
