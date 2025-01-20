@@ -1,15 +1,19 @@
 import { useState } from 'react';
 import { MetricCount, MetricType, TimePeriod } from '@/types/metrics';
 
+const initialMetrics: MetricCount = {
+  leads: 0,
+  calls: 0,
+  contacts: 0,
+  scheduled: 0,
+  sits: 0,
+  sales: 0,
+  ap: 0,
+};
+
 export const useMetricsState = () => {
-  const [metrics, setMetrics] = useState<MetricCount>({
-    leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
-  });
-  
-  const [previousMetrics, setPreviousMetrics] = useState<MetricCount>({
-    leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
-  });
-  
+  const [metrics, setMetrics] = useState<MetricCount>(initialMetrics);
+  const [previousMetrics, setPreviousMetrics] = useState<MetricCount>(initialMetrics);
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const [trends, setTrends] = useState<{[key: string]: number}>({});

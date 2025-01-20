@@ -16,27 +16,31 @@ export const useMetricsInitialization = (
 ) => {
   useEffect(() => {
     const initializeMetrics = async () => {
-      if (timePeriod === "custom" && dateRange.from && dateRange.to) {
-        const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
-        const storedMetrics = localStorage.getItem(key);
-        if (storedMetrics) {
-          setMetrics(JSON.parse(storedMetrics));
-        }
-      } else {
-        const dailyMetrics = await loadDailyMetrics();
-        setMetrics(dailyMetrics);
-        initializeInputs(dailyMetrics);
-        
-        if (timePeriod !== '24h') {
-          await savePeriodMetrics(timePeriod, dailyMetrics);
-        }
+      try {
+        if (timePeriod === "custom" && dateRange.from && dateRange.to) {
+          const key = `businessMetrics_custom_${format(dateRange.from, 'yyyy-MM-dd')}_${format(dateRange.to, 'yyyy-MM-dd')}`;
+          const storedMetrics = localStorage.getItem(key);
+          if (storedMetrics) {
+            setMetrics(JSON.parse(storedMetrics));
+          }
+        } else {
+          const dailyMetrics = await loadDailyMetrics();
+          setMetrics(dailyMetrics);
+          initializeInputs(dailyMetrics);
+          
+          if (timePeriod !== '24h') {
+            await savePeriodMetrics(timePeriod, dailyMetrics);
+          }
 
-        const previousMetricsData = await loadPreviousMetrics(timePeriod);
-        if (previousMetricsData) {
-          setPreviousMetrics(previousMetricsData);
-          const newTrends = calculateTrends(dailyMetrics, previousMetricsData);
-          setTrends(newTrends);
+          const previousMetricsData = await loadPreviousMetrics(timePeriod);
+          if (previousMetricsData) {
+            setPreviousMetrics(previousMetricsData);
+            const newTrends = calculateTrends(dailyMetrics, previousMetricsData);
+            setTrends(newTrends);
+          }
         }
+      } catch (error) {
+        console.error('Error initializing metrics:', error);
       }
     };
 
