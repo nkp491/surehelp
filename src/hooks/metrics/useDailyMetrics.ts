@@ -29,7 +29,10 @@ export const useDailyMetrics = () => {
       leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
     };
     
-    console.log('[DailyMetrics] Loaded metrics:', metrics);
+    console.log('[DailyMetrics] Loaded metrics:', {
+      raw: data,
+      extracted: metrics
+    });
     return metrics;
   };
 
@@ -44,7 +47,7 @@ export const useDailyMetrics = () => {
 
     const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
 
-    const { error } = await supabase
+    const { error, data } = await supabase
       .from('daily_metrics')
       .upsert({
         user_id: user.user.id,
@@ -52,14 +55,19 @@ export const useDailyMetrics = () => {
         ...metrics
       }, {
         onConflict: 'user_id,date'
-      });
+      })
+      .select()
+      .single();
 
     if (error) {
       console.error('[DailyMetrics] Error saving metrics:', error);
       throw error;
     }
 
-    console.log('[DailyMetrics] Successfully saved metrics');
+    console.log('[DailyMetrics] Successfully saved metrics:', {
+      saved: metrics,
+      response: data
+    });
   };
 
   return {
