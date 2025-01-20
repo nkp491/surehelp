@@ -1,5 +1,6 @@
 import Navigation from "./Navigation";
 import ProfileMenu from "./ProfileMenu";
+import logoImage from "/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png";
 
 const Header = () => {
   return (
@@ -9,7 +10,7 @@ const Header = () => {
           {/* Logo and Navigation */}
           <div className="flex items-center space-x-8">
             <img 
-              src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
+              src={logoImage}
               alt="SureHelp Logo" 
               className="h-8 w-auto"
             />
