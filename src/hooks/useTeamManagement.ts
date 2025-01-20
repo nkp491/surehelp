@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { TeamInvitation } from '@/types/team';
+import { TeamInvitation, TeamMember, InvitationStatus } from '@/types/team';
 
 export const useTeamManagement = () => {
   const [userRole, setUserRole] = useState<'agent' | 'manager' | null>(null);
@@ -46,7 +46,7 @@ export const useTeamManagement = () => {
         .eq('status', 'pending');
 
       if (error) throw error;
-      setTeamInvitations(data);
+      setTeamInvitations(data as TeamInvitation[]);
     } catch (error) {
       console.error('Error loading team invitations:', error);
     }
@@ -56,7 +56,7 @@ export const useTeamManagement = () => {
     try {
       const { error: updateError } = await supabase
         .from('team_invitations')
-        .update({ status: 'accepted' })
+        .update({ status: 'accepted' as InvitationStatus })
         .eq('id', invitationId);
 
       if (updateError) throw updateError;
@@ -73,7 +73,7 @@ export const useTeamManagement = () => {
           .insert({
             team_id: invitation.team_id,
             user_id: invitation.invitee_id,
-            role: 'agent'
+            role: 'member'
           });
 
         if (memberError) throw memberError;
@@ -99,7 +99,7 @@ export const useTeamManagement = () => {
     try {
       const { error } = await supabase
         .from('team_invitations')
-        .update({ status: 'declined' })
+        .update({ status: 'declined' as InvitationStatus })
         .eq('id', invitationId);
 
       if (error) throw error;

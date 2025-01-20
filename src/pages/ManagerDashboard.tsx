@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamMember, TeamInvitation } from "@/types/team";
+import { TeamMember, TeamInvitation, InvitationStatus } from "@/types/team";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 
@@ -28,7 +28,7 @@ const ManagerDashboard = () => {
         .from('team_members')
         .select(`
           *,
-          profiles!team_members_user_id_fkey (
+          profiles:user_id (
             first_name,
             last_name,
             email
@@ -69,7 +69,7 @@ const ManagerDashboard = () => {
         })
       );
 
-      setTeamMembers(membersWithMetrics);
+      setTeamMembers(membersWithMetrics as TeamMember[]);
     } catch (error) {
       console.error('Error loading team members:', error);
       toast({
@@ -87,10 +87,10 @@ const ManagerDashboard = () => {
       const { data: invitationsData, error } = await supabase
         .from('team_invitations')
         .select('*')
-        .eq('status', 'pending');
+        .eq('status', 'pending' as InvitationStatus);
 
       if (error) throw error;
-      setInvitations(invitationsData);
+      setInvitations(invitationsData as TeamInvitation[]);
     } catch (error) {
       console.error('Error loading invitations:', error);
       toast({
