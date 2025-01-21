@@ -39,15 +39,24 @@ const MetricsBarChart = ({ data, colors }: MetricsBarChartProps) => {
   const maxAP = Math.max(...data.map(item => item.ap / 100));
   const yAxisDomain = [0, Math.ceil(maxAP / 1000) * 1000];
 
+  // Transform data to convert AP from cents to dollars
+  const transformedData = data.map(item => ({
+    ...item,
+    ap: item.ap / 100
+  }));
+
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} margin={{ top: 20, right: 50, left: 20, bottom: 5 }}>
+      <BarChart data={transformedData} margin={{ top: 20, right: 50, left: 20, bottom: 5 }}>
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
-        <YAxis yAxisId="left" />
         <YAxis 
-          yAxisId="right" 
-          orientation="right" 
+          yAxisId="metrics"
+          orientation="left"
+        />
+        <YAxis 
+          yAxisId="ap"
+          orientation="right"
           domain={yAxisDomain}
           tickFormatter={(value) => `$${value}`}
         />
@@ -56,6 +65,7 @@ const MetricsBarChart = ({ data, colors }: MetricsBarChartProps) => {
         {metrics.map(({ key, label, color }) => (
           <Bar 
             key={key}
+            yAxisId="metrics"
             dataKey={key}
             name={label}
             stackId="a"
@@ -66,17 +76,12 @@ const MetricsBarChart = ({ data, colors }: MetricsBarChartProps) => {
         <Line
           type="monotone"
           dataKey="ap"
-          yAxisId="right"
+          yAxisId="ap"
           name="AP"
           stroke="#E5DEFF"
           strokeWidth={2}
           dot={{ fill: '#E5DEFF', r: 4 }}
           activeDot={{ r: 6 }}
-          // Convert AP from cents to dollars
-          data={data.map(item => ({
-            ...item,
-            ap: item.ap / 100
-          }))}
         />
       </BarChart>
     </ResponsiveContainer>
