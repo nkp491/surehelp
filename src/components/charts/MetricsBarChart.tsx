@@ -10,6 +10,7 @@ interface MetricsBarChartProps {
     scheduled: number;
     sits: number;
     sales: number;
+    ap: number;
   }>;
   colors: string[];
   apData: Array<{
@@ -19,7 +20,7 @@ interface MetricsBarChartProps {
   apColor: string;
 }
 
-const MetricsBarChart = ({ data, colors, apData, apColor }: MetricsBarChartProps) => {
+const MetricsBarChart = ({ data, colors, apColor }: MetricsBarChartProps) => {
   const { toast } = useToast();
   
   const metrics = [
@@ -38,15 +39,12 @@ const MetricsBarChart = ({ data, colors, apData, apColor }: MetricsBarChartProps
     });
   };
 
-  // Combine the data arrays to include AP values
-  const combinedData = data.map((item, index) => ({
-    ...item,
-    ap: apData[index]?.ap || 0,
-  }));
-
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={combinedData} margin={{ top: 20, right: 30, left: 20, bottom: 5 }}>
+      <BarChart 
+        data={data} 
+        margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+      >
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis yAxisId="left" />
@@ -67,7 +65,6 @@ const MetricsBarChart = ({ data, colors, apData, apColor }: MetricsBarChartProps
             key={key}
             dataKey={key}
             name={label}
-            stackId="a"
             fill={color}
             yAxisId="left"
             onClick={(data) => handleBarClick(data, key)}
@@ -79,7 +76,7 @@ const MetricsBarChart = ({ data, colors, apData, apColor }: MetricsBarChartProps
           name="AP"
           stroke={apColor}
           yAxisId="right"
-          dot={true}
+          dot={{ fill: apColor }}
           strokeWidth={2}
         />
       </BarChart>
