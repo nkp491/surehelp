@@ -3,7 +3,6 @@ import { Card } from "@/components/ui/card";
 import ChartControls from "./charts/ChartControls";
 import MetricsBarChart from "./charts/MetricsBarChart";
 import MetricsLineChart from "./charts/MetricsLineChart";
-import MetricsPieChart from "./charts/MetricsPieChart";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 
 const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#795548'];
@@ -15,7 +14,7 @@ interface MetricsChartProps {
 }
 
 const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => {
-  const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar');
+  const [chartType, setChartType] = useState<'bar' | 'line'>('bar');
   const { sortedHistory } = useMetricsHistory();
 
   // Transform historical data into a single dataset including AP
@@ -27,7 +26,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
     scheduled: entry.metrics.scheduled || 0,
     sits: entry.metrics.sits || 0,
     sales: entry.metrics.sales || 0,
-    ap: entry.metrics.ap || 0, // Keep AP in cents for now
+    ap: entry.metrics.ap || 0,
   }));
 
   return (
@@ -45,15 +44,10 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
             data={transformedMetricsData} 
             colors={COLORS} 
           />
-        ) : chartType === 'line' ? (
+        ) : (
           <MetricsLineChart 
             data={transformedMetricsData}
             colors={[...COLORS, AP_COLOR]}
-          />
-        ) : (
-          <MetricsPieChart 
-            data={transformedMetricsData} 
-            colors={COLORS} 
           />
         )}
       </div>

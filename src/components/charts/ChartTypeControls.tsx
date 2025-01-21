@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { BarChart3, LineChart, PieChart } from "lucide-react";
+import { BarChart3, LineChart } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface ChartTypeControlsProps {
-  chartType: "bar" | "line" | "pie";
-  onChartTypeChange: (type: "bar" | "line" | "pie") => void;
+  chartType: "bar" | "line";
+  onChartTypeChange: (type: "bar" | "line") => void;
 }
 
 const ChartTypeControls = ({ chartType, onChartTypeChange }: ChartTypeControlsProps) => {
@@ -22,16 +22,10 @@ const ChartTypeControls = ({ chartType, onChartTypeChange }: ChartTypeControlsPr
       label: "Line Chart",
       icon: LineChart,
       description: "View trends and patterns over time"
-    },
-    {
-      type: "pie" as const,
-      label: "Pie Chart",
-      icon: PieChart,
-      description: "See the distribution of metrics"
     }
   ];
 
-  const handleChartChange = (type: "bar" | "line" | "pie") => {
+  const handleChartChange = (type: "bar" | "line") => {
     onChartTypeChange(type);
     const control = chartControls.find(c => c.type === type);
     if (control) {
