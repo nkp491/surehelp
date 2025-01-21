@@ -1,7 +1,7 @@
 import { TooltipProps } from 'recharts';
 
 const formatTooltipValue = (value: number, name: string) => {
-  if (name === 'Ap') {
+  if (name === 'AP') {
     return `$${value.toFixed(2)}`;
   }
   return value;
