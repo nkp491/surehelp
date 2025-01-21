@@ -11,7 +11,7 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
       <h2 className="text-lg font-semibold text-[#2A6F97]">KPI Tracker</h2>
       <Button 
         onClick={onSave}
-        className="bg-[#6CAEC2] hover:bg-[#6CAEC2]/90 text-white flex items-center gap-2"
+        className="bg-[#6CAEC2] hover:bg-[#4A8A9E] text-white flex items-center gap-2 transition-colors duration-200"
         title="Save today's metrics"
       >
         <Check className="h-4 w-4" />
