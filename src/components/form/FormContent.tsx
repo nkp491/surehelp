@@ -42,27 +42,35 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
   );
 
   useEffect(() => {
-    loadFieldPositions();
+    loadPositions();
   }, []);
 
-  const loadFieldPositions = async () => {
+  const loadPositions = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) return;
 
-      const { data: positions, error } = await supabase
+      // Load field positions
+      const { data: fieldPositions, error: fieldError } = await supabase
         .from('form_field_positions')
         .select('*')
         .order('position');
 
-      if (error) throw error;
+      if (fieldError) throw fieldError;
 
-      if (positions && positions.length > 0) {
-        // Create a map of field positions
-        const positionMap = new Map(positions.map(p => [p.field_id, p]));
+      // Load section positions
+      const { data: sectionPositions, error: sectionError } = await supabase
+        .from('form_section_positions')
+        .select('*')
+        .order('position');
+
+      if (sectionError) throw sectionError;
+
+      if (fieldPositions && fieldPositions.length > 0) {
+        const positionMap = new Map(fieldPositions.map(p => [p.field_id, p]));
         
-        // Update sections with saved positions
-        const updatedSections = sections.map(section => ({
+        // Update sections with saved field positions
+        let updatedSections = sections.map(section => ({
           ...section,
           fields: section.fields.sort((a, b) => {
             const posA = positionMap.get(a.id)?.position ?? 0;
@@ -71,10 +79,25 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
           })
         }));
 
+        // Apply section ordering if available
+        if (sectionPositions && sectionPositions.length > 0) {
+          const sectionMap = new Map(sectionPositions.map(p => [p.section_name, p]));
+          updatedSections = updatedSections.sort((a, b) => {
+            const posA = sectionMap.get(a.section)?.position ?? 0;
+            const posB = sectionMap.get(b.section)?.position ?? 0;
+            return posA - posB;
+          });
+        }
+
         setSections(updatedSections);
       }
     } catch (error) {
-      console.error('Error loading field positions:', error);
+      console.error('Error loading positions:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load saved positions",
+        variant: "destructive",
+      });
     }
   };
 
@@ -107,33 +130,76 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
     }
   };
 
+  const saveSectionPosition = async (sectionName: string, position: number) => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No authenticated user');
+      }
+
+      const { error } = await supabase
+        .from('form_section_positions')
+        .upsert({
+          user_id: session.user.id,
+          section_name: sectionName,
+          position: position
+        }, {
+          onConflict: 'user_id,section_name'
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving section position:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save section position",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleDragEnd = async (event: any) => {
     const { active, over } = event;
 
     if (active.id !== over.id) {
-      const allFields = sections.flatMap(section => section.fields);
-      const oldIndex = allFields.findIndex(item => item.id === active.id);
-      const newIndex = allFields.findIndex(item => item.id === over.id);
+      const isSection = active.id.startsWith('section-');
       
-      const newFields = arrayMove(allFields, oldIndex, newIndex);
-      
-      const newSections = sections.map(section => ({
-        ...section,
-        fields: newFields.filter(field => 
-          section.fields.some(originalField => originalField.id === field.id)
-        )
-      }));
-      
-      setSections(newSections);
+      if (isSection) {
+        const oldIndex = sections.findIndex(s => `section-${s.section}` === active.id);
+        const newIndex = sections.findIndex(s => `section-${s.section}` === over.id);
+        
+        const newSections = arrayMove(sections, oldIndex, newIndex);
+        setSections(newSections);
 
-      // Save the new position
-      const field = allFields.find(f => f.id === active.id);
-      if (field) {
-        const section = sections.find(s => 
-          s.fields.some(f => f.id === active.id)
-        );
-        if (section) {
-          await saveFieldPosition(active.id, section.section, newIndex);
+        // Save new section positions
+        newSections.forEach((section, index) => {
+          saveSectionPosition(section.section, index);
+        });
+      } else {
+        const allFields = sections.flatMap(section => section.fields);
+        const oldIndex = allFields.findIndex(item => item.id === active.id);
+        const newIndex = allFields.findIndex(item => item.id === over.id);
+        
+        const newFields = arrayMove(allFields, oldIndex, newIndex);
+        
+        const newSections = sections.map(section => ({
+          ...section,
+          fields: newFields.filter(field => 
+            section.fields.some(originalField => originalField.id === field.id)
+          )
+        }));
+        
+        setSections(newSections);
+
+        // Save new field position
+        const field = allFields.find(f => f.id === active.id);
+        if (field) {
+          const section = sections.find(s => 
+            s.fields.some(f => f.id === active.id)
+          );
+          if (section) {
+            await saveFieldPosition(active.id, section.section, newIndex);
+          }
         }
       }
     }
@@ -162,7 +228,10 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
         onDragEnd={handleDragEnd}
       >
         <SortableContext
-          items={filteredSections.flatMap(section => section.fields).map(field => field.id)}
+          items={[
+            ...filteredSections.map(section => `section-${section.section}`),
+            ...filteredSections.flatMap(section => section.fields.map(field => field.id))
+          ]}
           strategy={verticalListSortingStrategy}
         >
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

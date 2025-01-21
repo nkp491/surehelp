@@ -84,6 +84,33 @@ export type Database = {
         }
         Relationships: []
       }
+      form_section_positions: {
+        Row: {
+          created_at: string
+          id: string
+          position: number
+          section_name: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          position: number
+          section_name: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          position?: number
+          section_name?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lead_expenses: {
         Row: {
           created_at: string
