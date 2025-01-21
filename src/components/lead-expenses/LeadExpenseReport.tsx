@@ -23,6 +23,10 @@ const LeadExpenseReport = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<LeadExpense | null>(null);
+  const [sortConfig, setSortConfig] = useState<{
+    field: keyof LeadExpense;
+    direction: 'asc' | 'desc';
+  }>({ field: 'purchase_date', direction: 'desc' });
 
   const loadExpenses = async () => {
     try {
@@ -93,6 +97,28 @@ const LeadExpenseReport = () => {
     setFilteredExpenses(filtered);
   };
 
+  const handleSort = (field: keyof LeadExpense) => {
+    const direction = sortConfig.field === field && sortConfig.direction === 'asc' ? 'desc' : 'asc';
+    setSortConfig({ field, direction });
+    
+    const sorted = [...filteredExpenses].sort((a, b) => {
+      const aValue = a[field];
+      const bValue = b[field];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return direction === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      return direction === 'asc'
+        ? Number(aValue) - Number(bValue)
+        : Number(bValue) - Number(aValue);
+    });
+    
+    setFilteredExpenses(sorted);
+  };
+
   const handleDelete = async () => {
     if (!selectedExpense) return;
 
@@ -153,6 +179,7 @@ const LeadExpenseReport = () => {
           setIsEditOpen(false);
           setSelectedExpense(null);
         }}
+        onSort={handleSort}
       />
 
       <DeleteExpenseDialog

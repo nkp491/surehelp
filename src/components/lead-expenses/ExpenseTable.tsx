@@ -2,7 +2,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Edit2, Trash2 } from "lucide-react";
+import { Edit2, Trash2, ArrowUpDown } from "lucide-react";
 import LeadExpenseForm from "./LeadExpenseForm";
 
 interface LeadExpense {
@@ -22,6 +22,7 @@ interface ExpenseTableProps {
   setIsEditOpen: (open: boolean) => void;
   selectedExpense: LeadExpense | null;
   onSuccess: () => void;
+  onSort?: (field: keyof LeadExpense) => void;
 }
 
 const ExpenseTable = ({ 
@@ -31,10 +32,10 @@ const ExpenseTable = ({
   isEditOpen, 
   setIsEditOpen, 
   selectedExpense,
-  onSuccess 
+  onSuccess,
+  onSort 
 }: ExpenseTableProps) => {
   const formatCurrency = (amount: number) => {
-    // Convert cents to dollars for display
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
@@ -43,16 +44,47 @@ const ExpenseTable = ({
     }).format(amount / 100);
   };
 
+  const SortButton = ({ field }: { field: keyof LeadExpense }) => (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="h-8 w-8 p-0"
+      onClick={() => onSort?.(field)}
+    >
+      <ArrowUpDown className="h-4 w-4" />
+    </Button>
+  );
+
   return (
     <div className="rounded-md border">
       <Table>
         <TableHeader>
           <TableRow>
-            <TableHead>Date</TableHead>
-            <TableHead>Source</TableHead>
+            <TableHead>
+              <div className="flex items-center gap-2">
+                Date
+                <SortButton field="purchase_date" />
+              </div>
+            </TableHead>
+            <TableHead>
+              <div className="flex items-center gap-2">
+                Source
+                <SortButton field="source" />
+              </div>
+            </TableHead>
             <TableHead>Lead Types</TableHead>
-            <TableHead>Lead Count</TableHead>
-            <TableHead>Total Cost</TableHead>
+            <TableHead>
+              <div className="flex items-center gap-2">
+                Lead Count
+                <SortButton field="lead_count" />
+              </div>
+            </TableHead>
+            <TableHead>
+              <div className="flex items-center gap-2">
+                Total Cost
+                <SortButton field="total_cost" />
+              </div>
+            </TableHead>
             <TableHead>Actions</TableHead>
           </TableRow>
         </TableHeader>
