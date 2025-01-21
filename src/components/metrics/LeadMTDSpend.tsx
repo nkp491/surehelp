@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfMonth, endOfToday, format } from "date-fns";
-import { Loader2, DollarSign } from "lucide-react";
+import { Loader2 } from "lucide-react";
 
 const LeadMTDSpend = () => {
   const [mtdSpend, setMtdSpend] = useState<number | null>(null);
@@ -40,19 +40,16 @@ const LeadMTDSpend = () => {
   };
 
   return (
-    <Card className="p-6 bg-[#FFFCF6] border-2 border-[#FDF0D5] shadow-lg hover:shadow-xl transition-all duration-200">
+    <Card className="p-6 bg-[#FFFCF6] hover:shadow-lg transition-all duration-200">
       <div className="flex flex-col items-center gap-3">
-        <div className="flex items-center gap-2">
-          <DollarSign className="h-5 w-5 text-[#2A6F97]" />
-          <h3 className="font-semibold text-lg text-[#2A6F97]">Lead MTD Spend</h3>
-        </div>
-        <div className="text-2xl font-bold text-[#2A6F97]">
+        <h3 className="font-semibold text-lg text-gray-700 text-center">Lead MTD Spend</h3>
+        <span className="text-2xl font-bold text-primary">
           {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-[#2A6F97]" />
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
           ) : (
             formatCurrency(mtdSpend || 0)
           )}
-        </div>
+        </span>
       </div>
     </Card>
   );
