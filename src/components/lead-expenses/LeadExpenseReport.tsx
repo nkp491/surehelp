@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import AddExpenseDialog from "./AddExpenseDialog";
 import DeleteExpenseDialog from "./DeleteExpenseDialog";
 import ExpenseTable from "./ExpenseTable";
+import ExpenseSearch from "./ExpenseSearch";
 
 interface LeadExpense {
   id: string;
@@ -17,6 +18,7 @@ interface LeadExpense {
 const LeadExpenseReport = () => {
   const { toast } = useToast();
   const [expenses, setExpenses] = useState<LeadExpense[]>([]);
+  const [filteredExpenses, setFilteredExpenses] = useState<LeadExpense[]>([]);
   const [isAddOpen, setIsAddOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -31,6 +33,7 @@ const LeadExpenseReport = () => {
 
       if (error) throw error;
       setExpenses(data || []);
+      setFilteredExpenses(data || []);
     } catch (error) {
       console.error('Error loading expenses:', error);
       toast({
@@ -44,6 +47,51 @@ const LeadExpenseReport = () => {
   useEffect(() => {
     loadExpenses();
   }, []);
+
+  const handleSearch = ({ searchTerm, selectedTags, sortField, sortDirection }: {
+    searchTerm: string;
+    selectedTags: string[];
+    sortField: string;
+    sortDirection: 'asc' | 'desc';
+  }) => {
+    let filtered = [...expenses];
+
+    // Apply search term filter
+    if (searchTerm) {
+      const searchLower = searchTerm.toLowerCase();
+      filtered = filtered.filter(expense => 
+        expense.source.toLowerCase().includes(searchLower) ||
+        expense.lead_type.some(tag => tag.toLowerCase().includes(searchLower)) ||
+        expense.lead_count.toString().includes(searchLower) ||
+        expense.total_cost.toString().includes(searchLower)
+      );
+    }
+
+    // Apply tag filters
+    if (selectedTags.length > 0) {
+      filtered = filtered.filter(expense =>
+        selectedTags.every(tag => expense.lead_type.includes(tag))
+      );
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      const aValue = a[sortField as keyof LeadExpense];
+      const bValue = b[sortField as keyof LeadExpense];
+      
+      if (typeof aValue === 'string' && typeof bValue === 'string') {
+        return sortDirection === 'asc' 
+          ? aValue.localeCompare(bValue)
+          : bValue.localeCompare(aValue);
+      }
+      
+      return sortDirection === 'asc'
+        ? Number(aValue) - Number(bValue)
+        : Number(bValue) - Number(aValue);
+    });
+
+    setFilteredExpenses(filtered);
+  };
 
   const handleDelete = async () => {
     if (!selectedExpense) return;
@@ -76,7 +124,7 @@ const LeadExpenseReport = () => {
 
   return (
     <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center">
+      <div className="flex justify-between items-center mb-6">
         <h2 className="text-2xl font-bold">Lead Expense Report</h2>
         <AddExpenseDialog
           isOpen={isAddOpen}
@@ -88,8 +136,10 @@ const LeadExpenseReport = () => {
         />
       </div>
 
+      <ExpenseSearch onSearch={handleSearch} />
+
       <ExpenseTable
-        expenses={expenses}
+        expenses={filteredExpenses}
         onEdit={(expense) => setSelectedExpense(expense)}
         onDelete={(expense) => {
           setSelectedExpense(expense);
