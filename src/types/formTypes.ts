@@ -22,3 +22,8 @@ export interface FormField {
   placeholder?: string;
   options?: string[];
 }
+
+export interface FormSection {
+  section: string;
+  fields: FormField[];
+}
