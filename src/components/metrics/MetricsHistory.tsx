@@ -21,6 +21,7 @@ const MetricsHistory = () => {
   } = useMetricsHistory();
 
   const [searchTerm, setSearchTerm] = useState('');
+  const [timePeriod, setTimePeriod] = useState<"24h" | "7d" | "30d" | "custom">("24h");
   const { deleteDate, setDeleteDate, handleDelete } = useMetricsDelete(loadHistory);
 
   return (
@@ -31,6 +32,8 @@ const MetricsHistory = () => {
         onAdd={handleAddBackdatedMetrics}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
+        timePeriod={timePeriod}
+        onTimePeriodChange={setTimePeriod}
       />
       
       <MetricsContent
