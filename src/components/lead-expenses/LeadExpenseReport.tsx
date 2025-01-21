@@ -75,7 +75,7 @@ const LeadExpenseReport = () => {
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
+    <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm">
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Lead Expense Report</h2>
         <AddExpenseDialog
