@@ -19,13 +19,13 @@ const BusinessMetricsContent = () => {
 
   return (
     <div className="space-y-8">
-      <Card className="w-full mb-12 p-8 shadow-lg border-2 border-[#fbfaf8] bg-[#F1F1F1]">
+      <Card className="w-full mb-12 p-8 shadow-lg bg-[#F1F1F1]">
         <div className="space-y-8">
-          <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8]">
+          <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm text-[#2A6F97]">
             <TimeControls />
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 border border-[#fbfaf8]">
+          <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
             <MetricsGrid />
             <Separator className="my-8" />
             <RatiosGrid />
@@ -37,12 +37,12 @@ const BusinessMetricsContent = () => {
             onTimePeriodChange={handleTimePeriodChange}
           />
 
-          <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm border border-[#fbfaf8] text-[#2A6F97]">
+          <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm text-[#2A6F97]">
             <h3 className="text-xl font-semibold mb-4 text-left">Historical KPIs</h3>
             <MetricsHistory />
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
+          <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
             <LeadExpenseReport />
           </div>
         </div>
