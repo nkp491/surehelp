@@ -27,12 +27,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
     scheduled: entry.metrics.scheduled || 0,
     sits: entry.metrics.sits || 0,
     sales: entry.metrics.sales || 0,
-  }));
-
-  // Transform AP data separately for the line chart
-  const transformedAPData = sortedHistory.map(entry => ({
-    name: new Date(entry.date).toLocaleDateString(),
-    ap: (entry.metrics.ap || 0) / 100, // Convert cents to dollars
+    ap: (entry.metrics.ap || 0) / 100, // Convert cents to dollars and include in main dataset
   }));
 
   return (
@@ -49,7 +44,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
           <MetricsBarChart 
             data={transformedMetricsData} 
             colors={COLORS}
-            apData={transformedAPData}
+            apData={transformedMetricsData}
             apColor={AP_COLOR}
           />
         ) : chartType === 'line' ? (
