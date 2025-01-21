@@ -1,12 +1,14 @@
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { DatePickerWithRange } from "@/components/ui/date-range-picker";
+import { DateRangePicker } from "@/components/charts/DateRangePicker";
 
 interface SearchFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedDate: Date | undefined;
   onDateChange: (date: Date | undefined) => void;
+  timePeriod: "24h" | "7d" | "30d" | "custom";
+  onTimePeriodChange: (period: "24h" | "7d" | "30d" | "custom") => void;
 }
 
 const SearchFilters = ({
@@ -14,7 +16,14 @@ const SearchFilters = ({
   onSearchChange,
   selectedDate,
   onDateChange,
+  timePeriod,
+  onTimePeriodChange,
 }: SearchFiltersProps) => {
+  const handleDateRangeChange = (dates: { from: Date | undefined; to: Date | undefined }) => {
+    // Update the selected date for filtering
+    onDateChange(dates.from);
+  };
+
   return (
     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
       <div className="relative w-full sm:w-64">
@@ -26,9 +35,10 @@ const SearchFilters = ({
           className="pl-8"
         />
       </div>
-      <DatePickerWithRange
-        date={selectedDate}
-        onDateChange={onDateChange}
+      <DateRangePicker
+        timePeriod={timePeriod}
+        onTimePeriodChange={onTimePeriodChange}
+        onDateRangeChange={handleDateRangeChange}
       />
     </div>
   );

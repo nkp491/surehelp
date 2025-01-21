@@ -9,9 +9,14 @@ import { useToast } from "@/components/ui/use-toast";
 interface DateRangePickerProps {
   timePeriod: "24h" | "7d" | "30d" | "custom";
   onTimePeriodChange: (period: "24h" | "7d" | "30d" | "custom") => void;
+  onDateRangeChange?: (dates: { from: Date | undefined; to: Date | undefined }) => void;
 }
 
-const DateRangePicker = ({ timePeriod, onTimePeriodChange }: DateRangePickerProps) => {
+const DateRangePicker = ({ 
+  timePeriod, 
+  onTimePeriodChange,
+  onDateRangeChange 
+}: DateRangePickerProps) => {
   const { toast } = useToast();
   const [date, setDate] = useState<{
     from: Date | undefined;
@@ -27,6 +32,8 @@ const DateRangePicker = ({ timePeriod, onTimePeriodChange }: DateRangePickerProp
     setDate(selectedDate);
     if (selectedDate.from && selectedDate.to) {
       onTimePeriodChange("custom");
+      // Call the new onDateRangeChange prop to update the historical metrics filter
+      onDateRangeChange?.(selectedDate);
       toast({
         title: "Date Range Selected",
         description: `Selected range: ${format(selectedDate.from, "PPP")} to ${format(selectedDate.to, "PPP")}`,
