@@ -68,6 +68,19 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     await saveDailyMetrics(metrics);
   };
 
+  const refreshMetrics = async () => {
+    const dailyMetrics = await loadDailyMetrics();
+    setMetrics(dailyMetrics);
+    initializeInputs(dailyMetrics);
+    
+    const previousMetricsData = await loadPreviousMetrics(timePeriod);
+    if (previousMetricsData) {
+      setPreviousMetrics(previousMetricsData);
+      const newTrends = calculateTrends(dailyMetrics, previousMetricsData);
+      setTrends(newTrends);
+    }
+  };
+
   const ratios = calculateRatios(metrics);
 
   const value = {
@@ -81,6 +94,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     setDateRange,
     handleTimePeriodChange,
     handleInputChange: handleMetricInputChange,
+    refreshMetrics,
   };
 
   return (
