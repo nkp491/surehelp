@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import ChartControls from "./charts/ChartControls";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import CustomTooltip from "./charts/CustomTooltip";
 
 const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#795548'];
@@ -49,7 +49,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
 
       <div className="h-[500px] mt-4">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={transformedMetricsData} margin={{ top: 20, right: 50, left: 20, bottom: 5 }}>
+          <ComposedChart data={transformedMetricsData} margin={{ top: 20, right: 50, left: 20, bottom: 5 }}>
             <CartesianGrid strokeDasharray="3 3" />
             <XAxis dataKey="name" />
             <YAxis 
@@ -84,7 +84,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
               dot={{ fill: AP_COLOR, r: 4 }}
               activeDot={{ r: 6 }}
             />
-          </BarChart>
+          </ComposedChart>
         </ResponsiveContainer>
       </div>
     </Card>
