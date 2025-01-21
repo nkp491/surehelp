@@ -23,12 +23,15 @@ const DateInput = ({ date, setDate }: DateInputProps) => {
             {date ? format(date, "PPP") : "Select date"}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
+        <PopoverContent align="start" className="w-auto p-0">
           <Calendar
             mode="single"
             selected={date}
-            onSelect={setDate}
+            onSelect={(newDate) => {
+              setDate(newDate);
+            }}
             initialFocus
+            disabled={(date) => date > new Date()}
           />
         </PopoverContent>
       </Popover>
