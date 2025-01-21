@@ -2,7 +2,7 @@ import { Card } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { startOfMonth, endOfToday, format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Loader2, DollarSign } from "lucide-react";
 
 const LeadMTDSpend = () => {
   const [mtdSpend, setMtdSpend] = useState<number | null>(null);
@@ -36,16 +36,19 @@ const LeadMTDSpend = () => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(amount / 100); // Assuming amount is stored in cents
+    }).format(amount / 100);
   };
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-[#9b87f5] to-[#7E69AB] text-white">
+    <Card className="p-6 bg-[#FFFCF6] border-2 border-[#FDF0D5] shadow-lg hover:shadow-xl transition-all duration-200">
       <div className="flex flex-col items-center gap-3">
-        <h3 className="font-semibold text-lg text-white text-xl">Lead MTD Spend</h3>
-        <div className="text-2xl font-bold text-white">
+        <div className="flex items-center gap-2">
+          <DollarSign className="h-5 w-5 text-[#2A6F97]" />
+          <h3 className="font-semibold text-lg text-[#2A6F97]">Lead MTD Spend</h3>
+        </div>
+        <div className="text-2xl font-bold text-[#2A6F97]">
           {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin" />
+            <Loader2 className="h-6 w-6 animate-spin text-[#2A6F97]" />
           ) : (
             formatCurrency(mtdSpend || 0)
           )}
