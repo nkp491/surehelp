@@ -5,7 +5,7 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import CustomTooltip from "./charts/CustomTooltip";
 
 const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#795548'];
-const AP_COLOR = '#E5DEFF'; // Soft purple for AP
+const AP_COLOR = '#2A6F97'; // Ocean blue for AP
 
 interface MetricsChartProps {
   timePeriod: '24h' | '7d' | '30d' | 'custom';
