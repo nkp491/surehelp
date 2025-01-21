@@ -95,6 +95,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
                 formData={formData}
                 setFormData={setFormData}
                 errors={errors}
+                submissionId={editingSubmission?.timestamp}
               />
             ))}
           </div>

@@ -90,6 +90,41 @@ export type Database = {
         }
         Relationships: []
       }
+      notes_history: {
+        Row: {
+          created_at: string
+          id: string
+          new_notes: string
+          previous_notes: string | null
+          submission_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_notes: string
+          previous_notes?: string | null
+          submission_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_notes?: string
+          previous_notes?: string | null
+          submission_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_history_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string

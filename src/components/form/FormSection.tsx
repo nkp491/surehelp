@@ -7,9 +7,17 @@ interface FormSectionProps {
   formData: any;
   setFormData: (value: any) => void;
   errors: any;
+  submissionId?: string;
 }
 
-const FormSection = ({ section, fields, formData, setFormData, errors }: FormSectionProps) => {
+const FormSection = ({ 
+  section, 
+  fields, 
+  formData, 
+  setFormData, 
+  errors,
+  submissionId 
+}: FormSectionProps) => {
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 space-y-4">
       <h2 className="text-xl font-semibold text-gray-900 mb-4">{section}</h2>
@@ -27,6 +35,7 @@ const FormSection = ({ section, fields, formData, setFormData, errors }: FormSec
             placeholder={field.placeholder}
             required={field.required}
             error={errors[field.id]}
+            submissionId={submissionId}
           />
         ))}
       </div>

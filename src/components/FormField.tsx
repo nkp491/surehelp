@@ -1,9 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
+import { History } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
+import NotesHistory from "./form/NotesHistory";
 
 interface FormFieldProps {
   label: string;
@@ -15,6 +26,7 @@ interface FormFieldProps {
   error?: string;
   readOnly?: boolean;
   options?: string[];
+  submissionId?: string;
 }
 
 const FormField = ({
@@ -27,7 +39,33 @@ const FormField = ({
   error,
   readOnly = false,
   options = [],
+  submissionId,
 }: FormFieldProps) => {
+  const [showHistory, setShowHistory] = useState(false);
+  const isNotesField = type === 'textarea' && (
+    label.toLowerCase().includes('note') || 
+    label.toLowerCase().includes('notes')
+  );
+
+  const handleNotesChange = async (newValue: string) => {
+    if (onChange) {
+      onChange(newValue);
+      
+      // Only track history for notes fields when we have a submission ID
+      if (isNotesField && submissionId) {
+        const user = await supabase.auth.getUser();
+        if (!user.data.user) return;
+
+        await supabase.from('notes_history').insert({
+          submission_id: submissionId,
+          user_id: user.data.user.id,
+          previous_notes: value,
+          new_notes: newValue,
+        });
+      }
+    }
+  };
+
   if (type === "height") {
     const [feet, inches] = value.split("'").map(v => v.replace('"', ''));
     
@@ -137,14 +175,35 @@ const FormField = ({
 
   return (
     <div className="space-y-2">
-      <Label className="text-sm font-medium">
-        {label}
-        {required && <span className="text-destructive ml-1">*</span>}
-      </Label>
+      <div className="flex justify-between items-center">
+        <Label className="text-sm font-medium">
+          {label}
+          {required && <span className="text-destructive ml-1">*</span>}
+        </Label>
+        {isNotesField && submissionId && (
+          <Dialog open={showHistory} onOpenChange={setShowHistory}>
+            <DialogTrigger asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+              >
+                <History className="h-4 w-4" />
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Notes History</DialogTitle>
+              </DialogHeader>
+              <NotesHistory submissionId={submissionId} />
+            </DialogContent>
+          </Dialog>
+        )}
+      </div>
       {type === "textarea" ? (
         <Textarea
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={placeholder}
           className={cn(
             "min-h-[100px]",
@@ -157,7 +216,7 @@ const FormField = ({
         <Input
           type={type}
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={(e) => handleNotesChange(e.target.value)}
           placeholder={placeholder}
           className={cn(
             "w-full",

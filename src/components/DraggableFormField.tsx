@@ -14,6 +14,7 @@ interface DraggableFormFieldProps {
   placeholder?: string;
   required?: boolean;
   error?: string;
+  submissionId?: string;
 }
 
 const DraggableFormField = ({
@@ -25,6 +26,7 @@ const DraggableFormField = ({
   placeholder,
   required,
   error,
+  submissionId,
 }: DraggableFormFieldProps) => {
   const renderField = () => {
     switch (fieldType) {
@@ -66,6 +68,7 @@ const DraggableFormField = ({
             placeholder={placeholder}
             required={required}
             error={error}
+            submissionId={submissionId}
           />
         );
     }
