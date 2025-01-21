@@ -43,6 +43,7 @@ export interface MetricsContextType {
   };
   ratios: Array<{ label: string; value: string | number }>;
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
+  setMetrics: (metrics: MetricCount) => void;
   handleTimePeriodChange: (period: TimePeriod) => void;
   handleInputChange: (metric: MetricType, value: string) => void;
   refreshMetrics: () => Promise<void>;
