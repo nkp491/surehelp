@@ -9,7 +9,6 @@ import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 const COLORS = ['#4CAF50', '#2196F3', '#FFC107', '#FF5722', '#9C27B0', '#795548'];
 
 interface MetricsChartProps {
-  data: { name: string; value: number }[];
   timePeriod: '24h' | '7d' | '30d' | 'custom';
   onTimePeriodChange: (period: '24h' | '7d' | '30d' | 'custom') => void;
 }
@@ -21,7 +20,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
   // Transform historical data into the format expected by charts
   const transformedData = sortedHistory.map(entry => ({
     name: new Date(entry.date).toLocaleDateString(),
-    value: entry.leads || 0, // You can modify this to show different metrics
+    value: entry.metrics.leads || 0, // Now correctly accessing the leads value from metrics object
   }));
 
   return (
