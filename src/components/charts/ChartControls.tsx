@@ -3,9 +3,9 @@ import TimePeriodControls from "./TimePeriodControls";
 import DateRangePicker from "./DateRangePicker";
 
 interface ChartControlsProps {
-  chartType: "bar" | "line" | "pie";
+  chartType: "bar" | "line";
   timePeriod: "24h" | "7d" | "30d" | "custom";
-  onChartTypeChange: (type: "bar" | "line" | "pie") => void;
+  onChartTypeChange: (type: "bar" | "line") => void;
   onTimePeriodChange: (period: "24h" | "7d" | "30d" | "custom") => void;
 }
 
