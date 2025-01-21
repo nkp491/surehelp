@@ -12,8 +12,8 @@ import {
 } from "@/components/ui/popover"
 
 interface DatePickerWithRangeProps {
-  date: DateRange;
-  onDateChange: (date: DateRange) => void;
+  date: DateRange | undefined;
+  onDateChange: (date: DateRange | undefined) => void;
   className?: string;
 }
 
