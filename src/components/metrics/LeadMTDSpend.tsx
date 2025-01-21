@@ -13,9 +13,11 @@ const LeadMTDSpend = () => {
       const startDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
       const endDate = format(endOfToday(), 'yyyy-MM-dd');
 
+      console.log('Fetching MTD spend for date range:', { startDate, endDate });
+
       const { data, error } = await supabase
         .from('lead_expenses')
-        .select('total_cost')
+        .select('total_cost, purchase_date')
         .gte('purchase_date', startDate)
         .lte('purchase_date', endDate);
 
@@ -24,8 +26,18 @@ const LeadMTDSpend = () => {
         return;
       }
 
-      // Sum up the total costs - no need to divide by 100 as the values are already in dollars
-      const total = data.reduce((sum, expense) => sum + expense.total_cost, 0);
+      console.log('Retrieved expense data:', data);
+
+      const total = data.reduce((sum, expense) => {
+        console.log('Processing expense:', {
+          date: expense.purchase_date,
+          cost: expense.total_cost,
+          runningTotal: sum + expense.total_cost
+        });
+        return sum + expense.total_cost;
+      }, 0);
+
+      console.log('Final calculated total:', total);
       setMtdSpend(total);
       setIsLoading(false);
     };
