@@ -7,31 +7,61 @@ import {
 } from "@/components/ui/popover";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { format } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { Clock, CalendarIcon, CalendarDays } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 
 const TimeControls = () => {
   const { timePeriod, dateRange, handleTimePeriodChange, setDateRange } = useMetrics();
   const { toast } = useToast();
 
-  const handleDateSelection = (range: { from: Date | undefined; to: Date | undefined }) => {
-    setDateRange(range);
-    handleTimePeriodChange("custom");
-    if (range.from && range.to) {
-      toast({
-        title: "Date Range Selected",
-        description: `Selected range: ${format(range.from, "MMM d")} - ${format(range.to, "MMM d")}`,
-      });
-    }
+  const handlePeriodChange = (period: "24h" | "7d" | "30d" | "custom") => {
+    handleTimePeriodChange(period);
+    toast({
+      title: "Time Period Changed",
+      description: `Switched to ${
+        period === "24h" 
+          ? "daily" 
+          : period === "7d" 
+          ? "weekly" 
+          : period === "30d" 
+          ? "monthly" 
+          : "custom"
+      } metrics view`,
+    });
   };
 
   return (
-    <div className="flex justify-end">
+    <div className="flex gap-4">
+      <Button
+        variant={timePeriod === "24h" ? "default" : "outline"}
+        onClick={() => handlePeriodChange("24h")}
+        className="flex items-center gap-2"
+      >
+        <Clock className="h-4 w-4" />
+        Daily
+      </Button>
+      <Button
+        variant={timePeriod === "7d" ? "default" : "outline"}
+        onClick={() => handlePeriodChange("7d")}
+        className="flex items-center gap-2"
+      >
+        <CalendarIcon className="h-4 w-4" />
+        Weekly
+      </Button>
+      <Button
+        variant={timePeriod === "30d" ? "default" : "outline"}
+        onClick={() => handlePeriodChange("30d")}
+        className="flex items-center gap-2"
+      >
+        <CalendarDays className="h-4 w-4" />
+        Monthly
+      </Button>
       <Popover>
         <PopoverTrigger asChild>
           <Button
             variant={timePeriod === "custom" ? "default" : "outline"}
             className="flex items-center gap-2"
+            onClick={() => handlePeriodChange("custom")}
           >
             <CalendarIcon className="h-4 w-4" />
             {dateRange.from && dateRange.to ? (
@@ -39,7 +69,7 @@ const TimeControls = () => {
                 {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
               </>
             ) : (
-              "Select Date Range"
+              "Custom"
             )}
           </Button>
         </PopoverTrigger>
@@ -52,7 +82,12 @@ const TimeControls = () => {
               from: dateRange.from,
               to: dateRange.to,
             }}
-            onSelect={handleDateSelection}
+            onSelect={(range) => {
+              setDateRange({
+                from: range?.from,
+                to: range?.to,
+              });
+            }}
             numberOfMonths={2}
           />
         </PopoverContent>

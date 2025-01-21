@@ -16,7 +16,7 @@ const BusinessMetricsContent = () => {
     <div className="space-y-8">
       <Card className="w-full mb-12 p-8 shadow-lg bg-[#F1F1F1]">
         <div className="space-y-8">
-          <div className="flex items-center justify-end bg-white p-4 rounded-lg shadow-sm text-[#2A6F97]">
+          <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm text-[#2A6F97]">
             <TimeControls />
           </div>
 
