@@ -30,7 +30,7 @@ const LeadMTDSpend = () => {
 
         console.log('[LeadMTDSpend] Retrieved expense data:', data);
 
-        // Sum up the total costs - they are already in cents
+        // Sum up the total costs (stored in cents)
         const totalInCents = data.reduce((sum, expense) => {
           console.log('[LeadMTDSpend] Processing expense:', {
             costInCents: expense.total_cost,
@@ -41,7 +41,7 @@ const LeadMTDSpend = () => {
 
         console.log('[LeadMTDSpend] Final total in cents:', totalInCents);
         
-        // Convert final total from cents to dollars when setting state
+        // Store the total in cents
         setMtdSpend(totalInCents);
         setIsLoading(false);
       } catch (error) {
@@ -54,7 +54,7 @@ const LeadMTDSpend = () => {
   }, []);
 
   const formatCurrency = (amount: number) => {
-    // amount is in cents, so divide by 100 to get dollars
+    // Convert cents to dollars for display
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
