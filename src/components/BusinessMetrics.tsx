@@ -42,7 +42,7 @@ const BusinessMetricsContent = () => {
             <MetricsHistory />
           </div>
 
-          <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
+          <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm text-[#2A6F97]">
             <LeadExpenseReport />
           </div>
         </div>
