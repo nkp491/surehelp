@@ -7,12 +7,17 @@ interface MetricsLineChartProps {
 }
 
 const MetricsLineChart = ({ data, colors, isCurrency = false }: MetricsLineChartProps) => {
-  // Add null check for data
-  if (!data || !data[0]) {
-    return <div>No data available</div>;
+  // Early return if no data is available
+  if (!data || data.length === 0) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-500">
+        No data available
+      </div>
+    );
   }
 
-  const metrics = Object.keys(data[0]).filter(key => key !== 'name');
+  // Get metrics keys only if we have valid data
+  const metrics = Object.keys(data[0] || {}).filter(key => key !== 'name');
 
   const formatYAxis = (value: any): string => {
     if (isCurrency) {
