@@ -6,6 +6,7 @@ export interface FormSubmission {
   height: string;
   weight: string;
   tobaccoUse: string;
+  dui: string;
   selectedConditions: string[];
   medicalConditions: string;
   hospitalizations: string;
@@ -21,6 +22,7 @@ export interface FormSubmission {
   spouseHeight: string;
   spouseWeight: string;
   spouseTobaccoUse: string;
+  spouseDui: string;
   spouseSelectedConditions: string[];
   spouseMedicalConditions: string;
   spouseHospitalizations: string;
