@@ -1,7 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
-import LeadExpenseForm from "./LeadExpenseForm";
 
 interface AddExpenseDialogProps {
   isOpen: boolean;
@@ -13,7 +12,10 @@ const AddExpenseDialog = ({ isOpen, onOpenChange, onSuccess }: AddExpenseDialogP
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
-        <Button>
+        <Button 
+          variant="outline" 
+          className="bg-[#FFFCF6] hover:bg-[#2A6F97] hover:text-[#FFFCF6] transition-colors"
+        >
           <Plus className="h-4 w-4 mr-2" />
           Add Expense
         </Button>
