@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon } from "lucide-react";
+import { CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
@@ -32,7 +32,6 @@ const DateRangePicker = ({
     setDate(selectedDate);
     if (selectedDate.from && selectedDate.to) {
       onTimePeriodChange("custom");
-      // Call the new onDateRangeChange prop to update the historical metrics filter
       onDateRangeChange?.(selectedDate);
       toast({
         title: "Date Range Selected",
@@ -41,37 +40,59 @@ const DateRangePicker = ({
     }
   };
 
+  const handleClearDateRange = () => {
+    setDate({ from: undefined, to: undefined });
+    onTimePeriodChange("24h");
+    onDateRangeChange?.({ from: undefined, to: undefined });
+    toast({
+      title: "Date Range Cleared",
+      description: "Returned to default time period",
+    });
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
+    <div className="flex gap-2">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant={timePeriod === "custom" ? "default" : "outline"}
+            className="capitalize"
+          >
+            {date.from && date.to ? (
+              <>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {format(date.from, "MMM d")} - {format(date.to, "MMM d")}
+              </>
+            ) : (
+              <>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Custom
+              </>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="end">
+          <Calendar
+            initialFocus
+            mode="range"
+            defaultMonth={date.from}
+            selected={date}
+            onSelect={handleDateSelect}
+            numberOfMonths={2}
+          />
+        </PopoverContent>
+      </Popover>
+      {date.from && date.to && (
         <Button
-          variant={timePeriod === "custom" ? "default" : "outline"}
-          className="capitalize"
+          variant="ghost"
+          size="icon"
+          onClick={handleClearDateRange}
+          className="h-10 w-10"
         >
-          {date.from && date.to ? (
-            <>
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {format(date.from, "MMM d")} - {format(date.to, "MMM d")}
-            </>
-          ) : (
-            <>
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              Custom
-            </>
-          )}
+          <X className="h-4 w-4" />
         </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="end">
-        <Calendar
-          initialFocus
-          mode="range"
-          defaultMonth={date.from}
-          selected={date}
-          onSelect={handleDateSelect}
-          numberOfMonths={2}
-        />
-      </PopoverContent>
-    </Popover>
+      )}
+    </div>
   );
 };
 

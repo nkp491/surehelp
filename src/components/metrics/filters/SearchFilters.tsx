@@ -20,7 +20,6 @@ const SearchFilters = ({
   onTimePeriodChange,
 }: SearchFiltersProps) => {
   const handleDateRangeChange = (dates: { from: Date | undefined; to: Date | undefined }) => {
-    // Update the selected date for filtering
     onDateChange(dates.from);
   };
 
