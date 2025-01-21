@@ -8,6 +8,24 @@ interface NumericInputsProps {
 }
 
 const NumericInputs = ({ leadCount, setLeadCount, totalCost, setTotalCost }: NumericInputsProps) => {
+  // Convert cents to dollars for display
+  const displayValue = totalCost ? (parseInt(totalCost) / 100).toFixed(2) : '';
+
+  const handleTotalCostChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value === '') {
+      setTotalCost('');
+      return;
+    }
+    
+    // Convert the dollar amount to cents for storage
+    const dollars = parseFloat(value);
+    if (!isNaN(dollars)) {
+      const cents = Math.round(dollars * 100);
+      setTotalCost(cents.toString());
+    }
+  };
+
   return (
     <>
       <div className="space-y-2">
@@ -27,11 +45,12 @@ const NumericInputs = ({ leadCount, setLeadCount, totalCost, setTotalCost }: Num
           <span className="absolute left-3 top-2.5">$</span>
           <Input
             type="number"
-            value={totalCost}
-            onChange={(e) => setTotalCost(e.target.value)}
+            value={displayValue}
+            onChange={handleTotalCostChange}
             placeholder="Enter total cost"
             className="pl-7"
             min="0"
+            step="0.01"
           />
         </div>
       </div>
