@@ -10,36 +10,41 @@ const LeadMTDSpend = () => {
 
   useEffect(() => {
     const fetchMTDSpend = async () => {
-      const startDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
-      const endDate = format(endOfToday(), 'yyyy-MM-dd');
+      try {
+        const startDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
+        const endDate = format(endOfToday(), 'yyyy-MM-dd');
 
-      console.log('Fetching MTD spend for date range:', { startDate, endDate });
+        console.log('Fetching MTD spend for date range:', { startDate, endDate });
 
-      const { data, error } = await supabase
-        .from('lead_expenses')
-        .select('total_cost, purchase_date')
-        .gte('purchase_date', startDate)
-        .lte('purchase_date', endDate);
+        const { data, error } = await supabase
+          .from('lead_expenses')
+          .select('total_cost')
+          .gte('purchase_date', startDate)
+          .lte('purchase_date', endDate);
 
-      if (error) {
-        console.error('Error fetching MTD spend:', error);
-        return;
+        if (error) {
+          console.error('Error fetching MTD spend:', error);
+          setIsLoading(false);
+          return;
+        }
+
+        console.log('Retrieved expense data:', data);
+
+        const total = data.reduce((sum, expense) => {
+          console.log('Processing expense:', {
+            cost: expense.total_cost,
+            runningTotal: sum + expense.total_cost
+          });
+          return sum + expense.total_cost;
+        }, 0);
+
+        console.log('Final calculated total:', total);
+        setMtdSpend(total);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error in fetchMTDSpend:', error);
+        setIsLoading(false);
       }
-
-      console.log('Retrieved expense data:', data);
-
-      const total = data.reduce((sum, expense) => {
-        console.log('Processing expense:', {
-          date: expense.purchase_date,
-          cost: expense.total_cost,
-          runningTotal: sum + expense.total_cost
-        });
-        return sum + expense.total_cost;
-      }, 0);
-
-      console.log('Final calculated total:', total);
-      setMtdSpend(total);
-      setIsLoading(false);
     };
 
     fetchMTDSpend();
