@@ -1,4 +1,4 @@
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import LeadExpenseForm from "./LeadExpenseForm";
@@ -21,6 +21,9 @@ const AddExpenseDialog = ({ isOpen, onOpenChange, onSuccess }: AddExpenseDialogP
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Add Lead Expense</DialogTitle>
+          <DialogDescription>
+            Enter the details for a new lead expense record
+          </DialogDescription>
         </DialogHeader>
         <LeadExpenseForm
           onSuccess={() => {

@@ -1,5 +1,5 @@
 import React from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { FormSubmission } from '@/types/form';
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,6 +17,9 @@ const CustomerProfile = ({ customer, isOpen, onClose }: CustomerProfileProps) =>
       <DialogContent className="max-w-4xl max-h-[80vh] overflow-hidden">
         <DialogHeader>
           <DialogTitle>Customer Profile - {customer.name}</DialogTitle>
+          <DialogDescription>
+            View and manage customer information and history
+          </DialogDescription>
         </DialogHeader>
         
         <Tabs defaultValue="details" className="w-full">
