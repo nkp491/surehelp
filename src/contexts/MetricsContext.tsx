@@ -23,6 +23,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     setDateRange,
     handleInputChange,
     setTimePeriod,
+    setMetricInputs,
   } = useMetricsState();
 
   const { 
@@ -37,10 +38,8 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     initializeInputs,
   } = useMetricsCalculations();
 
-  // Initialize real-time updates
   useMetricsRealtime(metrics);
 
-  // Initialize metrics data
   useMetricsInitialization(
     timePeriod,
     dateRange,
@@ -92,6 +91,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     dateRange,
     ratios,
     setDateRange,
+    setMetrics,
     handleTimePeriodChange,
     handleInputChange: handleMetricInputChange,
     refreshMetrics,
