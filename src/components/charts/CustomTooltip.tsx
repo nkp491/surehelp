@@ -1,12 +1,5 @@
 import { TooltipProps } from 'recharts';
 
-const formatTooltipValue = (value: number, name: string) => {
-  if (name === 'AP') {
-    return `$${value.toFixed(2)}`;
-  }
-  return value;
-};
-
 const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>) => {
   if (active && payload && payload.length) {
     return (
@@ -14,7 +7,7 @@ const CustomTooltip = ({ active, payload, label }: TooltipProps<number, string>)
         <p className="font-semibold">{label}</p>
         {payload.map((entry: any, index: number) => (
           <p key={index} style={{ color: entry.color }}>
-            {entry.name}: {formatTooltipValue(entry.value, entry.name)}
+            {entry.name}: {entry.name === 'AP' ? `$${(entry.value).toFixed(2)}` : entry.value}
           </p>
         ))}
       </div>
