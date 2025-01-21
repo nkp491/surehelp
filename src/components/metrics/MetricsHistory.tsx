@@ -1,10 +1,8 @@
-import { useMetricsHistory } from '@/hooks/useMetricsHistory';
 import { useState } from 'react';
-import DeleteMetricDialog from './DeleteMetricDialog';
+import { useMetricsHistory } from '@/hooks/useMetricsHistory';
+import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
 import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
-import FilteredMetricsTable from './filters/FilteredMetricsTable';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import MetricsContent from './MetricsContent';
 
 const MetricsHistory = () => {
   const {
@@ -22,40 +20,8 @@ const MetricsHistory = () => {
     loadHistory,
   } = useMetricsHistory();
 
-  const [deleteDate, setDeleteDate] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-
-  const { toast } = useToast();
-
-  const handleDelete = async (date: string) => {
-    try {
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) return;
-
-      const { error } = await supabase
-        .from('daily_metrics')
-        .delete()
-        .eq('date', date)
-        .eq('user_id', user.user.id);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Metrics record deleted successfully",
-      });
-
-      loadHistory();
-      setDeleteDate(null);
-    } catch (error) {
-      console.error('Error deleting metrics:', error);
-      toast({
-        title: "Error",
-        description: "Failed to delete metrics record",
-        variant: "destructive",
-      });
-    }
-  };
+  const { deleteDate, setDeleteDate, handleDelete } = useMetricsDelete(loadHistory);
 
   return (
     <div className="space-y-4">
@@ -67,24 +33,21 @@ const MetricsHistory = () => {
         onSearchChange={setSearchTerm}
       />
       
-      <FilteredMetricsTable
-        history={sortedHistory}
+      <MetricsContent
+        sortedHistory={sortedHistory}
         editingRow={editingRow}
         editedValues={editedValues}
+        selectedDate={selectedDate}
+        searchTerm={searchTerm}
+        deleteDate={deleteDate}
         onEdit={handleEdit}
         onSave={handleSave}
         onCancel={handleCancel}
         onSort={handleSort}
         onValueChange={handleValueChange}
         onDelete={(date) => setDeleteDate(date)}
-        searchTerm={searchTerm}
-        selectedDate={selectedDate}
-      />
-
-      <DeleteMetricDialog
-        isOpen={!!deleteDate}
-        onOpenChange={(open) => !open && setDeleteDate(null)}
-        onConfirm={() => deleteDate && handleDelete(deleteDate)}
+        onDeleteDialogChange={(open) => !open && setDeleteDate(null)}
+        onConfirmDelete={() => deleteDate && handleDelete(deleteDate)}
       />
     </div>
   );
