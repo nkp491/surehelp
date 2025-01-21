@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthHeader from "@/components/auth/AuthHeader";
-import { getErrorMessage } from "@/utils/authErrors";
+import { AuthError, AuthApiError } from "@supabase/supabase-js";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -35,10 +35,34 @@ const Auth = () => {
       if (event === "SIGNED_OUT") {
         setErrorMessage("");
       }
+      if (event === "USER_UPDATED" && !session) {
+        setErrorMessage("There was an error updating your account. Please try again.");
+      }
     });
 
     return () => subscription.unsubscribe();
   }, [navigate]);
+
+  const getErrorMessage = (error: AuthError) => {
+    if (error instanceof AuthApiError) {
+      switch (error.status) {
+        case 400:
+          if (error.message.includes("already registered")) {
+            return "This email is already registered. Please sign in instead.";
+          }
+          if (error.message.includes("invalid credentials")) {
+            return "Invalid email or password. Please check your credentials and try again.";
+          }
+          break;
+        case 422:
+          return "Invalid email format. Please check your email and try again.";
+        case 429:
+          return "Too many attempts. Please try again later.";
+      }
+    }
+    // Fallback error message
+    return error.message || "An unexpected error occurred. Please try again.";
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white flex flex-col items-center justify-center p-4">
