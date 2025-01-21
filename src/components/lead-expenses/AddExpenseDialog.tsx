@@ -15,7 +15,7 @@ const AddExpenseDialog = ({ isOpen, onOpenChange, onSuccess }: AddExpenseDialogP
       <DialogTrigger asChild>
         <Button 
           variant="outline" 
-          className="bg-[#FFFCF6] hover:bg-[#2A6F97] hover:text-[#FFFCF6] transition-colors"
+          className="bg-[#D9D9D9] hover:bg-[#2A6F97] hover:text-[#FFFCF6] transition-colors border-2 border-[#2A6F97] px-6 py-2 rounded-lg mb-4"
         >
           <Plus className="h-4 w-4 mr-2" />
           Add Expense
