@@ -1,17 +1,12 @@
-import ChartTypeControls from "./ChartTypeControls";
 import DateRangePicker from "./DateRangePicker";
 
 interface ChartControlsProps {
-  chartType: "bar" | "line";
   timePeriod: "24h" | "7d" | "30d" | "custom";
-  onChartTypeChange: (type: "bar" | "line") => void;
   onTimePeriodChange: (period: "24h" | "7d" | "30d" | "custom") => void;
 }
 
 const ChartControls = ({
-  chartType,
   timePeriod,
-  onChartTypeChange,
   onTimePeriodChange,
 }: ChartControlsProps) => {
   return (
@@ -22,10 +17,6 @@ const ChartControls = ({
         </h2>
       </div>
       <div className="flex flex-col sm:flex-row gap-4 justify-end">
-        <ChartTypeControls 
-          chartType={chartType} 
-          onChartTypeChange={onChartTypeChange} 
-        />
         <DateRangePicker 
           timePeriod={timePeriod} 
           onTimePeriodChange={onTimePeriodChange} 
