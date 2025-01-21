@@ -33,6 +33,16 @@ const ExpenseTable = ({
   selectedExpense,
   onSuccess 
 }: ExpenseTableProps) => {
+  const formatCurrency = (amount: number) => {
+    // Convert cents to dollars for display
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(amount / 100);
+  };
+
   return (
     <div className="rounded-md border">
       <Table>
@@ -53,7 +63,7 @@ const ExpenseTable = ({
               <TableCell>{expense.source}</TableCell>
               <TableCell>{expense.lead_type.join(', ')}</TableCell>
               <TableCell>{expense.lead_count}</TableCell>
-              <TableCell>${expense.total_cost}</TableCell>
+              <TableCell>{formatCurrency(expense.total_cost)}</TableCell>
               <TableCell>
                 <div className="flex gap-2">
                   <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
