@@ -1,20 +1,19 @@
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { DatePickerWithRange } from "@/components/ui/date-range-picker";
-import { DateRange } from "react-day-picker";
 
 interface SearchFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  dateRange: DateRange | undefined;
-  onDateRangeChange: (date: DateRange | undefined) => void;
+  selectedDate: Date | undefined;
+  onDateChange: (date: Date | undefined) => void;
 }
 
 const SearchFilters = ({
   searchTerm,
   onSearchChange,
-  dateRange,
-  onDateRangeChange,
+  selectedDate,
+  onDateChange,
 }: SearchFiltersProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
@@ -28,8 +27,8 @@ const SearchFilters = ({
         />
       </div>
       <DatePickerWithRange
-        date={dateRange}
-        onDateChange={onDateRangeChange}
+        date={selectedDate}
+        onDateChange={onDateChange}
       />
     </div>
   );

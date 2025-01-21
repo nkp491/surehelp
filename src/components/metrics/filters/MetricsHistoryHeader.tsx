@@ -1,6 +1,5 @@
 import AddMetricsButton from "../AddMetricsButton";
 import SearchFilters from "./SearchFilters";
-import { DateRange } from "react-day-picker";
 
 interface MetricsHistoryHeaderProps {
   selectedDate: Date | undefined;
@@ -8,8 +7,6 @@ interface MetricsHistoryHeaderProps {
   onAdd: () => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  dateRange: DateRange | undefined;
-  onDateRangeChange: (date: DateRange | undefined) => void;
 }
 
 const MetricsHistoryHeader = ({
@@ -18,8 +15,6 @@ const MetricsHistoryHeader = ({
   onAdd,
   searchTerm,
   onSearchChange,
-  dateRange,
-  onDateRangeChange,
 }: MetricsHistoryHeaderProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
@@ -31,8 +26,8 @@ const MetricsHistoryHeader = ({
       <SearchFilters
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
-        dateRange={dateRange}
-        onDateRangeChange={onDateRangeChange}
+        selectedDate={selectedDate}
+        onDateChange={onDateSelect}
       />
     </div>
   );

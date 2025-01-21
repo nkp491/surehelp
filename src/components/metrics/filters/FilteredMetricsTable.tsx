@@ -1,6 +1,6 @@
 import { MetricCount } from "@/types/metrics";
 import MetricsTable from "../MetricsTable";
-import { DateRange } from "react-day-picker";
+import { format } from "date-fns";
 
 interface FilteredMetricsTableProps {
   history: Array<{ date: string; metrics: MetricCount }>;
@@ -13,7 +13,7 @@ interface FilteredMetricsTableProps {
   onValueChange: (metric: keyof MetricCount, value: string) => void;
   onDelete: (date: string) => void;
   searchTerm: string;
-  dateRange: DateRange | undefined;
+  selectedDate: Date | undefined;
 }
 
 const FilteredMetricsTable = ({
@@ -27,18 +27,16 @@ const FilteredMetricsTable = ({
   onValueChange,
   onDelete,
   searchTerm,
-  dateRange,
+  selectedDate,
 }: FilteredMetricsTableProps) => {
   const filteredHistory = history.filter(item => {
     const matchesSearch = Object.values(item.metrics).some(value => 
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     ) || item.date.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const itemDate = new Date(item.date);
-    const isInDateRange = (!dateRange?.from || itemDate >= dateRange.from) && 
-                         (!dateRange?.to || itemDate <= dateRange.to);
+    const matchesDate = !selectedDate || item.date === format(selectedDate, 'yyyy-MM-dd');
 
-    return matchesSearch && isInDateRange;
+    return matchesSearch && matchesDate;
   });
 
   return (

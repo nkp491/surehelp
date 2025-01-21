@@ -3,8 +3,6 @@ import { useState } from 'react';
 import DeleteMetricDialog from './DeleteMetricDialog';
 import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
 import FilteredMetricsTable from './filters/FilteredMetricsTable';
-import { DateRange } from 'react-day-picker';
-import { addDays } from 'date-fns';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
@@ -26,10 +24,6 @@ const MetricsHistory = () => {
 
   const [deleteDate, setDeleteDate] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState<DateRange>({
-    from: addDays(new Date(), -30),
-    to: new Date(),
-  });
 
   const { toast } = useToast();
 
@@ -71,8 +65,6 @@ const MetricsHistory = () => {
         onAdd={handleAddBackdatedMetrics}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
-        dateRange={dateRange}
-        onDateRangeChange={setDateRange}
       />
       
       <FilteredMetricsTable
@@ -86,7 +78,7 @@ const MetricsHistory = () => {
         onValueChange={handleValueChange}
         onDelete={(date) => setDeleteDate(date)}
         searchTerm={searchTerm}
-        dateRange={dateRange}
+        selectedDate={selectedDate}
       />
 
       <DeleteMetricDialog
