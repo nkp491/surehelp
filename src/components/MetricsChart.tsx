@@ -18,7 +18,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
   const [chartType, setChartType] = useState<'bar' | 'line' | 'pie'>('bar');
   const { sortedHistory } = useMetricsHistory();
 
-  // Transform historical data into metrics dataset
+  // Transform historical data into two separate datasets
   const transformedMetricsData = sortedHistory.map(entry => ({
     name: new Date(entry.date).toLocaleDateString(),
     leads: entry.metrics.leads || 0,
@@ -27,7 +27,12 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
     scheduled: entry.metrics.scheduled || 0,
     sits: entry.metrics.sits || 0,
     sales: entry.metrics.sales || 0,
-    ap: (entry.metrics.ap || 0) / 100, // Convert cents to dollars and include in main dataset
+    ap: entry.metrics.ap || 0, // Include AP in the main dataset
+  }));
+
+  const transformedAPData = sortedHistory.map(entry => ({
+    name: new Date(entry.date).toLocaleDateString(),
+    value: (entry.metrics.ap || 0) / 100, // Convert cents to dollars
   }));
 
   return (
@@ -39,25 +44,37 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
         onChartTypeChange={setChartType}
       />
 
-      <div className="h-[400px] mt-4">
-        {chartType === 'bar' ? (
-          <MetricsBarChart 
-            data={transformedMetricsData} 
-            colors={COLORS}
-            apData={transformedMetricsData}
-            apColor={AP_COLOR}
-          />
-        ) : chartType === 'line' ? (
-          <MetricsLineChart 
-            data={transformedMetricsData}
-            colors={COLORS}
-          />
-        ) : (
-          <MetricsPieChart 
-            data={transformedMetricsData} 
-            colors={COLORS} 
-          />
-        )}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mt-4">
+        <div className="lg:col-span-3 h-[400px]">
+          {chartType === 'bar' ? (
+            <MetricsBarChart 
+              data={transformedMetricsData} 
+              colors={COLORS} 
+            />
+          ) : chartType === 'line' ? (
+            <MetricsLineChart 
+              data={transformedMetricsData}
+              colors={COLORS}
+            />
+          ) : (
+            <MetricsPieChart 
+              data={transformedMetricsData} 
+              colors={COLORS} 
+            />
+          )}
+        </div>
+        <div className="h-[400px]">
+          <Card className="h-full p-4 bg-white">
+            <h3 className="text-lg font-semibold mb-4 text-[#2A6F97]">Average Premium (AP)</h3>
+            <div className="h-[calc(100%-2rem)]">
+              <MetricsLineChart 
+                data={transformedAPData}
+                colors={[AP_COLOR]}
+                isCurrency
+              />
+            </div>
+          </Card>
+        </div>
       </div>
     </Card>
   );
