@@ -1,5 +1,4 @@
 import ChartTypeControls from "./ChartTypeControls";
-import TimePeriodControls from "./TimePeriodControls";
 import DateRangePicker from "./DateRangePicker";
 
 interface ChartControlsProps {
@@ -27,16 +26,10 @@ const ChartControls = ({
           chartType={chartType} 
           onChartTypeChange={onChartTypeChange} 
         />
-        <div className="flex gap-2">
-          <TimePeriodControls 
-            timePeriod={timePeriod} 
-            onTimePeriodChange={onTimePeriodChange} 
-          />
-          <DateRangePicker 
-            timePeriod={timePeriod} 
-            onTimePeriodChange={onTimePeriodChange} 
-          />
-        </div>
+        <DateRangePicker 
+          timePeriod={timePeriod} 
+          onTimePeriodChange={onTimePeriodChange} 
+        />
       </div>
     </div>
   );
