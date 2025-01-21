@@ -24,6 +24,7 @@ const LeadMTDSpend = () => {
         return;
       }
 
+      // Sum up the total costs - no need to divide by 100 as the values are already in dollars
       const total = data.reduce((sum, expense) => sum + expense.total_cost, 0);
       setMtdSpend(total);
       setIsLoading(false);
@@ -36,7 +37,7 @@ const LeadMTDSpend = () => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
-    }).format(amount / 100);
+    }).format(amount);
   };
 
   return (
