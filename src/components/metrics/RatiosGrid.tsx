@@ -1,18 +1,25 @@
-import { useMetrics } from "@/contexts/MetricsContext";
 import RatioCard from "./RatioCard";
+import LeadMTDSpend from "./LeadMTDSpend";
+import { useMetrics } from "@/contexts/MetricsContext";
 
 const RatiosGrid = () => {
   const { ratios } = useMetrics();
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-      {ratios.map((ratio, index) => (
-        <RatioCard
-          key={index}
-          label={ratio.label}
-          value={ratio.value}
-        />
-      ))}
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <RatioCard
+        label="AP per Sale"
+        value={ratios.apPerSale}
+      />
+      <LeadMTDSpend />
+      <RatioCard
+        label="Conversion Rate"
+        value={`${ratios.conversionRate}%`}
+      />
+      <RatioCard
+        label="Contact Rate"
+        value={`${ratios.contactRate}%`}
+      />
     </div>
   );
 };
