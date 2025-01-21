@@ -18,16 +18,16 @@ const MetricsHistoryHeader = ({
 }: MetricsHistoryHeaderProps) => {
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
-      <AddMetricsButton
-        selectedDate={selectedDate}
-        onDateSelect={onDateSelect}
-        onAdd={onAdd}
-      />
       <SearchFilters
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
         selectedDate={selectedDate}
         onDateChange={onDateSelect}
+      />
+      <AddMetricsButton
+        selectedDate={selectedDate}
+        onDateSelect={onDateSelect}
+        onAdd={onAdd}
       />
     </div>
   );

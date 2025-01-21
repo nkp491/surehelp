@@ -11,7 +11,7 @@ interface AddMetricsButtonProps {
 
 const AddMetricsButton = ({ selectedDate, onDateSelect, onAdd }: AddMetricsButtonProps) => {
   return (
-    <div className="flex justify-end mb-4 w-full">
+    <div className="flex items-center">
       <Popover>
         <PopoverTrigger asChild>
           <Button variant="outline" className="flex items-center gap-2">
