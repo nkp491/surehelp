@@ -7,20 +7,25 @@ interface MetricsLineChartProps {
 }
 
 const MetricsLineChart = ({ data, colors, isCurrency = false }: MetricsLineChartProps) => {
+  // Add null check for data
+  if (!data || !data[0]) {
+    return <div>No data available</div>;
+  }
+
   const metrics = Object.keys(data[0]).filter(key => key !== 'name');
 
-  const formatYAxis = (value: number): string => {
+  const formatYAxis = (value: any): string => {
     if (isCurrency) {
-      return `$${value.toFixed(2)}`;
+      return `$${Number(value).toFixed(2)}`;
     }
-    return value.toString();
+    return String(value);
   };
 
-  const formatTooltip = (value: number): string => {
+  const formatTooltip = (value: any): string => {
     if (isCurrency) {
-      return `$${value.toFixed(2)}`;
+      return `$${Number(value).toFixed(2)}`;
     }
-    return value.toString();
+    return String(value);
   };
 
   return (

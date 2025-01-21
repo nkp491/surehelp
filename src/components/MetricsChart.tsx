@@ -32,7 +32,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
 
   const transformedAPData = sortedHistory.map(entry => ({
     name: new Date(entry.date).toLocaleDateString(),
-    ap: entry.metrics.ap || 0,
+    value: (entry.metrics.ap || 0) / 100, // Convert cents to dollars
   }));
 
   return (
@@ -68,10 +68,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
             <h3 className="text-lg font-semibold mb-4 text-[#2A6F97]">Average Premium (AP)</h3>
             <div className="h-[calc(100%-2rem)]">
               <MetricsLineChart 
-                data={transformedAPData.map(d => ({
-                  name: d.name,
-                  value: d.ap / 100, // Convert cents to dollars
-                }))}
+                data={transformedAPData}
                 colors={[AP_COLOR]}
                 isCurrency
               />
