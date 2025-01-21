@@ -1,6 +1,5 @@
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricCard from "./MetricCard";
-import LeadMTDSpend from "./LeadMTDSpend";
 
 const MetricsGrid = () => {
   const { metrics, metricInputs, handleInputChange, trends } = useMetrics();
@@ -11,7 +10,6 @@ const MetricsGrid = () => {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
-      <LeadMTDSpend />
       {Object.entries(metrics).map(([metric, count]) => (
         <MetricCard
           key={metric}
