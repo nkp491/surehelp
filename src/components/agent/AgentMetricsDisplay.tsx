@@ -9,7 +9,7 @@ interface AgentMetricsDisplayProps {
   chartData: { name: string; value: number }[];
 }
 
-const AgentMetricsDisplay = ({ metrics, ratios, chartData }: AgentMetricsDisplayProps) => {
+const AgentMetricsDisplay = ({ metrics, ratios }: AgentMetricsDisplayProps) => {
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
@@ -37,7 +37,6 @@ const AgentMetricsDisplay = ({ metrics, ratios, chartData }: AgentMetricsDisplay
       </div>
 
       <MetricsChart 
-        data={chartData}
         timePeriod="24h"
         onTimePeriodChange={() => {}}
       />

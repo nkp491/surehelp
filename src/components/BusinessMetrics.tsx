@@ -10,13 +10,8 @@ import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 
 const BusinessMetricsContent = () => {
-  const { metrics, timePeriod, handleTimePeriodChange } = useMetrics();
+  const { timePeriod, handleTimePeriodChange } = useMetrics();
   
-  const chartData = Object.entries(metrics).map(([key, value]) => ({
-    name: key.charAt(0).toUpperCase() + key.slice(1),
-    value: key === 'ap' ? value / 100 : value,
-  }));
-
   return (
     <div className="space-y-8">
       <Card className="w-full mb-12 p-8 shadow-lg bg-[#F1F1F1]">
@@ -32,7 +27,6 @@ const BusinessMetricsContent = () => {
           </div>
 
           <MetricsChart 
-            data={chartData} 
             timePeriod={timePeriod}
             onTimePeriodChange={handleTimePeriodChange}
           />
