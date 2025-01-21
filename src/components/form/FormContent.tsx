@@ -47,6 +47,9 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
 
   const loadFieldPositions = async () => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) return;
+
       const { data: positions, error } = await supabase
         .from('form_field_positions')
         .select('*')
@@ -77,9 +80,15 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
 
   const saveFieldPosition = async (fieldId: string, sectionName: string, position: number) => {
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('No authenticated user');
+      }
+
       const { error } = await supabase
         .from('form_field_positions')
         .upsert({
+          user_id: session.user.id,
           field_id: fieldId,
           section: sectionName,
           position: position
