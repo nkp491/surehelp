@@ -35,7 +35,8 @@ const LeadMTDSpend = () => {
             cost: expense.total_cost,
             runningTotal: sum + expense.total_cost
           });
-          return sum + expense.total_cost;
+          // Convert from cents to dollars by dividing by 100
+          return sum + (expense.total_cost / 100);
         }, 0);
 
         console.log('Final calculated total:', total);
