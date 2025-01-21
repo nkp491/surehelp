@@ -7,6 +7,7 @@ import RatiosGrid from "./metrics/RatiosGrid";
 import MetricsChart from "./MetricsChart";
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricsHistory from "./metrics/MetricsHistory";
+import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 
 const BusinessMetricsContent = () => {
   const { metrics, timePeriod, handleTimePeriodChange } = useMetrics();
@@ -39,6 +40,10 @@ const BusinessMetricsContent = () => {
           <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm border border-[#fbfaf8] text-[#2A6F97]">
             <h3 className="text-xl font-semibold mb-4 text-left">Historical KPIs</h3>
             <MetricsHistory />
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
+            <LeadExpenseReport />
           </div>
         </div>
       </Card>
