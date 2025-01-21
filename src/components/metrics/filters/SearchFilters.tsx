@@ -1,6 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
-import { DateRangePicker } from "@/components/charts/DateRangePicker";
+import DateRangePicker from "@/components/charts/DateRangePicker";
 
 interface SearchFiltersProps {
   searchTerm: string;
