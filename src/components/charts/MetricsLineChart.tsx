@@ -9,18 +9,18 @@ interface MetricsLineChartProps {
 const MetricsLineChart = ({ data, colors, isCurrency = false }: MetricsLineChartProps) => {
   const metrics = Object.keys(data[0]).filter(key => key !== 'name');
 
-  const formatYAxis = (value: number) => {
+  const formatYAxis = (value: number): string => {
     if (isCurrency) {
       return `$${value.toFixed(2)}`;
     }
-    return value;
+    return value.toString();
   };
 
-  const formatTooltip = (value: number) => {
+  const formatTooltip = (value: number): string => {
     if (isCurrency) {
       return `$${value.toFixed(2)}`;
     }
-    return value;
+    return value.toString();
   };
 
   return (

@@ -27,6 +27,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
     scheduled: entry.metrics.scheduled || 0,
     sits: entry.metrics.sits || 0,
     sales: entry.metrics.sales || 0,
+    ap: entry.metrics.ap || 0, // Include AP in the main dataset
   }));
 
   const transformedAPData = sortedHistory.map(entry => ({
