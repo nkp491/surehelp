@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { useToast } from "@/hooks/use-toast";
+import { format } from "date-fns";
 
 interface MetricsHeaderProps {
   onSave: () => void;
@@ -12,6 +13,13 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   const { toast } = useToast();
 
   const handleSave = async () => {
+    // Get today's date in ISO format to ensure correct timezone handling
+    const today = new Date();
+    console.log('[MetricsHeader] Saving metrics for date:', {
+      date: format(today, 'yyyy-MM-dd'),
+      timestamp: today.toISOString(),
+    });
+    
     await onSave();
     
     // Reset all metrics to 0 after saving

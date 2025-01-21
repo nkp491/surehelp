@@ -1,7 +1,7 @@
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { MetricCount, MetricType } from "@/types/metrics";
-import { format, startOfDay } from "date-fns";
+import { format } from "date-fns";
 
 export const useMetricsUpdates = (
   metrics: MetricCount,
@@ -39,22 +39,24 @@ export const useMetricsUpdates = (
 
   const saveDailyMetrics = async () => {
     try {
+      const today = new Date();
+      const formattedDate = format(today, 'yyyy-MM-dd');
+      
       console.log('[MetricsUpdates] Saving metrics:', {
         action: 'save_metrics',
+        date: formattedDate,
         metrics: { ...metrics },
-        timestamp: new Date().toISOString()
+        timestamp: today.toISOString()
       });
       
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
-
-      const today = format(startOfDay(new Date()), 'yyyy-MM-dd');
       
       const { error, data } = await supabase
         .from('daily_metrics')
         .upsert({
           user_id: user.user.id,
-          date: today,
+          date: formattedDate,
           ...metrics
         }, {
           onConflict: 'user_id,date'
@@ -67,7 +69,7 @@ export const useMetricsUpdates = (
         action: 'save_success',
         saved: metrics,
         response: data,
-        timestamp: new Date().toISOString()
+        timestamp: today.toISOString()
       });
 
       toast({
