@@ -9,12 +9,13 @@ import { Input } from '../ui/input';
 import { Search } from 'lucide-react';
 import { DatePickerWithRange } from '../ui/date-range-picker';
 import { addDays } from 'date-fns';
+import { DateRange } from 'react-day-picker';
 
 const MetricsHistory = () => {
   const { toast } = useToast();
   const [deleteDate, setDeleteDate] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [dateRange, setDateRange] = useState({
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: addDays(new Date(), -30),
     to: new Date(),
   });
