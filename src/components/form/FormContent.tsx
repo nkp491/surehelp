@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   DndContext,
   closestCenter,
@@ -20,6 +20,8 @@ import FormButtons from "./FormButtons";
 import FormSection from "./FormSection";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import SpouseToggle from "./SpouseToggle";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 
 interface FormContentProps {
   editingSubmission?: FormSubmission | null;
@@ -30,6 +32,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
   const [sections, setSections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { showSpouse, setShowSpouse } = useSpouseVisibility();
+  const { toast } = useToast();
 
   const sensors = useSensors(
     useSensor(PointerSensor),
@@ -38,16 +41,72 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
     })
   );
 
-  const handleDragEnd = (event: any) => {
+  useEffect(() => {
+    loadFieldPositions();
+  }, []);
+
+  const loadFieldPositions = async () => {
+    try {
+      const { data: positions, error } = await supabase
+        .from('form_field_positions')
+        .select('*')
+        .order('position');
+
+      if (error) throw error;
+
+      if (positions && positions.length > 0) {
+        // Create a map of field positions
+        const positionMap = new Map(positions.map(p => [p.field_id, p]));
+        
+        // Update sections with saved positions
+        const updatedSections = sections.map(section => ({
+          ...section,
+          fields: section.fields.sort((a, b) => {
+            const posA = positionMap.get(a.id)?.position ?? 0;
+            const posB = positionMap.get(b.id)?.position ?? 0;
+            return posA - posB;
+          })
+        }));
+
+        setSections(updatedSections);
+      }
+    } catch (error) {
+      console.error('Error loading field positions:', error);
+    }
+  };
+
+  const saveFieldPosition = async (fieldId: string, sectionName: string, position: number) => {
+    try {
+      const { error } = await supabase
+        .from('form_field_positions')
+        .upsert({
+          field_id: fieldId,
+          section: sectionName,
+          position: position
+        }, {
+          onConflict: 'user_id,field_id'
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Error saving field position:', error);
+      toast({
+        title: "Error",
+        description: "Failed to save field position",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDragEnd = async (event: any) => {
     const { active, over } = event;
 
     if (active.id !== over.id) {
       const allFields = sections.flatMap(section => section.fields);
-      const newFields = arrayMove(
-        allFields,
-        allFields.findIndex(item => item.id === active.id),
-        allFields.findIndex(item => item.id === over.id)
-      );
+      const oldIndex = allFields.findIndex(item => item.id === active.id);
+      const newIndex = allFields.findIndex(item => item.id === over.id);
+      
+      const newFields = arrayMove(allFields, oldIndex, newIndex);
       
       const newSections = sections.map(section => ({
         ...section,
@@ -57,6 +116,17 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
       }));
       
       setSections(newSections);
+
+      // Save the new position
+      const field = allFields.find(f => f.id === active.id);
+      if (field) {
+        const section = sections.find(s => 
+          s.fields.some(f => f.id === active.id)
+        );
+        if (section) {
+          await saveFieldPosition(active.id, section.section, newIndex);
+        }
+      }
     }
   };
 
