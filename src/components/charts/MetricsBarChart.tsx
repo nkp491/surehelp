@@ -10,7 +10,6 @@ interface MetricsBarChartProps {
     scheduled: number;
     sits: number;
     sales: number;
-    ap: number;
   }>;
   colors: string[];
 }
@@ -25,7 +24,6 @@ const MetricsBarChart = ({ data, colors }: MetricsBarChartProps) => {
     { key: 'scheduled', label: 'Scheduled', color: colors[3] },
     { key: 'sits', label: 'Sits', color: colors[4] },
     { key: 'sales', label: 'Sales', color: colors[5] },
-    { key: 'ap', label: 'AP', color: colors[6] },
   ];
 
   const handleBarClick = (data: any, metric: string) => {
@@ -41,11 +39,7 @@ const MetricsBarChart = ({ data, colors }: MetricsBarChartProps) => {
         <CartesianGrid strokeDasharray="3 3" />
         <XAxis dataKey="name" />
         <YAxis />
-        <Tooltip 
-          formatter={(value: number, name: string) => {
-            return name === 'AP' ? `$${value.toFixed(2)}` : value;
-          }}
-        />
+        <Tooltip />
         <Legend />
         {metrics.map(({ key, label, color }) => (
           <Bar 
