@@ -3,6 +3,7 @@ import { useMetricsHistory } from '@/hooks/useMetricsHistory';
 import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
 import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
 import MetricsContent from './MetricsContent';
+import { useMetrics } from '@/contexts/MetricsContext';
 
 const MetricsHistory = () => {
   const {
@@ -20,9 +21,17 @@ const MetricsHistory = () => {
     loadHistory,
   } = useMetricsHistory();
 
+  const { refreshMetrics } = useMetrics();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [timePeriod, setTimePeriod] = useState<"24h" | "7d" | "30d" | "custom">("24h");
   const { deleteDate, setDeleteDate, handleDelete } = useMetricsDelete(loadHistory);
+
+  const handleSaveAndRefresh = async (date: string) => {
+    await handleSave(date);
+    await loadHistory();  // Refresh the history data
+    await refreshMetrics(); // Refresh the current metrics
+  };
 
   return (
     <div className="space-y-4">
@@ -44,7 +53,7 @@ const MetricsHistory = () => {
         searchTerm={searchTerm}
         deleteDate={deleteDate}
         onEdit={handleEdit}
-        onSave={handleSave}
+        onSave={handleSaveAndRefresh}
         onCancel={handleCancel}
         onSort={handleSort}
         onValueChange={handleValueChange}
