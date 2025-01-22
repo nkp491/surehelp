@@ -7,7 +7,7 @@ interface InvestmentTypesCheckboxProps {
 }
 
 const InvestmentTypesCheckbox = ({
-  selectedInvestments,
+  selectedInvestments = [], // Add default empty array
   onChange,
 }: InvestmentTypesCheckboxProps) => {
   const investmentTypes = [
@@ -22,10 +22,11 @@ const InvestmentTypesCheckbox = ({
   ];
 
   const handleCheckboxChange = (type: string) => {
-    if (selectedInvestments.includes(type)) {
-      onChange(selectedInvestments.filter((t) => t !== type));
+    const currentInvestments = selectedInvestments || [];
+    if (currentInvestments.includes(type)) {
+      onChange(currentInvestments.filter((t) => t !== type));
     } else {
-      onChange([...selectedInvestments, type]);
+      onChange([...currentInvestments, type]);
     }
   };
 
@@ -37,7 +38,7 @@ const InvestmentTypesCheckbox = ({
           <div key={type} className="flex items-center space-x-2">
             <Checkbox
               id={type}
-              checked={selectedInvestments.includes(type)}
+              checked={(selectedInvestments || []).includes(type)}
               onCheckedChange={() => handleCheckboxChange(type)}
             />
             <Label htmlFor={type} className="text-sm font-normal">
