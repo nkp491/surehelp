@@ -14,14 +14,14 @@ const EMPLOYMENT_STATUS = [
 ];
 
 const EmploymentStatusCheckbox = ({
-  selectedStatus,
+  selectedStatus = [], // Add default empty array
   onChange,
 }: EmploymentStatusCheckboxProps) => {
   const handleCheckboxChange = (status: string, checked: boolean) => {
     if (checked) {
-      onChange([...selectedStatus, status]);
+      onChange([...(selectedStatus || []), status]);
     } else {
-      onChange(selectedStatus.filter((s) => s !== status));
+      onChange((selectedStatus || []).filter((s) => s !== status));
     }
   };
 
@@ -33,7 +33,7 @@ const EmploymentStatusCheckbox = ({
           <div key={status} className="flex items-center space-x-2">
             <Checkbox
               id={status}
-              checked={selectedStatus.includes(status)}
+              checked={(selectedStatus || []).includes(status)}
               onCheckedChange={(checked) =>
                 handleCheckboxChange(status, checked as boolean)
               }
