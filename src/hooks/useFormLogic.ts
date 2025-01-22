@@ -6,7 +6,6 @@ import { useFormValidation } from "./useFormValidation";
 import { useFormState } from "./useFormState";
 import { useFormSubmission } from "./useFormSubmission";
 import { toast } from "@/hooks/use-toast";
-import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
 
 export const useFormLogic = (
   editingSubmission: FormSubmission | null = null,
@@ -20,7 +19,6 @@ export const useFormLogic = (
     initialFormValues
   } = useFormState(editingSubmission);
 
-  const { familyMembers } = useFamilyMembers();
   const { age } = useAgeCalculation(formData.dob, "");
   const { totalIncome } = useIncomeCalculation(formData);
   const { validateForm } = useFormValidation();
@@ -30,8 +28,7 @@ export const useFormLogic = (
     setFormData,
     initialFormValues,
     editingSubmission,
-    onUpdate,
-    familyMembers
+    onUpdate
   );
 
   useEffect(() => {

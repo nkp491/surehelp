@@ -15,7 +15,7 @@ interface FormContentProps {
 const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) => {
   const [sections] = React.useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
-  const { familyMembers } = useFamilyMembers();
+  const { familyMembers, removeFamilyMember } = useFamilyMembers();
 
   const handleOutcomeSubmit = (outcome: string) => (e: React.MouseEvent) => {
     e.preventDefault();
