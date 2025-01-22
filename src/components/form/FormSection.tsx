@@ -22,9 +22,10 @@ const FormSection = ({
   submissionId,
   onRemove
 }: FormSectionProps) => {
-  const isAssessmentNotes = section === "Assessment Notes";
-  const leftColumnFields = isAssessmentNotes ? fields.slice(0, 4) : [];
-  const rightColumnFields = isAssessmentNotes ? fields.slice(4) : [];
+  // Split fields into two columns for all sections
+  const midPoint = Math.ceil(fields.length / 2);
+  const leftColumnFields = fields.slice(0, midPoint);
+  const rightColumnFields = fields.slice(midPoint);
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
@@ -41,50 +42,10 @@ const FormSection = ({
           </Button>
         )}
       </div>
-      {isAssessmentNotes ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Left Column - Contact Information */}
-          <div className="space-y-3">
-            {leftColumnFields.map((field) => (
-              <DraggableFormField
-                key={field.id}
-                id={field.id}
-                fieldType={field.type}
-                label={field.label}
-                value={formData[field.id]}
-                onChange={(value) =>
-                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-                }
-                placeholder={field.placeholder}
-                required={field.required}
-                error={errors[field.id]}
-                submissionId={submissionId}
-              />
-            ))}
-          </div>
-          {/* Right Column - Notes */}
-          <div className="space-y-3">
-            {rightColumnFields.map((field) => (
-              <DraggableFormField
-                key={field.id}
-                id={field.id}
-                fieldType={field.type}
-                label={field.label}
-                value={formData[field.id]}
-                onChange={(value) =>
-                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-                }
-                placeholder={field.placeholder}
-                required={field.required}
-                error={errors[field.id]}
-                submissionId={submissionId}
-              />
-            ))}
-          </div>
-        </div>
-      ) : (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Left Column */}
         <div className="space-y-3">
-          {fields.map((field) => (
+          {leftColumnFields.map((field) => (
             <DraggableFormField
               key={field.id}
               id={field.id}
@@ -101,7 +62,26 @@ const FormSection = ({
             />
           ))}
         </div>
-      )}
+        {/* Right Column */}
+        <div className="space-y-3">
+          {rightColumnFields.map((field) => (
+            <DraggableFormField
+              key={field.id}
+              id={field.id}
+              fieldType={field.type}
+              label={field.label}
+              value={formData[field.id]}
+              onChange={(value) =>
+                setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+              }
+              placeholder={field.placeholder}
+              required={field.required}
+              error={errors[field.id]}
+              submissionId={submissionId}
+            />
+          ))}
+        </div>
+      </div>
     </div>
   );
 };
