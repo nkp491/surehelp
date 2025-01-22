@@ -38,7 +38,7 @@ const FormSection = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg shadow-lg p-6 space-y-4"
+      className="bg-white rounded-lg border-2 border-gray-200 shadow-md p-6 space-y-4"
     >
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold text-gray-900">{section}</h2>

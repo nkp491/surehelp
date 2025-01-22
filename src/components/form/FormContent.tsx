@@ -32,7 +32,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
   });
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="max-w-7xl mx-auto p-6">
+    <form onSubmit={(e) => e.preventDefault()} className="max-w-[95%] mx-auto p-4">
       <FormPositionLoader sections={sections} setSections={setSections} />
       <div className="flex justify-end mb-4">
         <SpouseToggle />
