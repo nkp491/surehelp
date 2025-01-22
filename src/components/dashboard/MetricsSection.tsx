@@ -11,7 +11,7 @@ const MetricsSection = () => {
 
   return (
     <div className="space-y-2">
-      <Card className="p-3 mb-4 bg-white shadow-sm border-[0.5px]">
+      <Card className="p-3 mb-4 bg-white border-[0.5px]">
         <div className="flex flex-col space-y-3">
           <MetricsHeader onSave={saveDailyMetrics} />
           <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-2">
