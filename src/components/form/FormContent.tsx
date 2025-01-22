@@ -22,10 +22,20 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
     handleSubmit(e as any, outcome);
   };
 
-  const filteredSections = sections.filter(section => {
-    // Remove spouse-related sections
-    return !section.section.includes("Spouse");
+  // Filter out spouse sections and separate special sections
+  const mainSections = sections.filter(section => {
+    return !section.section.includes("Spouse") && 
+           !section.section.includes("Agent Use Only") && 
+           !section.section.includes("Assessment Notes");
   });
+
+  const agentOnlySection = sections.find(section => 
+    section.section.includes("Agent Use Only")
+  );
+
+  const assessmentNotesSection = sections.find(section => 
+    section.section.includes("Assessment Notes")
+  );
 
   return (
     <form onSubmit={(e) => e.preventDefault()} className="container mx-auto px-4">
@@ -33,10 +43,10 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
         <FamilyMemberToggle />
       </div>
 
-      {/* Main sections - full width */}
+      {/* Main sections container */}
       <div className="space-y-6">
         {/* Primary applicant sections */}
-        {filteredSections.map((section) => (
+        {mainSections.map((section) => (
           <FormSection
             key={section.section}
             section={section.section}
@@ -51,7 +61,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
         {/* Family member sections */}
         {familyMembers.map((member, index) => (
           <React.Fragment key={member.id}>
-            {filteredSections
+            {mainSections
               .filter(section => 
                 section.section.includes("Health Assessment") || 
                 section.section.includes("Income Assessment")
@@ -73,6 +83,32 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
               ))}
           </React.Fragment>
         ))}
+
+        {/* Agent Only section */}
+        {agentOnlySection && (
+          <FormSection
+            key={agentOnlySection.section}
+            section={agentOnlySection.section}
+            fields={agentOnlySection.fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={editingSubmission?.timestamp}
+          />
+        )}
+
+        {/* Assessment Notes section */}
+        {assessmentNotesSection && (
+          <FormSection
+            key={assessmentNotesSection.section}
+            section={assessmentNotesSection.section}
+            fields={assessmentNotesSection.fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={editingSubmission?.timestamp}
+          />
+        )}
       </div>
       
       <FormButtons onSubmit={handleOutcomeSubmit} />
