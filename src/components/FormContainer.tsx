@@ -1,6 +1,6 @@
 import { FormSubmission } from "@/types/form";
-import { SpouseVisibilityProvider } from "@/contexts/SpouseVisibilityContext";
 import { MetricsProvider } from "@/contexts/MetricsContext";
+import { FamilyMembersProvider } from "@/contexts/FamilyMembersContext";
 import FormContent from "@/components/form/FormContent";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 
@@ -12,14 +12,14 @@ interface FormContainerProps {
 const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   return (
     <MetricsProvider>
-      <SpouseVisibilityProvider>
+      <FamilyMembersProvider>
         <div className="space-y-4">
           <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-2">
             <MetricsSection />
           </div>
           <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
         </div>
-      </SpouseVisibilityProvider>
+      </FamilyMembersProvider>
     </MetricsProvider>
   );
 };

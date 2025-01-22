@@ -54,6 +54,104 @@ export type Database = {
         }
         Relationships: []
       }
+      family_members: {
+        Row: {
+          age: string | null
+          created_at: string
+          dob: string | null
+          dui: string | null
+          employment_income: string | null
+          employment_status: string[] | null
+          family_medical_conditions: string | null
+          height: string | null
+          hospitalizations: string | null
+          household_expenses: string | null
+          id: string
+          last_medical_exam: string | null
+          medical_conditions: string[] | null
+          name: string | null
+          occupation: string | null
+          other_medical_conditions: string | null
+          pension_income: string | null
+          prescription_medications: string | null
+          selected_investments: string[] | null
+          social_security_income: string | null
+          submission_id: string
+          surgeries: string | null
+          survivorship_income: string | null
+          tobacco_use: string | null
+          total_income: string | null
+          updated_at: string
+          weight: string | null
+        }
+        Insert: {
+          age?: string | null
+          created_at?: string
+          dob?: string | null
+          dui?: string | null
+          employment_income?: string | null
+          employment_status?: string[] | null
+          family_medical_conditions?: string | null
+          height?: string | null
+          hospitalizations?: string | null
+          household_expenses?: string | null
+          id?: string
+          last_medical_exam?: string | null
+          medical_conditions?: string[] | null
+          name?: string | null
+          occupation?: string | null
+          other_medical_conditions?: string | null
+          pension_income?: string | null
+          prescription_medications?: string | null
+          selected_investments?: string[] | null
+          social_security_income?: string | null
+          submission_id: string
+          surgeries?: string | null
+          survivorship_income?: string | null
+          tobacco_use?: string | null
+          total_income?: string | null
+          updated_at?: string
+          weight?: string | null
+        }
+        Update: {
+          age?: string | null
+          created_at?: string
+          dob?: string | null
+          dui?: string | null
+          employment_income?: string | null
+          employment_status?: string[] | null
+          family_medical_conditions?: string | null
+          height?: string | null
+          hospitalizations?: string | null
+          household_expenses?: string | null
+          id?: string
+          last_medical_exam?: string | null
+          medical_conditions?: string[] | null
+          name?: string | null
+          occupation?: string | null
+          other_medical_conditions?: string | null
+          pension_income?: string | null
+          prescription_medications?: string | null
+          selected_investments?: string[] | null
+          social_security_income?: string | null
+          submission_id?: string
+          surgeries?: string | null
+          survivorship_income?: string | null
+          tobacco_use?: string | null
+          total_income?: string | null
+          updated_at?: string
+          weight?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "family_members_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       form_field_positions: {
         Row: {
           created_at: string
