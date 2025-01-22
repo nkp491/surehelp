@@ -18,10 +18,11 @@ const EmploymentStatusCheckbox = ({
   onChange,
 }: EmploymentStatusCheckboxProps) => {
   const handleCheckboxChange = (status: string, checked: boolean) => {
+    const currentStatus = selectedStatus || [];
     if (checked) {
-      onChange([...(selectedStatus || []), status]);
+      onChange([...currentStatus, status]);
     } else {
-      onChange((selectedStatus || []).filter((s) => s !== status));
+      onChange(currentStatus.filter((s) => s !== status));
     }
   };
 
