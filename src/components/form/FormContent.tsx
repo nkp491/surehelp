@@ -32,13 +32,13 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
   });
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="max-w-[95%] mx-auto p-2">
+    <form onSubmit={(e) => e.preventDefault()} className="max-w-[98%] mx-auto">
       <FormPositionLoader sections={sections} setSections={setSections} />
       <div className="flex justify-end mb-2">
         <SpouseToggle />
       </div>
       <DragContext sections={sections} setSections={setSections}>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-2">
           {filteredSections.map((section) => (
             <FormSection
               key={section.section}

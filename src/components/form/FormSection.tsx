@@ -43,11 +43,11 @@ const FormSection = ({
     <div
       ref={setNodeRef}
       style={style}
-      className={`bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3 
+      className={`bg-white rounded-lg border border-gray-200 shadow-sm p-3 space-y-2
         ${isDragging ? 'ring-2 ring-primary ring-offset-2' : ''}`}
     >
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-xl font-semibold text-gray-900">{section}</h2>
+      <div className="flex justify-between items-center mb-1">
+        <h2 className="text-lg font-semibold text-gray-900">{section}</h2>
         <div
           {...attributes}
           {...listeners}
@@ -56,7 +56,7 @@ const FormSection = ({
           <GripVertical className="h-5 w-5" />
         </div>
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {fields.map((field) => (
           <DraggableFormField
             key={field.id}
