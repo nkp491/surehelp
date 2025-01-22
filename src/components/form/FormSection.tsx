@@ -19,11 +19,11 @@ const FormSection = ({
   submissionId 
 }: FormSectionProps) => {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-3 space-y-2">
-      <div className="flex justify-between items-center mb-1">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
+      <div className="flex justify-between items-center mb-2">
         <h2 className="text-lg font-semibold text-gray-900">{section}</h2>
       </div>
-      <div className="space-y-2">
+      <div className="space-y-3">
         {fields.map((field) => (
           <DraggableFormField
             key={field.id}
