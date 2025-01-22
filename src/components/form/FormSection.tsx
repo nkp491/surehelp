@@ -3,6 +3,7 @@ import DraggableFormField from "../DraggableFormField";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
+import { CSSProperties } from "react";
 
 interface FormSectionProps {
   section: string;
@@ -30,11 +31,11 @@ const FormSection = ({
     isDragging,
   } = useSortable({ id: `section-${section}` });
 
-  const style = {
+  const style: CSSProperties = {
     transform: CSS.Transform.toString(transform),
     transition,
     opacity: isDragging ? 0.6 : 1,
-    position: isDragging ? 'relative' : 'static',
+    position: isDragging ? 'relative' as const : 'static' as const,
     zIndex: isDragging ? 1 : 'auto',
   };
 

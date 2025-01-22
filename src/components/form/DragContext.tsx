@@ -33,7 +33,7 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // Minimum distance before drag starts
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -42,7 +42,7 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
   );
 
   const handleDragStart = (event: DragStartEvent) => {
-    setActiveId(event.active.id as string);
+    setActiveId(event.active.id.toString());
   };
 
   const saveFieldPosition = async (fieldId: string, sectionName: string, position: number) => {
@@ -106,12 +106,14 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
     const { active, over } = event;
     setActiveId(null);
 
-    if (active.id !== over?.id) {
-      const isSection = active.id.startsWith('section-');
+    if (over && active.id !== over.id) {
+      const activeIdStr = active.id.toString();
+      const overIdStr = over.id.toString();
+      const isSection = activeIdStr.startsWith('section-');
       
       if (isSection) {
-        const oldIndex = sections.findIndex(s => `section-${s.section}` === active.id);
-        const newIndex = sections.findIndex(s => `section-${s.section}` === over?.id);
+        const oldIndex = sections.findIndex(s => `section-${s.section}` === activeIdStr);
+        const newIndex = sections.findIndex(s => `section-${s.section}` === overIdStr);
         
         const newSections = arrayMove(sections, oldIndex, newIndex);
         setSections(newSections);
@@ -122,8 +124,8 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
         });
       } else {
         const allFields = sections.flatMap(section => section.fields);
-        const oldIndex = allFields.findIndex(item => item.id === active.id);
-        const newIndex = allFields.findIndex(item => item.id === over?.id);
+        const oldIndex = allFields.findIndex(item => item.id === activeIdStr);
+        const newIndex = allFields.findIndex(item => item.id === overIdStr);
         
         const newFields = arrayMove(allFields, oldIndex, newIndex);
         
@@ -137,13 +139,13 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
         setSections(newSections);
 
         // Save new field position
-        const field = allFields.find(f => f.id === active.id);
+        const field = allFields.find(f => f.id === activeIdStr);
         if (field) {
           const section = sections.find(s => 
-            s.fields.some(f => f.id === active.id)
+            s.fields.some(f => f.id === activeIdStr)
           );
           if (section) {
-            await saveFieldPosition(active.id, section.section, newIndex);
+            await saveFieldPosition(activeIdStr, section.section, newIndex);
           }
         }
       }
