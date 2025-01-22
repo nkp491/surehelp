@@ -33,7 +33,9 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5,
+        distance: 2, // Reduced distance for easier activation
+        delay: 50, // Small delay to prevent accidental drags
+        tolerance: 5, // Added tolerance for smoother initiation
       },
     }),
     useSensor(KeyboardSensor, {
@@ -43,6 +45,8 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
 
   const handleDragStart = (event: DragStartEvent) => {
     setActiveId(event.active.id.toString());
+    // Add a visual indication that dragging has started
+    document.body.style.cursor = 'grabbing';
   };
 
   const saveFieldPosition = async (fieldId: string, sectionName: string, position: number) => {
@@ -105,6 +109,8 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
     setActiveId(null);
+    // Reset cursor
+    document.body.style.cursor = '';
 
     if (over && active.id !== over.id) {
       const activeIdStr = active.id.toString();
@@ -115,37 +121,47 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
         const oldIndex = sections.findIndex(s => `section-${s.section}` === activeIdStr);
         const newIndex = sections.findIndex(s => `section-${s.section}` === overIdStr);
         
-        const newSections = arrayMove(sections, oldIndex, newIndex);
-        setSections(newSections);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newSections = arrayMove(sections, oldIndex, newIndex);
+          setSections(newSections);
+          
+          // Show success feedback
+          toast({
+            title: "Section moved",
+            description: "The section has been successfully repositioned",
+          });
 
-        // Save new section positions
-        newSections.forEach((section, index) => {
-          saveSectionPosition(section.section, index);
-        });
+          // Save new section positions
+          newSections.forEach((section, index) => {
+            saveSectionPosition(section.section, index);
+          });
+        }
       } else {
         const allFields = sections.flatMap(section => section.fields);
         const oldIndex = allFields.findIndex(item => item.id === activeIdStr);
         const newIndex = allFields.findIndex(item => item.id === overIdStr);
         
-        const newFields = arrayMove(allFields, oldIndex, newIndex);
-        
-        const newSections = sections.map(section => ({
-          ...section,
-          fields: newFields.filter(field => 
-            section.fields.some(originalField => originalField.id === field.id)
-          )
-        }));
-        
-        setSections(newSections);
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const newFields = arrayMove(allFields, oldIndex, newIndex);
+          
+          const newSections = sections.map(section => ({
+            ...section,
+            fields: newFields.filter(field => 
+              section.fields.some(originalField => originalField.id === field.id)
+            )
+          }));
+          
+          setSections(newSections);
 
-        // Save new field position
-        const field = allFields.find(f => f.id === activeIdStr);
-        if (field) {
-          const section = sections.find(s => 
-            s.fields.some(f => f.id === activeIdStr)
-          );
-          if (section) {
-            await saveFieldPosition(activeIdStr, section.section, newIndex);
+          // Save new field position
+          const field = allFields.find(f => f.id === activeIdStr);
+          if (field) {
+            const section = sections.find(s => 
+              s.fields.some(f => f.id === activeIdStr)
+            );
+            if (section) {
+              await saveFieldPosition(activeIdStr, section.section, newIndex);
+            }
           }
         }
       }
@@ -155,6 +171,7 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
   const dropAnimation = {
     ...defaultDropAnimation,
     dragSourceOpacity: 0.5,
+    duration: 200, // Faster animation for smoother feel
   };
 
   return (
@@ -175,7 +192,7 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
       </SortableContext>
       <DragOverlay dropAnimation={dropAnimation}>
         {activeId ? (
-          <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-primary shadow-lg p-4">
+          <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-primary shadow-lg p-4 cursor-grabbing">
             {activeId.startsWith('section-') ? (
               <h2 className="text-xl font-semibold text-gray-900">
                 {sections.find(s => `section-${s.section}` === activeId)?.section}
