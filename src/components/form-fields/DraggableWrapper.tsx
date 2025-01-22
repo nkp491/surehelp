@@ -14,23 +14,28 @@ const DraggableWrapper = ({ id, children }: DraggableWrapperProps) => {
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.6 : 1,
+    position: isDragging ? 'relative' : 'static',
+    zIndex: isDragging ? 1 : 'auto',
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="relative bg-white rounded-lg p-4 border shadow-sm"
+      className={`relative bg-white rounded-lg p-4 border shadow-sm
+        ${isDragging ? 'ring-2 ring-primary ring-offset-2' : ''}`}
     >
       <div
         {...attributes}
         {...listeners}
-        className="absolute right-2 top-2 cursor-move hover:text-primary"
+        className="absolute right-2 top-2 cursor-move hover:text-primary transition-colors duration-200"
       >
         <GripVertical className="h-5 w-5" />
       </div>

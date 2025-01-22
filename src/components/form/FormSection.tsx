@@ -27,25 +27,30 @@ const FormSection = ({
     setNodeRef,
     transform,
     transition,
+    isDragging,
   } = useSortable({ id: `section-${section}` });
 
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
+    opacity: isDragging ? 0.6 : 1,
+    position: isDragging ? 'relative' : 'static',
+    zIndex: isDragging ? 1 : 'auto',
   };
 
   return (
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3"
+      className={`bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3 
+        ${isDragging ? 'ring-2 ring-primary ring-offset-2' : ''}`}
     >
       <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold text-gray-900">{section}</h2>
         <div
           {...attributes}
           {...listeners}
-          className="cursor-move hover:text-primary"
+          className="cursor-move hover:text-primary transition-colors duration-200"
         >
           <GripVertical className="h-5 w-5" />
         </div>

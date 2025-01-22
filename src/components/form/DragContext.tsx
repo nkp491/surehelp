@@ -6,6 +6,10 @@ import {
   PointerSensor,
   useSensor,
   useSensors,
+  DragOverlay,
+  defaultDropAnimation,
+  DragStartEvent,
+  DragEndEvent,
 } from "@dnd-kit/core";
 import {
   arrayMove,
@@ -24,12 +28,22 @@ interface DragContextProps {
 }
 
 const DragContext = ({ children, sections, setSections }: DragContextProps) => {
+  const [activeId, setActiveId] = React.useState<string | null>(null);
+
   const sensors = useSensors(
-    useSensor(PointerSensor),
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 5, // Minimum distance before drag starts
+      },
+    }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     })
   );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveId(event.active.id as string);
+  };
 
   const saveFieldPosition = async (fieldId: string, sectionName: string, position: number) => {
     try {
@@ -88,15 +102,16 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
     }
   };
 
-  const handleDragEnd = async (event: any) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event;
+    setActiveId(null);
 
-    if (active.id !== over.id) {
+    if (active.id !== over?.id) {
       const isSection = active.id.startsWith('section-');
       
       if (isSection) {
         const oldIndex = sections.findIndex(s => `section-${s.section}` === active.id);
-        const newIndex = sections.findIndex(s => `section-${s.section}` === over.id);
+        const newIndex = sections.findIndex(s => `section-${s.section}` === over?.id);
         
         const newSections = arrayMove(sections, oldIndex, newIndex);
         setSections(newSections);
@@ -108,7 +123,7 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
       } else {
         const allFields = sections.flatMap(section => section.fields);
         const oldIndex = allFields.findIndex(item => item.id === active.id);
-        const newIndex = allFields.findIndex(item => item.id === over.id);
+        const newIndex = allFields.findIndex(item => item.id === over?.id);
         
         const newFields = arrayMove(allFields, oldIndex, newIndex);
         
@@ -135,10 +150,16 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
     }
   };
 
+  const dropAnimation = {
+    ...defaultDropAnimation,
+    dragSourceOpacity: 0.5,
+  };
+
   return (
     <DndContext
       sensors={sensors}
       collisionDetection={closestCenter}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
     >
       <SortableContext
@@ -150,6 +171,19 @@ const DragContext = ({ children, sections, setSections }: DragContextProps) => {
       >
         {children}
       </SortableContext>
+      <DragOverlay dropAnimation={dropAnimation}>
+        {activeId ? (
+          <div className="bg-white/50 backdrop-blur-sm rounded-lg border border-primary shadow-lg p-4">
+            {activeId.startsWith('section-') ? (
+              <h2 className="text-xl font-semibold text-gray-900">
+                {sections.find(s => `section-${s.section}` === activeId)?.section}
+              </h2>
+            ) : (
+              <div className="h-16 w-full bg-gray-50 rounded animate-pulse" />
+            )}
+          </div>
+        ) : null}
+      </DragOverlay>
     </DndContext>
   );
 };
