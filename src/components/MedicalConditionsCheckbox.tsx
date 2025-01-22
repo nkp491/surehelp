@@ -25,14 +25,14 @@ const CONDITIONS = [
 ];
 
 const MedicalConditionsCheckbox = ({
-  selectedConditions,
+  selectedConditions = [], // Add default empty array
   onChange,
 }: MedicalConditionsCheckboxProps) => {
   const handleCheckboxChange = (condition: string, checked: boolean) => {
     if (checked) {
-      onChange([...selectedConditions, condition]);
+      onChange([...(selectedConditions || []), condition]);
     } else {
-      onChange(selectedConditions.filter((c) => c !== condition));
+      onChange((selectedConditions || []).filter((c) => c !== condition));
     }
   };
 
@@ -44,7 +44,7 @@ const MedicalConditionsCheckbox = ({
           <div key={condition} className="flex items-center space-x-2">
             <Checkbox
               id={condition}
-              checked={selectedConditions.includes(condition)}
+              checked={(selectedConditions || []).includes(condition)}
               onCheckedChange={(checked) =>
                 handleCheckboxChange(condition, checked as boolean)
               }

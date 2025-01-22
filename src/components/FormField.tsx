@@ -32,7 +32,7 @@ interface FormFieldProps {
 const FormField = ({
   label,
   type,
-  value,
+  value = "", // Add default empty string
   onChange,
   placeholder,
   required = false,
@@ -51,7 +51,6 @@ const FormField = ({
     if (onChange) {
       onChange(newValue);
       
-      // Only track history for notes fields when we have a submission ID
       if (isNotesField && submissionId) {
         const user = await supabase.auth.getUser();
         if (!user.data.user) return;
@@ -67,7 +66,7 @@ const FormField = ({
   };
 
   if (type === "height") {
-    const [feet, inches] = value.split("'").map(v => v.replace('"', ''));
+    const [feet, inches] = (value || "0'0\"").split("'").map(v => v.replace('"', ''));
     
     return (
       <div className="space-y-2">
