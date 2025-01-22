@@ -27,24 +27,16 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
     return !section.section.includes("Spouse");
   });
 
-  // Separate assessment notes section from other sections
-  const assessmentNotesSection = filteredSections.find(section => 
-    section.section === "Assessment Notes"
-  );
-  const otherSections = filteredSections.filter(section => 
-    section.section !== "Assessment Notes"
-  );
-
   return (
     <form onSubmit={(e) => e.preventDefault()} className="container mx-auto px-4">
       <div className="flex justify-end mb-2">
         <FamilyMemberToggle />
       </div>
 
-      {/* Main grid for all sections except Assessment Notes */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-6">
+      {/* Main sections - full width */}
+      <div className="space-y-6">
         {/* Primary applicant sections */}
-        {otherSections.map((section) => (
+        {filteredSections.map((section) => (
           <FormSection
             key={section.section}
             section={section.section}
@@ -59,7 +51,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
         {/* Family member sections */}
         {familyMembers.map((member, index) => (
           <React.Fragment key={member.id}>
-            {otherSections
+            {filteredSections
               .filter(section => 
                 section.section.includes("Health Assessment") || 
                 section.section.includes("Income Assessment")
@@ -82,20 +74,6 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
           </React.Fragment>
         ))}
       </div>
-
-      {/* Assessment Notes section - full width */}
-      {assessmentNotesSection && (
-        <div className="w-full mb-6">
-          <FormSection
-            section={assessmentNotesSection.section}
-            fields={assessmentNotesSection.fields}
-            formData={formData}
-            setFormData={setFormData}
-            errors={errors}
-            submissionId={editingSubmission?.timestamp}
-          />
-        </div>
-      )}
       
       <FormButtons onSubmit={handleOutcomeSubmit} />
     </form>
