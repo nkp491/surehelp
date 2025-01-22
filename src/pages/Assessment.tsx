@@ -4,8 +4,8 @@ import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection"
 const Assessment = () => {
   return (
     <div className="h-screen flex flex-col">
-      {/* Sticky KPI Tracker */}
-      <div className="sticky top-0 z-10 bg-background border-b">
+      {/* KPI Tracker - removed sticky positioning */}
+      <div className="bg-background border-b">
         <BusinessMetrics />
       </div>
       
