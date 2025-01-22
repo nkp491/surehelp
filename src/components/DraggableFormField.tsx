@@ -3,7 +3,6 @@ import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
 import EmploymentStatusCheckbox from "./EmploymentStatusCheckbox";
 import InvestmentTypesCheckbox from "./InvestmentTypesCheckbox";
 import TobaccoUseField from "./form-fields/TobaccoUseField";
-import DraggableWrapper from "./form-fields/DraggableWrapper";
 
 interface DraggableFormFieldProps {
   id: string;
@@ -74,11 +73,7 @@ const DraggableFormField = ({
     }
   };
 
-  return (
-    <DraggableWrapper id={id}>
-      {renderField()}
-    </DraggableWrapper>
-  );
+  return renderField();
 };
 
 export default DraggableFormField;
