@@ -38,9 +38,9 @@ const FormSection = ({
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-white rounded-lg border-2 border-gray-200 shadow-md p-6 space-y-4"
+      className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3"
     >
-      <div className="flex justify-between items-center mb-4">
+      <div className="flex justify-between items-center mb-2">
         <h2 className="text-xl font-semibold text-gray-900">{section}</h2>
         <div
           {...attributes}
@@ -50,7 +50,7 @@ const FormSection = ({
           <GripVertical className="h-5 w-5" />
         </div>
       </div>
-      <div className="space-y-4">
+      <div className="space-y-3">
         {fields.map((field) => (
           <DraggableFormField
             key={field.id}
