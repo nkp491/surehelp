@@ -6,8 +6,6 @@ import FormSection from "./FormSection";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import SpouseToggle from "./SpouseToggle";
 import { FormSubmission } from "@/types/form";
-import DragContext from "./DragContext";
-import FormPositionLoader from "./FormPositionLoader";
 
 interface FormContentProps {
   editingSubmission?: FormSubmission | null;
@@ -15,7 +13,7 @@ interface FormContentProps {
 }
 
 const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) => {
-  const [sections, setSections] = React.useState(INITIAL_FIELDS);
+  const [sections] = React.useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { showSpouse } = useSpouseVisibility();
 
@@ -33,25 +31,22 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
 
   return (
     <form onSubmit={(e) => e.preventDefault()} className="max-w-[99%] mx-auto">
-      <FormPositionLoader sections={sections} setSections={setSections} />
       <div className="flex justify-end mb-2">
         <SpouseToggle />
       </div>
-      <DragContext sections={sections} setSections={setSections}>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-          {filteredSections.map((section) => (
-            <FormSection
-              key={section.section}
-              section={section.section}
-              fields={section.fields}
-              formData={formData}
-              setFormData={setFormData}
-              errors={errors}
-              submissionId={editingSubmission?.timestamp}
-            />
-          ))}
-        </div>
-      </DragContext>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+        {filteredSections.map((section) => (
+          <FormSection
+            key={section.section}
+            section={section.section}
+            fields={section.fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={editingSubmission?.timestamp}
+          />
+        ))}
+      </div>
       
       <FormButtons onSubmit={handleOutcomeSubmit} />
     </form>
