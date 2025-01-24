@@ -7,7 +7,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
 
     const interactable = interact(elementRef.current)
       .draggable({
-        inertia: false, // Disable inertia for more precise control
+        inertia: false,
         modifiers: [
           interact.modifiers.restrictRect({
             restriction: 'parent',
@@ -24,36 +24,34 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
         autoScroll: true,
         listeners: {
           start: (event) => {
-            if (event.target) {
-              event.target.style.zIndex = '1000';
-              event.target.style.opacity = '0.8';
-              event.target.style.transform = event.target.style.transform || 'translate(0px, 0px)';
-              event.target.style.transition = 'none'; // Disable transitions while dragging
-            }
+            const target = event.target as HTMLElement;
+            target.style.zIndex = '1000';
+            target.style.opacity = '0.8';
+            target.style.transform = target.style.transform || 'translate(0px, 0px)';
+            target.style.transition = 'none';
+            
+            // Store initial position
+            const rect = target.getBoundingClientRect();
+            target.setAttribute('data-x', rect.left.toString());
+            target.setAttribute('data-y', rect.top.toString());
           },
           move: (event) => {
-            if (event.target) {
-              const currentTransform = event.target.style.transform;
-              const matches = currentTransform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
-              const currentX = matches ? parseInt(matches[1]) : 0;
-              const currentY = matches ? parseInt(matches[2]) : 0;
+            const target = event.target as HTMLElement;
+            const x = (parseFloat(target.getAttribute('data-x') || '0') || 0) + event.dx;
+            const y = (parseFloat(target.getAttribute('data-y') || '0') || 0) + event.dy;
 
-              const newX = snapToGrid(currentX + event.dx);
-              const newY = snapToGrid(currentY + event.dy);
+            const newX = snapToGrid(x);
+            const newY = snapToGrid(y);
 
-              event.target.style.transform = `translate(${newX}px, ${newY}px)`;
-              
-              // Update data attributes for position tracking
-              event.target.setAttribute('data-x', newX.toString());
-              event.target.setAttribute('data-y', newY.toString());
-            }
+            target.style.transform = `translate(${newX}px, ${newY}px)`;
+            target.setAttribute('data-x', newX.toString());
+            target.setAttribute('data-y', newY.toString());
           },
           end: (event) => {
-            if (event.target) {
-              event.target.style.zIndex = 'auto';
-              event.target.style.opacity = '1';
-              event.target.style.transition = 'transform 0.2s ease-out'; // Re-enable transitions
-            }
+            const target = event.target as HTMLElement;
+            target.style.zIndex = 'auto';
+            target.style.opacity = '1';
+            target.style.transition = 'transform 0.2s ease-out';
           }
         }
       })
