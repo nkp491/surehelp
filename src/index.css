@@ -67,4 +67,23 @@
   .form-field-selected {
     @apply ring-2 ring-primary ring-offset-2;
   }
+
+  /* Add resize handles styling */
+  .form-field-container[data-resize] {
+    position: relative;
+  }
+
+  .form-field-container[data-resize]::before {
+    content: '';
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: var(--primary);
+    border-radius: 2px;
+  }
+
+  .form-field-container[data-resize="nw"]::before { top: -4px; left: -4px; cursor: nw-resize; }
+  .form-field-container[data-resize="ne"]::before { top: -4px; right: -4px; cursor: ne-resize; }
+  .form-field-container[data-resize="sw"]::before { bottom: -4px; left: -4px; cursor: sw-resize; }
+  .form-field-container[data-resize="se"]::before { bottom: -4px; right: -4px; cursor: se-resize; }
 }
