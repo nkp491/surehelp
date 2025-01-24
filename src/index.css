@@ -86,4 +86,17 @@
   .form-field-container[data-resize="ne"]::before { top: -4px; right: -4px; cursor: ne-resize; }
   .form-field-container[data-resize="sw"]::before { bottom: -4px; left: -4px; cursor: sw-resize; }
   .form-field-container[data-resize="se"]::before { bottom: -4px; right: -4px; cursor: se-resize; }
+
+  /* Edit mode specific styles */
+  .edit-mode .form-field-container {
+    @apply cursor-move border-2 border-dashed border-gray-300;
+  }
+
+  .edit-mode .form-field-container:hover {
+    @apply border-primary;
+  }
+
+  .edit-mode .bg-grid {
+    @apply border border-gray-200;
+  }
 }

@@ -1,5 +1,6 @@
 import { FormField } from "@/types/formTypes";
 import DraggableField from "./DraggableField";
+import { useFormBuilder } from "@/contexts/FormBuilderContext";
 
 interface DragDropAreaProps {
   fields: FormField[];
@@ -18,9 +19,13 @@ const DragDropArea = ({
   selectedField,
   setSelectedField,
 }: DragDropAreaProps) => {
+  const { isEditMode } = useFormBuilder();
+  
   return (
     <div 
-      className="relative min-h-[800px] bg-grid rounded-lg border border-gray-100 p-8" 
+      className={`relative min-h-[800px] rounded-lg p-8 transition-all duration-200 ${
+        isEditMode ? 'bg-grid edit-mode' : 'bg-white'
+      }`}
       onClick={() => setSelectedField(null)}
     >
       {fields.map((field) => {
