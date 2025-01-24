@@ -1,7 +1,44 @@
 import interact from "interactjs";
 import { snapToGrid } from "@/utils/gridUtils";
+import { useEffect } from "react";
 
 export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEditMode: boolean) => {
+  const handleKeyDown = (event: KeyboardEvent) => {
+    if (!elementRef.current || !isEditMode) return;
+    
+    const target = elementRef.current;
+    const transform = target.style.transform;
+    const matches = transform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
+    const currentX = matches ? parseInt(matches[1]) : 0;
+    const currentY = matches ? parseInt(matches[2]) : 0;
+    
+    const STEP = 32; // Same as grid size
+    let newX = currentX;
+    let newY = currentY;
+
+    switch (event.key) {
+      case 'ArrowLeft':
+        newX = currentX - STEP;
+        break;
+      case 'ArrowRight':
+        newX = currentX + STEP;
+        break;
+      case 'ArrowUp':
+        newY = currentY - STEP;
+        break;
+      case 'ArrowDown':
+        newY = currentY + STEP;
+        break;
+      default:
+        return;
+    }
+
+    target.style.transform = `translate(${newX}px, ${newY}px)`;
+    target.setAttribute('data-x', newX.toString());
+    target.setAttribute('data-y', newY.toString());
+    event.preventDefault();
+  };
+
   const initializeDragAndResize = () => {
     if (!elementRef.current || !isEditMode) return;
 
@@ -86,7 +123,14 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
         }
       });
 
+    // Add keyboard event listener when in edit mode
+    elementRef.current.tabIndex = 0; // Make the element focusable
+    elementRef.current.addEventListener('keydown', handleKeyDown);
+
     return () => {
+      if (elementRef.current) {
+        elementRef.current.removeEventListener('keydown', handleKeyDown);
+      }
       interactable.unset();
     };
   };
