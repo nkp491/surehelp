@@ -25,7 +25,11 @@ const FormSection = ({
   onRemove,
 }: FormSectionProps) => {
   const [selectedField, setSelectedField] = useState<string | null>(null);
-  const { fieldPositions, handleDragEnd, updateFieldProperties } = useFieldPositions(section);
+  const { fieldPositions, handleDragEnd, updateFieldProperties } = useFieldPositions({
+    section,
+    fields,
+    selectedField
+  });
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-6">

@@ -3,8 +3,15 @@ import { DragEndEvent } from "@dnd-kit/core";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { snapToGrid } from "@/utils/gridUtils";
+import { FormField } from "@/types/formTypes";
 
-export const useFieldPositions = (section: string) => {
+interface UseFieldPositionsProps {
+  section: string;
+  fields: FormField[];
+  selectedField: string | null;
+}
+
+export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPositionsProps) => {
   const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
@@ -50,6 +57,7 @@ export const useFieldPositions = (section: string) => {
             user_id: user.data.user.id,
             field_id: fieldId,
             section,
+            position: fields.findIndex(f => f.id === fieldId),
             x_position: newX,
             y_position: newY,
           });
