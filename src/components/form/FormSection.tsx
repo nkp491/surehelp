@@ -1,7 +1,11 @@
 import { FormField } from "@/types/formTypes";
-import { Button } from "@/components/ui/button";
-import { X } from "lucide-react";
-import DraggableFormField from "../DraggableFormField";
+import SectionHeader from "./SectionHeader";
+import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
+import { useState } from "react";
+import DraggableField from "../form-builder/DraggableField";
+import FormFieldProperties from "../form-builder/FormFieldProperties";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface FormSectionProps {
   section: string;
@@ -13,75 +17,149 @@ interface FormSectionProps {
   onRemove?: () => void;
 }
 
-const FormSection = ({ 
-  section, 
-  fields, 
-  formData, 
-  setFormData, 
+const FormSection = ({
+  section,
+  fields,
+  formData,
+  setFormData,
   errors,
   submissionId,
-  onRemove
+  onRemove,
 }: FormSectionProps) => {
-  // Split fields into two columns for all sections
-  const midPoint = Math.ceil(fields.length / 2);
-  const leftColumnFields = fields.slice(0, midPoint);
-  const rightColumnFields = fields.slice(midPoint);
+  const [selectedField, setSelectedField] = useState<string | null>(null);
+  const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});
+  const { toast } = useToast();
+  
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    })
+  );
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, delta } = event;
+    if (!active) return;
+
+    const fieldId = active.id as string;
+    const currentPosition = fieldPositions[fieldId] || {};
+    const newX = (currentPosition.x_position || 0) + delta.x;
+    const newY = (currentPosition.y_position || 0) + delta.y;
+
+    const newPositions = {
+      ...fieldPositions,
+      [fieldId]: {
+        ...currentPosition,
+        x_position: newX,
+        y_position: newY,
+      },
+    };
+
+    setFieldPositions(newPositions);
+
+    try {
+      const { error } = await supabase
+        .from("form_field_positions")
+        .upsert({
+          field_id: fieldId,
+          section,
+          x_position: newX,
+          y_position: newY,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error saving field position:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save field position",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFieldUpdate = async (updates: {
+    width?: string;
+    height?: string;
+    alignment?: string;
+  }) => {
+    if (!selectedField) return;
+
+    const newPositions = {
+      ...fieldPositions,
+      [selectedField]: {
+        ...fieldPositions[selectedField],
+        ...updates,
+      },
+    };
+
+    setFieldPositions(newPositions);
+
+    try {
+      const { error } = await supabase
+        .from("form_field_positions")
+        .upsert({
+          field_id: selectedField,
+          section,
+          ...updates,
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error("Error saving field properties:", error);
+      toast({
+        title: "Error",
+        description: "Failed to save field properties",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
-      <div className="flex justify-between items-center mb-2">
-        <h2 className="text-lg font-semibold text-gray-900">{section}</h2>
-        {onRemove && (
-          <Button
-            onClick={onRemove}
-            variant="ghost"
-            size="sm"
-            className="text-red-600 hover:text-red-700"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        )}
-      </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {/* Left Column */}
-        <div className="space-y-3">
-          {leftColumnFields.map((field) => (
-            <DraggableFormField
-              key={field.id}
-              id={field.id}
-              fieldType={field.type}
-              label={field.label}
-              value={formData[field.id]}
-              onChange={(value) =>
-                setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-              }
-              placeholder={field.placeholder}
-              required={field.required}
-              error={errors[field.id]}
-              submissionId={submissionId}
-            />
-          ))}
+      <SectionHeader section={section} onRemove={onRemove} />
+      
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+        <div className="relative min-h-[200px]" onClick={() => setSelectedField(null)}>
+          {fields.map((field) => {
+            const position = fieldPositions[field.id] || {};
+            return (
+              <DraggableField
+                key={field.id}
+                id={field.id}
+                fieldType={field.type}
+                label={field.label}
+                value={formData[field.id]}
+                onChange={(value) =>
+                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+                }
+                width={position.width}
+                height={position.height}
+                alignment={position.alignment}
+                onSelect={() => setSelectedField(field.id)}
+                isSelected={selectedField === field.id}
+              />
+            );
+          })}
         </div>
-        {/* Right Column */}
-        <div className="space-y-3">
-          {rightColumnFields.map((field) => (
-            <DraggableFormField
-              key={field.id}
-              id={field.id}
-              fieldType={field.type}
-              label={field.label}
-              value={formData[field.id]}
-              onChange={(value) =>
-                setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+      </DndContext>
+
+      <FormFieldProperties
+        open={!!selectedField}
+        onClose={() => setSelectedField(null)}
+        selectedField={
+          selectedField
+            ? {
+                id: selectedField,
+                ...fieldPositions[selectedField],
               }
-              placeholder={field.placeholder}
-              required={field.required}
-              error={errors[field.id]}
-              submissionId={submissionId}
-            />
-          ))}
-        </div>
-      </div>
+            : null
+        }
+        onUpdate={handleFieldUpdate}
+      />
     </div>
   );
 };

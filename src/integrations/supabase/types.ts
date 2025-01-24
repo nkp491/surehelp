@@ -154,31 +154,46 @@ export type Database = {
       }
       form_field_positions: {
         Row: {
+          alignment: string | null
           created_at: string
           field_id: string
+          height: string | null
           id: string
           position: number
           section: string
           updated_at: string
           user_id: string
+          width: string | null
+          x_position: number | null
+          y_position: number | null
         }
         Insert: {
+          alignment?: string | null
           created_at?: string
           field_id: string
+          height?: string | null
           id?: string
           position: number
           section: string
           updated_at?: string
           user_id: string
+          width?: string | null
+          x_position?: number | null
+          y_position?: number | null
         }
         Update: {
+          alignment?: string | null
           created_at?: string
           field_id?: string
+          height?: string | null
           id?: string
           position?: number
           section?: string
           updated_at?: string
           user_id?: string
+          width?: string | null
+          x_position?: number | null
+          y_position?: number | null
         }
         Relationships: []
       }
