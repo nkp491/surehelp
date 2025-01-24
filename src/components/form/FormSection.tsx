@@ -47,31 +47,60 @@ const FormSection = ({
     const newX = Math.round((currentPosition.x_position || 0) + delta.x);
     const newY = Math.round((currentPosition.y_position || 0) + delta.y);
 
-    const newPositions = {
-      ...fieldPositions,
-      [fieldId]: {
-        ...currentPosition,
-        x_position: newX,
-        y_position: newY,
-      },
-    };
-
-    setFieldPositions(newPositions);
-
     try {
-      const { error } = await supabase
-        .from("form_field_positions")
-        .upsert({
-          field_id: fieldId,
-          section,
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) {
+        throw new Error("No authenticated user found");
+      }
+
+      // First try to get existing position
+      const { data: existingPosition } = await supabase
+        .from('form_field_positions')
+        .select('*')
+        .eq('user_id', user.data.user.id)
+        .eq('field_id', fieldId)
+        .eq('section', section)
+        .maybeSingle();
+
+      if (existingPosition) {
+        // Update existing position
+        const { error: updateError } = await supabase
+          .from('form_field_positions')
+          .update({
+            x_position: newX,
+            y_position: newY,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingPosition.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new position
+        const { error: insertError } = await supabase
+          .from('form_field_positions')
+          .insert({
+            user_id: user.data.user.id,
+            field_id: fieldId,
+            section,
+            x_position: newX,
+            y_position: newY,
+            position: fields.findIndex(f => f.id === fieldId),
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      // Update local state
+      setFieldPositions(prev => ({
+        ...prev,
+        [fieldId]: {
+          ...prev[fieldId],
           x_position: newX,
           y_position: newY,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          position: fields.findIndex(f => f.id === fieldId),
-        });
+        },
+      }));
 
-      if (error) throw error;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error saving field position:", error);
       toast({
         title: "Error",
@@ -88,31 +117,57 @@ const FormSection = ({
   }) => {
     if (!selectedField) return;
 
-    const newPositions = {
-      ...fieldPositions,
-      [selectedField]: {
-        ...fieldPositions[selectedField],
-        ...updates,
-      },
-    };
-
-    setFieldPositions(newPositions);
-
     try {
-      const { error } = await supabase
-        .from("form_field_positions")
-        .upsert({
-          user_id: (await supabase.auth.getUser()).data.user?.id,
-          width: updates.width,
-          height: updates.height,
-          alignment: updates.alignment,
-          field_id: selectedField,
-          section,
-          position: fields.findIndex(f => f.id === selectedField),
-        });
+      const user = await supabase.auth.getUser();
+      if (!user.data.user) {
+        throw new Error("No authenticated user found");
+      }
 
-      if (error) throw error;
-    } catch (error) {
+      // First try to get existing position
+      const { data: existingPosition } = await supabase
+        .from('form_field_positions')
+        .select('*')
+        .eq('user_id', user.data.user.id)
+        .eq('field_id', selectedField)
+        .eq('section', section)
+        .maybeSingle();
+
+      if (existingPosition) {
+        // Update existing position
+        const { error: updateError } = await supabase
+          .from('form_field_positions')
+          .update({
+            ...updates,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', existingPosition.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // Insert new position
+        const { error: insertError } = await supabase
+          .from('form_field_positions')
+          .insert({
+            user_id: user.data.user.id,
+            field_id: selectedField,
+            section,
+            position: fields.findIndex(f => f.id === selectedField),
+            ...updates,
+          });
+
+        if (insertError) throw insertError;
+      }
+
+      // Update local state
+      setFieldPositions(prev => ({
+        ...prev,
+        [selectedField]: {
+          ...prev[selectedField],
+          ...updates,
+        },
+      }));
+
+    } catch (error: any) {
       console.error("Error saving field properties:", error);
       toast({
         title: "Error",
