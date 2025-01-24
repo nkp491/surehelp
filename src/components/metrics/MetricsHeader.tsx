@@ -38,12 +38,14 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   };
 
   return (
-    <div className="flex justify-between items-center px-1">
-      <h2 className="text-lg font-semibold text-[#2A6F97]">KPI Tracker</h2>
+    <div className="flex justify-between items-center px-1 py-2">
+      <h2 className="text-lg font-medium text-[#2A6F97] flex items-center">
+        KPI Tracker
+      </h2>
       <Button 
         onClick={handleSave}
         size="sm"
-        className="bg-[#6CAEC2] hover:bg-[#4A8A9E] text-white flex items-center gap-2 transition-colors duration-200"
+        className="bg-[#6CAEC2] hover:bg-[#4A8A9E] text-white flex items-center gap-2 transition-colors duration-200 rounded-full px-4"
         title="Save today's metrics"
       >
         <Check className="h-4 w-4" />
