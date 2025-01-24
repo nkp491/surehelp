@@ -1,9 +1,7 @@
-import { useState } from "react";
 import { FormField } from "@/types/formTypes";
 import SectionHeader from "./SectionHeader";
-import DragDropArea from "../form-builder/DragDropArea";
-import FormFieldProperties from "../form-builder/FormFieldProperties";
-import { useFieldPositions } from "../form-builder/useFieldPositions";
+import HealthMetricsRow from "./HealthMetricsRow";
+import TwoColumnLayout from "./TwoColumnLayout";
 
 interface FormSectionProps {
   section: string;
@@ -15,48 +13,44 @@ interface FormSectionProps {
   onRemove?: () => void;
 }
 
-const FormSection = ({
-  section,
-  fields,
-  formData,
-  setFormData,
+const FormSection = ({ 
+  section, 
+  fields, 
+  formData, 
+  setFormData, 
   errors,
   submissionId,
-  onRemove,
+  onRemove
 }: FormSectionProps) => {
-  const [selectedField, setSelectedField] = useState<string | null>(null);
-  const { fieldPositions, handleDragEnd, updateFieldProperties } = useFieldPositions({
-    section,
-    fields,
-    selectedField
-  });
+  // Function to check if a field should be rendered in the special row
+  const isSpecialField = (fieldId: string) => {
+    return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
+  };
+
+  // Separate special fields from regular fields
+  const regularFields = fields.filter(field => !isSpecialField(field.id));
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-6">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
       <SectionHeader section={section} onRemove={onRemove} />
       
-      <DragDropArea
-        fields={fields}
-        fieldPositions={fieldPositions}
+      {/* Special row for height, weight, and tobacco use if this is the Primary Health Assessment section */}
+      {section === "Primary Health Assessment" && (
+        <HealthMetricsRow
+          formData={formData}
+          setFormData={setFormData}
+          errors={errors}
+          submissionId={submissionId}
+        />
+      )}
+
+      {/* Regular two-column layout for remaining fields */}
+      <TwoColumnLayout
+        fields={regularFields}
         formData={formData}
         setFormData={setFormData}
-        selectedField={selectedField}
-        setSelectedField={setSelectedField}
-        onDragEnd={handleDragEnd}
-      />
-
-      <FormFieldProperties
-        open={!!selectedField}
-        onClose={() => setSelectedField(null)}
-        selectedField={
-          selectedField
-            ? {
-                id: selectedField,
-                ...fieldPositions[selectedField],
-              }
-            : null
-        }
-        onUpdate={updateFieldProperties}
+        errors={errors}
+        submissionId={submissionId}
       />
     </div>
   );

@@ -1,3 +1,4 @@
+import { FormField } from "@/types/formTypes";
 import DraggableFormField from "../DraggableFormField";
 
 interface HealthMetricsRowProps {
@@ -8,42 +9,28 @@ interface HealthMetricsRowProps {
 }
 
 const HealthMetricsRow = ({ formData, setFormData, errors, submissionId }: HealthMetricsRowProps) => {
+  const healthMetrics = [
+    { id: 'height', type: 'height', label: 'Height' },
+    { id: 'weight', type: 'text', label: 'Weight' },
+    { id: 'tobaccoUse', type: 'tobaccoUse', label: 'Tobacco Use' }
+  ];
+
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <DraggableFormField
-        id="height"
-        fieldType="height"
-        label="Height"
-        value={formData.height}
-        onChange={(value) =>
-          setFormData((prev: any) => ({ ...prev, height: value }))
-        }
-        error={errors.height}
-        submissionId={submissionId}
-      />
-      <DraggableFormField
-        id="weight"
-        fieldType="text"
-        label="Primary Weight"
-        value={formData.weight}
-        onChange={(value) =>
-          setFormData((prev: any) => ({ ...prev, weight: value }))
-        }
-        error={errors.weight}
-        submissionId={submissionId}
-        placeholder="lbs"
-      />
-      <DraggableFormField
-        id="tobaccoUse"
-        fieldType="tobaccoUse"
-        label="Tobacco Use"
-        value={formData.tobaccoUse}
-        onChange={(value) =>
-          setFormData((prev: any) => ({ ...prev, tobaccoUse: value }))
-        }
-        error={errors.tobaccoUse}
-        submissionId={submissionId}
-      />
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {healthMetrics.map((field) => (
+        <DraggableFormField
+          key={field.id}
+          id={field.id}
+          fieldType={field.type}
+          label={field.label}
+          value={formData[field.id]}
+          onChange={(value) =>
+            setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+          }
+          error={errors[field.id]}
+          submissionId={submissionId}
+        />
+      ))}
     </div>
   );
 };
