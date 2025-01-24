@@ -29,6 +29,11 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
     return { section, fieldPositions, handleDragEnd };
   });
 
+  const handleFormSubmit = (e: React.MouseEvent, outcome: string) => {
+    e.preventDefault();
+    handleSubmit(e, outcome);
+  };
+
   return (
     <form onSubmit={(e) => e.preventDefault()} className="container mx-auto px-4">
       <div className="space-y-6">
@@ -45,7 +50,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
         ))}
       </div>
       
-      <FormButtons onSubmit={handleSubmit} />
+      <FormButtons onSubmit={handleFormSubmit} />
     </form>
   );
 };
