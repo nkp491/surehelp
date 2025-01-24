@@ -39,7 +39,7 @@ export const useFormLogic = (
     }));
   }, [age, totalIncome, setFormData]);
 
-  const handleSubmit = async (e: React.MouseEvent | React.FormEvent, outcome: string) => {
+  const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement> | React.FormEvent, outcome: string) => {
     const validationErrors = validateForm(formData);
     setErrors(validationErrors);
     

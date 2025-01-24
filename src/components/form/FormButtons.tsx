@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Check, Clock, X } from "lucide-react";
 
 interface FormButtonsProps {
-  onSubmit: (e: React.MouseEvent, outcome: string) => void;
+  onSubmit: (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => void;
 }
 
 const FormButtons = ({ onSubmit }: FormButtonsProps) => {

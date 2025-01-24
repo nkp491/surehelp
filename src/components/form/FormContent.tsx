@@ -2,23 +2,21 @@ import React from "react";
 import { INITIAL_FIELDS } from "./FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
 import FormButtons from "./FormButtons";
-import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
 import { FormSubmission } from "@/types/form";
-import { useFormBuilder } from "@/contexts/FormBuilderContext";
+import { useFieldPositions } from "@/hooks/form-builder/useFieldPositions";
 import DragDropArea from "../form-builder/DragDropArea";
-import { useFieldPositions } from "../form-builder/useFieldPositions";
+import { useFormBuilder } from "@/contexts/FormBuilderContext";
 
 interface FormContentProps {
   editingSubmission?: FormSubmission | null;
   onUpdate?: (submission: FormSubmission) => void;
 }
 
-const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) => {
+const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const [sections] = React.useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
-  const { familyMembers, removeFamilyMember } = useFamilyMembers();
-  const { isEditMode, selectedField, setSelectedField } = useFormBuilder();
-  
+  const { selectedField, setSelectedField } = useFormBuilder();
+
   // Get field positions and handlers for each section
   const sectionPositions = sections.map(section => {
     const { fieldPositions, handleDragEnd } = useFieldPositions({
@@ -29,7 +27,7 @@ const FormContent = ({ editingSubmission = null, onUpdate }: FormContentProps) =
     return { section, fieldPositions, handleDragEnd };
   });
 
-  const handleFormSubmit = (e: React.MouseEvent, outcome: string) => {
+  const handleFormSubmit = (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => {
     e.preventDefault();
     handleSubmit(e, outcome);
   };
