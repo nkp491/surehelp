@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useFormBuilder } from "@/contexts/FormBuilderContext";
 
 interface FormFieldPropertiesProps {
   open: boolean;
@@ -37,7 +38,9 @@ const FormFieldProperties = ({
   selectedField,
   onUpdate,
 }: FormFieldPropertiesProps) => {
-  if (!selectedField) return null;
+  const { isEditMode } = useFormBuilder();
+
+  if (!isEditMode || !selectedField) return null;
 
   return (
     <Sheet open={open} onOpenChange={onClose}>

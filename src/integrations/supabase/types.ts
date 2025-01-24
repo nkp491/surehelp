@@ -159,10 +159,14 @@ export type Database = {
           field_id: string
           height: string | null
           id: string
+          is_required: boolean | null
+          label_text: string | null
+          placeholder_text: string | null
           position: number
           section: string
           updated_at: string
           user_id: string
+          validation_rules: Json | null
           width: string | null
           x_position: number | null
           y_position: number | null
@@ -173,10 +177,14 @@ export type Database = {
           field_id: string
           height?: string | null
           id?: string
+          is_required?: boolean | null
+          label_text?: string | null
+          placeholder_text?: string | null
           position: number
           section: string
           updated_at?: string
           user_id: string
+          validation_rules?: Json | null
           width?: string | null
           x_position?: number | null
           y_position?: number | null
@@ -187,10 +195,14 @@ export type Database = {
           field_id?: string
           height?: string | null
           id?: string
+          is_required?: boolean | null
+          label_text?: string | null
+          placeholder_text?: string | null
           position?: number
           section?: string
           updated_at?: string
           user_id?: string
+          validation_rules?: Json | null
           width?: string | null
           x_position?: number | null
           y_position?: number | null
