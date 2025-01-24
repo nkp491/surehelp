@@ -2,6 +2,7 @@ import Navigation from "./Navigation";
 import ProfileMenu from "./ProfileMenu";
 import MetricsSection from "../dashboard/MetricsSection";
 import { useLocation } from "react-router-dom";
+import { MetricsProvider } from "@/contexts/MetricsContext";
 
 const Header = () => {
   const location = useLocation();
@@ -25,9 +26,11 @@ const Header = () => {
         
         {/* Metrics Section - Only show on assessment page */}
         {showMetrics && (
-          <div className="py-2 -mb-[1px]">
-            <MetricsSection />
-          </div>
+          <MetricsProvider>
+            <div className="py-2 -mb-[1px]">
+              <MetricsSection />
+            </div>
+          </MetricsProvider>
         )}
       </div>
     </header>
