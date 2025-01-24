@@ -12,14 +12,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
           interact.modifiers.restrictRect({
             restriction: 'parent',
             endOnly: true
-          }),
-          interact.modifiers.snap({
-            targets: [
-              interact.snappers.grid({ x: 16, y: 16 })
-            ],
-            range: 10,
-            relativePoints: [{ x: 0, y: 0 }]
-          }),
+          })
         ],
         autoScroll: true,
         listeners: {
@@ -30,16 +23,21 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             target.style.transform = target.style.transform || 'translate(0px, 0px)';
             target.style.transition = 'none';
             
-            // Store initial position
-            const rect = target.getBoundingClientRect();
-            target.setAttribute('data-x', rect.left.toString());
-            target.setAttribute('data-y', rect.top.toString());
+            // Get current transform values
+            const transform = target.style.transform;
+            const matches = transform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
+            const currentX = matches ? parseInt(matches[1]) : 0;
+            const currentY = matches ? parseInt(matches[2]) : 0;
+            
+            target.setAttribute('data-x', currentX.toString());
+            target.setAttribute('data-y', currentY.toString());
           },
           move: (event) => {
             const target = event.target as HTMLElement;
             const x = (parseFloat(target.getAttribute('data-x') || '0') || 0) + event.dx;
             const y = (parseFloat(target.getAttribute('data-y') || '0') || 0) + event.dy;
 
+            // Allow negative values for y to enable upward movement
             const newX = snapToGrid(x);
             const newY = snapToGrid(y);
 
