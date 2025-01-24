@@ -75,7 +75,7 @@ const FormField = ({
           {required && <span className="text-destructive ml-1">*</span>}
         </Label>
         <div className="flex gap-1">
-          <div className="flex-1">
+          <div className="w-12">
             <Input
               type="number"
               value={feet || ""}
@@ -87,12 +87,12 @@ const FormField = ({
               placeholder="ft"
               min="0"
               max="9"
-              className="h-8 px-2 text-sm"
+              className="h-8 px-1 text-sm"
               required={required}
               readOnly={readOnly}
             />
           </div>
-          <div className="flex-1">
+          <div className="w-12">
             <Input
               type="number"
               value={inches || ""}
@@ -104,7 +104,7 @@ const FormField = ({
               placeholder="in"
               min="0"
               max="11"
-              className="h-8 px-2 text-sm"
+              className="h-8 px-1 text-sm"
               required={required}
               readOnly={readOnly}
             />
