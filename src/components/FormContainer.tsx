@@ -3,7 +3,6 @@ import { MetricsProvider } from "@/contexts/MetricsContext";
 import { FamilyMembersProvider } from "@/contexts/FamilyMembersContext";
 import { FormBuilderProvider } from "@/contexts/FormBuilderContext";
 import FormContent from "@/components/form/FormContent";
-import MetricsSection from "@/components/dashboard/MetricsSection";
 import EditModeToggle from "./form-builder/EditModeToggle";
 
 interface FormContainerProps {
@@ -18,8 +17,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
         <FormBuilderProvider>
           <div className="space-y-4">
             <div className="sticky top-0 z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 pb-2">
-              <div className="flex justify-between items-center mb-4">
-                <MetricsSection />
+              <div className="flex justify-end items-center mb-4">
                 <EditModeToggle />
               </div>
             </div>
