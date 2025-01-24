@@ -1,11 +1,11 @@
-import { FormField } from "@/types/formTypes";
-import SectionHeader from "./SectionHeader";
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { useState } from "react";
 import DraggableField from "../form-builder/DraggableField";
 import FormFieldProperties from "../form-builder/FormFieldProperties";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { FormField } from "@/types/formTypes";
+import SectionHeader from "./SectionHeader";
 
 interface FormSectionProps {
   section: string;
@@ -44,8 +44,8 @@ const FormSection = ({
 
     const fieldId = active.id as string;
     const currentPosition = fieldPositions[fieldId] || {};
-    const newX = (currentPosition.x_position || 0) + delta.x;
-    const newY = (currentPosition.y_position || 0) + delta.y;
+    const newX = Math.round((currentPosition.x_position || 0) + delta.x);
+    const newY = Math.round((currentPosition.y_position || 0) + delta.y);
 
     const newPositions = {
       ...fieldPositions,
@@ -67,7 +67,7 @@ const FormSection = ({
           x_position: newX,
           y_position: newY,
           user_id: (await supabase.auth.getUser()).data.user?.id,
-          position: fields.findIndex(f => f.id === fieldId), // Add position field
+          position: fields.findIndex(f => f.id === fieldId),
         });
 
       if (error) throw error;
@@ -108,7 +108,7 @@ const FormSection = ({
           alignment: updates.alignment,
           field_id: selectedField,
           section,
-          position: fields.findIndex(f => f.id === selectedField), // Add position field
+          position: fields.findIndex(f => f.id === selectedField),
         });
 
       if (error) throw error;
