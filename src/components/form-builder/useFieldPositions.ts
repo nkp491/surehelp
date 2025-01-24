@@ -45,6 +45,7 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
           .update({
             x_position: newX,
             y_position: newY,
+            position: fields.findIndex(f => f.id === fieldId),
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingPosition.id);
@@ -110,11 +111,14 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
         .eq('section', section)
         .maybeSingle();
 
+      const position = fields.findIndex(f => f.id === selectedField);
+
       if (existingPosition) {
         const { error: updateError } = await supabase
           .from('form_field_positions')
           .update({
             ...updates,
+            position,
             updated_at: new Date().toISOString(),
           })
           .eq('id', existingPosition.id);
@@ -127,7 +131,7 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
             user_id: user.data.user.id,
             field_id: selectedField,
             section,
-            position: fields.findIndex(f => f.id === selectedField),
+            position,
             ...updates,
           });
 
@@ -141,6 +145,11 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
           ...updates,
         },
       }));
+
+      toast({
+        title: "Success",
+        description: "Field properties updated",
+      });
 
     } catch (error: any) {
       console.error("Error saving field properties:", error);
