@@ -8,22 +8,22 @@ interface MetricControlsProps {
 
 const MetricControls = ({ onIncrement, onDecrement }: MetricControlsProps) => {
   return (
-    <div className="flex items-center gap-2 w-full justify-center">
+    <div className="flex items-center gap-1.5 w-full justify-center">
       <Button
         onClick={onDecrement}
         variant="outline"
         size="icon"
-        className="h-8 w-8"
+        className="h-7 w-7"
       >
-        <Minus className="h-4 w-4" />
+        <Minus className="h-3.5 w-3.5" />
       </Button>
       <Button
         onClick={onIncrement}
         variant="outline"
         size="icon"
-        className="h-8 w-8"
+        className="h-7 w-7"
       >
-        <Plus className="h-4 w-4" />
+        <Plus className="h-3.5 w-3.5" />
       </Button>
     </div>
   );

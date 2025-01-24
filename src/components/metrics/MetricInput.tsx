@@ -49,7 +49,7 @@ const MetricInput = ({ metric, currentValue, onInputChange, isAP }: MetricInputP
   return (
     <div className="relative">
       {isAP && (
-        <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-primary">
+        <span className="absolute left-2 top-1/2 transform -translate-y-1/2 text-primary text-sm">
           $
         </span>
       )}
@@ -57,7 +57,7 @@ const MetricInput = ({ metric, currentValue, onInputChange, isAP }: MetricInputP
         type="text"
         value={formatValue(currentValue, isAP)}
         onChange={handleDirectInput}
-        className={`text-center w-24 font-bold text-primary ${isAP ? 'pl-6' : ''}`}
+        className={`text-center w-20 h-7 text-sm font-bold text-primary ${isAP ? 'pl-6' : ''}`}
         min="0"
         step={isAP ? "0.01" : "1"}
       />
