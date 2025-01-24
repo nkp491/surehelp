@@ -2,6 +2,7 @@ import React from "react";
 import { INITIAL_FIELDS } from "./FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
 import FormButtons from "./FormButtons";
+import { FormSubmission } from "@/types/form";
 import { useFieldPositions } from "@/components/form-builder/useFieldPositions";
 import DragDropArea from "../form-builder/DragDropArea";
 import { useFormBuilder } from "@/contexts/FormBuilderContext";
