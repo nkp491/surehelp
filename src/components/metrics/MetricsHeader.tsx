@@ -13,7 +13,6 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   const { toast } = useToast();
 
   const handleSave = async () => {
-    // Get today's date in ISO format to ensure correct timezone handling
     const today = new Date();
     console.log('[MetricsHeader] Saving metrics for date:', {
       date: format(today, 'yyyy-MM-dd'),
@@ -22,7 +21,6 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
     
     await onSave();
     
-    // Reset all metrics to 0 after saving
     setMetrics({
       leads: 0,
       calls: 0,
@@ -40,10 +38,11 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   };
 
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex justify-between items-center px-1">
       <h2 className="text-lg font-semibold text-[#2A6F97]">KPI Tracker</h2>
       <Button 
         onClick={handleSave}
+        size="sm"
         className="bg-[#6CAEC2] hover:bg-[#4A8A9E] text-white flex items-center gap-2 transition-colors duration-200"
         title="Save today's metrics"
       >

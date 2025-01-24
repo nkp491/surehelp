@@ -56,9 +56,9 @@ const MetricButtons = ({
   };
 
   return (
-    <Card className="bg-[#FFFCF6] p-4">
+    <Card className="bg-white/80 p-3 shadow-sm hover:shadow-md transition-shadow duration-200">
       <div className="flex flex-col items-center gap-2">
-        <h3 className="font-semibold text-lg capitalize text-primary">
+        <h3 className="font-semibold text-sm text-primary capitalize">
           {formatMetricName(metric)}
         </h3>
         <MetricInput
