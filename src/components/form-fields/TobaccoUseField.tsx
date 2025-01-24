@@ -13,15 +13,15 @@ const TobaccoUseField = ({ value, onChange }: TobaccoUseFieldProps) => {
       <RadioGroup
         value={value}
         onValueChange={onChange}
-        className="flex space-x-4"
+        className="flex items-center space-x-4"
       >
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="yes" id="yes" />
-          <Label htmlFor="yes">Yes</Label>
+          <Label htmlFor="yes" className="text-sm">Yes</Label>
         </div>
         <div className="flex items-center space-x-2">
           <RadioGroupItem value="no" id="no" />
-          <Label htmlFor="no">No</Label>
+          <Label htmlFor="no" className="text-sm">No</Label>
         </div>
       </RadioGroup>
     </div>

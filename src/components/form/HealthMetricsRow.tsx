@@ -9,8 +9,8 @@ interface HealthMetricsRowProps {
 
 const HealthMetricsRow = ({ formData, setFormData, errors, submissionId }: HealthMetricsRowProps) => {
   return (
-    <div className="grid grid-cols-3 gap-4 mb-4">
-      <div className="w-full">
+    <div className="flex gap-4 mb-4 items-start">
+      <div className="w-1/4">
         <DraggableFormField
           id="height"
           fieldType="height"
@@ -23,7 +23,7 @@ const HealthMetricsRow = ({ formData, setFormData, errors, submissionId }: Healt
           submissionId={submissionId}
         />
       </div>
-      <div className="w-full">
+      <div className="w-1/4">
         <DraggableFormField
           id="weight"
           fieldType="text"
@@ -34,9 +34,10 @@ const HealthMetricsRow = ({ formData, setFormData, errors, submissionId }: Healt
           }
           error={errors.weight}
           submissionId={submissionId}
+          placeholder="Enter weight"
         />
       </div>
-      <div className="w-full">
+      <div className="w-2/4">
         <DraggableFormField
           id="tobaccoUse"
           fieldType="tobaccoUse"

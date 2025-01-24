@@ -32,7 +32,7 @@ interface FormFieldProps {
 const FormField = ({
   label,
   type,
-  value = "", // Add default empty string
+  value = "",
   onChange,
   placeholder,
   required = false,
@@ -84,10 +84,13 @@ const FormField = ({
                 const newInches = inches || "0";
                 onChange?.(`${newFeet}'${newInches}"`);
               }}
-              placeholder="Feet"
+              placeholder="ft"
               min="0"
               max="9"
-              className={cn(error ? "border-destructive" : "border-input")}
+              className={cn(
+                "h-9 px-2 text-sm",
+                error ? "border-destructive" : "border-input"
+              )}
               required={required}
               readOnly={readOnly}
             />
@@ -101,10 +104,13 @@ const FormField = ({
                 const currentFeet = feet || "0";
                 onChange?.(`${currentFeet}'${newInches}"`);
               }}
-              placeholder="Inches"
+              placeholder="in"
               min="0"
               max="11"
-              className={cn(error ? "border-destructive" : "border-input")}
+              className={cn(
+                "h-9 px-2 text-sm",
+                error ? "border-destructive" : "border-input"
+              )}
               required={required}
               readOnly={readOnly}
             />
