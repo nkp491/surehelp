@@ -42,24 +42,51 @@ const DraggableField = ({
 
     const interactable = interact(elementRef.current)
       .draggable({
-        inertia: false,
+        inertia: true,
         modifiers: [
+          interact.modifiers.restrictRect({
+            restriction: 'parent',
+            endOnly: true
+          }),
           interact.modifiers.snap({
             targets: [
-              interact.snappers.grid({ x: 32, y: 32 })
+              interact.snappers.grid({ x: 16, y: 16 })
             ],
-            range: 20,
+            range: 10,
             relativePoints: [{ x: 0, y: 0 }]
           }),
         ],
+        autoScroll: true,
         listeners: {
+          start: () => {
+            if (elementRef.current) {
+              elementRef.current.style.zIndex = '1000';
+              elementRef.current.style.opacity = '0.8';
+              elementRef.current.style.transform = elementRef.current.style.transform || 'translate(0px, 0px)';
+            }
+          },
           move: (event) => {
             position.x += event.dx;
             position.y += event.dy;
 
             if (event.target) {
-              event.target.style.transform = 
-                `translate(${snapToGrid(position.x)}px, ${snapToGrid(position.y)}px)`;
+              const currentTransform = event.target.style.transform;
+              const matches = currentTransform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
+              const currentX = matches ? parseInt(matches[1]) : 0;
+              const currentY = matches ? parseInt(matches[2]) : 0;
+
+              const newX = snapToGrid(currentX + event.dx);
+              const newY = snapToGrid(currentY + event.dy);
+
+              event.target.style.transform = `translate(${newX}px, ${newY}px)`;
+              event.target.style.transition = 'none';
+            }
+          },
+          end: () => {
+            if (elementRef.current) {
+              elementRef.current.style.zIndex = 'auto';
+              elementRef.current.style.opacity = '1';
+              elementRef.current.style.transition = 'transform 0.2s ease-out';
             }
           }
         }
@@ -67,14 +94,18 @@ const DraggableField = ({
       .resizable({
         edges: { left: true, right: true, bottom: true, top: true },
         modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: 200, height: 50 }
+          }),
           interact.modifiers.snap({
             targets: [
-              interact.snappers.grid({ x: 32, y: 32 })
+              interact.snappers.grid({ x: 16, y: 16 })
             ],
-            range: 20,
+            range: 10,
             relativePoints: [{ x: 0, y: 0 }]
           }),
         ],
+        inertia: true,
         listeners: {
           move: (event) => {
             let { x, y } = event.target.dataset;
@@ -105,13 +136,16 @@ const DraggableField = ({
     textAlign: alignment as "left" | "center" | "right",
     position: "absolute" as const,
     touchAction: "none",
+    transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out",
   };
 
   return (
     <div
       ref={elementRef}
       style={combinedStyle}
-      className={`form-field-container ${isSelected ? 'form-field-selected' : ''}`}
+      className={`form-field-container bg-white rounded-lg p-4 ${
+        isSelected ? 'ring-2 ring-primary shadow-lg' : 'shadow-sm hover:shadow-md'
+      } ${isEditMode ? 'cursor-move' : ''}`}
       onClick={(e) => {
         if (!isEditMode) return;
         e.stopPropagation();
