@@ -69,12 +69,12 @@ const FormField = ({
     const [feet, inches] = (value || "0'0\"").split("'").map(v => v.replace('"', ''));
     
     return (
-      <div className="space-y-2">
+      <div className="space-y-1">
         <Label className="text-sm font-medium">
           {label}
           {required && <span className="text-destructive ml-1">*</span>}
         </Label>
-        <div className="flex gap-2">
+        <div className="flex gap-1">
           <div className="flex-1">
             <Input
               type="number"
@@ -87,10 +87,7 @@ const FormField = ({
               placeholder="ft"
               min="0"
               max="9"
-              className={cn(
-                "h-9 px-2 text-sm",
-                error ? "border-destructive" : "border-input"
-              )}
+              className="h-8 px-2 text-sm"
               required={required}
               readOnly={readOnly}
             />
@@ -107,10 +104,7 @@ const FormField = ({
               placeholder="in"
               min="0"
               max="11"
-              className={cn(
-                "h-9 px-2 text-sm",
-                error ? "border-destructive" : "border-input"
-              )}
+              className="h-8 px-2 text-sm"
               required={required}
               readOnly={readOnly}
             />
