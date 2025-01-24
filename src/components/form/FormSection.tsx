@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FormField } from "@/types/formTypes";
 import SectionHeader from "./SectionHeader";
+import { snapToGrid } from "@/utils/gridUtils";
 
 interface FormSectionProps {
   section: string;
@@ -33,7 +34,7 @@ const FormSection = ({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 8, // Match grid size
       },
     })
   );
@@ -44,8 +45,10 @@ const FormSection = ({
 
     const fieldId = active.id as string;
     const currentPosition = fieldPositions[fieldId] || {};
-    const newX = Math.round((currentPosition.x_position || 0) + delta.x);
-    const newY = Math.round((currentPosition.y_position || 0) + delta.y);
+    
+    // Snap the new position to grid
+    const newX = snapToGrid(Math.round((currentPosition.x_position || 0) + delta.x));
+    const newY = snapToGrid(Math.round((currentPosition.y_position || 0) + delta.y));
 
     try {
       const user = await supabase.auth.getUser();
@@ -63,7 +66,6 @@ const FormSection = ({
         .maybeSingle();
 
       if (existingPosition) {
-        // Update existing position
         const { error: updateError } = await supabase
           .from('form_field_positions')
           .update({
@@ -75,7 +77,6 @@ const FormSection = ({
 
         if (updateError) throw updateError;
       } else {
-        // Insert new position
         const { error: insertError } = await supabase
           .from('form_field_positions')
           .insert({
@@ -99,6 +100,11 @@ const FormSection = ({
           y_position: newY,
         },
       }));
+
+      toast({
+        title: "Success",
+        description: "Field position updated",
+      });
 
     } catch (error: any) {
       console.error("Error saving field position:", error);
@@ -182,7 +188,7 @@ const FormSection = ({
       <SectionHeader section={section} onRemove={onRemove} />
       
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="relative min-h-[200px]" onClick={() => setSelectedField(null)}>
+        <div className="relative min-h-[200px] bg-grid" onClick={() => setSelectedField(null)}>
           {fields.map((field) => {
             const position = fieldPositions[field.id] || {};
             return (
@@ -200,6 +206,9 @@ const FormSection = ({
                 alignment={position.alignment}
                 onSelect={() => setSelectedField(field.id)}
                 isSelected={selectedField === field.id}
+                style={{
+                  transform: `translate3d(${position.x_position || 0}px, ${position.y_position || 0}px, 0)`,
+                }}
               />
             );
           })}

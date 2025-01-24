@@ -15,6 +15,7 @@ interface DraggableFieldProps {
   alignment?: string;
   onSelect: () => void;
   isSelected: boolean;
+  style?: React.CSSProperties;
 }
 
 const DraggableField = ({
@@ -28,6 +29,7 @@ const DraggableField = ({
   alignment = "left",
   onSelect,
   isSelected,
+  style = {},
 }: DraggableFieldProps) => {
   const { isEditMode } = useFormBuilder();
   const { attributes, listeners, setNodeRef, transform } = useDraggable({
@@ -35,7 +37,8 @@ const DraggableField = ({
     disabled: !isEditMode,
   });
 
-  const style = {
+  const combinedStyle = {
+    ...style,
     transform: CSS.Transform.toString(transform),
     width: width || "auto",
     height: height || "auto",
@@ -43,13 +46,14 @@ const DraggableField = ({
     border: isEditMode && isSelected ? "2px solid #2563eb" : "none",
     padding: "8px",
     cursor: isEditMode ? "move" : "default",
-    position: "relative" as const,
+    position: "absolute" as const,
+    touchAction: "none",
   };
 
   return (
     <div
       ref={setNodeRef}
-      style={style}
+      style={combinedStyle}
       {...(isEditMode ? { ...attributes, ...listeners } : {})}
       onClick={(e) => {
         if (!isEditMode) return;
