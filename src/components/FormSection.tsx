@@ -46,7 +46,7 @@ const FormSection = ({
     : regularFields;
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-2 space-y-2">
       <SectionHeader section={section} onRemove={onRemove} />
       
       {/* Special row for height, weight, and tobacco use if this is the Primary Health Assessment section */}

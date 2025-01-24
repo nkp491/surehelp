@@ -10,14 +10,15 @@ interface TwoColumnLayoutProps {
 }
 
 const TwoColumnLayout = ({ fields, formData, setFormData, errors, submissionId }: TwoColumnLayoutProps) => {
+  // Calculate optimal column distribution
   const midPoint = Math.ceil(fields.length / 2);
   const leftColumnFields = fields.slice(0, midPoint);
   const rightColumnFields = fields.slice(midPoint);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
       {/* Left Column */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {leftColumnFields.map((field) => (
           <DraggableFormField
             key={field.id}
@@ -36,7 +37,7 @@ const TwoColumnLayout = ({ fields, formData, setFormData, errors, submissionId }
         ))}
       </div>
       {/* Right Column */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {rightColumnFields.map((field) => (
           <DraggableFormField
             key={field.id}
