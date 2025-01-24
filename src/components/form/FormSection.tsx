@@ -1,12 +1,12 @@
 import { DndContext, DragEndEvent, useSensor, useSensors, PointerSensor } from "@dnd-kit/core";
 import { useState } from "react";
-import DraggableField from "../form-builder/DraggableField";
-import FormFieldProperties from "../form-builder/FormFieldProperties";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { FormField } from "@/types/formTypes";
 import SectionHeader from "./SectionHeader";
 import { snapToGrid } from "@/utils/gridUtils";
+import DraggableField from "../form-builder/DraggableField";
+import FormFieldProperties from "../form-builder/FormFieldProperties";
 
 interface FormSectionProps {
   section: string;
@@ -30,11 +30,11 @@ const FormSection = ({
   const [selectedField, setSelectedField] = useState<string | null>(null);
   const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});
   const { toast } = useToast();
-  
+
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8, // Match grid size
+        distance: 16, // Match new grid size
       },
     })
   );
@@ -184,11 +184,14 @@ const FormSection = ({
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-6 space-y-6">
       <SectionHeader section={section} onRemove={onRemove} />
       
       <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
-        <div className="relative min-h-[200px] bg-grid" onClick={() => setSelectedField(null)}>
+        <div 
+          className="relative min-h-[400px] bg-grid rounded-lg border border-gray-100" 
+          onClick={() => setSelectedField(null)}
+        >
           {fields.map((field) => {
             const position = fieldPositions[field.id] || {};
             return (

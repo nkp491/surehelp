@@ -3,6 +3,7 @@ import { useDraggable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import DraggableFormField from "../DraggableFormField";
 import { useFormBuilder } from "@/contexts/FormBuilderContext";
+import { GripVertical } from "lucide-react";
 
 interface DraggableFieldProps {
   id: string;
@@ -40,12 +41,9 @@ const DraggableField = ({
   const combinedStyle = {
     ...style,
     transform: CSS.Transform.toString(transform),
-    width: width || "auto",
+    width: width || "100%",
     height: height || "auto",
     textAlign: alignment as "left" | "center" | "right",
-    border: isEditMode && isSelected ? "2px solid #2563eb" : "none",
-    padding: "8px",
-    cursor: isEditMode ? "move" : "default",
     position: "absolute" as const,
     touchAction: "none",
   };
@@ -54,6 +52,7 @@ const DraggableField = ({
     <div
       ref={setNodeRef}
       style={combinedStyle}
+      className={`form-field-container ${isSelected ? 'form-field-selected' : ''}`}
       {...(isEditMode ? { ...attributes, ...listeners } : {})}
       onClick={(e) => {
         if (!isEditMode) return;
@@ -62,8 +61,13 @@ const DraggableField = ({
       }}
     >
       {isEditMode && (
-        <div className="absolute -top-2 -right-2 bg-blue-500 text-white text-xs px-1 rounded">
-          {fieldType}
+        <div className="absolute -top-3 -right-3 flex gap-2">
+          <div className="bg-primary text-primary-foreground text-xs px-2 py-1 rounded-full shadow-sm">
+            {fieldType}
+          </div>
+          <div className="bg-primary text-primary-foreground p-1 rounded-full cursor-move shadow-sm">
+            <GripVertical className="h-4 w-4" />
+          </div>
         </div>
       )}
       <DraggableFormField
