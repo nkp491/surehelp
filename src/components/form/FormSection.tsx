@@ -67,6 +67,7 @@ const FormSection = ({
           x_position: newX,
           y_position: newY,
           user_id: (await supabase.auth.getUser()).data.user?.id,
+          position: fields.findIndex(f => f.id === fieldId), // Add position field
         });
 
       if (error) throw error;
@@ -101,10 +102,13 @@ const FormSection = ({
       const { error } = await supabase
         .from("form_field_positions")
         .upsert({
+          user_id: (await supabase.auth.getUser()).data.user?.id,
+          width: updates.width,
+          height: updates.height,
+          alignment: updates.alignment,
           field_id: selectedField,
           section,
-          ...updates,
-          user_id: (await supabase.auth.getUser()).data.user?.id,
+          position: fields.findIndex(f => f.id === selectedField), // Add position field
         });
 
       if (error) throw error;
