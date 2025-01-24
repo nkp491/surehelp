@@ -1,7 +1,7 @@
 import { FormField } from "@/types/formTypes";
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
-import DraggableFormField from "../DraggableFormField";
+import DraggableFormField from "./DraggableFormField";
 
 interface FormSectionProps {
   section: string;
