@@ -1,4 +1,3 @@
-import BusinessMetrics from "@/components/BusinessMetrics";
 import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection";
 
 const Assessment = () => {
