@@ -1,4 +1,4 @@
-const GRID_SIZE = 16; // 16px grid for better spacing
+const GRID_SIZE = 32; // 32px grid for better spacing
 
 export const snapToGrid = (value: number): number => {
   return Math.round(value / GRID_SIZE) * GRID_SIZE;

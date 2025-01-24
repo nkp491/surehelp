@@ -25,7 +25,7 @@ const DragDropArea = ({
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 16,
+        distance: 32,
       },
     })
   );
@@ -33,11 +33,14 @@ const DragDropArea = ({
   return (
     <DndContext sensors={sensors} onDragEnd={onDragEnd}>
       <div 
-        className="relative min-h-[400px] bg-grid rounded-lg border border-gray-100" 
+        className="relative min-h-[800px] bg-grid rounded-lg border border-gray-100 p-8" 
         onClick={() => setSelectedField(null)}
       >
         {fields.map((field) => {
           const position = fieldPositions[field.id] || {};
+          const defaultX = fields.indexOf(field) * 32;
+          const defaultY = Math.floor(fields.indexOf(field) / 2) * 200;
+          
           return (
             <DraggableField
               key={field.id}
@@ -48,13 +51,13 @@ const DragDropArea = ({
               onChange={(value) =>
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
-              width={position.width}
-              height={position.height}
-              alignment={position.alignment}
+              width={position.width || "320px"}
+              height={position.height || "auto"}
+              alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}
               isSelected={selectedField === field.id}
               style={{
-                transform: `translate3d(${position.x_position || 0}px, ${position.y_position || 0}px, 0)`,
+                transform: `translate3d(${position.x_position || defaultX}px, ${position.y_position || defaultY}px, 0)`,
               }}
             />
           );
