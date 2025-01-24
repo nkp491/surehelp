@@ -5,11 +5,9 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
   const initializeDragAndResize = () => {
     if (!elementRef.current || !isEditMode) return;
 
-    const position = { x: 0, y: 0 };
-
     const interactable = interact(elementRef.current)
       .draggable({
-        inertia: true,
+        inertia: false, // Disable inertia for more precise control
         modifiers: [
           interact.modifiers.restrictRect({
             restriction: 'parent',
@@ -25,17 +23,15 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
         ],
         autoScroll: true,
         listeners: {
-          start: () => {
-            if (elementRef.current) {
-              elementRef.current.style.zIndex = '1000';
-              elementRef.current.style.opacity = '0.8';
-              elementRef.current.style.transform = elementRef.current.style.transform || 'translate(0px, 0px)';
+          start: (event) => {
+            if (event.target) {
+              event.target.style.zIndex = '1000';
+              event.target.style.opacity = '0.8';
+              event.target.style.transform = event.target.style.transform || 'translate(0px, 0px)';
+              event.target.style.transition = 'none'; // Disable transitions while dragging
             }
           },
           move: (event) => {
-            position.x += event.dx;
-            position.y += event.dy;
-
             if (event.target) {
               const currentTransform = event.target.style.transform;
               const matches = currentTransform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
@@ -46,14 +42,17 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
               const newY = snapToGrid(currentY + event.dy);
 
               event.target.style.transform = `translate(${newX}px, ${newY}px)`;
-              event.target.style.transition = 'none';
+              
+              // Update data attributes for position tracking
+              event.target.setAttribute('data-x', newX.toString());
+              event.target.setAttribute('data-y', newY.toString());
             }
           },
-          end: () => {
-            if (elementRef.current) {
-              elementRef.current.style.zIndex = 'auto';
-              elementRef.current.style.opacity = '1';
-              elementRef.current.style.transition = 'transform 0.2s ease-out';
+          end: (event) => {
+            if (event.target) {
+              event.target.style.zIndex = 'auto';
+              event.target.style.opacity = '1';
+              event.target.style.transition = 'transform 0.2s ease-out'; // Re-enable transitions
             }
           }
         }
@@ -72,7 +71,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             relativePoints: [{ x: 0, y: 0 }]
           }),
         ],
-        inertia: true,
+        inertia: false,
         listeners: {
           move: (event) => {
             let { x, y } = event.target.dataset;
