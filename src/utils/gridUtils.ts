@@ -10,15 +10,3 @@ export const getRelativePosition = (event: any, element: HTMLElement) => {
   const y = event.clientY - rect.top;
   return { x: snapToGrid(x), y: snapToGrid(y) };
 };
-
-// Minimum width for fields (2 grid units)
-export const MIN_FIELD_WIDTH = GRID_SIZE * 2;
-
-// Maximum width for fields (20 grid units)
-export const MAX_FIELD_WIDTH = GRID_SIZE * 20;
-
-// Ensure width is within bounds and snapped to grid
-export const constrainFieldWidth = (width: number): number => {
-  const snapped = snapToGrid(width);
-  return Math.max(MIN_FIELD_WIDTH, Math.min(snapped, MAX_FIELD_WIDTH));
-};

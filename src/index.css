@@ -1,39 +1,70 @@
-/* Global styles */
-body {
-  font-family: Arial, sans-serif;
-  margin: 0;
-  padding: 0;
-  background-color: #f9f9f9;
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+ 
+@layer base {
+  :root {
+    --background: 220 13% 91%; /* #e5e7eb background for better readability */
+    --foreground: 201 28% 38%; /* #2A6F97 for text - good contrast */
+
+    --card: 196 41% 59%; /* #6CAEC2 */
+    --card-foreground: 39 100% 98%; /* #fbfaf8 text on card for contrast */
+ 
+    --popover: 39 100% 98%; /* #fbfaf8 background for popover */
+    --popover-foreground: 201 28% 38%; /* #2A6F97 */
+ 
+    --primary: 201 28% 38%; /* #2A6F97 */
+    --primary-foreground: 39 100% 98%; /* #fbfaf8 */
+ 
+    --secondary: 196 41% 59%; /* #6CAEC2 */
+    --secondary-foreground: 39 100% 98%; /* #fbfaf8 */
+ 
+    --muted: 39 100% 98%; /* #fbfaf8 */
+    --muted-foreground: 201 28% 38%; /* #2A6F97 */
+ 
+    --accent: 39 82% 91%; /* #FDF0D5 */
+    --accent-foreground: 201 28% 38%; /* #2A6F97 */
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 220 13% 91%; /* #e5e7eb */
+    --input: 39 100% 97%; /* #fbfaf8 background for inputs */
+    --ring: 201 28% 38%; /* #2A6F97 */
+ 
+    --radius: 0.5rem;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border font-sans;
+  }
+  body {
+    @apply bg-background text-foreground font-sans;
+  }
 }
 
-/* Grid and resize styling */
-.form-field-container {
-  position: relative;
-  min-width: 64px; /* 2 grid units */
-  transition: all 0.2s ease-out;
-}
+@layer utilities {
+  .bg-grid {
+    background-size: 32px 32px;
+    background-image: 
+      linear-gradient(to right, rgba(203, 213, 225, 0.2) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(203, 213, 225, 0.2) 1px, transparent 1px);
+  }
 
-.form-field-container.form-field-selected {
-  outline: 2px solid hsl(var(--primary));
-  outline-offset: 2px;
-}
+  .form-field-container {
+    @apply p-6 rounded-lg bg-white shadow-sm border border-gray-100 transition-all duration-200 min-w-[320px];
+    margin: 16px;
+  }
 
-.resize-handle {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background-color: hsl(var(--primary));
-  border-radius: 50%;
-}
+  .form-field-container:hover {
+    @apply shadow-md;
+  }
 
-.resize-handle:hover {
-  transform: scale(1.2);
-}
-
-/* Grid background for edit mode */
-.edit-mode-grid {
-  background-size: 32px 32px;
-  background-image: 
-    linear-gradient(to right, rgba(0, 0, 0, 0.1) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
+  .form-field-selected {
+    @apply ring-2 ring-primary ring-offset-2;
+  }
 }
