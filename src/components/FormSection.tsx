@@ -27,8 +27,23 @@ const FormSection = ({
     return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
   };
 
+  // Function to check if a field belongs to primary health assessment
+  const isPrimaryHealthField = (fieldId: string) => {
+    return [
+      'name', 'dob', 'age', 'height', 'weight', 'tobaccoUse',
+      'dui', 'selectedConditions', 'medicalConditions', 'hospitalizations',
+      'surgeries', 'prescriptionMedications', 'lastMedicalExam',
+      'familyMedicalConditions'
+    ].includes(fieldId);
+  };
+
   // Separate special fields from regular fields
   const regularFields = fields.filter(field => !isSpecialField(field.id));
+  
+  // For Primary Health Assessment, group all related fields together
+  const primaryHealthFields = section === "Primary Health Assessment" 
+    ? regularFields.filter(field => isPrimaryHealthField(field.id))
+    : regularFields;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-4 space-y-3">
@@ -46,7 +61,7 @@ const FormSection = ({
 
       {/* Regular two-column layout for remaining fields */}
       <TwoColumnLayout
-        fields={regularFields}
+        fields={primaryHealthFields}
         formData={formData}
         setFormData={setFormData}
         errors={errors}
