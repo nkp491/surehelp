@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -14,6 +14,50 @@ interface UseFieldPositionsProps {
 export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPositionsProps) => {
   const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});
   const { toast } = useToast();
+
+  // Load saved positions on mount
+  useEffect(() => {
+    const loadSavedPositions = async () => {
+      try {
+        const user = await supabase.auth.getUser();
+        if (!user.data.user) {
+          throw new Error("No authenticated user found");
+        }
+
+        const { data: savedPositions, error } = await supabase
+          .from('form_field_positions')
+          .select('*')
+          .eq('user_id', user.data.user.id)
+          .eq('section', section);
+
+        if (error) throw error;
+
+        if (savedPositions) {
+          const positionsMap = savedPositions.reduce((acc, pos) => ({
+            ...acc,
+            [pos.field_id]: {
+              x_position: pos.x_position,
+              y_position: pos.y_position,
+              width: pos.width,
+              height: pos.height,
+              alignment: pos.alignment,
+            }
+          }), {});
+          
+          setFieldPositions(positionsMap);
+        }
+      } catch (error) {
+        console.error("Error loading field positions:", error);
+        toast({
+          title: "Error",
+          description: "Failed to load saved field positions",
+          variant: "destructive",
+        });
+      }
+    };
+
+    loadSavedPositions();
+  }, [section, toast]);
 
   const handleDragEnd = async (event: DragEndEvent) => {
     const { active, delta } = event;
