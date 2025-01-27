@@ -24,7 +24,7 @@ const DragDropArea = ({
   return (
     <div className="flex justify-center w-full py-8">
       <div 
-        className={`relative w-[1056px] h-[816px] rounded-lg p-8 transition-all duration-200 ${
+        className={`relative w-[1056px] h-[816px] rounded-lg p-8 overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
@@ -48,7 +48,7 @@ const DragDropArea = ({
               onChange={(value) =>
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
-              width={position.width || "320px"}
+              width={position.width || "240px"}
               height={position.height || "auto"}
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}

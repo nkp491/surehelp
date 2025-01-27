@@ -1,6 +1,5 @@
 import interact from "interactjs";
-import { snapToGrid } from "@/utils/gridUtils";
-import { useEffect } from "react";
+import { snapToGrid, constrainPosition } from "@/utils/gridUtils";
 
 export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEditMode: boolean) => {
   const handleKeyDown = (event: KeyboardEvent) => {
@@ -33,9 +32,10 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
         return;
     }
 
-    target.style.transform = `translate(${newX}px, ${newY}px)`;
-    target.setAttribute('data-x', newX.toString());
-    target.setAttribute('data-y', newY.toString());
+    const constrained = constrainPosition(newX, newY);
+    target.style.transform = `translate(${constrained.x}px, ${constrained.y}px)`;
+    target.setAttribute('data-x', constrained.x.toString());
+    target.setAttribute('data-y', constrained.y.toString());
     event.preventDefault();
   };
 
@@ -60,7 +60,6 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             target.style.transform = target.style.transform || 'translate(0px, 0px)';
             target.style.transition = 'none';
             
-            // Get current transform values
             const transform = target.style.transform;
             const matches = transform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
             const currentX = matches ? parseInt(matches[1]) : 0;
@@ -74,9 +73,9 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             const x = (parseFloat(target.getAttribute('data-x') || '0') || 0) + event.dx;
             const y = (parseFloat(target.getAttribute('data-y') || '0') || 0) + event.dy;
 
-            // Allow negative values for y to enable upward movement
-            const newX = snapToGrid(x);
-            const newY = snapToGrid(y);
+            const constrained = constrainPosition(x, y);
+            const newX = snapToGrid(constrained.x);
+            const newY = snapToGrid(constrained.y);
 
             target.style.transform = `translate(${newX}px, ${newY}px)`;
             target.setAttribute('data-x', newX.toString());
@@ -96,6 +95,10 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
           interact.modifiers.restrictSize({
             min: { width: 200, height: 50 }
           }),
+          interact.modifiers.restrictEdges({
+            outer: 'parent',
+            endOnly: true
+          }),
           interact.modifiers.snap({
             targets: [
               interact.snappers.grid({ x: 16, y: 16 })
@@ -112,19 +115,20 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             x = (parseFloat(x) || 0) + event.deltaRect.left;
             y = (parseFloat(y) || 0) + event.deltaRect.top;
 
+            const constrained = constrainPosition(x, y);
+            
             Object.assign(event.target.style, {
               width: `${snapToGrid(event.rect.width)}px`,
               height: `${snapToGrid(event.rect.height)}px`,
-              transform: `translate(${snapToGrid(x)}px, ${snapToGrid(y)}px)`
+              transform: `translate(${snapToGrid(constrained.x)}px, ${snapToGrid(constrained.y)}px)`
             });
 
-            Object.assign(event.target.dataset, { x, y });
+            Object.assign(event.target.dataset, { x: constrained.x, y: constrained.y });
           }
         }
       });
 
-    // Add keyboard event listener when in edit mode
-    elementRef.current.tabIndex = 0; // Make the element focusable
+    elementRef.current.tabIndex = 0;
     elementRef.current.addEventListener('keydown', handleKeyDown);
 
     return () => {
