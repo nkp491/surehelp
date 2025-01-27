@@ -1,5 +1,5 @@
-const GRID_SIZE = 24; // Reduced for tighter spacing
-const MAX_WIDTH = 3200; // Increased width to fit all fields
+const GRID_SIZE = 16; // Adjusted for better snapping
+const MAX_WIDTH = 3200;
 const MAX_HEIGHT = 1200;
 
 export const snapToGrid = (value: number): number => {
@@ -15,7 +15,7 @@ export const getRelativePosition = (event: any, element: HTMLElement) => {
 
 export const constrainPosition = (x: number, y: number): { x: number, y: number } => {
   return {
-    x: Math.min(Math.max(0, x), MAX_WIDTH - GRID_SIZE),
-    y: Math.min(Math.max(0, y), MAX_HEIGHT - GRID_SIZE)
+    x: Math.min(Math.max(0, snapToGrid(x)), MAX_WIDTH - GRID_SIZE),
+    y: Math.min(Math.max(0, snapToGrid(y)), MAX_HEIGHT - GRID_SIZE)
   };
 };

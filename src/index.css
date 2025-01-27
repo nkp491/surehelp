@@ -40,15 +40,15 @@
 
 @layer utilities {
   .bg-grid {
-    background-size: 24px 24px;
+    background-size: 16px 16px;
     background-image: 
       linear-gradient(to right, rgba(203, 213, 225, 0.1) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(203, 213, 225, 0.1) 1px, transparent 1px);
   }
 
   .form-field-container {
-    @apply p-1 rounded-md bg-white border border-gray-50 transition-all duration-200 min-w-[200px] max-w-[280px];
-    margin: 2px;
+    @apply p-1 rounded-md bg-white border border-gray-50 transition-all duration-200 min-w-[208px] max-w-[416px];
+    margin: 0;
   }
 
   .form-field-container:hover {
