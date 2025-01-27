@@ -21,31 +21,23 @@ const DragDropArea = ({
 }: DragDropAreaProps) => {
   const { isEditMode } = useFormBuilder();
   
-  // Calculate initial positions in a grid layout
   const calculateInitialPosition = (index: number) => {
-    const GRID_SIZE = 24; // Reduced grid size for tighter spacing
-    const FIELD_WIDTH = 280; // Reduced field width
-    const FIELD_HEIGHT = 100; // Reduced field height
-    const GRID_WIDTH = 3200; // Increased width further
+    const GRID_SIZE = 24;
+    const FIELD_WIDTH = 280;
+    const FIELD_HEIGHT = 100;
+    const GRID_WIDTH = 3200;
     const GRID_HEIGHT = 1200;
     
-    // Calculate optimal number of columns based on grid width
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
-    
-    // Calculate optimal number of rows based on total fields
     const totalRows = Math.ceil(fields.length / columns);
-    
-    // Calculate vertical spacing to distribute fields evenly
     const verticalSpacing = Math.min(
       FIELD_HEIGHT + GRID_SIZE,
       Math.floor((GRID_HEIGHT - GRID_SIZE) / totalRows)
     );
     
-    // Calculate row and column for the current field
     const row = Math.floor(index / columns);
     const col = index % columns;
     
-    // Calculate x and y positions with proper spacing
     const x = col * (FIELD_WIDTH + GRID_SIZE) + GRID_SIZE;
     const y = row * verticalSpacing + GRID_SIZE;
     
@@ -53,14 +45,13 @@ const DragDropArea = ({
   };
   
   return (
-    <div className="flex justify-center w-full py-4 overflow-x-auto">
+    <div className="flex justify-center w-full overflow-x-auto">
       <div 
-        className={`relative w-[3200px] h-[1200px] rounded-lg p-4 overflow-hidden transition-all duration-200 ${
+        className={`relative w-[3200px] h-[1200px] rounded-lg overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
-          border: isEditMode ? '1px dashed #ccc' : 'none',
-          boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)'
+          boxShadow: isEditMode ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : 'none'
         }}
         onClick={() => setSelectedField(null)}
       >
