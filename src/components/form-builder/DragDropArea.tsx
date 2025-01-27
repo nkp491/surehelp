@@ -1,6 +1,7 @@
 import { FormField } from "@/types/formTypes";
 import DraggableField from "./DraggableField";
 import { useFormBuilder } from "@/contexts/FormBuilderContext";
+import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 
 interface DragDropAreaProps {
   fields: FormField[];
@@ -20,13 +21,14 @@ const DragDropArea = ({
   setSelectedField,
 }: DragDropAreaProps) => {
   const { isEditMode } = useFormBuilder();
+  const { showSpouse } = useSpouseVisibility();
   
   const calculateInitialPosition = (index: number) => {
-    const GRID_SIZE = 12; // Further reduced grid size
-    const FIELD_WIDTH = 200; // Further reduced field width
-    const FIELD_HEIGHT = 70; // Further reduced field height
-    const GRID_WIDTH = 1920; // Adjusted to common screen width
-    const GRID_HEIGHT = 1080; // Adjusted to common screen height
+    const GRID_SIZE = 12;
+    const FIELD_WIDTH = 200;
+    const FIELD_HEIGHT = 70;
+    const GRID_WIDTH = 1920;
+    const GRID_HEIGHT = 1080;
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
     const totalRows = Math.ceil(fields.length / columns);
@@ -43,6 +45,12 @@ const DragDropArea = ({
     
     return { x, y };
   };
+
+  // Filter out spouse fields if spouse toggle is off
+  const visibleFields = fields.filter(field => {
+    const isSpouseField = field.id.toLowerCase().includes('spouse');
+    return showSpouse ? true : !isSpouseField;
+  });
   
   return (
     <div className="w-full overflow-auto">
@@ -55,7 +63,7 @@ const DragDropArea = ({
         }}
         onClick={() => setSelectedField(null)}
       >
-        {fields.map((field, index) => {
+        {visibleFields.map((field, index) => {
           const position = fieldPositions[field.id] || {};
           const initialPosition = calculateInitialPosition(index);
           
@@ -69,7 +77,7 @@ const DragDropArea = ({
               onChange={(value) =>
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
-              width={position.width || "200px"} // Reduced default width
+              width={position.width || "200px"}
               height={position.height || "auto"}
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}
