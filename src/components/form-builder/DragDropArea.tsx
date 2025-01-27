@@ -24,11 +24,11 @@ const DragDropArea = ({
   const { showSpouse } = useSpouseVisibility();
   
   const calculateInitialPosition = (index: number) => {
-    const GRID_SIZE = 16;
+    const GRID_SIZE = 8; // Reduced grid size for more compact layout
     const FIELD_WIDTH = 208;
-    const FIELD_HEIGHT = 64;
-    const GRID_WIDTH = 832; // Width for 3 columns with spacing
-    const GRID_HEIGHT = 1300; // Adjusted height to prevent content cutoff
+    const FIELD_HEIGHT = 48; // Reduced field height
+    const GRID_WIDTH = 832;
+    const GRID_HEIGHT = 1300;
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
     const row = Math.floor(index / columns);
@@ -54,7 +54,7 @@ const DragDropArea = ({
         }`}
         style={{
           boxShadow: isEditMode ? '0 1px 2px rgb(0 0 0 / 0.05)' : 'none',
-          backgroundSize: '16px 16px'
+          backgroundSize: '8px 8px' // Reduced grid size
         }}
         onClick={() => setSelectedField(null)}
       >
@@ -73,7 +73,7 @@ const DragDropArea = ({
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
               width={position.width || "208px"}
-              height={position.height || "64px"}
+              height={position.height || "48px"} // Reduced default height
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}
               isSelected={selectedField === field.id}
