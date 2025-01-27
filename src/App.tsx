@@ -7,16 +7,14 @@ import { AuthRoutes } from "@/components/auth/AuthRoutes";
 
 function App() {
   return (
-    <React.StrictMode>
-      <SessionContextProvider supabaseClient={supabase}>
-        <Router>
-          <div className="app-container">
-            <AuthRoutes />
-            <Toaster />
-          </div>
-        </Router>
-      </SessionContextProvider>
-    </React.StrictMode>
+    <SessionContextProvider supabaseClient={supabase}>
+      <Router>
+        <div className="app-container">
+          <AuthRoutes />
+          <Toaster />
+        </div>
+      </Router>
+    </SessionContextProvider>
   );
 }
 
