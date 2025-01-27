@@ -24,10 +24,10 @@ const DragDropArea = ({
   // Calculate initial positions in a grid layout
   const calculateInitialPosition = (index: number) => {
     const GRID_SIZE = 32;
-    const FIELD_WIDTH = 320; // Increased width for better input visibility
-    const FIELD_HEIGHT = 120; // Increased height to accommodate inputs
-    const GRID_WIDTH = 1600; // Increased grid width
-    const GRID_HEIGHT = 1200; // Increased grid height
+    const FIELD_WIDTH = 320;
+    const FIELD_HEIGHT = 120;
+    const GRID_WIDTH = 2400; // Increased width to prevent cutoff
+    const GRID_HEIGHT = 1200;
     
     // Calculate optimal number of columns based on grid width
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
@@ -55,7 +55,7 @@ const DragDropArea = ({
   return (
     <div className="flex justify-center w-full py-8 overflow-x-auto">
       <div 
-        className={`relative w-[1600px] h-[1200px] rounded-lg p-8 overflow-hidden transition-all duration-200 ${
+        className={`relative w-[2400px] h-[1200px] rounded-lg p-8 overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
