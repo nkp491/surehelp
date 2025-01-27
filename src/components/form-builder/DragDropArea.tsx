@@ -21,6 +21,27 @@ const DragDropArea = ({
 }: DragDropAreaProps) => {
   const { isEditMode } = useFormBuilder();
   
+  // Calculate initial positions in a grid layout
+  const calculateInitialPosition = (index: number) => {
+    const GRID_SIZE = 32;
+    const FIELD_WIDTH = 240;
+    const FIELD_HEIGHT = 100;
+    const GRID_WIDTH = 1056;
+    
+    // Calculate how many fields can fit in a row
+    const fieldsPerRow = Math.floor(GRID_WIDTH / (FIELD_WIDTH + GRID_SIZE));
+    
+    // Calculate row and column for the current field
+    const row = Math.floor(index / fieldsPerRow);
+    const col = index % fieldsPerRow;
+    
+    // Calculate x and y positions with proper spacing
+    const x = col * (FIELD_WIDTH + GRID_SIZE) + GRID_SIZE;
+    const y = row * (FIELD_HEIGHT + GRID_SIZE) + GRID_SIZE;
+    
+    return { x, y };
+  };
+  
   return (
     <div className="flex justify-center w-full py-8">
       <div 
@@ -33,10 +54,9 @@ const DragDropArea = ({
         }}
         onClick={() => setSelectedField(null)}
       >
-        {fields.map((field) => {
+        {fields.map((field, index) => {
           const position = fieldPositions[field.id] || {};
-          const defaultX = fields.indexOf(field) * 32;
-          const defaultY = Math.floor(fields.indexOf(field) / 2) * 200;
+          const initialPosition = calculateInitialPosition(index);
           
           return (
             <DraggableField
@@ -54,7 +74,7 @@ const DragDropArea = ({
               onSelect={() => setSelectedField(field.id)}
               isSelected={selectedField === field.id}
               style={{
-                transform: `translate3d(${position.x_position || defaultX}px, ${position.y_position || defaultY}px, 0)`,
+                transform: `translate3d(${position.x_position || initialPosition.x}px, ${position.y_position || initialPosition.y}px, 0)`,
               }}
             />
           );
