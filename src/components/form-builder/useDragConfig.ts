@@ -1,5 +1,5 @@
 import interact from "interactjs";
-import { snapToGrid } from "@/utils/gridUtils";
+import { snapToGrid, constrainPosition } from "@/utils/gridUtils";
 import { useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -15,17 +15,6 @@ export const useDragConfig = (
   isSelected: boolean
 ) => {
   const interactableRef = useRef<any>(null);
-
-  const constrainPosition = useCallback((x: number, y: number): Position => {
-    const gridSize = 8;
-    const maxX = 832 - gridSize;
-    const maxY = 1300 - gridSize;
-
-    return {
-      x: Math.max(0, Math.min(x, maxX)),
-      y: Math.max(0, Math.min(y, maxY))
-    };
-  }, []);
 
   const savePosition = useCallback(async (
     fieldId: string, 
@@ -59,7 +48,7 @@ export const useDragConfig = (
     } catch (error) {
       console.error('Error in savePosition:', error);
     }
-  }, []);
+  }, [fieldId]);
 
   const handleDragMove = useCallback((event: Interact.InteractEvent) => {
     const target = event.target as HTMLElement;
@@ -67,17 +56,15 @@ export const useDragConfig = (
     const y = parseFloat(target.getAttribute('data-y') || '0') + event.dy;
     
     const constrained = constrainPosition(x, y);
-    const snappedX = snapToGrid(constrained.x);
-    const snappedY = snapToGrid(constrained.y);
     
-    target.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
-    target.setAttribute('data-x', snappedX.toString());
-    target.setAttribute('data-y', snappedY.toString());
+    target.style.transform = `translate(${constrained.x}px, ${constrained.y}px)`;
+    target.setAttribute('data-x', constrained.x.toString());
+    target.setAttribute('data-y', constrained.y.toString());
 
     const width = target.style.width;
     const height = target.style.height;
-    savePosition(fieldId, snappedX, snappedY, width, height);
-  }, [fieldId, savePosition, constrainPosition]);
+    savePosition(fieldId, constrained.x, constrained.y, width, height);
+  }, [fieldId, savePosition]);
 
   const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
     const target = event.target as HTMLElement;
@@ -102,41 +89,38 @@ export const useDragConfig = (
     const element = elementRef.current;
     const x = parseFloat(element.getAttribute('data-x') || '0');
     const y = parseFloat(element.getAttribute('data-y') || '0');
-    const gridSize = 8;
     let newX = x;
     let newY = y;
 
     switch (e.key) {
       case 'ArrowLeft':
-        newX = x - gridSize;
+        newX = x - GRID_SIZE;
         break;
       case 'ArrowRight':
-        newX = x + gridSize;
+        newX = x + GRID_SIZE;
         break;
       case 'ArrowUp':
-        newY = y - gridSize;
+        newY = y - GRID_SIZE;
         break;
       case 'ArrowDown':
-        newY = y + gridSize;
+        newY = y + GRID_SIZE;
         break;
       default:
         return;
     }
 
     const constrained = constrainPosition(newX, newY);
-    const snappedX = snapToGrid(constrained.x);
-    const snappedY = snapToGrid(constrained.y);
     
-    element.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
-    element.setAttribute('data-x', snappedX.toString());
-    element.setAttribute('data-y', snappedY.toString());
+    element.style.transform = `translate(${constrained.x}px, ${constrained.y}px)`;
+    element.setAttribute('data-x', constrained.x.toString());
+    element.setAttribute('data-y', constrained.y.toString());
 
     const width = element.style.width;
     const height = element.style.height;
-    savePosition(fieldId, snappedX, snappedY, width, height);
+    savePosition(fieldId, constrained.x, constrained.y, width, height);
 
     e.preventDefault();
-  }, [isEditMode, isSelected, elementRef, fieldId, savePosition, constrainPosition]);
+  }, [isEditMode, isSelected, elementRef, fieldId, savePosition]);
 
   const initializeDragAndResize = useCallback(() => {
     const element = elementRef.current;
