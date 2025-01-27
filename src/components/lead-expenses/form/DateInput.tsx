@@ -24,7 +24,7 @@ const DateInput = ({ date, setDate }: DateInputProps) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="w-auto p-0" 
+          className="z-50 bg-white p-0" 
           align="start"
           sideOffset={4}
         >
@@ -34,7 +34,7 @@ const DateInput = ({ date, setDate }: DateInputProps) => {
             onSelect={setDate}
             initialFocus
             disabled={(date) => date > new Date()}
-            className="rounded-md border"
+            className="rounded-md border shadow-sm"
           />
         </PopoverContent>
       </Popover>
