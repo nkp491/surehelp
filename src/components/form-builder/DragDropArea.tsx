@@ -27,8 +27,8 @@ const DragDropArea = ({
     const GRID_SIZE = 16;
     const FIELD_WIDTH = 208;
     const FIELD_HEIGHT = 64;
-    const GRID_WIDTH = 832; // Reduced from 1920 to eliminate horizontal scrolling
-    const GRID_HEIGHT = 2400; // Increased from 1080 to allow for vertical expansion
+    const GRID_WIDTH = 832; // Width for 3 columns with spacing
+    const GRID_HEIGHT = 1600; // Reduced height for better usability
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
     const row = Math.floor(index / columns);
@@ -49,7 +49,7 @@ const DragDropArea = ({
   return (
     <div className="w-full overflow-y-auto">
       <div 
-        className={`relative w-[832px] h-[2400px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
+        className={`relative w-[832px] h-[1600px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
