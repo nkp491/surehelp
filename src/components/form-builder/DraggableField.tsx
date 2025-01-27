@@ -48,8 +48,8 @@ const DraggableField = ({
     position: "absolute" as const,
     touchAction: "none",
     transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
-    minHeight: "40px", // Further reduced minimum height
-    maxHeight: "100px", // Further reduced maximum height
+    minHeight: "40px",
+    maxHeight: "100px",
   };
 
   return (
@@ -67,6 +67,7 @@ const DraggableField = ({
       data-x="0"
       data-y="0"
       data-resize={isEditMode ? "all" : undefined}
+      data-field-id={id}
     >
       {isEditMode && <FieldTypeLabel fieldType={fieldType} />}
       <DraggableFormField
