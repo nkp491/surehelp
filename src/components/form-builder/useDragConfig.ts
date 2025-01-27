@@ -1,6 +1,6 @@
 import interact from "interactjs";
 import { snapToGrid } from "@/utils/gridUtils";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Position {
@@ -25,7 +25,13 @@ export const useDragConfig = (
     };
   };
 
-  const savePosition = async (fieldId: string, x: number, y: number, width: string, height: string) => {
+  const savePosition = useCallback(async (
+    fieldId: string, 
+    x: number, 
+    y: number, 
+    width: string, 
+    height: string
+  ) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
@@ -51,7 +57,7 @@ export const useDragConfig = (
     } catch (error) {
       console.error('Error in savePosition:', error);
     }
-  };
+  }, []);
 
   const handleDragMove = useCallback((event: Interact.InteractEvent) => {
     const target = event.target as HTMLElement;
@@ -76,7 +82,7 @@ export const useDragConfig = (
     const width = target.style.width;
     const height = target.style.height;
     savePosition(fieldId, constrained.x, constrained.y, width, height);
-  }, [fieldId]);
+  }, [fieldId, savePosition]);
 
   const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
     const target = event.target as HTMLElement;
@@ -104,14 +110,12 @@ export const useDragConfig = (
     target.dataset.y = constrained.y.toString();
 
     savePosition(fieldId, constrained.x, constrained.y, newWidth, newHeight);
-  }, [fieldId]);
+  }, [fieldId, savePosition]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isEditMode || !isSelected) return;
+    if (!isEditMode || !isSelected || !elementRef.current) return;
     
     const element = elementRef.current;
-    if (!element) return;
-    
     const currentX = parseFloat(element.dataset.x || '0');
     const currentY = parseFloat(element.dataset.y || '0');
     const gridSize = 8;
@@ -149,11 +153,11 @@ export const useDragConfig = (
     savePosition(fieldId, constrained.x, constrained.y, width, height);
 
     e.preventDefault();
-  }, [isEditMode, isSelected, elementRef, fieldId]);
+  }, [isEditMode, isSelected, elementRef, fieldId, savePosition]);
 
-  const initializeDragAndResize = useCallback(() => {
+  useEffect(() => {
     const element = elementRef.current;
-    if (!element || !isEditMode) return () => {};
+    if (!element || !isEditMode) return;
 
     const interactable = interact(element)
       .draggable({
@@ -169,6 +173,7 @@ export const useDragConfig = (
 
     if (isSelected) {
       element.tabIndex = 0;
+      element.focus();
       element.addEventListener('keydown', handleKeyDown);
     }
 
@@ -178,7 +183,7 @@ export const useDragConfig = (
         element.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown]);
+  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown, elementRef]);
 
-  return { initializeDragAndResize };
+  return { initializeDragAndResize: useCallback(() => {}, []) };
 };
