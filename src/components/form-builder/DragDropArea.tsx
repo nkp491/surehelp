@@ -27,7 +27,7 @@ const DragDropArea = ({
     const GRID_SIZE = 8; // Reduced grid size for more compact layout
     const FIELD_WIDTH = 208;
     const FIELD_HEIGHT = 48; // Reduced field height
-    const GRID_WIDTH = 1200; // Increased from 832 to 1200
+    const GRID_WIDTH = 1400; // Increased from 1200 to 1400
     const GRID_HEIGHT = 1300;
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
@@ -49,7 +49,7 @@ const DragDropArea = ({
   return (
     <div className="w-full overflow-y-auto">
       <div 
-        className={`relative w-[1200px] h-[1300px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
+        className={`relative w-[1400px] h-[1300px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{

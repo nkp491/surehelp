@@ -1,5 +1,5 @@
 export const GRID_SIZE = 8; // Adjusted for better snapping
-const MAX_WIDTH = 1200; // Increased from 832 to 1200
+const MAX_WIDTH = 1400; // Increased from 1200 to 1400
 const MAX_HEIGHT = 1300;
 
 export const snapToGrid = (value: number): number => {
