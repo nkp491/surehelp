@@ -11,7 +11,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
     const currentX = matches ? parseInt(matches[1]) : 0;
     const currentY = matches ? parseInt(matches[2]) : 0;
     
-    const STEP = 32; // Same as grid size
+    const STEP = 16;
     let newX = currentX;
     let newY = currentY;
 
@@ -57,26 +57,35 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             const target = event.target as HTMLElement;
             target.style.zIndex = '1000';
             target.style.opacity = '0.8';
-            target.style.transform = target.style.transform || 'translate(0px, 0px)';
-            target.style.transition = 'none';
             
+            // Ensure we have valid initial position data
             const transform = target.style.transform;
             const matches = transform.match(/translate\((-?\d+)px,\s*(-?\d+)px\)/);
             const currentX = matches ? parseInt(matches[1]) : 0;
             const currentY = matches ? parseInt(matches[2]) : 0;
             
+            // Store initial position explicitly
+            target.setAttribute('data-initial-x', currentX.toString());
+            target.setAttribute('data-initial-y', currentY.toString());
             target.setAttribute('data-x', currentX.toString());
             target.setAttribute('data-y', currentY.toString());
+            
+            target.style.transition = 'none';
           },
           move: (event) => {
             const target = event.target as HTMLElement;
-            const x = (parseFloat(target.getAttribute('data-x') || '0') || 0) + event.dx;
-            const y = (parseFloat(target.getAttribute('data-y') || '0') || 0) + event.dy;
+            const initialX = parseFloat(target.getAttribute('data-initial-x') || '0');
+            const initialY = parseFloat(target.getAttribute('data-initial-y') || '0');
+            
+            // Calculate new position relative to initial position
+            const x = initialX + event.dx;
+            const y = initialY + event.dy;
 
             const constrained = constrainPosition(x, y);
             const newX = snapToGrid(constrained.x);
             const newY = snapToGrid(constrained.y);
 
+            // Update position
             target.style.transform = `translate(${newX}px, ${newY}px)`;
             target.setAttribute('data-x', newX.toString());
             target.setAttribute('data-y', newY.toString());
@@ -86,6 +95,12 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
             target.style.zIndex = 'auto';
             target.style.opacity = '1';
             target.style.transition = 'transform 0.2s ease-out';
+            
+            // Store final position as initial position for next drag
+            const finalX = target.getAttribute('data-x');
+            const finalY = target.getAttribute('data-y');
+            target.setAttribute('data-initial-x', finalX || '0');
+            target.setAttribute('data-initial-y', finalY || '0');
           }
         }
       })
@@ -93,7 +108,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
         edges: { left: true, right: true, bottom: true, top: true },
         modifiers: [
           interact.modifiers.restrictSize({
-            min: { width: 200, height: 50 }
+            min: { width: 208, height: 64 }
           }),
           interact.modifiers.restrictEdges({
             outer: 'parent',
