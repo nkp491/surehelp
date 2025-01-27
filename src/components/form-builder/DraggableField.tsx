@@ -24,7 +24,7 @@ const DraggableField = ({
   label,
   value,
   onChange,
-  width = "320px", // Increased default width
+  width = "280px", // Updated default width
   height = "auto",
   alignment = "left",
   onSelect,
@@ -48,8 +48,8 @@ const DraggableField = ({
     position: "absolute" as const,
     touchAction: "none",
     transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
-    minHeight: "80px", // Increased minimum height
-    maxHeight: "160px", // Increased maximum height
+    minHeight: "60px", // Reduced minimum height
+    maxHeight: "140px", // Reduced maximum height
   };
 
   return (

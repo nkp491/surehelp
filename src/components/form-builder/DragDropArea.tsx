@@ -23,10 +23,10 @@ const DragDropArea = ({
   
   // Calculate initial positions in a grid layout
   const calculateInitialPosition = (index: number) => {
-    const GRID_SIZE = 32;
-    const FIELD_WIDTH = 320;
-    const FIELD_HEIGHT = 120;
-    const GRID_WIDTH = 2400; // Increased width to prevent cutoff
+    const GRID_SIZE = 24; // Reduced grid size for tighter spacing
+    const FIELD_WIDTH = 280; // Reduced field width
+    const FIELD_HEIGHT = 100; // Reduced field height
+    const GRID_WIDTH = 3200; // Increased width further
     const GRID_HEIGHT = 1200;
     
     // Calculate optimal number of columns based on grid width
@@ -53,9 +53,9 @@ const DragDropArea = ({
   };
   
   return (
-    <div className="flex justify-center w-full py-8 overflow-x-auto">
+    <div className="flex justify-center w-full py-4 overflow-x-auto">
       <div 
-        className={`relative w-[2400px] h-[1200px] rounded-lg p-8 overflow-hidden transition-all duration-200 ${
+        className={`relative w-[3200px] h-[1200px] rounded-lg p-4 overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
@@ -78,7 +78,7 @@ const DragDropArea = ({
               onChange={(value) =>
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
-              width={position.width || "320px"}
+              width={position.width || "280px"}
               height={position.height || "auto"}
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}
