@@ -1,4 +1,4 @@
-const GRID_SIZE = 8; // Adjusted for better snapping
+export const GRID_SIZE = 8; // Adjusted for better snapping
 const MAX_WIDTH = 832;
 const MAX_HEIGHT = 1300;
 

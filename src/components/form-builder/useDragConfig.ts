@@ -1,6 +1,6 @@
 import interact from "interactjs";
-import { snapToGrid, constrainPosition } from "@/utils/gridUtils";
-import { useCallback, useRef } from "react";
+import { snapToGrid, constrainPosition, GRID_SIZE } from "@/utils/gridUtils";
+import { useCallback, useRef, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Position {
@@ -122,7 +122,7 @@ export const useDragConfig = (
     e.preventDefault();
   }, [isEditMode, isSelected, elementRef, fieldId, savePosition]);
 
-  const initializeDragAndResize = useCallback(() => {
+  useEffect(() => {
     const element = elementRef.current;
     if (!element || !isEditMode) return;
 
@@ -168,7 +168,7 @@ export const useDragConfig = (
         element.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown]);
+  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown, elementRef]);
 
-  return { initializeDragAndResize };
+  return { initializeDragAndResize: useCallback(() => {}, []) };
 };
