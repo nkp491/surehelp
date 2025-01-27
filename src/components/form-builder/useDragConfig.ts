@@ -146,11 +146,19 @@ export const useDragConfig = (
         inertia: false,
         modifiers: [],
         autoScroll: true,
-        listeners: { move: handleDragMove }
+        listeners: { move: handleDragMove },
+        handle: '[data-drag-handle]',
       })
       .resizable({
-        edges: { left: true, right: true, bottom: true, top: true },
-        listeners: { move: handleResizeMove }
+        edges: { 
+          top: '[data-resize-handle="n"], [data-resize-handle="nw"], [data-resize-handle="ne"]',
+          left: '[data-resize-handle="w"], [data-resize-handle="nw"], [data-resize-handle="sw"]',
+          bottom: '[data-resize-handle="s"], [data-resize-handle="sw"], [data-resize-handle="se"]',
+          right: '[data-resize-handle="e"], [data-resize-handle="ne"], [data-resize-handle="se"]'
+        },
+        listeners: { move: handleResizeMove },
+        modifiers: [],
+        inertia: false
       });
 
     // Handle keyboard events for selected elements
