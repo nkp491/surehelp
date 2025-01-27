@@ -24,7 +24,7 @@ const DraggableField = ({
   label,
   value,
   onChange,
-  width = "320px",
+  width = "240px",
   height = "auto",
   alignment = "left",
   onSelect,
@@ -47,15 +47,15 @@ const DraggableField = ({
     textAlign: alignment as "left" | "center" | "right",
     position: "absolute" as const,
     touchAction: "none",
-    transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out",
+    transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
   };
 
   return (
     <div
       ref={elementRef}
       style={combinedStyle}
-      className={`form-field-container bg-white rounded-lg p-4 ${
-        isSelected ? 'ring-2 ring-primary shadow-lg' : 'shadow-sm hover:shadow-md'
+      className={`form-field-container ${
+        isSelected ? 'ring-2 ring-primary ring-offset-2 shadow-lg' : 'shadow-sm hover:shadow-md'
       } ${isEditMode ? 'cursor-move' : ''}`}
       onClick={(e) => {
         if (!isEditMode) return;
