@@ -122,7 +122,7 @@ export const useDragConfig = (
     e.preventDefault();
   }, [isEditMode, isSelected, elementRef, fieldId, savePosition]);
 
-  useEffect(() => {
+  const initDragAndResize = useCallback(() => {
     const element = elementRef.current;
     if (!element || !isEditMode) return;
 
@@ -168,7 +168,14 @@ export const useDragConfig = (
         element.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown, elementRef]);
+  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown]);
 
-  return { initializeDragAndResize: useCallback(() => {}, []) };
+  useEffect(() => {
+    const cleanup = initDragAndResize();
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [initDragAndResize]);
+
+  return { initDragAndResize };
 };
