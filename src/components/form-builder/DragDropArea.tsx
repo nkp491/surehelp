@@ -25,23 +25,17 @@ const DragDropArea = ({
   
   const calculateInitialPosition = (index: number) => {
     const GRID_SIZE = 16;
-    const FIELD_WIDTH = 208; // Adjusted to be divisible by grid size (16 * 13)
-    const FIELD_HEIGHT = 64; // Adjusted to be divisible by grid size (16 * 4)
-    const GRID_WIDTH = 1920;
-    const GRID_HEIGHT = 1080;
+    const FIELD_WIDTH = 208;
+    const FIELD_HEIGHT = 64;
+    const GRID_WIDTH = 832; // Reduced from 1920 to eliminate horizontal scrolling
+    const GRID_HEIGHT = 2400; // Increased from 1080 to allow for vertical expansion
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
-    const totalRows = Math.ceil(fields.length / columns);
-    const verticalSpacing = Math.min(
-      FIELD_HEIGHT + GRID_SIZE,
-      Math.floor((GRID_HEIGHT - GRID_SIZE) / totalRows)
-    );
-    
     const row = Math.floor(index / columns);
     const col = index % columns;
     
     const x = col * (FIELD_WIDTH + GRID_SIZE) + GRID_SIZE;
-    const y = row * verticalSpacing + GRID_SIZE;
+    const y = row * (FIELD_HEIGHT + GRID_SIZE) + GRID_SIZE;
     
     return { x, y };
   };
@@ -53,14 +47,14 @@ const DragDropArea = ({
   });
   
   return (
-    <div className="w-full overflow-auto">
+    <div className="w-full overflow-y-auto">
       <div 
-        className={`relative w-[1920px] h-[1080px] rounded-lg overflow-hidden transition-all duration-200 ${
+        className={`relative w-[832px] h-[2400px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
           boxShadow: isEditMode ? '0 1px 2px rgb(0 0 0 / 0.05)' : 'none',
-          backgroundSize: '16px 16px' // Adjusted grid size
+          backgroundSize: '16px 16px'
         }}
         onClick={() => setSelectedField(null)}
       >
@@ -78,8 +72,8 @@ const DragDropArea = ({
               onChange={(value) =>
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
-              width={position.width || "208px"} // Adjusted to match grid
-              height={position.height || "64px"} // Adjusted to match grid
+              width={position.width || "208px"}
+              height={position.height || "64px"}
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}
               isSelected={selectedField === field.id}
