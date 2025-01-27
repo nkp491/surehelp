@@ -28,14 +28,17 @@ const DragDropArea = ({
     const FIELD_WIDTH = 208;
     const FIELD_HEIGHT = 48;
     const GRID_WIDTH = 1300;
-    const GRID_HEIGHT = 1300;
     
-    const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
-    const row = Math.floor(index / columns);
-    const col = index % columns;
+    // Calculate position with 3 columns
+    const columnsPerRow = 3;
+    const column = index % columnsPerRow;
+    const row = Math.floor(index / columnsPerRow);
     
-    const x = col * (FIELD_WIDTH + GRID_SIZE) + GRID_SIZE;
-    const y = row * (FIELD_HEIGHT + GRID_SIZE) + GRID_SIZE;
+    // Add some padding between sections
+    const sectionPadding = Math.floor(row / 5) * GRID_SIZE * 4; // Add extra space every 5 rows
+    
+    const x = column * (FIELD_WIDTH + GRID_SIZE * 2) + GRID_SIZE * 2;
+    const y = (row * (FIELD_HEIGHT + GRID_SIZE * 2) + GRID_SIZE * 2) + sectionPadding;
     
     return { x, y };
   };
