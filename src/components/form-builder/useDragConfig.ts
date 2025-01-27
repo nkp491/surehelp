@@ -1,6 +1,6 @@
 import interact from "interactjs";
 import { snapToGrid } from "@/utils/gridUtils";
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Position {
@@ -14,6 +14,8 @@ export const useDragConfig = (
   fieldId: string,
   isSelected: boolean
 ) => {
+  const interactableRef = useRef<any>(null);
+
   const constrainPosition = (x: number, y: number): Position => {
     const gridSize = 8;
     const maxX = 832 - gridSize;
@@ -159,7 +161,13 @@ export const useDragConfig = (
     const element = elementRef.current;
     if (!element || !isEditMode) return;
 
-    const interactable = interact(element)
+    // Cleanup previous interactable if it exists
+    if (interactableRef.current) {
+      interactableRef.current.unset();
+    }
+
+    // Create new interactable
+    interactableRef.current = interact(element)
       .draggable({
         inertia: false,
         modifiers: [],
@@ -171,6 +179,7 @@ export const useDragConfig = (
         listeners: { move: handleResizeMove }
       });
 
+    // Handle keyboard events for selected elements
     if (isSelected) {
       element.tabIndex = 0;
       element.focus();
@@ -178,8 +187,10 @@ export const useDragConfig = (
     }
 
     return () => {
-      interactable.unset();
-      if (isSelected) {
+      if (interactableRef.current) {
+        interactableRef.current.unset();
+      }
+      if (isSelected && element) {
         element.removeEventListener('keydown', handleKeyDown);
       }
     };
