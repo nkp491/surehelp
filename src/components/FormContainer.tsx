@@ -2,8 +2,10 @@ import { FormSubmission } from "@/types/form";
 import { MetricsProvider } from "@/contexts/MetricsContext";
 import { FamilyMembersProvider } from "@/contexts/FamilyMembersContext";
 import { FormBuilderProvider } from "@/contexts/FormBuilderContext";
+import { SpouseVisibilityProvider } from "@/contexts/SpouseVisibilityContext";
 import FormContent from "@/components/form/FormContent";
 import EditModeToggle from "./form-builder/EditModeToggle";
+import SpouseToggle from "./form/SpouseToggle";
 
 interface FormContainerProps {
   editingSubmission?: FormSubmission | null;
@@ -15,12 +17,15 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     <MetricsProvider>
       <FamilyMembersProvider>
         <FormBuilderProvider>
-          <div className="space-y-4">
-            <div className="flex justify-end mb-4">
-              <EditModeToggle />
+          <SpouseVisibilityProvider>
+            <div className="space-y-4">
+              <div className="flex justify-end items-center gap-2 mb-4">
+                <SpouseToggle />
+                <EditModeToggle />
+              </div>
+              <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
             </div>
-            <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
-          </div>
+          </SpouseVisibilityProvider>
         </FormBuilderProvider>
       </FamilyMembersProvider>
     </MetricsProvider>

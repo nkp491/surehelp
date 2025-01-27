@@ -1,20 +1,20 @@
-import { Button } from "@/components/ui/button";
-import { Plus, Minus } from "lucide-react";
+import { Toggle } from "@/components/ui/toggle";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
+import { Users } from "lucide-react";
 
 const SpouseToggle = () => {
   const { showSpouse, toggleSpouse } = useSpouseVisibility();
 
   return (
-    <Button
-      onClick={toggleSpouse}
-      variant="outline"
-      size="sm"
-      className="gap-2"
+    <Toggle
+      pressed={showSpouse}
+      onPressedChange={toggleSpouse}
+      aria-label="Toggle spouse fields"
+      className="flex items-center gap-2"
     >
-      {showSpouse ? <Minus className="h-4 w-4" /> : <Plus className="h-4 w-4" />}
+      <Users className="h-4 w-4" />
       Spouse
-    </Button>
+    </Toggle>
   );
 };
 
