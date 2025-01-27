@@ -17,12 +17,10 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { selectedField, setSelectedField } = useFormBuilder();
 
-  // Combine all fields from all sections into a single array
   const allFields = sections.reduce((acc, section) => {
     return [...acc, ...section.fields];
   }, []);
 
-  // Use field positions for the combined section
   const { fieldPositions, handleDragEnd } = useFieldPositions({
     section: "Combined Form",
     fields: allFields,
@@ -35,17 +33,15 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="container mx-auto px-4">
-      <div className="space-y-6">
-        <DragDropArea
-          fields={allFields}
-          fieldPositions={fieldPositions}
-          formData={formData}
-          setFormData={setFormData}
-          selectedField={selectedField}
-          setSelectedField={setSelectedField}
-        />
-      </div>
+    <form onSubmit={(e) => e.preventDefault()} className="w-full">
+      <DragDropArea
+        fields={allFields}
+        fieldPositions={fieldPositions}
+        formData={formData}
+        setFormData={setFormData}
+        selectedField={selectedField}
+        setSelectedField={setSelectedField}
+      />
       
       <FormButtons onSubmit={handleFormSubmit} />
     </form>
