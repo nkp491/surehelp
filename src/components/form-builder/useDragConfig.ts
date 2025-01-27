@@ -128,21 +128,25 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLDivElement>, isEdi
     target.setAttribute('data-initial-y', finalY || '0');
   };
 
-  const handleResizeMove = (event: Interact.InteractEvent) => {
+  const handleResizeMove = (event: Interact.ResizeEvent) => {
     let { x, y } = event.target.dataset;
+    const rect = event.rect;
     
-    x = (parseFloat(x) || 0) + event.deltaRect.left;
-    y = (parseFloat(y) || 0) + event.deltaRect.top;
+    x = (parseFloat(x || '0') || 0) + (event.deltaRect?.left || 0);
+    y = (parseFloat(y || '0') || 0) + (event.deltaRect?.top || 0);
 
     const constrained = constrainPosition(x, y);
     
     Object.assign(event.target.style, {
-      width: `${snapToGrid(event.rect.width)}px`,
-      height: `${snapToGrid(event.rect.height)}px`,
+      width: `${snapToGrid(rect.width)}px`,
+      height: `${snapToGrid(rect.height)}px`,
       transform: `translate(${snapToGrid(constrained.x)}px, ${snapToGrid(constrained.y)}px)`
     });
 
-    Object.assign(event.target.dataset, { x: constrained.x, y: constrained.y });
+    Object.assign(event.target.dataset, { 
+      x: constrained.x.toString(), 
+      y: constrained.y.toString() 
+    });
   };
 
   const updateElementPosition = (element: HTMLElement, x: number, y: number) => {
