@@ -1,6 +1,6 @@
 import interact from "interactjs";
 import { snapToGrid } from "@/utils/gridUtils";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 interface Position {
@@ -63,96 +63,77 @@ export const useDragConfig = (
 
   const handleDragMove = useCallback((event: Interact.InteractEvent) => {
     const target = event.target as HTMLElement;
-    const currentX = parseFloat(target.dataset.x || '0');
-    const currentY = parseFloat(target.dataset.y || '0');
+    const x = parseFloat(target.getAttribute('data-x') || '0') + event.dx;
+    const y = parseFloat(target.getAttribute('data-y') || '0') + event.dy;
     
-    const deltaX = event.dx;
-    const deltaY = event.dy;
+    const constrained = constrainPosition(x, y);
+    const snappedX = snapToGrid(constrained.x);
+    const snappedY = snapToGrid(constrained.y);
     
-    const newX = currentX + deltaX;
-    const newY = currentY + deltaY;
-
-    const constrained = constrainPosition(newX, newY);
-    
-    Object.assign(target.style, {
-      transform: `translate(${snapToGrid(constrained.x)}px, ${snapToGrid(constrained.y)}px)`
-    });
-
-    target.dataset.x = constrained.x.toString();
-    target.dataset.y = constrained.y.toString();
+    target.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
+    target.setAttribute('data-x', snappedX.toString());
+    target.setAttribute('data-y', snappedY.toString());
 
     const width = target.style.width;
     const height = target.style.height;
-    savePosition(fieldId, constrained.x, constrained.y, width, height);
+    savePosition(fieldId, snappedX, snappedY, width, height);
   }, [fieldId, savePosition, constrainPosition]);
 
   const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
     const target = event.target as HTMLElement;
-    const currentX = parseFloat(target.dataset.x || '0');
-    const currentY = parseFloat(target.dataset.y || '0');
+    const x = parseFloat(target.getAttribute('data-x') || '0');
+    const y = parseFloat(target.getAttribute('data-y') || '0');
     
-    const deltaX = event.deltaRect?.left || 0;
-    const deltaY = event.deltaRect?.top || 0;
+    const newWidth = snapToGrid(event.rect.width);
+    const newHeight = snapToGrid(event.rect.height);
     
-    const newX = currentX + deltaX;
-    const newY = currentY + deltaY;
-
-    const constrained = constrainPosition(newX, newY);
-    
-    const newWidth = `${snapToGrid(event.rect.width)}px`;
-    const newHeight = `${snapToGrid(event.rect.height)}px`;
-
     Object.assign(target.style, {
-      width: newWidth,
-      height: newHeight,
-      transform: `translate(${snapToGrid(constrained.x)}px, ${snapToGrid(constrained.y)}px)`
+      width: `${newWidth}px`,
+      height: `${newHeight}px`,
+      transform: `translate(${x}px, ${y}px)`
     });
 
-    target.dataset.x = constrained.x.toString();
-    target.dataset.y = constrained.y.toString();
-
-    savePosition(fieldId, constrained.x, constrained.y, newWidth, newHeight);
-  }, [fieldId, savePosition, constrainPosition]);
+    savePosition(fieldId, x, y, `${newWidth}px`, `${newHeight}px`);
+  }, [fieldId, savePosition]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isEditMode || !isSelected || !elementRef.current) return;
     
     const element = elementRef.current;
-    const currentX = parseFloat(element.dataset.x || '0');
-    const currentY = parseFloat(element.dataset.y || '0');
+    const x = parseFloat(element.getAttribute('data-x') || '0');
+    const y = parseFloat(element.getAttribute('data-y') || '0');
     const gridSize = 8;
-    let newX = currentX;
-    let newY = currentY;
+    let newX = x;
+    let newY = y;
 
     switch (e.key) {
       case 'ArrowLeft':
-        newX = currentX - gridSize;
+        newX = x - gridSize;
         break;
       case 'ArrowRight':
-        newX = currentX + gridSize;
+        newX = x + gridSize;
         break;
       case 'ArrowUp':
-        newY = currentY - gridSize;
+        newY = y - gridSize;
         break;
       case 'ArrowDown':
-        newY = currentY + gridSize;
+        newY = y + gridSize;
         break;
       default:
         return;
     }
 
     const constrained = constrainPosition(newX, newY);
+    const snappedX = snapToGrid(constrained.x);
+    const snappedY = snapToGrid(constrained.y);
     
-    Object.assign(element.style, {
-      transform: `translate(${snapToGrid(constrained.x)}px, ${snapToGrid(constrained.y)}px)`
-    });
-
-    element.dataset.x = constrained.x.toString();
-    element.dataset.y = constrained.y.toString();
+    element.style.transform = `translate(${snappedX}px, ${snappedY}px)`;
+    element.setAttribute('data-x', snappedX.toString());
+    element.setAttribute('data-y', snappedY.toString());
 
     const width = element.style.width;
     const height = element.style.height;
-    savePosition(fieldId, constrained.x, constrained.y, width, height);
+    savePosition(fieldId, snappedX, snappedY, width, height);
 
     e.preventDefault();
   }, [isEditMode, isSelected, elementRef, fieldId, savePosition, constrainPosition]);
@@ -160,6 +141,15 @@ export const useDragConfig = (
   const initializeDragAndResize = useCallback(() => {
     const element = elementRef.current;
     if (!element || !isEditMode) return;
+
+    // Get initial transform values from the style
+    const transform = element.style.transform;
+    const match = transform.match(/translate\((-?\d+(?:\.\d+)?)px,\s*(-?\d+(?:\.\d+)?)px\)/);
+    if (match) {
+      const [, x, y] = match;
+      element.setAttribute('data-x', x);
+      element.setAttribute('data-y', y);
+    }
 
     // Cleanup previous interactable if it exists
     if (interactableRef.current) {
@@ -194,7 +184,7 @@ export const useDragConfig = (
         element.removeEventListener('keydown', handleKeyDown);
       }
     };
-  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown, elementRef]);
+  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown]);
 
   return { initializeDragAndResize };
 };
