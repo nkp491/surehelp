@@ -27,11 +27,14 @@ const DateInput = ({ date, setDate }: DateInputProps) => {
           className="z-50 bg-white p-0" 
           align="start"
           sideOffset={4}
+          onPointerDownOutside={(e) => e.preventDefault()}
         >
           <Calendar
             mode="single"
             selected={date}
-            onSelect={setDate}
+            onSelect={(date) => {
+              setDate(date);
+            }}
             initialFocus
             disabled={(date) => date > new Date()}
             className="rounded-md border shadow-sm"

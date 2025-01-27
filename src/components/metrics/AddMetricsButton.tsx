@@ -20,12 +20,17 @@ const AddMetricsButton = ({ selectedDate, onDateSelect, onAdd }: AddMetricsButto
             Add
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent 
+          className="z-50 bg-white p-0" 
+          align="end"
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
           <Calendar
             mode="single"
             selected={selectedDate}
             onSelect={onDateSelect}
             initialFocus
+            className="rounded-md border shadow-sm"
           />
           <div className="p-2 border-t">
             <Button 

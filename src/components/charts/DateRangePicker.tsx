@@ -71,7 +71,11 @@ const DateRangePicker = ({
             )}
           </Button>
         </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
+        <PopoverContent 
+          className="z-50 bg-white p-0" 
+          align="end"
+          onPointerDownOutside={(e) => e.preventDefault()}
+        >
           <Calendar
             initialFocus
             mode="range"
@@ -79,6 +83,7 @@ const DateRangePicker = ({
             selected={date}
             onSelect={handleDateSelect}
             numberOfMonths={2}
+            className="rounded-md border shadow-sm"
           />
         </PopoverContent>
       </Popover>
