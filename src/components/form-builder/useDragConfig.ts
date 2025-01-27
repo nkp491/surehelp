@@ -146,13 +146,11 @@ export const useDragConfig = (
         inertia: false,
         modifiers: [],
         autoScroll: true,
-        listeners: { move: handleDragMove },
-        dragMoveListeners: {
-          move: handleDragMove
+        listeners: { 
+          move: handleDragMove 
         },
-        cursorChecker() {
-          return 'move';
-        }
+        enabled: true,
+        ignoreFrom: '[data-resize-handle]'
       })
       .resizable({
         edges: { 
