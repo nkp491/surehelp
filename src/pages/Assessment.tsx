@@ -2,8 +2,8 @@ import AssessmentFormSection from "@/components/dashboard/AssessmentFormSection"
 
 const Assessment = () => {
   return (
-    <div className="relative min-h-screen">
-      <div className="container mx-auto py-4">
+    <div className="relative min-h-screen w-full">
+      <div className="w-full py-2">
         <AssessmentFormSection 
           isFormOpen={true}
           setIsFormOpen={() => {}}
