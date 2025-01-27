@@ -33,14 +33,11 @@ const DraggableField = ({
 }: DraggableFieldProps) => {
   const { isEditMode } = useFormBuilder();
   const elementRef = useRef<HTMLDivElement>(null);
-  const { initializeDragAndResize } = useDragConfig(elementRef, isEditMode);
+  const { initializeDragAndResize } = useDragConfig(elementRef, isEditMode, id, isSelected);
 
   useEffect(() => {
-    const cleanup = initializeDragAndResize();
-    return () => {
-      if (cleanup) cleanup();
-    };
-  }, [isEditMode, initializeDragAndResize]);
+    return initializeDragAndResize();
+  }, [initializeDragAndResize]);
 
   const combinedStyle = {
     ...style,

@@ -2,16 +2,29 @@ import interact from "interactjs";
 import { snapToGrid } from "@/utils/gridUtils";
 import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useFormBuilder } from "@/contexts/FormBuilderContext";
 
 interface Position {
   x: number;
   y: number;
 }
 
-export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMode: boolean) => {
-  const { selectedField } = useFormBuilder();
-  
+export const useDragConfig = (
+  elementRef: React.RefObject<HTMLElement>,
+  isEditMode: boolean,
+  fieldId: string,
+  isSelected: boolean
+) => {
+  const constrainPosition = (x: number, y: number): Position => {
+    const gridSize = 8;
+    const maxX = 832 - gridSize;
+    const maxY = 1300 - gridSize;
+
+    return {
+      x: Math.max(0, Math.min(x, maxX)),
+      y: Math.max(0, Math.min(y, maxY))
+    };
+  };
+
   const savePosition = async (fieldId: string, x: number, y: number, width: string, height: string) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -40,17 +53,6 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     }
   };
 
-  const constrainPosition = (x: number, y: number): Position => {
-    const gridSize = 8;
-    const maxX = 832 - gridSize;
-    const maxY = 1300 - gridSize;
-
-    return {
-      x: Math.max(0, Math.min(x, maxX)),
-      y: Math.max(0, Math.min(y, maxY))
-    };
-  };
-
   const handleDragMove = useCallback((event: Interact.InteractEvent) => {
     const target = event.target as HTMLElement;
     const currentX = parseFloat(target.dataset.x || '0');
@@ -71,13 +73,10 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     target.dataset.x = constrained.x.toString();
     target.dataset.y = constrained.y.toString();
 
-    const fieldId = target.getAttribute('data-field-id');
-    if (fieldId) {
-      const width = target.style.width;
-      const height = target.style.height;
-      savePosition(fieldId, constrained.x, constrained.y, width, height);
-    }
-  }, []);
+    const width = target.style.width;
+    const height = target.style.height;
+    savePosition(fieldId, constrained.x, constrained.y, width, height);
+  }, [fieldId]);
 
   const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
     const target = event.target as HTMLElement;
@@ -104,14 +103,11 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     target.dataset.x = constrained.x.toString();
     target.dataset.y = constrained.y.toString();
 
-    const fieldId = target.getAttribute('data-field-id');
-    if (fieldId) {
-      savePosition(fieldId, constrained.x, constrained.y, newWidth, newHeight);
-    }
-  }, []);
+    savePosition(fieldId, constrained.x, constrained.y, newWidth, newHeight);
+  }, [fieldId]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if (!isEditMode || !selectedField) return;
+    if (!isEditMode || !isSelected) return;
     
     const element = elementRef.current;
     if (!element) return;
@@ -148,46 +144,41 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     element.dataset.x = constrained.x.toString();
     element.dataset.y = constrained.y.toString();
 
-    const fieldId = element.getAttribute('data-field-id');
-    if (fieldId) {
-      const width = element.style.width;
-      const height = element.style.height;
-      savePosition(fieldId, constrained.x, constrained.y, width, height);
-    }
+    const width = element.style.width;
+    const height = element.style.height;
+    savePosition(fieldId, constrained.x, constrained.y, width, height);
 
     e.preventDefault();
-  }, [isEditMode, selectedField, elementRef]);
+  }, [isEditMode, isSelected, elementRef, fieldId]);
 
   const initializeDragAndResize = useCallback(() => {
     const element = elementRef.current;
-    if (!element) return () => {};
+    if (!element || !isEditMode) return () => {};
 
-    if (isEditMode) {
-      const interactable = interact(element)
-        .draggable({
-          inertia: false,
-          modifiers: [],
-          autoScroll: true,
-          listeners: { move: handleDragMove }
-        })
-        .resizable({
-          edges: { left: true, right: true, bottom: true, top: true },
-          listeners: { move: handleResizeMove }
-        });
+    const interactable = interact(element)
+      .draggable({
+        inertia: false,
+        modifiers: [],
+        autoScroll: true,
+        listeners: { move: handleDragMove }
+      })
+      .resizable({
+        edges: { left: true, right: true, bottom: true, top: true },
+        listeners: { move: handleResizeMove }
+      });
 
-      if (element.getAttribute('data-field-id') === selectedField) {
-        element.tabIndex = 0;
-        element.addEventListener('keydown', handleKeyDown);
-      }
-
-      return () => {
-        interactable.unset();
-        element.removeEventListener('keydown', handleKeyDown);
-      };
+    if (isSelected) {
+      element.tabIndex = 0;
+      element.addEventListener('keydown', handleKeyDown);
     }
 
-    return () => {};
-  }, [isEditMode, selectedField, handleDragMove, handleResizeMove, handleKeyDown]);
+    return () => {
+      interactable.unset();
+      if (isSelected) {
+        element.removeEventListener('keydown', handleKeyDown);
+      }
+    };
+  }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown]);
 
   return { initializeDragAndResize };
 };
