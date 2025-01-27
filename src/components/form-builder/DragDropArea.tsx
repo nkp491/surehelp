@@ -24,10 +24,10 @@ const DragDropArea = ({
   const { showSpouse } = useSpouseVisibility();
   
   const calculateInitialPosition = (index: number) => {
-    const GRID_SIZE = 8; // Reduced grid size for more compact layout
+    const GRID_SIZE = 8;
     const FIELD_WIDTH = 208;
-    const FIELD_HEIGHT = 48; // Reduced field height
-    const GRID_WIDTH = 1300; // Adjusted from 1400 to 1300
+    const FIELD_HEIGHT = 48;
+    const GRID_WIDTH = 1300;
     const GRID_HEIGHT = 1300;
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
@@ -40,8 +40,47 @@ const DragDropArea = ({
     return { x, y };
   };
 
+  // Helper function to check if a field belongs to a category
+  const isHealthField = (fieldId: string) => {
+    const healthFields = ['height', 'weight', 'tobaccoUse', 'dui', 'selectedConditions', 'medicalConditions', 
+                         'hospitalizations', 'surgeries', 'prescriptionMedications', 'lastMedicalExam', 
+                         'familyMedicalConditions', 'spouseHeight', 'spouseWeight', 'spouseTobaccoUse', 
+                         'spouseDui', 'spouseSelectedConditions', 'spouseMedicalConditions'];
+    return healthFields.some(field => fieldId.includes(field));
+  };
+
+  const isIncomeField = (fieldId: string) => {
+    const incomeFields = ['employmentStatus', 'occupation', 'employmentIncome', 'selectedInvestments',
+                         'socialSecurityIncome', 'pensionIncome', 'survivorshipIncome', 'totalIncome',
+                         'householdExpenses', 'spouseEmploymentStatus', 'spouseOccupation', 
+                         'spouseEmploymentIncome', 'spouseSelectedInvestments'];
+    return incomeFields.some(field => fieldId.includes(field));
+  };
+
+  const isAgentField = (fieldId: string) => {
+    const agentFields = ['sourcedFrom', 'leadType', 'premium', 'effectiveDate', 'draftDay',
+                        'coverageAmount', 'accidental', 'carrierAndProduct', 'policyNumber'];
+    return agentFields.some(field => fieldId.includes(field));
+  };
+
+  // Filter and sort fields by category
+  const healthFields = fields.filter(field => isHealthField(field.id));
+  const incomeFields = fields.filter(field => isIncomeField(field.id));
+  const agentFields = fields.filter(field => isAgentField(field.id));
+  const assessmentFields = fields.filter(field => 
+    !isHealthField(field.id) && !isIncomeField(field.id) && !isAgentField(field.id)
+  );
+
+  // Combine all fields in the desired order
+  const organizedFields = [
+    ...healthFields,
+    ...incomeFields,
+    ...agentFields,
+    ...assessmentFields
+  ];
+
   // Filter out spouse fields if spouse toggle is off
-  const visibleFields = fields.filter(field => {
+  const visibleFields = organizedFields.filter(field => {
     const isSpouseField = field.id.toLowerCase().includes('spouse');
     return showSpouse ? true : !isSpouseField;
   });
@@ -54,7 +93,7 @@ const DragDropArea = ({
         }`}
         style={{
           boxShadow: isEditMode ? '0 1px 2px rgb(0 0 0 / 0.05)' : 'none',
-          backgroundSize: '8px 8px' // Reduced grid size
+          backgroundSize: '8px 8px'
         }}
         onClick={() => setSelectedField(null)}
       >
@@ -73,7 +112,7 @@ const DragDropArea = ({
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
               width={position.width || "208px"}
-              height={position.height || "48px"} // Reduced default height
+              height={position.height || "48px"}
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}
               isSelected={selectedField === field.id}
