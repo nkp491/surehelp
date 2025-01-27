@@ -22,11 +22,11 @@ const DragDropArea = ({
   const { isEditMode } = useFormBuilder();
   
   const calculateInitialPosition = (index: number) => {
-    const GRID_SIZE = 16; // Reduced grid size
-    const FIELD_WIDTH = 240; // Reduced field width
-    const FIELD_HEIGHT = 80; // Reduced field height
-    const GRID_WIDTH = 3840; // Increased grid width
-    const GRID_HEIGHT = 2160; // Increased grid height
+    const GRID_SIZE = 12; // Further reduced grid size
+    const FIELD_WIDTH = 200; // Further reduced field width
+    const FIELD_HEIGHT = 70; // Further reduced field height
+    const GRID_WIDTH = 1920; // Adjusted to common screen width
+    const GRID_HEIGHT = 1080; // Adjusted to common screen height
     
     const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
     const totalRows = Math.ceil(fields.length / columns);
@@ -45,13 +45,13 @@ const DragDropArea = ({
   };
   
   return (
-    <div className="w-full overflow-x-auto">
+    <div className="w-full overflow-auto">
       <div 
-        className={`relative w-[3840px] h-[2160px] rounded-lg overflow-hidden transition-all duration-200 ${
+        className={`relative w-[1920px] h-[1080px] rounded-lg overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
-          boxShadow: isEditMode ? '0 2px 4px -1px rgb(0 0 0 / 0.05)' : 'none'
+          boxShadow: isEditMode ? '0 1px 2px rgb(0 0 0 / 0.05)' : 'none'
         }}
         onClick={() => setSelectedField(null)}
       >
@@ -69,7 +69,7 @@ const DragDropArea = ({
               onChange={(value) =>
                 setFormData((prev: any) => ({ ...prev, [field.id]: value }))
               }
-              width={position.width || "240px"} // Reduced default width
+              width={position.width || "200px"} // Reduced default width
               height={position.height || "auto"}
               alignment={position.alignment || "left"}
               onSelect={() => setSelectedField(field.id)}

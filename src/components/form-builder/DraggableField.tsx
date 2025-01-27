@@ -24,7 +24,7 @@ const DraggableField = ({
   label,
   value,
   onChange,
-  width = "240px",
+  width = "200px",
   height = "auto",
   alignment = "left",
   onSelect,
@@ -48,8 +48,8 @@ const DraggableField = ({
     position: "absolute" as const,
     touchAction: "none",
     transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
-    minHeight: "48px", // Reduced minimum height
-    maxHeight: "120px", // Reduced maximum height
+    minHeight: "40px", // Further reduced minimum height
+    maxHeight: "100px", // Further reduced maximum height
   };
 
   return (
@@ -57,7 +57,7 @@ const DraggableField = ({
       ref={elementRef}
       style={combinedStyle}
       className={`form-field-container ${
-        isSelected ? 'ring-2 ring-primary ring-offset-1 shadow-md' : 'shadow-sm hover:shadow-md'
+        isSelected ? 'ring-1 ring-primary shadow-sm' : 'shadow-none hover:shadow-sm'
       } ${isEditMode ? 'cursor-move' : ''}`}
       onClick={(e) => {
         if (!isEditMode) return;

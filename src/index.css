@@ -6,34 +6,25 @@
  
 @layer base {
   :root {
-    --background: 220 13% 91%; /* #e5e7eb background for better readability */
-    --foreground: 201 28% 38%; /* #2A6F97 for text - good contrast */
-
-    --card: 196 41% 59%; /* #6CAEC2 */
-    --card-foreground: 39 100% 98%; /* #fbfaf8 text on card for contrast */
- 
-    --popover: 39 100% 98%; /* #fbfaf8 background for popover */
-    --popover-foreground: 201 28% 38%; /* #2A6F97 */
- 
-    --primary: 201 28% 38%; /* #2A6F97 */
-    --primary-foreground: 39 100% 98%; /* #fbfaf8 */
- 
-    --secondary: 196 41% 59%; /* #6CAEC2 */
-    --secondary-foreground: 39 100% 98%; /* #fbfaf8 */
- 
-    --muted: 39 100% 98%; /* #fbfaf8 */
-    --muted-foreground: 201 28% 38%; /* #2A6F97 */
- 
-    --accent: 39 82% 91%; /* #FDF0D5 */
-    --accent-foreground: 201 28% 38%; /* #2A6F97 */
- 
+    --background: 220 13% 91%;
+    --foreground: 201 28% 38%;
+    --card: 196 41% 59%;
+    --card-foreground: 39 100% 98%;
+    --popover: 39 100% 98%;
+    --popover-foreground: 201 28% 38%;
+    --primary: 201 28% 38%;
+    --primary-foreground: 39 100% 98%;
+    --secondary: 196 41% 59%;
+    --secondary-foreground: 39 100% 98%;
+    --muted: 39 100% 98%;
+    --muted-foreground: 201 28% 38%;
+    --accent: 39 82% 91%;
+    --accent-foreground: 201 28% 38%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-
-    --border: 220 13% 91%; /* #e5e7eb */
-    --input: 39 100% 97%; /* #fbfaf8 background for inputs */
-    --ring: 201 28% 38%; /* #2A6F97 */
- 
+    --border: 220 13% 91%;
+    --input: 39 100% 97%;
+    --ring: 201 28% 38%;
     --radius: 0.5rem;
   }
 }
@@ -49,26 +40,25 @@
 
 @layer utilities {
   .bg-grid {
-    background-size: 32px 32px;
+    background-size: 24px 24px;
     background-image: 
-      linear-gradient(to right, rgba(203, 213, 225, 0.2) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(203, 213, 225, 0.2) 1px, transparent 1px);
+      linear-gradient(to right, rgba(203, 213, 225, 0.1) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(203, 213, 225, 0.1) 1px, transparent 1px);
   }
 
   .form-field-container {
-    @apply p-2 rounded-lg bg-white shadow-sm border border-gray-100 transition-all duration-200 min-w-[240px] max-w-[320px];
-    margin: 4px;
+    @apply p-1 rounded-md bg-white border border-gray-50 transition-all duration-200 min-w-[200px] max-w-[280px];
+    margin: 2px;
   }
 
   .form-field-container:hover {
-    @apply shadow-md;
+    @apply shadow-sm;
   }
 
   .form-field-selected {
-    @apply ring-2 ring-primary ring-offset-2;
+    @apply ring-1 ring-primary ring-offset-1;
   }
 
-  /* Add resize handles styling */
   .form-field-container[data-resize] {
     position: relative;
   }
@@ -76,28 +66,27 @@
   .form-field-container[data-resize]::before {
     content: '';
     position: absolute;
-    width: 8px;
-    height: 8px;
+    width: 6px;
+    height: 6px;
     background: var(--primary);
-    border-radius: 3px;
+    border-radius: 2px;
     z-index: 10;
   }
 
-  .form-field-container[data-resize="nw"]::before { top: -4px; left: -4px; cursor: nw-resize; }
-  .form-field-container[data-resize="ne"]::before { top: -4px; right: -4px; cursor: ne-resize; }
-  .form-field-container[data-resize="sw"]::before { bottom: -4px; left: -4px; cursor: sw-resize; }
-  .form-field-container[data-resize="se"]::before { bottom: -4px; right: -4px; cursor: se-resize; }
+  .form-field-container[data-resize="nw"]::before { top: -3px; left: -3px; cursor: nw-resize; }
+  .form-field-container[data-resize="ne"]::before { top: -3px; right: -3px; cursor: ne-resize; }
+  .form-field-container[data-resize="sw"]::before { bottom: -3px; left: -3px; cursor: sw-resize; }
+  .form-field-container[data-resize="se"]::before { bottom: -3px; right: -3px; cursor: se-resize; }
 
-  /* Edit mode specific styles */
   .edit-mode .form-field-container {
-    @apply cursor-move border-2 border-dashed border-gray-300;
+    @apply cursor-move border border-dashed border-gray-200;
   }
 
   .edit-mode .form-field-container:hover {
-    @apply border-primary bg-primary/5;
+    @apply border-primary/50 bg-primary/5;
   }
 
   .edit-mode .bg-grid {
-    @apply border border-gray-200;
+    @apply border-0;
   }
 }
