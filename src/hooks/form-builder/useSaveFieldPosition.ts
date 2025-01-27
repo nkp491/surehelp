@@ -14,7 +14,8 @@ export const useSaveFieldPosition = (section: string, fields: FormField[]) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        throw new Error("No authenticated user found");
+        console.error("No authenticated user found");
+        return;
       }
 
       // Update local state immediately for better UX
