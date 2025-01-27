@@ -147,7 +147,12 @@ export const useDragConfig = (
         modifiers: [],
         autoScroll: true,
         listeners: { move: handleDragMove },
-        handle: '[data-drag-handle]',
+        dragMoveListeners: {
+          move: handleDragMove
+        },
+        cursorChecker() {
+          return 'move';
+        }
       })
       .resizable({
         edges: { 
