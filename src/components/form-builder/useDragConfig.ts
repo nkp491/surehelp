@@ -1,6 +1,6 @@
 import interact from "interactjs";
 import { snapToGrid } from "@/utils/gridUtils";
-import { useEffect } from "react";
+import { useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useFormBuilder } from "@/contexts/FormBuilderContext";
 
@@ -51,7 +51,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     };
   };
 
-  const handleDragMove = (event: Interact.InteractEvent) => {
+  const handleDragMove = useCallback((event: Interact.InteractEvent) => {
     const target = event.target as HTMLElement;
     const currentX = parseFloat(target.dataset.x || '0');
     const currentY = parseFloat(target.dataset.y || '0');
@@ -77,9 +77,9 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
       const height = target.style.height;
       savePosition(fieldId, constrained.x, constrained.y, width, height);
     }
-  };
+  }, []);
 
-  const handleResizeMove = (event: Interact.ResizeEvent) => {
+  const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
     const target = event.target as HTMLElement;
     const currentX = parseFloat(target.dataset.x || '0');
     const currentY = parseFloat(target.dataset.y || '0');
@@ -108,9 +108,9 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     if (fieldId) {
       savePosition(fieldId, constrained.x, constrained.y, newWidth, newHeight);
     }
-  };
+  }, []);
 
-  const handleKeyDown = (e: KeyboardEvent) => {
+  const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isEditMode || !selectedField) return;
     
     const element = elementRef.current;
@@ -156,11 +156,11 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     }
 
     e.preventDefault();
-  };
+  }, [isEditMode, selectedField, elementRef]);
 
-  useEffect(() => {
+  const initializeDragAndResize = useCallback(() => {
     const element = elementRef.current;
-    if (!element) return;
+    if (!element) return () => {};
 
     if (isEditMode) {
       const interactable = interact(element)
@@ -175,9 +175,8 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
           listeners: { move: handleResizeMove }
         });
 
-      // Add keyboard event listener when the field is selected
       if (element.getAttribute('data-field-id') === selectedField) {
-        element.tabIndex = 0; // Make the element focusable
+        element.tabIndex = 0;
         element.addEventListener('keydown', handleKeyDown);
       }
 
@@ -188,38 +187,7 @@ export const useDragConfig = (elementRef: React.RefObject<HTMLElement>, isEditMo
     }
 
     return () => {};
-  }, [isEditMode, selectedField]);
+  }, [isEditMode, selectedField, handleDragMove, handleResizeMove, handleKeyDown]);
 
-  return {
-    initializeDragAndResize: () => {
-      const element = elementRef.current;
-      if (!element) return () => {};
-
-      if (isEditMode) {
-        const interactable = interact(element)
-          .draggable({
-            inertia: false,
-            modifiers: [],
-            autoScroll: true,
-            listeners: { move: handleDragMove }
-          })
-          .resizable({
-            edges: { left: true, right: true, bottom: true, top: true },
-            listeners: { move: handleResizeMove }
-          });
-
-        if (element.getAttribute('data-field-id') === selectedField) {
-          element.tabIndex = 0;
-          element.addEventListener('keydown', handleKeyDown);
-        }
-
-        return () => {
-          interactable.unset();
-          element.removeEventListener('keydown', handleKeyDown);
-        };
-      }
-
-      return () => {};
-    }
-  };
+  return { initializeDragAndResize };
 };

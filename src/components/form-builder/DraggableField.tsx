@@ -37,8 +37,10 @@ const DraggableField = ({
 
   useEffect(() => {
     const cleanup = initializeDragAndResize();
-    return cleanup;
-  }, [isEditMode]);
+    return () => {
+      if (cleanup) cleanup();
+    };
+  }, [isEditMode, initializeDragAndResize]);
 
   const combinedStyle = {
     ...style,
