@@ -1,6 +1,6 @@
 const GRID_SIZE = 32; // 32px grid for better spacing
-const MAX_WIDTH = 1056; // 11 inches * 96 DPI
-const MAX_HEIGHT = 816; // 8.5 inches * 96 DPI
+const MAX_WIDTH = 1600; // Increased from 1056 to accommodate more fields
+const MAX_HEIGHT = 1200; // Increased from 816 to accommodate more fields
 
 export const snapToGrid = (value: number): number => {
   return Math.round(value / GRID_SIZE) * GRID_SIZE;
