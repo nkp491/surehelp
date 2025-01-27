@@ -48,6 +48,8 @@ const DraggableField = ({
     position: "absolute" as const,
     touchAction: "none",
     transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
+    minHeight: "60px", // Add minimum height
+    maxHeight: "120px", // Add maximum height
   };
 
   return (

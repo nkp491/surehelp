@@ -25,19 +25,29 @@ const DragDropArea = ({
   const calculateInitialPosition = (index: number) => {
     const GRID_SIZE = 32;
     const FIELD_WIDTH = 240;
-    const FIELD_HEIGHT = 100;
+    const FIELD_HEIGHT = 80; // Reduced height for better fit
     const GRID_WIDTH = 1056;
+    const GRID_HEIGHT = 816;
     
-    // Calculate how many fields can fit in a row
-    const fieldsPerRow = Math.floor(GRID_WIDTH / (FIELD_WIDTH + GRID_SIZE));
+    // Calculate optimal number of columns based on grid width
+    const columns = Math.floor((GRID_WIDTH - GRID_SIZE) / (FIELD_WIDTH + GRID_SIZE));
+    
+    // Calculate optimal number of rows based on total fields
+    const totalRows = Math.ceil(fields.length / columns);
+    
+    // Calculate vertical spacing to distribute fields evenly
+    const verticalSpacing = Math.min(
+      FIELD_HEIGHT + GRID_SIZE,
+      Math.floor((GRID_HEIGHT - GRID_SIZE) / totalRows)
+    );
     
     // Calculate row and column for the current field
-    const row = Math.floor(index / fieldsPerRow);
-    const col = index % fieldsPerRow;
+    const row = Math.floor(index / columns);
+    const col = index % columns;
     
     // Calculate x and y positions with proper spacing
     const x = col * (FIELD_WIDTH + GRID_SIZE) + GRID_SIZE;
-    const y = row * (FIELD_HEIGHT + GRID_SIZE) + GRID_SIZE;
+    const y = row * verticalSpacing + GRID_SIZE;
     
     return { x, y };
   };
