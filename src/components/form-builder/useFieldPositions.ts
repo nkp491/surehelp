@@ -15,24 +15,27 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
   const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});
   const { toast } = useToast();
 
-  // Load saved positions on mount
+  // Load saved positions whenever the component mounts or section changes
   useEffect(() => {
     const loadSavedPositions = async () => {
       try {
-        const user = await supabase.auth.getUser();
-        if (!user.data.user) {
-          throw new Error("No authenticated user found");
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log("No authenticated user found");
+          return;
         }
 
         const { data: savedPositions, error } = await supabase
           .from('form_field_positions')
           .select('*')
-          .eq('user_id', user.data.user.id)
+          .eq('user_id', user.id)
           .eq('section', section);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
-        if (savedPositions) {
+        if (savedPositions && savedPositions.length > 0) {
           const positionsMap = savedPositions.reduce((acc, pos) => ({
             ...acc,
             [pos.field_id]: {
@@ -45,6 +48,7 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
           }), {});
           
           setFieldPositions(positionsMap);
+          console.log("Loaded positions:", positionsMap);
         }
       } catch (error) {
         console.error("Error loading field positions:", error);
@@ -56,7 +60,22 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
       }
     };
 
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        loadSavedPositions();
+      } else if (event === 'SIGNED_OUT') {
+        setFieldPositions({});
+      }
+    });
+
+    // Initial load
     loadSavedPositions();
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [section, toast]);
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -70,15 +89,25 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
     const newY = snapToGrid(Math.round((currentPosition.y_position || 0) + delta.y));
 
     try {
-      const user = await supabase.auth.getUser();
-      if (!user.data.user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         throw new Error("No authenticated user found");
       }
+
+      // Update local state immediately for better UX
+      setFieldPositions(prev => ({
+        ...prev,
+        [fieldId]: {
+          ...prev[fieldId],
+          x_position: newX,
+          y_position: newY,
+        },
+      }));
 
       const { data: existingPosition } = await supabase
         .from('form_field_positions')
         .select('*')
-        .eq('user_id', user.data.user.id)
+        .eq('user_id', user.id)
         .eq('field_id', fieldId)
         .eq('section', section)
         .maybeSingle();
@@ -98,7 +127,7 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
         const { error: insertError } = await supabase
           .from('form_field_positions')
           .insert({
-            user_id: user.data.user.id,
+            user_id: user.id,
             field_id: fieldId,
             section,
             position: fields.findIndex(f => f.id === fieldId),
@@ -109,19 +138,7 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
         if (insertError) throw insertError;
       }
 
-      setFieldPositions(prev => ({
-        ...prev,
-        [fieldId]: {
-          ...prev[fieldId],
-          x_position: newX,
-          y_position: newY,
-        },
-      }));
-
-      toast({
-        title: "Success",
-        description: "Field position updated",
-      });
+      console.log("Saved position for field:", fieldId, { newX, newY });
 
     } catch (error: any) {
       console.error("Error saving field position:", error);
