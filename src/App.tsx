@@ -1,3 +1,4 @@
+import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { SessionContextProvider } from "@supabase/auth-helpers-react";
@@ -6,14 +7,16 @@ import { AuthRoutes } from "@/components/auth/AuthRoutes";
 
 function App() {
   return (
-    <SessionContextProvider supabaseClient={supabase}>
-      <Router>
-        <div className="app-container">
-          <AuthRoutes />
-          <Toaster />
-        </div>
-      </Router>
-    </SessionContextProvider>
+    <React.StrictMode>
+      <SessionContextProvider supabaseClient={supabase}>
+        <Router>
+          <div className="app-container">
+            <AuthRoutes />
+            <Toaster />
+          </div>
+        </Router>
+      </SessionContextProvider>
+    </React.StrictMode>
   );
 }
 
