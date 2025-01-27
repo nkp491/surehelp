@@ -16,7 +16,7 @@ export const useDragConfig = (
 ) => {
   const interactableRef = useRef<any>(null);
 
-  const constrainPosition = (x: number, y: number): Position => {
+  const constrainPosition = useCallback((x: number, y: number): Position => {
     const gridSize = 8;
     const maxX = 832 - gridSize;
     const maxY = 1300 - gridSize;
@@ -25,7 +25,7 @@ export const useDragConfig = (
       x: Math.max(0, Math.min(x, maxX)),
       y: Math.max(0, Math.min(y, maxY))
     };
-  };
+  }, []);
 
   const savePosition = useCallback(async (
     fieldId: string, 
@@ -84,7 +84,7 @@ export const useDragConfig = (
     const width = target.style.width;
     const height = target.style.height;
     savePosition(fieldId, constrained.x, constrained.y, width, height);
-  }, [fieldId, savePosition]);
+  }, [fieldId, savePosition, constrainPosition]);
 
   const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
     const target = event.target as HTMLElement;
@@ -112,7 +112,7 @@ export const useDragConfig = (
     target.dataset.y = constrained.y.toString();
 
     savePosition(fieldId, constrained.x, constrained.y, newWidth, newHeight);
-  }, [fieldId, savePosition]);
+  }, [fieldId, savePosition, constrainPosition]);
 
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
     if (!isEditMode || !isSelected || !elementRef.current) return;
@@ -155,9 +155,9 @@ export const useDragConfig = (
     savePosition(fieldId, constrained.x, constrained.y, width, height);
 
     e.preventDefault();
-  }, [isEditMode, isSelected, elementRef, fieldId, savePosition]);
+  }, [isEditMode, isSelected, elementRef, fieldId, savePosition, constrainPosition]);
 
-  useEffect(() => {
+  const initializeDragAndResize = useCallback(() => {
     const element = elementRef.current;
     if (!element || !isEditMode) return;
 
@@ -196,5 +196,5 @@ export const useDragConfig = (
     };
   }, [isEditMode, isSelected, handleDragMove, handleResizeMove, handleKeyDown, elementRef]);
 
-  return { initializeDragAndResize: useCallback(() => {}, []) };
+  return { initializeDragAndResize };
 };
