@@ -3,6 +3,7 @@ import ProfileMenu from "./ProfileMenu";
 import MetricsSection from "../dashboard/MetricsSection";
 import { useLocation } from "react-router-dom";
 import { MetricsProvider } from "@/contexts/MetricsContext";
+import { Separator } from "@/components/ui/separator";
 
 const Header = () => {
   const location = useLocation();
@@ -26,13 +27,14 @@ const Header = () => {
         </div>
         
         {showMetrics && (
-          <div className="relative w-full h-[100px] bg-white">
-            <div className="w-full">
+          <>
+            <Separator className="bg-[#D9D9D9] h-[0.5px] opacity-50" />
+            <div className="relative w-full">
               <MetricsProvider>
                 <MetricsSection />
               </MetricsProvider>
             </div>
-          </div>
+          </>
         )}
       </div>
     </header>
