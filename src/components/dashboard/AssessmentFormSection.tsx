@@ -14,12 +14,13 @@ const AssessmentFormSection = ({
   setIsFormOpen,
 }: AssessmentFormSectionProps) => {
   return (
-    <Card className="bg-transparent shadow-none border-none">
-      <div className="space-y-8">
+    <Card className="bg-transparent shadow-none border-none w-full">
+      <div className="space-y-4">
         <h2 className="text-3xl font-bold text-gray-900">Client Assessment</h2>
         <Collapsible
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
+          className="w-full"
         >
           <div className="flex items-center justify-between mb-4">
             <p className="text-lg text-gray-600">
@@ -37,7 +38,7 @@ const AssessmentFormSection = ({
             </CollapsibleTrigger>
           </div>
           
-          <CollapsibleContent>
+          <CollapsibleContent className="w-full">
             <FormContainer />
           </CollapsibleContent>
         </Collapsible>

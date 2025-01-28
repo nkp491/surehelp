@@ -15,8 +15,8 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     <FamilyMembersProvider>
       <FormBuilderProvider>
         <SpouseVisibilityProvider>
-          <div className="max-w-[1400px] mx-auto">
-            <div className="flex justify-end items-center gap-2">
+          <div className="w-full">
+            <div className="flex justify-end items-center gap-2 mb-4">
               <FamilyMemberToggle />
             </div>
             <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
