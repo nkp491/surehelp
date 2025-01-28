@@ -13,7 +13,7 @@ const Header = () => {
       <div className="max-w-[1800px] mx-auto">
         <div className="flex justify-between items-center h-[98px] px-8">
           <div className="flex items-center gap-8">
-            <h1 className="text-[#014874] text-[32px] font-bold tracking-wide">
+            <h1 className="text-[#3498db] text-[32px] font-normal tracking-normal">
               SureHelp
             </h1>
             <Navigation />
