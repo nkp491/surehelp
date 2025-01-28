@@ -14,7 +14,7 @@ const MetricsSection = () => {
       <Card className="bg-transparent shadow-none border-none">
         <div className="flex flex-col space-y-0">
           <MetricsHeader onSave={saveDailyMetrics} />
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-0.5">
+          <div className="inline-flex gap-0.5 flex-wrap">
             {(Object.keys(metrics) as MetricType[]).map((metric) => (
               <MetricButtons
                 key={metric}
