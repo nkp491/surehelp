@@ -3,6 +3,7 @@ import SectionHeader from "./form/SectionHeader";
 import HealthMetricsRow from "./form/HealthMetricsRow";
 import TwoColumnLayout from "./form/TwoColumnLayout";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
+import DraggableFormField from "./DraggableFormField";
 
 interface FormSectionProps {
   section: string;
@@ -33,6 +34,10 @@ const FormSection = ({
     return fieldId.toLowerCase().startsWith('spouse');
   };
 
+  const isAgentField = (fieldId: string) => {
+    return ['sourcedFrom', 'leadType', 'premium', 'effectiveDate', 'draftDay', 'accidental'].includes(fieldId);
+  };
+
   const filteredFields = fields.filter(field => {
     if (isSpouseField(field.id)) {
       return showSpouse;
@@ -45,6 +50,23 @@ const FormSection = ({
   if (!showSpouse && section.toLowerCase().includes('spouse')) {
     return null;
   }
+
+  const renderField = (field: FormField) => {
+    return (
+      <DraggableFormField
+        key={field.id}
+        id={field.id}
+        fieldType={field.type}
+        label={field.label}
+        value={formData[field.id]}
+        onChange={(value) => setFormData((prev: any) => ({ ...prev, [field.id]: value }))}
+        placeholder={field.placeholder}
+        required={field.required}
+        error={errors[field.id]}
+        submissionId={submissionId}
+      />
+    );
+  };
 
   return (
     <div className="bg-white mb-2">
@@ -61,13 +83,19 @@ const FormSection = ({
           />
         )}
 
-        <TwoColumnLayout
-          fields={regularFields}
-          formData={formData}
-          setFormData={setFormData}
-          errors={errors}
-          submissionId={submissionId}
-        />
+        {section === "Assessment Notes" ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {regularFields.map(field => renderField(field))}
+          </div>
+        ) : (
+          <TwoColumnLayout
+            fields={regularFields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={submissionId}
+          />
+        )}
       </div>
     </div>
   );
