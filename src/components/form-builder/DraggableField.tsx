@@ -25,7 +25,7 @@ const DraggableField = ({
   label,
   value,
   onChange,
-  width = "200px",
+  width = "100%",
   height = "auto",
   alignment = "left",
   onSelect,
@@ -47,18 +47,19 @@ const DraggableField = ({
     width,
     height,
     textAlign: alignment as "left" | "center" | "right",
-    position: "absolute" as const,
+    position: "relative" as const,
     touchAction: "none",
     transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
     minHeight: "40px",
     maxHeight: "100px",
+    marginBottom: "8px",
   };
 
   return (
     <div
       ref={elementRef}
       style={combinedStyle}
-      className={`form-field-container group relative ${
+      className={`form-field-container group ${
         isSelected ? 'ring-1 ring-primary shadow-sm' : 'shadow-none hover:shadow-sm'
       }`}
       onClick={(e) => {
@@ -87,17 +88,10 @@ const DraggableField = ({
 
           {/* Resize Handles */}
           <div className="absolute inset-0 pointer-events-none">
-            {/* Corner resize handles */}
             <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-primary cursor-nw-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="nw" />
             <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-primary cursor-ne-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="ne" />
             <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-primary cursor-sw-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="sw" />
             <div className="absolute bottom-0 right-0 w-3 h-3 border-b-2 border-r-2 border-primary cursor-se-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="se" />
-            
-            {/* Edge resize handles */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-3 border-t-2 border-primary cursor-n-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="n" />
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-3 border-b-2 border-primary cursor-s-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="s" />
-            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-3 h-8 border-l-2 border-primary cursor-w-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="w" />
-            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3 h-8 border-r-2 border-primary cursor-e-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="e" />
           </div>
         </>
       )}
