@@ -37,7 +37,7 @@ const MainContent = () => {
   };
 
   return (
-    <main className="flex-1">
+    <main className="flex-1 pt-2">
       {renderContent()}
     </main>
   );
