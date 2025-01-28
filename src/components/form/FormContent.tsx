@@ -42,15 +42,17 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="w-full">
-      <DragDropArea
-        fields={filteredFields}
-        fieldPositions={fieldPositions}
-        formData={formData}
-        setFormData={setFormData}
-        selectedField={selectedField}
-        setSelectedField={setSelectedField}
-      />
+    <form onSubmit={(e) => e.preventDefault()} className="w-full h-full flex flex-col">
+      <div className="flex-1 min-h-0">
+        <DragDropArea
+          fields={filteredFields}
+          fieldPositions={fieldPositions}
+          formData={formData}
+          setFormData={setFormData}
+          selectedField={selectedField}
+          setSelectedField={setSelectedField}
+        />
+      </div>
       
       {familyMembers.map((member, index) => (
         <FormSection

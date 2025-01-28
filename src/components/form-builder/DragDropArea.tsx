@@ -18,6 +18,7 @@ const DragDropArea = ({
   selectedField,
   setSelectedField,
 }: DragDropAreaProps) => {
+  // Filter and sort fields by category
   const healthFields = fields.filter(field => 
     ['name', 'dob', 'age', 'height', 'weight', 'tobaccoUse', 'dui', 'selectedConditions', 
      'medicalConditions', 'hospitalizations', 'surgeries', 'prescriptionMedications', 
@@ -41,15 +42,15 @@ const DragDropArea = ({
   );
 
   return (
-    <div className="w-full h-screen overflow-y-auto px-1">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-1">
+    <div className="w-full h-[calc(100vh-16rem)] overflow-y-auto px-2 py-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 h-full">
         <FormSection
           title="Primary Health Assessment"
           fields={healthFields}
           formData={formData}
           setFormData={setFormData}
         />
-        <div className="space-y-1">
+        <div className="space-y-4">
           <FormSection
             title="Income Assessment"
             fields={incomeFields}
