@@ -13,6 +13,5 @@ export const INITIAL_FIELDS = [
   { section: "Primary Income Assessment", fields: PRIMARY_INCOME_FIELDS },
   { section: "Spouse Income Assessment", fields: SPOUSE_INCOME_FIELDS },
   { section: "Household Income", fields: HOUSEHOLD_INCOME_FIELDS },
-  { section: "Agent Use Only", fields: AGENT_USE_ONLY_FIELDS },
   { section: "Assessment Notes", fields: ASSESSMENT_NOTES_FIELDS },
 ];
