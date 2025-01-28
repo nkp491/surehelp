@@ -8,20 +8,20 @@ interface TobaccoUseFieldProps {
 
 const TobaccoUseField = ({ value, onChange }: TobaccoUseFieldProps) => {
   return (
-    <div className="space-y-1">
-      <Label className="text-sm font-medium">Tobacco Use</Label>
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-gray-700">Tobacco Use</Label>
       <RadioGroup
         value={value}
         onValueChange={onChange}
-        className="flex items-center gap-4"
+        className="flex items-center gap-6"
       >
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <RadioGroupItem value="yes" id="yes" className="h-4 w-4" />
-          <Label htmlFor="yes" className="text-sm font-normal">Yes</Label>
+          <Label htmlFor="yes" className="text-sm font-normal text-gray-600">Yes</Label>
         </div>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-2">
           <RadioGroupItem value="no" id="no" className="h-4 w-4" />
-          <Label htmlFor="no" className="text-sm font-normal">No</Label>
+          <Label htmlFor="no" className="text-sm font-normal text-gray-600">No</Label>
         </div>
       </RadioGroup>
     </div>

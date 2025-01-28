@@ -22,35 +22,18 @@ const FormSection = ({
   selectedField,
   setSelectedField,
 }: FormSectionProps) => {
-  const calculateInitialPosition = (fieldIndex: number) => {
-    const GRID_SIZE = 8;
-    const FIELD_HEIGHT = 48;
-    const SECTION_PADDING = 16;
-    const ROW_HEIGHT = FIELD_HEIGHT + GRID_SIZE;
-    
-    // Calculate position based on index within the section
-    const row = Math.floor(fieldIndex / 2);
-    const col = fieldIndex % 2;
-    
-    const x = col * (GRID_SIZE + 400) + GRID_SIZE; // 400px is base width for fields
-    const y = row * ROW_HEIGHT + SECTION_PADDING;
-    
-    return { x, y };
-  };
-
   return (
-    <div className="bg-white rounded-lg shadow-sm">
-      <div className="bg-[#3B82F6] text-white px-4 py-2 rounded-t-lg font-medium text-sm">
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+      <div className="bg-[#3B82F6] text-white px-4 py-2 text-sm font-medium">
         {title}
       </div>
-      <div className="p-4 relative min-h-[200px]">
-        <div className="grid grid-cols-2 gap-4">
+      <div className="p-4">
+        <div className="space-y-4">
           {fields.map((field, fieldIndex) => {
             const position = fieldPositions[field.id] || {};
-            const initialPosition = calculateInitialPosition(fieldIndex);
             
             return (
-              <div key={field.id} className="relative">
+              <div key={field.id} className="w-full">
                 <DraggableField
                   id={field.id}
                   fieldType={field.type}
@@ -60,7 +43,7 @@ const FormSection = ({
                     setFormData((prev: any) => ({ ...prev, [field.id]: value }))
                   }
                   width={position.width || "100%"}
-                  height={position.height || "48px"}
+                  height={position.height || "auto"}
                   alignment={position.alignment || "left"}
                   onSelect={() => setSelectedField(field.id)}
                   isSelected={selectedField === field.id}

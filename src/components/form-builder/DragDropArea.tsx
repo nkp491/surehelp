@@ -49,32 +49,26 @@ const DragDropArea = ({
   ];
   
   return (
-    <div className="w-full overflow-y-auto px-4">
-      <div 
-        className={`relative w-full max-w-[1300px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
-          isEditMode ? 'bg-grid edit-mode' : 'bg-white'
-        }`}
-        style={{
-          boxShadow: isEditMode ? '0 1px 2px rgb(0 0 0 / 0.05)' : 'none',
-          backgroundSize: '8px 8px'
-        }}
-        onClick={() => setSelectedField(null)}
-      >
-        <div className="space-y-6">
-          {sections.map((section, sectionIndex) => (
-            <FormSection
-              key={section.title}
-              title={section.title}
-              fields={section.fields}
-              sectionIndex={sectionIndex}
-              formData={formData}
-              setFormData={setFormData}
-              fieldPositions={fieldPositions}
-              selectedField={selectedField}
-              setSelectedField={setSelectedField}
-            />
-          ))}
-        </div>
+    <div className="w-full px-4 py-6 space-y-6">
+      <div className="text-right">
+        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+          + Add Family Member
+        </button>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {sections.map((section, index) => (
+          <FormSection
+            key={section.title}
+            title={section.title}
+            fields={section.fields}
+            sectionIndex={index}
+            formData={formData}
+            setFormData={setFormData}
+            fieldPositions={fieldPositions}
+            selectedField={selectedField}
+            setSelectedField={setSelectedField}
+          />
+        ))}
       </div>
     </div>
   );

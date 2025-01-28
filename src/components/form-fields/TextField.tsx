@@ -3,17 +3,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { History } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import NotesHistory from "../form/NotesHistory";
-import { supabase } from "@/integrations/supabase/client";
 
 interface TextFieldProps {
   label: string;
@@ -24,6 +13,7 @@ interface TextFieldProps {
   required?: boolean;
   error?: string;
   readOnly?: boolean;
+  className?: string;
   submissionId?: string;
 }
 
@@ -36,68 +26,27 @@ const TextField = ({
   required = false,
   error,
   readOnly = false,
+  className,
   submissionId,
 }: TextFieldProps) => {
-  const [showHistory, setShowHistory] = React.useState(false);
-  const isNotesField = type === 'textarea' && (
-    label.toLowerCase().includes('note') || 
-    label.toLowerCase().includes('notes')
+  const inputClasses = cn(
+    "w-full bg-gray-50 border-gray-200 rounded-md text-sm",
+    error && "border-red-500",
+    className
   );
-
-  const handleNotesChange = async (newValue: string) => {
-    if (onChange) {
-      onChange(newValue);
-      
-      if (isNotesField && submissionId) {
-        const user = await supabase.auth.getUser();
-        if (!user.data.user) return;
-
-        await supabase.from('notes_history').insert({
-          submission_id: submissionId,
-          user_id: user.data.user.id,
-          previous_notes: value,
-          new_notes: newValue,
-        });
-      }
-    }
-  };
 
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <Label className="text-sm font-medium">
-          {label}
-          {required && <span className="text-destructive ml-1">*</span>}
-        </Label>
-        {isNotesField && submissionId && (
-          <Dialog open={showHistory} onOpenChange={setShowHistory}>
-            <DialogTrigger asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-              >
-                <History className="h-4 w-4" />
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Notes History</DialogTitle>
-              </DialogHeader>
-              <NotesHistory submissionId={submissionId} />
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
+      <Label className="text-sm font-medium text-gray-700">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
       {type === "textarea" ? (
         <Textarea
           value={value}
-          onChange={(e) => handleNotesChange(e.target.value)}
+          onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className={cn(
-            "min-h-[100px]",
-            error ? "border-destructive" : "border-input"
-          )}
+          className={inputClasses}
           required={required}
           readOnly={readOnly}
         />
@@ -105,17 +54,14 @@ const TextField = ({
         <Input
           type={type}
           value={value}
-          onChange={(e) => handleNotesChange(e.target.value)}
+          onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className={cn(
-            "w-full",
-            error ? "border-destructive" : "border-input"
-          )}
+          className={inputClasses}
           required={required}
           readOnly={readOnly}
         />
       )}
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 };

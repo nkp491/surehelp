@@ -73,7 +73,11 @@ const DraggableFormField = ({
     }
   };
 
-  return renderField();
+  return (
+    <div className="w-full">
+      {renderField()}
+    </div>
+  );
 };
 
 export default DraggableFormField;

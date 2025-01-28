@@ -29,60 +29,40 @@ const FormField = ({
   options = [],
   submissionId,
 }: FormFieldProps) => {
+  const commonProps = {
+    label,
+    value,
+    onChange,
+    placeholder,
+    required,
+    error,
+    readOnly,
+    submissionId,
+  };
+
   if (type === "height") {
-    return (
-      <HeightField
-        value={value}
-        onChange={onChange}
-        required={required}
-        error={error}
-        readOnly={readOnly}
-      />
-    );
+    return <HeightField {...commonProps} />;
   }
 
   if (type === "currency") {
-    return (
-      <CurrencyField
-        label={label}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        error={error}
-        readOnly={readOnly}
-      />
-    );
+    return <CurrencyField {...commonProps} />;
   }
 
   if (type === "select" && options.length > 0) {
+    return <SelectField {...commonProps} options={options} />;
+  }
+
+  if (type === "textarea") {
     return (
-      <SelectField
-        label={label}
-        value={value}
-        onChange={onChange}
-        placeholder={placeholder}
-        required={required}
-        error={error}
-        readOnly={readOnly}
-        options={options}
+      <TextField
+        {...commonProps}
+        type="textarea"
+        className="min-h-[120px] resize-none"
       />
     );
   }
 
-  return (
-    <TextField
-      label={label}
-      type={type}
-      value={value}
-      onChange={onChange}
-      placeholder={placeholder}
-      required={required}
-      error={error}
-      readOnly={readOnly}
-      submissionId={submissionId}
-    />
-  );
+  return <TextField {...commonProps} type={type} />;
 };
 
 export default FormField;
