@@ -12,15 +12,17 @@ const Header = () => {
     <header className="bg-white">
       <div className="max-w-[1800px] mx-auto">
         <div className="flex justify-between items-center h-[98px] px-8">
-          <div className="flex items-center gap-8">
+          <div>
             <img 
               src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png" 
               alt="SureHelp" 
               className="h-[40px] w-auto"
             />
-            <Navigation />
           </div>
-          <ProfileMenu />
+          <div className="flex items-center gap-8">
+            <Navigation />
+            <ProfileMenu />
+          </div>
         </div>
         
         {showMetrics && (
