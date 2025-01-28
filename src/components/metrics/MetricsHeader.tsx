@@ -31,8 +31,8 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   };
 
   return (
-    <div className="flex justify-between items-center px-0.5 mb-0.5">
-      <h2 className="text-xs font-medium text-primary flex items-center">
+    <div className="flex justify-between items-center mb-1">
+      <h2 className="text-xs font-medium text-primary">
         KPI Tracker
       </h2>
       <Button 

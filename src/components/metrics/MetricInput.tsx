@@ -35,7 +35,7 @@ const MetricInput = ({
       type="text"
       value={formatValue(currentValue)}
       onChange={handleChange}
-      className="h-6 w-20 text-center px-1 text-sm bg-white"
+      className="h-6 w-16 text-center px-1 text-sm bg-white"
       aria-label={`${metric} count`}
     />
   );
