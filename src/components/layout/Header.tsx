@@ -10,9 +10,9 @@ const Header = () => {
   const showMetrics = location.pathname === '/assessment';
 
   return (
-    <header className="bg-white">
+    <header className="bg-transparent">
       <div className="max-w-[1800px] mx-auto">
-        <div className="flex justify-between items-center h-[70px] px-8">
+        <div className="flex justify-between items-center h-[70px] px-8 bg-white">
           <div>
             <img 
               src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png" 
