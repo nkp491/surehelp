@@ -6,8 +6,8 @@ import { useMetricsUpdates } from "@/hooks/useMetricsUpdates";
 import { Button } from "@/components/ui/button";
 
 const MetricsSection = () => {
-  const { metrics } = useMetrics();
-  const { saveDailyMetrics } = useMetricsUpdates(metrics);
+  const { metrics, handleInputChange } = useMetrics();
+  const { saveDailyMetrics } = useMetricsUpdates(metrics, handleInputChange);
 
   const metricLabels = {
     leads: 'Leads',
