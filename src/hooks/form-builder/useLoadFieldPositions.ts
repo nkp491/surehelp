@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { FormField } from "@/types/formTypes";
 
 export const useLoadFieldPositions = (section: string) => {
   const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});
@@ -19,7 +20,8 @@ export const useLoadFieldPositions = (section: string) => {
           .from('form_field_positions')
           .select('*')
           .eq('user_id', user.id)
-          .eq('section', section);
+          .eq('section', section)
+          .order('position');
 
         if (error) {
           throw error;
@@ -34,6 +36,7 @@ export const useLoadFieldPositions = (section: string) => {
               width: pos.width,
               height: pos.height,
               alignment: pos.alignment,
+              position: pos.position,
             }
           }), {});
           
@@ -50,22 +53,7 @@ export const useLoadFieldPositions = (section: string) => {
       }
     };
 
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === 'SIGNED_IN') {
-        loadSavedPositions();
-      } else if (event === 'SIGNED_OUT') {
-        setFieldPositions({});
-      }
-    });
-
-    // Initial load
     loadSavedPositions();
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
-    };
   }, [section, toast]);
 
   return { fieldPositions, setFieldPositions };
