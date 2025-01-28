@@ -1,10 +1,12 @@
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Minus } from "lucide-react";
 import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
 import { toast } from "@/hooks/use-toast";
+import FormSection from "@/components/FormSection";
+import { INITIAL_FIELDS } from "./FormFields";
 
 const FamilyMemberToggle = () => {
-  const { familyMembers, addFamilyMember } = useFamilyMembers();
+  const { familyMembers, addFamilyMember, removeFamilyMember } = useFamilyMembers();
 
   const handleAddFamilyMember = () => {
     if (familyMembers.length >= 5) {
@@ -18,16 +20,34 @@ const FamilyMemberToggle = () => {
     addFamilyMember();
   };
 
+  const handleRemoveFamilyMember = () => {
+    if (familyMembers.length > 0) {
+      removeFamilyMember(familyMembers[familyMembers.length - 1].id);
+    }
+  };
+
   return (
-    <Button
-      onClick={handleAddFamilyMember}
-      variant="outline"
-      size="sm"
-      className="h-7 px-2 text-xs gap-1"
-    >
-      <Plus className="h-3 w-3" />
-      {familyMembers.length}/5
-    </Button>
+    <div className="flex items-center gap-1">
+      <Button
+        onClick={handleAddFamilyMember}
+        variant="outline"
+        size="sm"
+        className="h-7 px-2 text-xs gap-1"
+      >
+        <Plus className="h-3 w-3" />
+        {familyMembers.length}/5
+      </Button>
+      {familyMembers.length > 0 && (
+        <Button
+          onClick={handleRemoveFamilyMember}
+          variant="outline"
+          size="sm"
+          className="h-7 px-2 text-xs"
+        >
+          <Minus className="h-3 w-3" />
+        </Button>
+      )}
+    </div>
   );
 };
 

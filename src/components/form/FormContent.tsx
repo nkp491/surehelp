@@ -7,6 +7,8 @@ import { useFieldPositions } from "@/components/form-builder/useFieldPositions";
 import DragDropArea from "../form-builder/DragDropArea";
 import { useFormBuilder } from "@/contexts/FormBuilderContext";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
+import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
+import FormSection from "@/components/FormSection";
 
 interface FormContentProps {
   editingSubmission?: FormSubmission | null;
@@ -18,8 +20,8 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { selectedField, setSelectedField } = useFormBuilder();
   const { showSpouse } = useSpouseVisibility();
+  const { familyMembers } = useFamilyMembers();
 
-  // Filter out spouse-related fields when showSpouse is false
   const filteredFields = sections.reduce((acc, section) => {
     const sectionFields = section.fields.filter(field => {
       const isSpouseField = field.id.toLowerCase().includes('spouse');
@@ -49,6 +51,21 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
         selectedField={selectedField}
         setSelectedField={setSelectedField}
       />
+      
+      {familyMembers.map((member, index) => (
+        <FormSection
+          key={member.id}
+          section={`Family Member ${index + 1}`}
+          fields={sections[0].fields.filter(field => !field.id.toLowerCase().includes('spouse'))}
+          formData={member.data}
+          setFormData={(data) => {
+            const updatedMembers = [...familyMembers];
+            updatedMembers[index] = { ...member, data };
+          }}
+          errors={{}}
+          submissionId={member.id}
+        />
+      ))}
       
       <FormButtons onSubmit={handleFormSubmit} />
     </form>
