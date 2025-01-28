@@ -23,10 +23,10 @@ const FamilyMemberToggle = () => {
       onClick={handleAddFamilyMember}
       variant="outline"
       size="sm"
-      className="gap-2"
+      className="h-7 px-2 text-xs gap-1"
     >
-      <Plus className="h-4 w-4" />
-      Add Family Member ({familyMembers.length}/5)
+      <Plus className="h-3 w-3" />
+      {familyMembers.length}/5
     </Button>
   );
 };
