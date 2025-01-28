@@ -20,10 +20,10 @@ const MetricsSection = () => {
   };
 
   return (
-    <div className="absolute w-[1799px] h-[129px] top-0 bg-white shadow-[0px_2px_6px_#ABABAB]">
+    <div className="w-full h-[129px] bg-white">
       <div className="py-6 px-8">
         <div className="flex justify-between items-center">
-          <div className="flex gap-16">
+          <div className="flex gap-8">
             {(Object.keys(metrics) as MetricType[]).map((metric) => (
               <MetricButtons
                 key={metric}

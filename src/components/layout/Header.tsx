@@ -23,7 +23,7 @@ const Header = () => {
         
         {showMetrics && (
           <div className="relative w-full h-[129px] bg-white shadow-[0px_2px_6px_#ABABAB]">
-            <div className="px-8">
+            <div className="max-w-[1200px] mx-auto">
               <MetricsProvider>
                 <MetricsSection />
               </MetricsProvider>
