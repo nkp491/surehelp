@@ -13,7 +13,7 @@ const MetricControls = ({ onIncrement, onDecrement }: MetricControlsProps) => {
         onClick={onDecrement}
         variant="outline"
         size="icon"
-        className="h-4 w-4 bg-white hover:bg-gray-50"
+        className="h-4 w-4 bg-transparent hover:bg-gray-50/10"
       >
         <Minus className="h-2 w-2" />
       </Button>
@@ -21,7 +21,7 @@ const MetricControls = ({ onIncrement, onDecrement }: MetricControlsProps) => {
         onClick={onIncrement}
         variant="outline"
         size="icon"
-        className="h-4 w-4 bg-white hover:bg-gray-50"
+        className="h-4 w-4 bg-transparent hover:bg-gray-50/10"
       >
         <Plus className="h-2 w-2" />
       </Button>

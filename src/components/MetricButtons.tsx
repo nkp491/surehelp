@@ -48,7 +48,7 @@ const MetricButtons = ({
         <h3 className="font-medium text-xs text-primary">
           {formatMetricName(metric)}
         </h3>
-        <Card className="bg-gray-50 p-0.5 border-0 shadow-none">
+        <Card className="bg-transparent p-0.5 border-0 shadow-none">
           <div className="flex flex-col items-center gap-0.5">
             <MetricInput
               metric={metric}
