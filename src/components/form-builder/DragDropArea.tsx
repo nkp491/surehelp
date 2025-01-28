@@ -42,20 +42,15 @@ const DragDropArea = ({
   );
 
   return (
-    <div className="w-full px-4 py-6 space-y-6">
-      <div className="text-right mb-4">
-        <button className="text-[#3B82F6] hover:text-blue-700 text-sm font-medium">
-          + Add Family Member
-        </button>
-      </div>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <div className="w-full px-2 py-4 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <FormSection
           title="Primary Health Assessment"
           fields={healthFields}
           formData={formData}
           setFormData={setFormData}
         />
-        <div className="space-y-6">
+        <div className="space-y-4">
           <FormSection
             title="Income Assessment"
             fields={incomeFields}

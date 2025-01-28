@@ -45,7 +45,7 @@ const FormField = ({
 
   if (type === "textarea") {
     return (
-      <div className="space-y-2">
+      <div className="space-y-1">
         <Label className="text-sm font-medium text-gray-700">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -54,7 +54,7 @@ const FormField = ({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[100px] bg-gray-50"
+          className="min-h-[80px] bg-gray-50"
           required={required}
           readOnly={readOnly}
         />
@@ -64,7 +64,7 @@ const FormField = ({
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-1">
       <Label className="text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -74,7 +74,7 @@ const FormField = ({
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className="bg-gray-50"
+        className="h-8 bg-gray-50"
         required={required}
         readOnly={readOnly}
       />
