@@ -33,8 +33,9 @@ const FormField = ({
   submissionId,
 }: FormFieldProps) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    // Preserve spaces by using the raw value
-    onChange?.(e.target.value);
+    if (onChange) {
+      onChange(e.target.value);
+    }
   };
 
   if (type === "height") {
