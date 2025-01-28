@@ -54,39 +54,4 @@
   .form-field-container:hover {
     @apply shadow-sm;
   }
-
-  .form-field-selected {
-    @apply ring-1 ring-primary ring-offset-1;
-  }
-
-  .form-field-container[data-resize] {
-    position: relative;
-  }
-
-  .form-field-container[data-resize]::before {
-    content: '';
-    position: absolute;
-    width: 6px;
-    height: 6px;
-    background: var(--primary);
-    border-radius: 2px;
-    z-index: 10;
-  }
-
-  .form-field-container[data-resize="nw"]::before { top: -3px; left: -3px; cursor: nw-resize; }
-  .form-field-container[data-resize="ne"]::before { top: -3px; right: -3px; cursor: ne-resize; }
-  .form-field-container[data-resize="sw"]::before { bottom: -3px; left: -3px; cursor: sw-resize; }
-  .form-field-container[data-resize="se"]::before { bottom: -3px; right: -3px; cursor: se-resize; }
-
-  .edit-mode .form-field-container {
-    @apply cursor-move border border-dashed border-gray-200;
-  }
-
-  .edit-mode .form-field-container:hover {
-    @apply border-primary/50 bg-primary/5;
-  }
-
-  .edit-mode .bg-grid {
-    @apply border-0;
-  }
 }
