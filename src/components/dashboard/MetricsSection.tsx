@@ -20,7 +20,7 @@ const MetricsSection = () => {
   };
 
   return (
-    <div className="absolute w-[1799px] h-[129px] left-0 top-[98px] bg-white shadow-[0px_2px_6px_#ABABAB]">
+    <div className="absolute w-[1799px] h-[129px] top-0 bg-white shadow-[0px_2px_6px_#ABABAB]">
       <div className="py-6 px-8">
         <div className="flex justify-between items-center">
           <div className="flex gap-16">
