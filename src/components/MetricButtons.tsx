@@ -40,12 +40,12 @@ const MetricButtons = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-1">
-      <h3 className="font-medium text-sm text-primary">
+    <div className="flex flex-col items-center gap-0.5">
+      <h3 className="font-medium text-xs text-primary">
         {formatMetricName(metric)}
       </h3>
-      <Card className="bg-gray-50 p-2 border-0 shadow-none">
-        <div className="flex flex-col items-center gap-1">
+      <Card className="bg-gray-50 p-1.5 border-0 shadow-none">
+        <div className="flex flex-col items-center gap-0.5">
           <MetricInput
             metric={metric}
             currentValue={currentValue}
