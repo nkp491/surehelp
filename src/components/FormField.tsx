@@ -32,6 +32,11 @@ const FormField = ({
   options = [],
   submissionId,
 }: FormFieldProps) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    // Preserve spaces by using the raw value
+    onChange?.(e.target.value);
+  };
+
   if (type === "height") {
     return <HeightField value={value} onChange={onChange} required={required} error={error} />;
   }
@@ -79,7 +84,7 @@ const FormField = ({
         </Label>
         <Textarea
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={handleInputChange}
           placeholder={placeholder}
           className="min-h-[120px] bg-gray-50 resize-none text-sm"
           required={required}
@@ -101,7 +106,7 @@ const FormField = ({
       <Input
         type={type}
         value={value}
-        onChange={(e) => onChange?.(e.target.value)}
+        onChange={handleInputChange}
         placeholder={placeholder}
         className={inputClassName}
         required={required}
