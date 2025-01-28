@@ -50,13 +50,14 @@ const MetricsSection = () => {
     >
       <div className="py-2">
         <div className="flex flex-col items-center gap-1">
-          <div className="flex gap-6">
-            {(Object.keys(metrics) as MetricType[]).map((metric) => (
+          <div className="flex">
+            {(Object.keys(metrics) as MetricType[]).map((metric, index, array) => (
               <MetricButtons
                 key={metric}
                 metric={metric}
                 onIncrement={() => {}}
                 onDecrement={() => {}}
+                isLast={index === array.length - 1}
               />
             ))}
           </div>

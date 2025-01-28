@@ -3,17 +3,20 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import MetricInput from "./metrics/MetricInput";
 import MetricControls from "./metrics/MetricControls";
+import { Separator } from "./ui/separator";
 
 interface MetricButtonsProps {
   metric: string;
   onIncrement: () => void;
   onDecrement: () => void;
+  isLast?: boolean;
 }
 
 const MetricButtons = ({
   metric,
   onIncrement,
   onDecrement,
+  isLast = false,
 }: MetricButtonsProps) => {
   const { metrics, handleInputChange } = useMetrics();
   
@@ -40,26 +43,34 @@ const MetricButtons = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-0.5 mx-[2px]">
-      <h3 className="font-medium text-xs text-primary">
-        {formatMetricName(metric)}
-      </h3>
-      <Card className="bg-gray-50 p-0.5 border-0 shadow-none">
-        <div className="flex flex-col items-center gap-0.5">
-          <MetricInput
-            metric={metric}
-            currentValue={currentValue}
-            onInputChange={(value) => {
-              handleInputChange(metric as MetricType, value);
-            }}
-            isAP={isAP}
-          />
-          <MetricControls
-            onIncrement={handleIncrement}
-            onDecrement={handleDecrement}
-          />
-        </div>
-      </Card>
+    <div className="flex items-center">
+      <div className="flex flex-col items-center gap-0.5 mx-[2px]">
+        <h3 className="font-medium text-xs text-primary">
+          {formatMetricName(metric)}
+        </h3>
+        <Card className="bg-gray-50 p-0.5 border-0 shadow-none">
+          <div className="flex flex-col items-center gap-0.5">
+            <MetricInput
+              metric={metric}
+              currentValue={currentValue}
+              onInputChange={(value) => {
+                handleInputChange(metric as MetricType, value);
+              }}
+              isAP={isAP}
+            />
+            <MetricControls
+              onIncrement={handleIncrement}
+              onDecrement={handleDecrement}
+            />
+          </div>
+        </Card>
+      </div>
+      {!isLast && (
+        <Separator
+          orientation="vertical"
+          className="h-12 mx-3 bg-[#D9D9D9]"
+        />
+      )}
     </div>
   );
 };
