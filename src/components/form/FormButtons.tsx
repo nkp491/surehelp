@@ -7,7 +7,7 @@ interface FormButtonsProps {
 
 const FormButtons = ({ onSubmit }: FormButtonsProps) => {
   return (
-    <div className="mt-8">
+    <div className="mt-4">
       <div className="text-center mb-4 text-lg font-medium text-gray-700">
         Submit as
       </div>
