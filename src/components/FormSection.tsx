@@ -51,29 +51,12 @@ const FormSection = ({
     return null;
   }
 
-  const renderField = (field: FormField) => {
-    return (
-      <DraggableFormField
-        key={field.id}
-        id={field.id}
-        fieldType={field.type}
-        label={field.label}
-        value={formData[field.id]}
-        onChange={(value) => setFormData((prev: any) => ({ ...prev, [field.id]: value }))}
-        placeholder={field.placeholder}
-        required={field.required}
-        error={errors[field.id]}
-        submissionId={submissionId}
-      />
-    );
-  };
-
   return (
-    <div className="bg-white mb-2">
-      <div className="bg-[#00A3E0] text-white px-3 py-1 text-base font-medium">
+    <div className="bg-white mb-1">
+      <div className="bg-[#00A3E0] text-white px-2 py-0.5 text-base font-medium">
         {section}
       </div>
-      <div className="p-2 space-y-2">
+      <div className="p-1 space-y-1">
         {section === "Primary Health Assessment" && (
           <HealthMetricsRow
             formData={formData}
@@ -84,7 +67,7 @@ const FormSection = ({
         )}
 
         {section === "Assessment Notes" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
             {regularFields.map(field => renderField(field))}
           </div>
         ) : (
