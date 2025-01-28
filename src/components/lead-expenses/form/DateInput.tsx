@@ -24,21 +24,24 @@ const DateInput = ({ date, setDate }: DateInputProps) => {
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="z-50 bg-white p-0" 
+          className="z-[100] bg-white p-0" 
           align="start"
           sideOffset={4}
           onPointerDownOutside={(e) => e.preventDefault()}
+          onInteractOutside={(e) => e.preventDefault()}
         >
-          <Calendar
-            mode="single"
-            selected={date}
-            onSelect={(date) => {
-              setDate(date);
-            }}
-            initialFocus
-            disabled={(date) => date > new Date()}
-            className="rounded-md border shadow-sm"
-          />
+          <div className="p-0.5">
+            <Calendar
+              mode="single"
+              selected={date}
+              onSelect={(date) => {
+                setDate(date);
+              }}
+              initialFocus
+              disabled={(date) => date > new Date()}
+              className="rounded-md border shadow-sm"
+            />
+          </div>
         </PopoverContent>
       </Popover>
     </div>
