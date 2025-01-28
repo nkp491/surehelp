@@ -35,7 +35,7 @@ const MetricsSection = () => {
           </div>
           <Button 
             onClick={saveDailyMetrics}
-            className="bg-[#2A6F97] text-white px-12 h-8 text-sm hover:bg-[#2A6F97]/90 transition-colors"
+            className="bg-[#2A6F97] text-white px-16 h-7 text-sm hover:bg-[#2A6F97]/90 transition-colors"
           >
             Log
           </Button>
