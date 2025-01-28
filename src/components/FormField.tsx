@@ -90,7 +90,7 @@ const FormField = ({
     );
   }
 
-  const inputClassName = type === "age" ? "h-9 bg-gray-50 w-[300px]" : "h-9 bg-gray-50";
+  const inputClassName = type === "age" ? "h-9 bg-gray-50 w-[150px]" : "h-9 bg-gray-50";
 
   return (
     <div className="space-y-1">
