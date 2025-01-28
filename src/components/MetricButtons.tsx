@@ -27,14 +27,6 @@ const MetricButtons = ({
   const handleIncrement = () => {
     const increment = isAP ? 100 : 1;
     const newValue = currentValue + increment;
-    console.log(`[MetricButtons] ${metric} Increment:`, {
-      action: 'increment',
-      metric,
-      currentValue,
-      newValue,
-      allMetrics: { ...metrics },
-      timestamp: new Date().toISOString()
-    });
     handleInputChange(metric as MetricType, newValue.toString());
     onIncrement();
   };
@@ -43,46 +35,32 @@ const MetricButtons = ({
     if (currentValue <= 0) return;
     const decrement = isAP ? 100 : 1;
     const newValue = Math.max(0, currentValue - decrement);
-    console.log(`[MetricButtons] ${metric} Decrement:`, {
-      action: 'decrement',
-      metric,
-      currentValue,
-      newValue,
-      allMetrics: { ...metrics },
-      timestamp: new Date().toISOString()
-    });
     handleInputChange(metric as MetricType, newValue.toString());
     onDecrement();
   };
 
   return (
-    <Card className="bg-white/95 backdrop-blur-sm p-2 shadow-sm hover:shadow-md transition-all duration-200 border border-gray-100">
-      <div className="flex flex-col items-center gap-1.5">
-        <h3 className="font-medium text-sm text-[#2A6F97] capitalize">
-          {formatMetricName(metric)}
-        </h3>
-        <MetricInput
-          metric={metric}
-          currentValue={currentValue}
-          onInputChange={(value) => {
-            console.log(`[MetricButtons] ${metric} Direct input change:`, {
-              action: 'direct_input',
-              metric,
-              currentValue,
-              newValue: value,
-              allMetrics: { ...metrics },
-              timestamp: new Date().toISOString()
-            });
-            handleInputChange(metric as MetricType, value);
-          }}
-          isAP={isAP}
-        />
-        <MetricControls
-          onIncrement={handleIncrement}
-          onDecrement={handleDecrement}
-        />
-      </div>
-    </Card>
+    <div className="flex flex-col items-center gap-1">
+      <h3 className="font-medium text-sm text-primary">
+        {formatMetricName(metric)}
+      </h3>
+      <Card className="bg-gray-50 p-2 border-0 shadow-none">
+        <div className="flex flex-col items-center gap-1">
+          <MetricInput
+            metric={metric}
+            currentValue={currentValue}
+            onInputChange={(value) => {
+              handleInputChange(metric as MetricType, value);
+            }}
+            isAP={isAP}
+          />
+          <MetricControls
+            onIncrement={handleIncrement}
+            onDecrement={handleDecrement}
+          />
+        </div>
+      </Card>
+    </div>
   );
 };
 

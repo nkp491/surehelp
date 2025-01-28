@@ -9,9 +9,8 @@ const Header = () => {
   const showMetrics = location.pathname === '/assessment';
 
   return (
-    <header className="bg-white border-b border-gray-200">
+    <header className="bg-white border-b border-gray-100 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        {/* Main Header - Reduced padding */}
         <div className="flex justify-between items-center h-14">
           <div className="flex items-center gap-4">
             <img 
@@ -24,10 +23,9 @@ const Header = () => {
           <ProfileMenu />
         </div>
         
-        {/* Metrics Section - Reduced vertical padding */}
         {showMetrics && (
           <MetricsProvider>
-            <div className="py-1 -mb-[1px]">
+            <div className="py-2 border-t border-gray-50">
               <MetricsSection />
             </div>
           </MetricsProvider>

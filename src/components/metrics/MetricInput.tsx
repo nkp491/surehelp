@@ -1,5 +1,4 @@
 import { Input } from "@/components/ui/input";
-import { MetricType } from "@/types/metrics";
 
 interface MetricInputProps {
   metric: string;
@@ -25,14 +24,9 @@ const MetricInput = ({ metric, currentValue, onInputChange, isAP }: MetricInputP
     }
 
     if (isAP) {
-      // Remove any non-numeric characters except decimal point
       const cleanedValue = inputValue.replace(/[^\d.]/g, '');
-      
-      // Ensure only one decimal point
       const parts = cleanedValue.split('.');
       const sanitizedValue = parts[0] + (parts.length > 1 ? '.' + parts[1].slice(0, 2) : '');
-      
-      // Convert dollar amount to cents
       const dollarValue = parseFloat(sanitizedValue);
       if (!isNaN(dollarValue)) {
         const centsValue = Math.round(dollarValue * 100);
@@ -57,7 +51,7 @@ const MetricInput = ({ metric, currentValue, onInputChange, isAP }: MetricInputP
         type="text"
         value={formatValue(currentValue, isAP)}
         onChange={handleDirectInput}
-        className={`text-center w-20 h-7 text-sm font-bold text-primary ${isAP ? 'pl-6' : ''}`}
+        className={`text-center w-16 h-6 text-sm bg-white ${isAP ? 'pl-6' : ''}`}
         min="0"
         step={isAP ? "0.01" : "1"}
       />
