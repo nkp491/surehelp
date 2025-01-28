@@ -84,7 +84,7 @@ const FormField = ({
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
         <Textarea
-          value={value}
+          value={value || ""}
           onChange={handleInputChange}
           placeholder={placeholder}
           className="min-h-[120px] bg-gray-50 resize-none text-sm"
@@ -106,7 +106,7 @@ const FormField = ({
       </Label>
       <Input
         type={type}
-        value={value}
+        value={value || ""}
         onChange={handleInputChange}
         placeholder={placeholder}
         className={inputClassName}
