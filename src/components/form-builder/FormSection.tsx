@@ -3,6 +3,7 @@ import DraggableFormField from "../DraggableFormField";
 import { DndContext, DragEndEvent, closestCenter } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { supabase } from "@/integrations/supabase/client";
 
 interface FormSectionProps {
   title: string;
