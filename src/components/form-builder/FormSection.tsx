@@ -15,12 +15,12 @@ const FormSection = ({
   setFormData,
 }: FormSectionProps) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden h-full">
-      <div className="bg-[#6CAEC2] text-white px-3 py-1.5 text-sm font-medium">
+    <div className="bg-white rounded-md shadow-sm overflow-hidden h-full">
+      <div className="bg-[#00A3E0] text-white px-2 py-1 text-sm font-medium">
         {title}
       </div>
-      <div className="p-3">
-        <div className="space-y-3">
+      <div className="p-2">
+        <div className="space-y-2">
           {fields.map((field) => (
             <div key={field.id} className="form-field-container">
               <DraggableFormField

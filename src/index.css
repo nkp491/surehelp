@@ -47,7 +47,7 @@
   }
 
   .form-field-container {
-    @apply p-1 rounded-md bg-white border border-gray-50 transition-all duration-200 min-w-[208px];
+    @apply p-0.5 rounded-md bg-white border border-gray-50 transition-all duration-200 min-w-[208px];
     margin: 0;
   }
 
