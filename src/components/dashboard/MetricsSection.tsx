@@ -10,7 +10,7 @@ const MetricsSection = () => {
   const { updateMetric, saveDailyMetrics } = useMetricsUpdates(metrics, handleInputChange);
 
   return (
-    <div>
+    <div className="absolute w-full h-[129px] left-0 top-[98px] bg-white shadow-[0px_2px_6px_#ABABAB]">
       <Card className="bg-transparent shadow-none border-none">
         <div className="flex flex-col space-y-0">
           <div className="w-full max-w-3xl mx-auto">
