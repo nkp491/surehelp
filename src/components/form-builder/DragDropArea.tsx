@@ -41,15 +41,15 @@ const DragDropArea = ({
   );
 
   return (
-    <div className="w-full h-[calc(100vh-8rem)] overflow-y-auto px-1 py-2">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
+    <div className="w-full h-screen overflow-y-auto px-1">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-1">
         <FormSection
           title="Primary Health Assessment"
           fields={healthFields}
           formData={formData}
           setFormData={setFormData}
         />
-        <div className="space-y-2">
+        <div className="space-y-1">
           <FormSection
             title="Income Assessment"
             fields={incomeFields}
