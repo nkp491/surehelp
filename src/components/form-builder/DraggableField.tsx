@@ -49,10 +49,9 @@ const DraggableField = ({
     textAlign: alignment as "left" | "center" | "right",
     position: "relative" as const,
     touchAction: "none",
-    transition: "transform 0.2s ease-out, box-shadow 0.2s ease-out, background-color 0.2s ease-out",
+    transition: "all 0.2s ease-out",
     minHeight: "40px",
     maxHeight: "100px",
-    marginBottom: "8px",
   };
 
   return (
@@ -67,9 +66,6 @@ const DraggableField = ({
         e.stopPropagation();
         onSelect();
       }}
-      data-x="0"
-      data-y="0"
-      data-resize={isEditMode ? "all" : undefined}
       data-field-id={id}
     >
       {isEditMode && (
@@ -78,7 +74,6 @@ const DraggableField = ({
             <FieldTypeLabel fieldType={fieldType} />
           </div>
           
-          {/* Drag Handle */}
           <div 
             className="absolute -left-6 top-0 bottom-0 flex items-center justify-center w-6 h-full cursor-move opacity-0 group-hover:opacity-100 transition-opacity"
             data-drag-handle
@@ -86,7 +81,6 @@ const DraggableField = ({
             <GripVertical className="w-4 h-4 text-muted-foreground" />
           </div>
 
-          {/* Resize Handles */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-primary cursor-nw-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="nw" />
             <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-primary cursor-ne-resize pointer-events-auto opacity-0 group-hover:opacity-100" data-resize-handle="ne" />

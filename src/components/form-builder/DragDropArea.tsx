@@ -51,7 +51,7 @@ const DragDropArea = ({
   return (
     <div className="w-full overflow-y-auto px-4">
       <div 
-        className={`relative w-full max-w-[1300px] min-h-[1300px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
+        className={`relative w-full max-w-[1300px] mx-auto rounded-lg overflow-hidden transition-all duration-200 ${
           isEditMode ? 'bg-grid edit-mode' : 'bg-white'
         }`}
         style={{
@@ -60,7 +60,7 @@ const DragDropArea = ({
         }}
         onClick={() => setSelectedField(null)}
       >
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="space-y-6">
           {sections.map((section, sectionIndex) => (
             <FormSection
               key={section.title}
