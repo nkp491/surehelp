@@ -44,8 +44,8 @@ const MetricsSection = () => {
 
   return (
     <div 
-      className={`w-full bg-white transition-transform duration-300 ${
-        isVisible ? 'translate-y-0' : '-translate-y-full'
+      className={`w-full transition-all duration-300 ${
+        isVisible ? 'bg-white translate-y-0' : 'bg-transparent translate-y-full opacity-0'
       }`}
     >
       <div className="py-2">
