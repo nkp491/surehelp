@@ -20,9 +20,9 @@ const MetricsSection = () => {
   };
 
   return (
-    <div className="w-full h-[129px] bg-white">
-      <div className="py-6 px-8">
-        <div className="flex justify-center items-center relative">
+    <div className="w-full bg-white">
+      <div className="py-4 px-8">
+        <div className="flex flex-col items-center gap-2">
           <div className="flex gap-6">
             {(Object.keys(metrics) as MetricType[]).map((metric) => (
               <MetricButtons
@@ -35,7 +35,7 @@ const MetricsSection = () => {
           </div>
           <Button 
             onClick={saveDailyMetrics}
-            className="bg-[#2A6F97] text-white px-8 absolute right-0"
+            className="bg-[#2A6F97] text-white px-12 h-8 text-sm hover:bg-[#2A6F97]/90 transition-colors"
           >
             Log
           </Button>
