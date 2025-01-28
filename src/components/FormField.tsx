@@ -2,7 +2,9 @@ import React from "react";
 import HeightField from "./form-fields/HeightField";
 import CurrencyField from "./form-fields/CurrencyField";
 import SelectField from "./form-fields/SelectField";
-import TextField from "./form-fields/TextField";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
 
 interface FormFieldProps {
   label: string;
@@ -29,40 +31,56 @@ const FormField = ({
   options = [],
   submissionId,
 }: FormFieldProps) => {
-  const commonProps = {
-    label,
-    value,
-    onChange,
-    placeholder,
-    required,
-    error,
-    readOnly,
-    submissionId,
-  };
-
   if (type === "height") {
-    return <HeightField {...commonProps} />;
+    return <HeightField value={value} onChange={onChange} required={required} error={error} />;
   }
 
   if (type === "currency") {
-    return <CurrencyField {...commonProps} />;
+    return <CurrencyField label={label} value={value} onChange={onChange} required={required} error={error} />;
   }
 
   if (type === "select" && options.length > 0) {
-    return <SelectField {...commonProps} options={options} />;
+    return <SelectField label={label} value={value} onChange={onChange} options={options} required={required} error={error} />;
   }
 
   if (type === "textarea") {
     return (
-      <TextField
-        {...commonProps}
-        type="textarea"
-        className="min-h-[120px] resize-none"
-      />
+      <div className="space-y-2">
+        <Label className="text-sm font-medium text-gray-700">
+          {label}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        <Textarea
+          value={value}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder}
+          className="min-h-[100px] bg-gray-50"
+          required={required}
+          readOnly={readOnly}
+        />
+        {error && <p className="text-sm text-red-500">{error}</p>}
+      </div>
     );
   }
 
-  return <TextField {...commonProps} type={type} />;
+  return (
+    <div className="space-y-2">
+      <Label className="text-sm font-medium text-gray-700">
+        {label}
+        {required && <span className="text-red-500 ml-1">*</span>}
+      </Label>
+      <Input
+        type={type}
+        value={value}
+        onChange={(e) => onChange?.(e.target.value)}
+        placeholder={placeholder}
+        className="bg-gray-50"
+        required={required}
+        readOnly={readOnly}
+      />
+      {error && <p className="text-sm text-red-500">{error}</p>}
+    </div>
+  );
 };
 
 export default FormField;

@@ -1,8 +1,5 @@
 import { FormField } from "@/types/formTypes";
-import { useFormBuilder } from "@/contexts/FormBuilderContext";
-import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import FormSection from "./FormSection";
-import { isHealthField, isIncomeField, isAgentField } from "@/utils/fieldCategories";
 
 interface DragDropAreaProps {
   fields: FormField[];
@@ -21,54 +18,77 @@ const DragDropArea = ({
   selectedField,
   setSelectedField,
 }: DragDropAreaProps) => {
-  const { isEditMode } = useFormBuilder();
-  const { showSpouse } = useSpouseVisibility();
-
-  // Filter out spouse fields if spouse toggle is off
-  const filterSpouseFields = (fields: FormField[]) => {
-    return fields.filter(field => {
-      const isSpouseField = field.id.toLowerCase().includes('spouse');
-      return showSpouse ? true : !isSpouseField;
-    });
-  };
-
   // Filter and sort fields by category
-  const healthFields = filterSpouseFields(fields.filter(field => isHealthField(field.id)));
-  const incomeFields = filterSpouseFields(fields.filter(field => isIncomeField(field.id)));
-  const agentFields = fields.filter(field => isAgentField(field.id));
-  const assessmentFields = filterSpouseFields(fields.filter(field => 
-    !isHealthField(field.id) && !isIncomeField(field.id) && !isAgentField(field.id)
-  ));
+  const healthFields = fields.filter(field => 
+    ['name', 'dob', 'age', 'height', 'weight', 'tobaccoUse', 'dui', 'selectedConditions', 
+     'medicalConditions', 'hospitalizations', 'surgeries', 'prescriptionMedications', 
+     'lastMedicalExam', 'familyMedicalConditions'].includes(field.id)
+  );
 
-  // Create sections with their fields
-  const sections = [
-    { title: "Primary Health Assessment", fields: healthFields },
-    { title: "Income Assessment", fields: incomeFields },
-    { title: "Household Income", fields: agentFields },
-    { title: "Assessment Notes", fields: assessmentFields }
-  ];
-  
+  const incomeFields = fields.filter(field => 
+    ['employmentStatus', 'occupation', 'employmentIncome', 'selectedInvestments',
+     'socialSecurityIncome', 'pensionIncome', 'survivorshipIncome', 'totalIncome',
+     'householdExpenses'].includes(field.id)
+  );
+
+  const householdFields = fields.filter(field =>
+    ['lifeInsuranceAmount', 'rentOrMortgage', 'remainingBalance', 'yearsLeft',
+     'homeValue', 'equity', 'expenses'].includes(field.id)
+  );
+
+  const assessmentFields = fields.filter(field =>
+    ['phone', 'email', 'address', 'notes', 'followUpNotes', 'coverageOptions',
+     'emergencyContact', 'beneficiaries'].includes(field.id)
+  );
+
   return (
     <div className="w-full px-4 py-6 space-y-6">
-      <div className="text-right">
-        <button className="text-blue-600 hover:text-blue-700 text-sm font-medium">
+      <div className="text-right mb-4">
+        <button className="text-[#3B82F6] hover:text-blue-700 text-sm font-medium">
           + Add Family Member
         </button>
       </div>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {sections.map((section, index) => (
+        <FormSection
+          title="Primary Health Assessment"
+          fields={healthFields}
+          formData={formData}
+          setFormData={setFormData}
+        />
+        <div className="space-y-6">
           <FormSection
-            key={section.title}
-            title={section.title}
-            fields={section.fields}
-            sectionIndex={index}
+            title="Income Assessment"
+            fields={incomeFields}
             formData={formData}
             setFormData={setFormData}
-            fieldPositions={fieldPositions}
-            selectedField={selectedField}
-            setSelectedField={setSelectedField}
           />
-        ))}
+          <FormSection
+            title="Household Income"
+            fields={householdFields}
+            formData={formData}
+            setFormData={setFormData}
+          />
+        </div>
+        <FormSection
+          title="Assessment Notes"
+          fields={assessmentFields}
+          formData={formData}
+          setFormData={setFormData}
+        />
+      </div>
+      <div className="mt-8 text-center">
+        <p className="text-gray-700 mb-4">Submit As:</p>
+        <div className="flex justify-center gap-4">
+          <button className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">
+            Protected
+          </button>
+          <button className="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+            Follow-Up
+          </button>
+          <button className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+            Declined
+          </button>
+        </div>
       </div>
     </div>
   );
