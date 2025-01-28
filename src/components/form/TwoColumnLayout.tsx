@@ -16,8 +16,8 @@ const TwoColumnLayout = ({ fields, formData, setFormData, errors, submissionId }
   const rightColumnFields = fields.slice(midPoint);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div className="space-y-3">
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+      <div className="space-y-2">
         {leftColumnFields.map((field) => (
           <DraggableFormField
             key={field.id}
@@ -35,7 +35,7 @@ const TwoColumnLayout = ({ fields, formData, setFormData, errors, submissionId }
           />
         ))}
       </div>
-      <div className="space-y-3">
+      <div className="space-y-2">
         {rightColumnFields.map((field) => (
           <DraggableFormField
             key={field.id}

@@ -52,11 +52,11 @@ const FormSection = ({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-      <div className="bg-[#3B82F6] text-white px-4 py-2 text-sm font-medium rounded-t-lg">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-3">
+      <div className="bg-[#3B82F6] text-white px-3 py-1.5 text-sm font-medium rounded-t-lg">
         {section}
       </div>
-      <div className="p-4 space-y-3">
+      <div className="p-3 space-y-2">
         {section === "Primary Health Assessment" && (
           <HealthMetricsRow
             formData={formData}
