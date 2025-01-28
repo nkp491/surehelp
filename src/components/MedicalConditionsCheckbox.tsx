@@ -7,25 +7,26 @@ interface MedicalConditionsCheckboxProps {
 }
 
 const CONDITIONS = [
-  "Heart Attack",
-  "Stroke",
-  "TIA",
-  "Stent",
-  "Diabetes",
-  "HBP",
-  "Cholesterol",
-  "Cancer",
-  "Astma",
-  "COPD",
-  "Thyroid",
-  "Anxiety",
-  "Depression",
-  "Alzheimer's",
-  "Dementia"
+  { id: "heartAttack", label: "Heart Attack" },
+  { id: "stroke", label: "Stroke" },
+  { id: "tia", label: "TIA" },
+  { id: "stent", label: "Stent" },
+  { id: "diabetesPill", label: "Diabetes: Pill" },
+  { id: "hbp", label: "HBP" },
+  { id: "cholesteral", label: "Cholesteral" },
+  { id: "cancer", label: "Cancer" },
+  { id: "diabetesInsulin", label: "Diabetes: Insulin" },
+  { id: "asthma", label: "Asthma" },
+  { id: "copd", label: "COPD" },
+  { id: "thyroid", label: "Thyroid" },
+  { id: "anxiety", label: "Anxiety" },
+  { id: "depression", label: "Depression" },
+  { id: "alzheimers", label: "Alzheimer's" },
+  { id: "dementia", label: "Dementia" },
 ];
 
 const MedicalConditionsCheckbox = ({
-  selectedConditions = [], // Add default empty array
+  selectedConditions = [],
   onChange,
 }: MedicalConditionsCheckboxProps) => {
   const handleCheckboxChange = (condition: string, checked: boolean) => {
@@ -38,25 +39,33 @@ const MedicalConditionsCheckbox = ({
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">Medical Conditions</Label>
-      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-        {CONDITIONS.map((condition) => (
-          <div key={condition} className="flex items-center space-x-2">
+      <Label className="text-base font-medium">Medical Condition</Label>
+      <div className="grid grid-cols-4 gap-x-8 gap-y-3">
+        {CONDITIONS.map(({ id, label }) => (
+          <div key={id} className="flex items-center space-x-2">
             <Checkbox
-              id={condition}
-              checked={(selectedConditions || []).includes(condition)}
+              id={id}
+              checked={(selectedConditions || []).includes(id)}
               onCheckedChange={(checked) =>
-                handleCheckboxChange(condition, checked as boolean)
+                handleCheckboxChange(id, checked as boolean)
               }
+              className="rounded-sm border-gray-400"
             />
             <Label
-              htmlFor={condition}
-              className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+              htmlFor={id}
+              className="text-sm font-normal leading-none text-gray-700"
             >
-              {condition}
+              {label}
             </Label>
           </div>
         ))}
+        <div className="col-span-4 mt-2">
+          <Label className="text-sm font-normal text-gray-700">Other:</Label>
+          <input
+            type="text"
+            className="mt-1 w-full rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-sm"
+          />
+        </div>
       </div>
     </div>
   );
