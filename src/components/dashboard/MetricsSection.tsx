@@ -4,10 +4,13 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import { useMetricsUpdates } from "@/hooks/useMetricsUpdates";
 import { Button } from "@/components/ui/button";
+import { useEffect, useState } from "react";
 
 const MetricsSection = () => {
   const { metrics, handleInputChange } = useMetrics();
   const { saveDailyMetrics } = useMetricsUpdates(metrics, handleInputChange);
+  const [isVisible, setIsVisible] = useState(true);
+  const [lastScrollY, setLastScrollY] = useState(0);
 
   const metricLabels = {
     leads: 'Leads',
@@ -19,8 +22,34 @@ const MetricsSection = () => {
     ap: 'AP'
   };
 
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      
+      if (currentScrollY > lastScrollY) {
+        // Scrolling down
+        setIsVisible(false);
+      } else {
+        // Scrolling up
+        setIsVisible(true);
+      }
+      
+      setLastScrollY(currentScrollY);
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+    };
+  }, [lastScrollY]);
+
   return (
-    <div className="w-full bg-white">
+    <div 
+      className={`w-full bg-white transition-transform duration-300 ${
+        isVisible ? 'translate-y-0' : '-translate-y-full'
+      }`}
+    >
       <div className="py-4 px-8">
         <div className="flex flex-col items-center gap-2">
           <div className="flex gap-6">
