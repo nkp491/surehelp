@@ -18,8 +18,8 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
       <FamilyMembersProvider>
         <FormBuilderProvider>
           <SpouseVisibilityProvider>
-            <div className="space-y-4">
-              <div className="flex justify-end items-center gap-2 mb-4">
+            <div className="space-y-2">
+              <div className="flex justify-end items-center gap-2">
                 <SpouseToggle />
                 <EditModeToggle />
               </div>

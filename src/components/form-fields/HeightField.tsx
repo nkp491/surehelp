@@ -21,12 +21,12 @@ const HeightField = ({
   
   return (
     <div className="space-y-1">
-      <Label className="text-sm font-medium">
+      <Label className="text-sm font-medium text-gray-700">
         Height
-        {required && <span className="text-destructive ml-1">*</span>}
+        {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <div className="flex gap-1">
-        <div className="w-12">
+      <div className="flex gap-2 items-center">
+        <div className="w-16">
           <Input
             type="number"
             value={feet || ""}
@@ -38,12 +38,13 @@ const HeightField = ({
             placeholder="ft"
             min="0"
             max="9"
-            className="h-8 px-1 text-sm"
+            className="h-9 px-2 text-sm bg-gray-50"
             required={required}
             readOnly={readOnly}
           />
         </div>
-        <div className="w-12">
+        <span className="text-sm">ft</span>
+        <div className="w-16">
           <Input
             type="number"
             value={inches || ""}
@@ -55,13 +56,14 @@ const HeightField = ({
             placeholder="in"
             min="0"
             max="11"
-            className="h-8 px-1 text-sm"
+            className="h-9 px-2 text-sm bg-gray-50"
             required={required}
             readOnly={readOnly}
           />
         </div>
+        <span className="text-sm">in</span>
       </div>
-      {error && <p className="text-sm text-destructive">{error}</p>}
+      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 };

@@ -52,27 +52,28 @@ const FormSection = ({
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-2 space-y-2">
-      <SectionHeader section={section} onRemove={onRemove} />
-      
-      {/* Special row for height, weight, and tobacco use if this is the Primary Health Assessment section */}
-      {section === "Primary Health Assessment" && (
-        <HealthMetricsRow
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+      <div className="bg-[#3B82F6] text-white px-4 py-2 text-sm font-medium rounded-t-lg">
+        {section}
+      </div>
+      <div className="p-4 space-y-3">
+        {section === "Primary Health Assessment" && (
+          <HealthMetricsRow
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={submissionId}
+          />
+        )}
+
+        <TwoColumnLayout
+          fields={regularFields}
           formData={formData}
           setFormData={setFormData}
           errors={errors}
           submissionId={submissionId}
         />
-      )}
-
-      {/* Regular two-column layout for remaining fields */}
-      <TwoColumnLayout
-        fields={regularFields}
-        formData={formData}
-        setFormData={setFormData}
-        errors={errors}
-        submissionId={submissionId}
-      />
+      </div>
     </div>
   );
 };

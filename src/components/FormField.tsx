@@ -81,7 +81,7 @@ const FormField = ({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[80px] bg-gray-50"
+          className="min-h-[100px] bg-gray-50 resize-none"
           required={required}
           readOnly={readOnly}
         />
@@ -101,7 +101,7 @@ const FormField = ({
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className="h-8 bg-gray-50"
+        className="h-9 bg-gray-50"
         required={required}
         readOnly={readOnly}
       />
