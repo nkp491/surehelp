@@ -46,7 +46,7 @@ const FormField = ({
 
   if (type === "yes_no") {
     return (
-      <div className="space-y-1">
+      <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-700">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -54,14 +54,14 @@ const FormField = ({
         <RadioGroup
           value={value}
           onValueChange={onChange}
-          className="flex items-center gap-4"
+          className="flex items-center gap-8"
         >
-          <div className="flex items-center gap-1.5">
-            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-4 w-4" />
             <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">Yes</Label>
           </div>
-          <div className="flex items-center gap-1.5">
-            <RadioGroupItem value="no" id={`${label}-no`} className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="no" id={`${label}-no`} className="h-4 w-4" />
             <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">No</Label>
           </div>
         </RadioGroup>
@@ -72,7 +72,7 @@ const FormField = ({
 
   if (type === "textarea") {
     return (
-      <div className="space-y-1">
+      <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-700">
           {label}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -81,7 +81,7 @@ const FormField = ({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[80px] bg-gray-50 resize-none text-sm"
+          className="min-h-[120px] bg-gray-50 resize-none text-sm"
           required={required}
           readOnly={readOnly}
         />
@@ -90,10 +90,10 @@ const FormField = ({
     );
   }
 
-  const inputClassName = type === "age" ? "h-8 bg-gray-50 w-[100px] text-sm" : "h-8 bg-gray-50 text-sm";
+  const inputClassName = type === "age" ? "h-9 bg-gray-50 w-[80px] text-sm" : "h-9 bg-gray-50 text-sm";
 
   return (
-    <div className="space-y-1">
+    <div className="space-y-2">
       <Label className="text-sm font-medium text-gray-700">
         {label}
         {required && <span className="text-red-500 ml-1">*</span>}
