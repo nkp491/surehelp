@@ -9,25 +9,25 @@ const Header = () => {
   const showMetrics = location.pathname === '/assessment';
 
   return (
-    <header className="bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="flex justify-between items-center h-14">
-          <div className="flex items-center gap-3">
-            <img 
-              src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
-              alt="SureHelp Logo" 
-              className="h-6 w-auto"
-            />
+    <header className="bg-white">
+      <div className="max-w-[1800px] mx-auto">
+        <div className="flex justify-between items-center h-[98px] px-8">
+          <div className="flex items-center gap-8">
+            <h1 className="text-[#2A6F97] text-[32px] font-bold">
+              SureHelp
+            </h1>
             <Navigation />
           </div>
           <ProfileMenu />
         </div>
         
         {showMetrics && (
-          <div className="py-0.5 border-t border-gray-50">
-            <MetricsProvider>
-              <MetricsSection />
-            </MetricsProvider>
+          <div className="relative w-full h-[129px] bg-white shadow-[0px_2px_6px_#ABABAB]">
+            <div className="px-8">
+              <MetricsProvider>
+                <MetricsSection />
+              </MetricsProvider>
+            </div>
           </div>
         )}
       </div>
