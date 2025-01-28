@@ -16,7 +16,7 @@ const FormSection = ({
 }: FormSectionProps) => {
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-      <div className="bg-[#3B82F6] text-white px-4 py-2 text-sm font-medium">
+      <div className="bg-[#6CAEC2] text-white px-4 py-2 text-sm font-medium">
         {title}
       </div>
       <div className="p-4">
