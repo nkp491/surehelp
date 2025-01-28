@@ -25,17 +25,14 @@ const FormSection = ({
 }: FormSectionProps) => {
   const { showSpouse } = useSpouseVisibility();
   
-  // Function to check if a field should be rendered in the special row
   const isSpecialField = (fieldId: string) => {
     return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
   };
 
-  // Function to check if a field is spouse-related
   const isSpouseField = (fieldId: string) => {
     return fieldId.toLowerCase().startsWith('spouse');
   };
 
-  // Filter out spouse fields if spouse toggle is off
   const filteredFields = fields.filter(field => {
     if (isSpouseField(field.id)) {
       return showSpouse;
@@ -43,20 +40,18 @@ const FormSection = ({
     return true;
   });
 
-  // Separate special fields from regular fields
   const regularFields = filteredFields.filter(field => !isSpecialField(field.id));
 
-  // Hide entire spouse sections if spouse toggle is off
   if (!showSpouse && section.toLowerCase().includes('spouse')) {
     return null;
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-3">
-      <div className="bg-[#3B82F6] text-white px-3 py-1.5 text-sm font-medium rounded-t-lg">
+    <div className="bg-white rounded-md border border-gray-200 shadow-sm mb-2">
+      <div className="bg-[#3B82F6] text-white px-2 py-1 text-sm font-medium rounded-t-md">
         {section}
       </div>
-      <div className="p-3 space-y-2">
+      <div className="p-2 space-y-1.5">
         {section === "Primary Health Assessment" && (
           <HealthMetricsRow
             formData={formData}

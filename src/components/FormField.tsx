@@ -54,14 +54,14 @@ const FormField = ({
         <RadioGroup
           value={value}
           onValueChange={onChange}
-          className="flex items-center gap-6"
+          className="flex items-center gap-4"
         >
-          <div className="flex items-center gap-2">
-            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-4 w-4" />
+          <div className="flex items-center gap-1.5">
+            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-3.5 w-3.5" />
             <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">Yes</Label>
           </div>
-          <div className="flex items-center gap-2">
-            <RadioGroupItem value="no" id={`${label}-no`} className="h-4 w-4" />
+          <div className="flex items-center gap-1.5">
+            <RadioGroupItem value="no" id={`${label}-no`} className="h-3.5 w-3.5" />
             <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">No</Label>
           </div>
         </RadioGroup>
@@ -81,7 +81,7 @@ const FormField = ({
           value={value}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[100px] bg-gray-50 resize-none"
+          className="min-h-[80px] bg-gray-50 resize-none text-sm"
           required={required}
           readOnly={readOnly}
         />
@@ -90,7 +90,7 @@ const FormField = ({
     );
   }
 
-  const inputClassName = type === "age" ? "h-9 bg-gray-50 w-[150px]" : "h-9 bg-gray-50";
+  const inputClassName = type === "age" ? "h-8 bg-gray-50 w-[100px] text-sm" : "h-8 bg-gray-50 text-sm";
 
   return (
     <div className="space-y-1">
