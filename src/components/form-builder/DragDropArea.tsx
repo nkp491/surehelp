@@ -76,20 +76,6 @@ const DragDropArea = ({
           setFormData={setFormData}
         />
       </div>
-      <div className="mt-8 text-center">
-        <p className="text-gray-700 mb-4">Submit As:</p>
-        <div className="flex justify-center gap-4">
-          <button className="px-6 py-2 bg-green-500 text-white rounded hover:bg-green-600">
-            Protected
-          </button>
-          <button className="px-6 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-            Follow-Up
-          </button>
-          <button className="px-6 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-            Declined
-          </button>
-        </div>
-      </div>
     </div>
   );
 };
