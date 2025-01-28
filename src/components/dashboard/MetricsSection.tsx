@@ -48,7 +48,7 @@ const MetricsSection = () => {
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="py-2 px-8">
+      <div className="py-2">
         <div className="flex flex-col items-center gap-1">
           <div className="flex gap-6">
             {(Object.keys(metrics) as MetricType[]).map((metric) => (
