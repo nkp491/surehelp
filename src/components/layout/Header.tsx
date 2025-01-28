@@ -11,7 +11,7 @@ const Header = () => {
   return (
     <header className="bg-white">
       <div className="max-w-[1800px] mx-auto">
-        <div className="flex justify-between items-center h-[98px] px-8">
+        <div className="flex justify-between items-center h-[70px] px-8">
           <div>
             <img 
               src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png" 
@@ -26,7 +26,7 @@ const Header = () => {
         </div>
         
         {showMetrics && (
-          <div className="relative w-full h-[129px] bg-white">
+          <div className="relative w-full h-[100px] bg-white">
             <div className="max-w-[1200px] mx-auto">
               <MetricsProvider>
                 <MetricsSection />

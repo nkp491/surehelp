@@ -27,10 +27,8 @@ const MetricsSection = () => {
       const currentScrollY = window.scrollY;
       
       if (currentScrollY > lastScrollY) {
-        // Scrolling down
         setIsVisible(false);
       } else {
-        // Scrolling up
         setIsVisible(true);
       }
       
@@ -50,8 +48,8 @@ const MetricsSection = () => {
         isVisible ? 'translate-y-0' : '-translate-y-full'
       }`}
     >
-      <div className="py-4 px-8">
-        <div className="flex flex-col items-center gap-2">
+      <div className="py-2 px-8">
+        <div className="flex flex-col items-center gap-1">
           <div className="flex gap-6">
             {(Object.keys(metrics) as MetricType[]).map((metric) => (
               <MetricButtons
