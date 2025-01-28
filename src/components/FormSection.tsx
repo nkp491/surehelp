@@ -34,10 +34,6 @@ const FormSection = ({
     return fieldId.toLowerCase().startsWith('spouse');
   };
 
-  const isAgentField = (fieldId: string) => {
-    return ['sourcedFrom', 'leadType', 'premium', 'effectiveDate', 'draftDay', 'accidental'].includes(fieldId);
-  };
-
   const filteredFields = fields.filter(field => {
     if (isSpouseField(field.id)) {
       return showSpouse;
@@ -52,11 +48,11 @@ const FormSection = ({
   }
 
   return (
-    <div className="bg-white mb-1">
-      <div className="bg-[#00A3E0] text-white px-2 py-0.5 text-base font-medium">
+    <div className="bg-white mb-0.5">
+      <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-sm font-medium">
         {section}
       </div>
-      <div className="p-1 space-y-1">
+      <div className="p-0.5 space-y-0.5">
         {section === "Primary Health Assessment" && (
           <HealthMetricsRow
             formData={formData}
@@ -67,8 +63,23 @@ const FormSection = ({
         )}
 
         {section === "Assessment Notes" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-            {regularFields.map(field => renderField(field))}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+            {regularFields.map((field) => (
+              <DraggableFormField
+                key={field.id}
+                id={field.id}
+                fieldType={field.type}
+                label={field.label}
+                value={formData[field.id]}
+                onChange={(value) =>
+                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+                }
+                placeholder={field.placeholder}
+                required={field.required}
+                error={errors[field.id]}
+                submissionId={submissionId}
+              />
+            ))}
           </div>
         ) : (
           <TwoColumnLayout

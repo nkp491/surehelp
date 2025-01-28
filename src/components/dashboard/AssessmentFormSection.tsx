@@ -15,15 +15,15 @@ const AssessmentFormSection = ({
 }: AssessmentFormSectionProps) => {
   return (
     <Card className="bg-transparent shadow-none border-none w-full">
-      <div className="space-y-2 w-full">
-        <h2 className="text-2xl font-bold text-gray-900">Client Assessment</h2>
+      <div className="space-y-1 w-full scale-[0.8] origin-top">
+        <h2 className="text-xl font-bold text-gray-900">Client Assessment</h2>
         <Collapsible
           open={isFormOpen}
           onOpenChange={setIsFormOpen}
           className="w-full"
         >
-          <div className="flex items-center justify-between mb-2">
-            <p className="text-lg text-gray-600">
+          <div className="flex items-center justify-between mb-1">
+            <p className="text-base text-gray-600">
               Fill out the form below to store your medical information
             </p>
             <CollapsibleTrigger asChild>
