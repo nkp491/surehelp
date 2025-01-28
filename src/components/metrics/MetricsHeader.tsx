@@ -31,14 +31,14 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   };
 
   return (
-    <div className="flex justify-between items-center px-0.5 py-0.5">
-      <h2 className="text-sm font-medium text-primary flex items-center">
+    <div className="flex justify-between items-center px-0.5 mb-0.5">
+      <h2 className="text-xs font-medium text-primary flex items-center">
         KPI Tracker
       </h2>
       <Button 
         onClick={handleSave}
         size="sm"
-        className="h-7 px-2.5 bg-primary hover:bg-primary/90 text-white flex items-center gap-1 transition-colors duration-200"
+        className="h-6 px-2 bg-primary hover:bg-primary/90 text-white flex items-center gap-1 transition-colors duration-200"
       >
         <Check className="h-3 w-3" />
         Log
