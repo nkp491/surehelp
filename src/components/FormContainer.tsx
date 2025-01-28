@@ -3,7 +3,6 @@ import { FormBuilderProvider } from "@/contexts/FormBuilderContext";
 import { SpouseVisibilityProvider } from "@/contexts/SpouseVisibilityContext";
 import { FamilyMembersProvider } from "@/contexts/FamilyMembersContext";
 import FormContent from "@/components/form/FormContent";
-import EditModeToggle from "@/components/form-builder/EditModeToggle";
 import FamilyMemberToggle from "@/components/form/FamilyMemberToggle";
 
 interface FormContainerProps {
@@ -19,7 +18,6 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
           <div className="max-w-[1400px] mx-auto">
             <div className="flex justify-end items-center gap-2">
               <FamilyMemberToggle />
-              <EditModeToggle />
             </div>
             <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
           </div>
