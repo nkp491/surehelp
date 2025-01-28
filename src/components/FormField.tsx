@@ -90,6 +90,8 @@ const FormField = ({
     );
   }
 
+  const inputClassName = type === "age" ? "h-9 bg-gray-50 w-[300px]" : "h-9 bg-gray-50";
+
   return (
     <div className="space-y-1">
       <Label className="text-sm font-medium text-gray-700">
@@ -101,7 +103,7 @@ const FormField = ({
         value={value}
         onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
-        className="h-9 bg-gray-50"
+        className={inputClassName}
         required={required}
         readOnly={readOnly}
       />
