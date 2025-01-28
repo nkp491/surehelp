@@ -8,12 +8,14 @@ interface MetricButtonsProps {
   metric: string;
   onIncrement: () => void;
   onDecrement: () => void;
+  hasBorder?: boolean;
 }
 
 const MetricButtons = ({
   metric,
   onIncrement,
   onDecrement,
+  hasBorder = true,
 }: MetricButtonsProps) => {
   const { metrics, handleInputChange } = useMetrics();
   
@@ -40,12 +42,12 @@ const MetricButtons = ({
   };
 
   return (
-    <div className="flex flex-col items-center gap-0.5 mx-[2px]">
-      <h3 className="font-medium text-xs text-primary">
+    <div className="flex flex-col items-stretch">
+      <div className="text-[rgba(42,111,151,1)] text-lg font-bold text-center">
         {formatMetricName(metric)}
-      </h3>
-      <Card className="bg-gray-50 p-0.5 border-0 shadow-none">
-        <div className="flex flex-col items-center gap-0.5">
+      </div>
+      <div className="flex items-stretch gap-5 text-2xl text-black justify-between mt-2">
+        <div className="flex flex-col items-stretch my-auto">
           <MetricInput
             metric={metric}
             currentValue={currentValue}
@@ -59,7 +61,10 @@ const MetricButtons = ({
             onDecrement={handleDecrement}
           />
         </div>
-      </Card>
+        {hasBorder && (
+          <div className="border w-px shrink-0 h-[58px] border-[rgba(171,171,171,1)] border-solid" />
+        )}
+      </div>
     </div>
   );
 };

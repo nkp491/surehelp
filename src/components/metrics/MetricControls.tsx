@@ -1,6 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Plus, Minus } from "lucide-react";
-
 interface MetricControlsProps {
   onIncrement: () => void;
   onDecrement: () => void;
@@ -8,23 +5,13 @@ interface MetricControlsProps {
 
 const MetricControls = ({ onIncrement, onDecrement }: MetricControlsProps) => {
   return (
-    <div className="flex items-center gap-0.5 w-full justify-center">
-      <Button
-        onClick={onDecrement}
-        variant="outline"
-        size="icon"
-        className="h-4 w-4 bg-white hover:bg-gray-50"
-      >
-        <Minus className="h-2 w-2" />
-      </Button>
-      <Button
+    <div className="font-medium text-center text-2xl">
+      <button 
         onClick={onIncrement}
-        variant="outline"
-        size="icon"
-        className="h-4 w-4 bg-white hover:bg-gray-50"
+        className="hover:text-[rgba(42,111,151,1)] transition-colors"
       >
-        <Plus className="h-2 w-2" />
-      </Button>
+        +
+      </button>
     </div>
   );
 };
