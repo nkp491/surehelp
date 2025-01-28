@@ -5,7 +5,6 @@ import { PRIMARY_INCOME_FIELDS } from "./fields/primaryIncomeFields";
 import { SPOUSE_INCOME_FIELDS } from "./fields/spouseIncomeFields";
 import { HOUSEHOLD_INCOME_FIELDS } from "./fields/householdIncomeFields";
 import { ASSESSMENT_NOTES_FIELDS } from "./fields/assessmentNotesFields";
-import { AGENT_USE_ONLY_FIELDS } from "./fields/agentOnlyFields";
 
 export const INITIAL_FIELDS = [
   { section: "Primary Health Assessment", fields: PRIMARY_HEALTH_FIELDS },

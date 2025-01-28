@@ -28,5 +28,5 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
     ]
   },
   { id: "premium", type: "text", label: "Premium", placeholder: "Enter premium" },
-  { id: "effectiveDate", type: "date", label: "Effective Date" },
+  { id: "effectiveDate", type: "date", label: "Effective Date" }
 ];
