@@ -29,9 +29,4 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
   },
   { id: "premium", type: "text", label: "Premium", placeholder: "Enter premium" },
   { id: "effectiveDate", type: "date", label: "Effective Date" },
-  { id: "draftDay", type: "date", label: "Draft Day" },
-  { id: "coverageAmount", type: "currency", label: "Coverage Amount", placeholder: "Enter coverage amount" },
-  { id: "accidental", type: "text", label: "Accidental", placeholder: "Enter accidental details" },
-  { id: "carrierAndProduct", type: "text", label: "Carrier & Product", placeholder: "Enter carrier and product" },
-  { id: "policyNumber", type: "text", label: "Policy Number", placeholder: "Enter policy number" },
 ];
