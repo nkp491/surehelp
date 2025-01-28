@@ -2,7 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Check } from "lucide-react";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { useToast } from "@/hooks/use-toast";
-import { format } from "date-fns";
 
 interface MetricsHeaderProps {
   onSave: () => void;
@@ -32,16 +31,16 @@ const MetricsHeader = ({ onSave }: MetricsHeaderProps) => {
   };
 
   return (
-    <div className="flex justify-between items-center px-1 py-1">
-      <h2 className="text-base font-medium text-primary flex items-center">
+    <div className="flex justify-between items-center px-0.5 py-0.5">
+      <h2 className="text-sm font-medium text-primary flex items-center">
         KPI Tracker
       </h2>
       <Button 
         onClick={handleSave}
         size="sm"
-        className="bg-primary hover:bg-primary/90 text-white flex items-center gap-1.5 transition-colors duration-200"
+        className="h-7 px-2.5 bg-primary hover:bg-primary/90 text-white flex items-center gap-1 transition-colors duration-200"
       >
-        <Check className="h-3.5 w-3.5" />
+        <Check className="h-3 w-3" />
         Log
       </Button>
     </div>
