@@ -34,6 +34,20 @@ const FormSection = ({
     return fieldId.toLowerCase().startsWith('spouse');
   };
 
+  const isAgentField = (fieldId: string) => {
+    return [
+      'sourcedFrom',
+      'leadType',
+      'premium',
+      'effectiveDate',
+      'draftDay',
+      'coverageAmount',
+      'accidental',
+      'carrierAndProduct',
+      'policyNumber'
+    ].includes(fieldId);
+  };
+
   const filteredFields = fields.filter(field => {
     if (isSpouseField(field.id)) {
       return showSpouse;
@@ -42,6 +56,8 @@ const FormSection = ({
   });
 
   const regularFields = filteredFields.filter(field => !isSpecialField(field.id));
+  const agentFields = regularFields.filter(field => isAgentField(field.id));
+  const nonAgentFields = regularFields.filter(field => !isAgentField(field.id));
 
   if (!showSpouse && section.toLowerCase().includes('spouse')) {
     return null;
@@ -63,23 +79,49 @@ const FormSection = ({
         )}
 
         {section === "Assessment Notes" ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
-            {regularFields.map((field) => (
-              <DraggableFormField
-                key={field.id}
-                id={field.id}
-                fieldType={field.type}
-                label={field.label}
-                value={formData[field.id]}
-                onChange={(value) =>
-                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-                }
-                placeholder={field.placeholder}
-                required={field.required}
-                error={errors[field.id]}
-                submissionId={submissionId}
-              />
-            ))}
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+              {nonAgentFields.map((field) => (
+                <DraggableFormField
+                  key={field.id}
+                  id={field.id}
+                  fieldType={field.type}
+                  label={field.label}
+                  value={formData[field.id]}
+                  onChange={(value) =>
+                    setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+                  }
+                  placeholder={field.placeholder}
+                  required={field.required}
+                  error={errors[field.id]}
+                  submissionId={submissionId}
+                />
+              ))}
+            </div>
+            
+            {agentFields.length > 0 && (
+              <div className="mt-4">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">Agent Use Only</h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1 border-t border-gray-200 pt-2">
+                  {agentFields.map((field) => (
+                    <DraggableFormField
+                      key={field.id}
+                      id={field.id}
+                      fieldType={field.type}
+                      label={field.label}
+                      value={formData[field.id]}
+                      onChange={(value) =>
+                        setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+                      }
+                      placeholder={field.placeholder}
+                      required={field.required}
+                      error={errors[field.id]}
+                      submissionId={submissionId}
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         ) : (
           <TwoColumnLayout
