@@ -13,7 +13,7 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
   { id: "coverageOptions", type: "textarea", label: "Coverage Options", placeholder: "Enter coverage options" },
   { id: "beneficiaries", type: "textarea", label: "Beneficiary(ies)", placeholder: "Enter beneficiaries" },
 
-  // Agent Use Only Fields (moved from agentOnlyFields.ts)
+  // Agent Use Only Fields
   { id: "sourcedFrom", type: "text", label: "Sourced From", placeholder: "Enter source" },
   { 
     id: "leadType", 
