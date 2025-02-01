@@ -2,6 +2,8 @@ import React from "react";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/utils/translations";
 
 interface SelectFieldProps {
   label: string;
@@ -24,10 +26,17 @@ const SelectField = ({
   readOnly = false,
   options,
 }: SelectFieldProps) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  // Translate the label if it exists in translations
+  const translatedLabel = (t as any)[label.toLowerCase()] || label;
+  const translatedPlaceholder = placeholder ? (t as any)[placeholder.toLowerCase()] || placeholder : undefined;
+
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">
-        {label}
+        {translatedLabel}
         {required && <span className="text-destructive ml-1">*</span>}
       </Label>
       <Select
@@ -36,14 +45,17 @@ const SelectField = ({
         disabled={readOnly}
       >
         <SelectTrigger className={cn(error ? "border-destructive" : "border-input")}>
-          <SelectValue placeholder={placeholder} />
+          <SelectValue placeholder={translatedPlaceholder} />
         </SelectTrigger>
         <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option} value={option}>
-              {option}
-            </SelectItem>
-          ))}
+          {options.map((option) => {
+            const translatedOption = (t as any)[option.toLowerCase()] || option;
+            return (
+              <SelectItem key={option} value={option}>
+                {translatedOption}
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
       {error && <p className="text-sm text-destructive">{error}</p>}
