@@ -1,22 +1,34 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 interface EmploymentStatusCheckboxProps {
   selectedStatus: string[];
   onChange: (status: string[]) => void;
 }
 
-const EMPLOYMENT_STATUS = [
-  "Retired",
-  "Employed",
-  "Unemployed",
-  "Disabled"
-];
+const EMPLOYMENT_STATUS = {
+  en: {
+    Retired: "Retired",
+    Employed: "Employed",
+    Unemployed: "Unemployed",
+    Disabled: "Disabled"
+  },
+  es: {
+    Retired: "Jubilado",
+    Employed: "Empleado",
+    Unemployed: "Desempleado",
+    Disabled: "Discapacitado"
+  }
+};
 
 const EmploymentStatusCheckbox = ({
-  selectedStatus = [], // Add default empty array
+  selectedStatus = [],
   onChange,
 }: EmploymentStatusCheckboxProps) => {
+  const { language } = useLanguage();
+  const statuses = Object.keys(EMPLOYMENT_STATUS.en);
+
   const handleCheckboxChange = (status: string, checked: boolean) => {
     const currentStatus = selectedStatus || [];
     if (checked) {
@@ -28,9 +40,11 @@ const EmploymentStatusCheckbox = ({
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">Employment Status</Label>
+      <Label className="text-base font-semibold">
+        {language === 'en' ? 'Employment Status' : 'Estado Laboral'}
+      </Label>
       <div className="grid grid-cols-2 gap-4">
-        {EMPLOYMENT_STATUS.map((status) => (
+        {statuses.map((status) => (
           <div key={status} className="flex items-center space-x-2">
             <Checkbox
               id={status}
@@ -43,7 +57,7 @@ const EmploymentStatusCheckbox = ({
               htmlFor={status}
               className="text-sm font-normal leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
             >
-              {status}
+              {EMPLOYMENT_STATUS[language][status]}
             </Label>
           </div>
         ))}
