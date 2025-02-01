@@ -20,8 +20,8 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
           <SpouseVisibilityProvider>
             <div className="w-full max-w-[95vw] mx-auto">
               <div className="flex justify-end items-center gap-2 mb-4">
-                <LanguageToggle />
                 <FamilyMemberToggle />
+                <LanguageToggle />
               </div>
               <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
             </div>

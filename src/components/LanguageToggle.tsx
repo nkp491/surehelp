@@ -9,7 +9,7 @@ export default function LanguageToggle() {
       variant="outline"
       size="sm"
       onClick={toggleLanguage}
-      className="fixed top-4 right-4 z-50"
+      className="h-7 px-2 text-xs"
     >
       {language === 'en' ? 'Español' : 'English'}
     </Button>
