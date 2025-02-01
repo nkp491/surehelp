@@ -2,8 +2,10 @@ import { FormSubmission } from "@/types/form";
 import { FormBuilderProvider } from "@/contexts/FormBuilderContext";
 import { SpouseVisibilityProvider } from "@/contexts/SpouseVisibilityContext";
 import { FamilyMembersProvider } from "@/contexts/FamilyMembersContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import FormContent from "@/components/form/FormContent";
 import FamilyMemberToggle from "@/components/form/FamilyMemberToggle";
+import LanguageToggle from "@/components/LanguageToggle";
 
 interface FormContainerProps {
   editingSubmission?: FormSubmission | null;
@@ -12,18 +14,21 @@ interface FormContainerProps {
 
 const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   return (
-    <FamilyMembersProvider>
-      <FormBuilderProvider>
-        <SpouseVisibilityProvider>
-          <div className="w-full max-w-[95vw] mx-auto">
-            <div className="flex justify-end items-center gap-2 mb-4">
-              <FamilyMemberToggle />
+    <LanguageProvider>
+      <FamilyMembersProvider>
+        <FormBuilderProvider>
+          <SpouseVisibilityProvider>
+            <div className="w-full max-w-[95vw] mx-auto">
+              <div className="flex justify-end items-center gap-2 mb-4">
+                <LanguageToggle />
+                <FamilyMemberToggle />
+              </div>
+              <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
             </div>
-            <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
-          </div>
-        </SpouseVisibilityProvider>
-      </FormBuilderProvider>
-    </FamilyMembersProvider>
+          </SpouseVisibilityProvider>
+        </FormBuilderProvider>
+      </FamilyMembersProvider>
+    </LanguageProvider>
   );
 };
 
