@@ -54,11 +54,44 @@ const FormSection = ({
     return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
   }
 
+  const isHouseholdSection = section === "Household Income";
+  const isAgentSection = section === "Agent Use Only";
+
   return (
     <div className="bg-white mb-0.5">
-      <SectionHeader section={section} />
+      <SectionHeader section={section} onRemove={onRemove} />
       <div className="p-0.5">
-        {section === "Assessment Notes" ? (
+        {isHouseholdSection ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            {nonAgentFields.map((field) => (
+              <div key={field.id} className={field.id === "expenses" ? "col-span-2" : ""}>
+                <RegularFieldsSection
+                  fields={[field]}
+                  formData={formData}
+                  setFormData={setFormData}
+                  errors={errors}
+                  submissionId={submissionId}
+                />
+              </div>
+            ))}
+          </div>
+        ) : isAgentSection ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+            {agentFields.map((field) => (
+              <div key={field.id} className={
+                field.id === "premium" || field.id === "carrierAndProduct" ? "col-span-2" : ""
+              }>
+                <RegularFieldsSection
+                  fields={[field]}
+                  formData={formData}
+                  setFormData={setFormData}
+                  errors={errors}
+                  submissionId={submissionId}
+                />
+              </div>
+            ))}
+          </div>
+        ) : (
           <div className="space-y-1">
             <RegularFieldsSection
               fields={nonAgentFields}
@@ -78,14 +111,6 @@ const FormSection = ({
               />
             )}
           </div>
-        ) : (
-          <RegularFieldsSection
-            fields={regularFields}
-            formData={formData}
-            setFormData={setFormData}
-            errors={errors}
-            submissionId={submissionId}
-          />
         )}
       </div>
     </div>

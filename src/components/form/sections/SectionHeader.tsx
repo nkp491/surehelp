@@ -5,7 +5,7 @@ import { X } from "lucide-react";
 
 interface SectionHeaderProps {
   section: string;
-  onRemove?: () => void;  // Made optional with ?
+  onRemove?: () => void;
 }
 
 const SectionHeader = ({ section, onRemove }: SectionHeaderProps) => {
@@ -18,7 +18,7 @@ const SectionHeader = ({ section, onRemove }: SectionHeaderProps) => {
   };
 
   return (
-    <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-xs font-medium flex justify-between items-center">
+    <div className="bg-[#3B97CB] text-white px-4 py-2 text-base font-medium flex justify-between items-center rounded-t">
       <span>{getTranslatedSection(section)}</span>
       {onRemove && (
         <Button
