@@ -20,18 +20,6 @@ const HealthMetrics = ({ formData, setFormData }: HealthMetricsProps) => {
   return (
     <div className="grid grid-cols-2 gap-4">
       <div className="space-y-2">
-        <Label htmlFor="age">
-          {t.age} <span className="text-red-500">*</span>
-        </Label>
-        <Input 
-          id="age"
-          value={formData.age || ''}
-          onChange={(e) => handleInputChange('age', e.target.value)}
-          className="bg-gray-50"
-        />
-      </div>
-
-      <div className="space-y-2">
         <Label>{t.height}</Label>
         <div className="flex gap-2">
           <Input 
