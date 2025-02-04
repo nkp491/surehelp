@@ -1,4 +1,3 @@
-import Navigation from "./Navigation";
 import ProfileMenu from "./ProfileMenu";
 import MetricsSection from "../dashboard/MetricsSection";
 import { useLocation } from "react-router-dom";
@@ -12,18 +11,8 @@ const Header = () => {
   return (
     <header className="bg-transparent">
       <div className="max-w-[1800px] mx-auto">
-        <div className="flex justify-between items-center h-[70px] px-8 bg-white">
-          <div>
-            <img 
-              src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png" 
-              alt="SureHelp" 
-              className="h-[40px] w-auto"
-            />
-          </div>
-          <div className="flex items-center gap-8">
-            <Navigation />
-            <ProfileMenu />
-          </div>
+        <div className="flex justify-end items-center h-[70px] px-8 bg-white">
+          <ProfileMenu />
         </div>
         
         {showMetrics && (

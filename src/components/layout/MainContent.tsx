@@ -5,6 +5,8 @@ import ManagerDashboard from "@/pages/ManagerDashboard";
 import Profile from "@/pages/Profile";
 import FormContainer from "@/components/FormContainer";
 import AuthGuard from "@/components/auth/AuthGuard";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { AppSidebar } from "@/components/layout/AppSidebar";
 
 const MainContent = () => {
   const location = useLocation();
@@ -37,9 +39,14 @@ const MainContent = () => {
   };
 
   return (
-    <main className="flex-1 pt-2">
-      {renderContent()}
-    </main>
+    <SidebarProvider defaultOpen={true}>
+      <div className="flex min-h-screen w-full">
+        <AppSidebar />
+        <SidebarInset className="pt-2">
+          {renderContent()}
+        </SidebarInset>
+      </div>
+    </SidebarProvider>
   );
 };
 
