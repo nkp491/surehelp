@@ -1,4 +1,5 @@
 export type FormTranslations = {
+  // Existing keys
   primaryApplicantName: string;
   primaryDateOfBirth: string;
   primaryAge: string;
@@ -22,10 +23,39 @@ export type FormTranslations = {
   primarySurvivorshipIncome: string;
   primaryTotalIncome: string;
   primaryHouseholdExpenses: string;
+
+  // New keys for form sections
+  agentUseOnly: string;
+  submitAs: string;
+  protected: string;
+  followUp: string;
+  declined: string;
+  addFamilyMember: string;
+  primaryHealthAssessment: string;
+
+  // Health assessment fields
+  tobaccoUse: string;
+  hospitalizations: string;
+  surgeries: string;
+  prescriptionMedications: string;
+  lastMedicalExam: string;
+  familyMedicalConditions: string;
+  duiHistory: string;
+  dateOfBirth: string;
+  age: string;
+  height: string;
+  weight: string;
+  fullName: string;
+
+  // Units and measurements
+  feet: string;
+  inches: string;
+  pounds: string;
 };
 
 export const formTranslations: Record<'en' | 'es', FormTranslations> = {
   en: {
+    // Existing translations
     primaryApplicantName: "Primary Applicant Name",
     primaryDateOfBirth: "Primary Date of Birth",
     primaryAge: "Primary Age",
@@ -49,8 +79,37 @@ export const formTranslations: Record<'en' | 'es', FormTranslations> = {
     primarySurvivorshipIncome: "Primary Survivorship Income",
     primaryTotalIncome: "Primary Total Income",
     primaryHouseholdExpenses: "Primary Household Expenses",
+
+    // New translations
+    agentUseOnly: "Agent Use Only",
+    submitAs: "Submit Assessment As",
+    protected: "Protected",
+    followUp: "Follow Up",
+    declined: "Declined",
+    addFamilyMember: "Add Family Member",
+    primaryHealthAssessment: "Primary Health Assessment",
+    
+    // Health assessment fields
+    tobaccoUse: "Tobacco Use",
+    hospitalizations: "Hospitalizations",
+    surgeries: "Surgeries",
+    prescriptionMedications: "Prescription Medications",
+    lastMedicalExam: "Last Medical Exam",
+    familyMedicalConditions: "Family Medical Conditions",
+    duiHistory: "DUI History",
+    dateOfBirth: "Date of Birth",
+    age: "Age",
+    height: "Height",
+    weight: "Weight",
+    fullName: "Full Name",
+
+    // Units and measurements
+    feet: "ft",
+    inches: "in",
+    pounds: "lbs",
   },
   es: {
+    // Existing translations
     primaryApplicantName: "Nombre del Solicitante Principal",
     primaryDateOfBirth: "Fecha de Nacimiento del Solicitante Principal",
     primaryAge: "Edad del Solicitante Principal",
@@ -74,5 +133,33 @@ export const formTranslations: Record<'en' | 'es', FormTranslations> = {
     primarySurvivorshipIncome: "Ingreso de Sobrevivencia del Solicitante Principal",
     primaryTotalIncome: "Ingreso Total del Solicitante Principal",
     primaryHouseholdExpenses: "Gastos del Hogar del Solicitante Principal",
+
+    // New translations
+    agentUseOnly: "Solo para Uso del Agente",
+    submitAs: "Enviar Evaluación Como",
+    protected: "Protegido",
+    followUp: "Seguimiento",
+    declined: "Rechazado",
+    addFamilyMember: "Agregar Miembro Familiar",
+    primaryHealthAssessment: "Evaluación de Salud Principal",
+    
+    // Health assessment fields
+    tobaccoUse: "Uso de Tabaco",
+    hospitalizations: "Hospitalizaciones",
+    surgeries: "Cirugías",
+    prescriptionMedications: "Medicamentos Recetados",
+    lastMedicalExam: "Último Examen Médico",
+    familyMedicalConditions: "Condiciones Médicas Familiares",
+    duiHistory: "Historial de DUI",
+    dateOfBirth: "Fecha de Nacimiento",
+    age: "Edad",
+    height: "Altura",
+    weight: "Peso",
+    fullName: "Nombre Completo",
+
+    // Units and measurements
+    feet: "pies",
+    inches: "pulg",
+    pounds: "libras",
   }
 };
