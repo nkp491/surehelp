@@ -42,6 +42,15 @@ const MetricButtons = ({
     onDecrement();
   };
 
+  const handleMetricInputChange = (value: string) => {
+    console.log(`[MetricButtons] Input change for ${metric}:`, {
+      value,
+      metric,
+      timestamp: new Date().toISOString()
+    });
+    handleInputChange(metric as MetricType, value);
+  };
+
   return (
     <div className="flex items-center">
       <div className="flex flex-col items-center gap-0.5 mx-[2px]">
@@ -53,9 +62,7 @@ const MetricButtons = ({
             <MetricInput
               metric={metric}
               currentValue={currentValue}
-              onInputChange={(value) => {
-                handleInputChange(metric as MetricType, value);
-              }}
+              onInputChange={handleMetricInputChange}
               isAP={isAP}
             />
             <MetricControls
