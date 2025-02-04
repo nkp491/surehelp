@@ -6,6 +6,8 @@ import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/utils/translations";
 
 interface FormFieldProps {
   label: string;
@@ -32,10 +34,18 @@ const FormField = ({
   options = [],
   submissionId,
 }: FormFieldProps) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     if (onChange) {
       onChange(e.target.value);
     }
+  };
+
+  const getTranslatedLabel = (label: string) => {
+    const key = label.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+    return (t as any)[key] || label;
   };
 
   if (type === "height") {
@@ -43,18 +53,18 @@ const FormField = ({
   }
 
   if (type === "currency") {
-    return <CurrencyField label={label} value={value} onChange={onChange} required={required} error={error} />;
+    return <CurrencyField label={getTranslatedLabel(label)} value={value} onChange={onChange} required={required} error={error} />;
   }
 
   if (type === "select" && options.length > 0) {
-    return <SelectField label={label} value={value} onChange={onChange} options={options} required={required} error={error} />;
+    return <SelectField label={getTranslatedLabel(label)} value={value} onChange={onChange} options={options} required={required} error={error} />;
   }
 
   if (type === "yes_no") {
     return (
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-700">
-          {label}
+          {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
         <RadioGroup
@@ -64,11 +74,11 @@ const FormField = ({
         >
           <div className="flex items-center gap-2">
             <RadioGroupItem value="yes" id={`${label}-yes`} className="h-4 w-4" />
-            <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">Yes</Label>
+            <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">{t.yes}</Label>
           </div>
           <div className="flex items-center gap-2">
             <RadioGroupItem value="no" id={`${label}-no`} className="h-4 w-4" />
-            <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">No</Label>
+            <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">{t.no}</Label>
           </div>
         </RadioGroup>
         {error && <p className="text-sm text-red-500">{error}</p>}
@@ -80,7 +90,7 @@ const FormField = ({
     return (
       <div className="space-y-2">
         <Label className="text-sm font-medium text-gray-700">
-          {label}
+          {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
         <Textarea
@@ -101,7 +111,7 @@ const FormField = ({
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium text-gray-700">
-        {label}
+        {getTranslatedLabel(label)}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
       <Input

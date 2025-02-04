@@ -4,6 +4,8 @@ import TwoColumnLayout from "./form/TwoColumnLayout";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import DraggableFormField from "./DraggableFormField";
 import PrimaryHealth from "./form/PrimaryHealth";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/utils/translations";
 
 interface FormSectionProps {
   section: string;
@@ -25,6 +27,8 @@ const FormSection = ({
   onRemove
 }: FormSectionProps) => {
   const { showSpouse } = useSpouseVisibility();
+  const { language } = useLanguage();
+  const t = translations[language];
   
   const isSpecialField = (fieldId: string) => {
     return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
@@ -67,10 +71,15 @@ const FormSection = ({
     return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
   }
 
+  const getTranslatedSection = (section: string) => {
+    const sectionKey = section.toLowerCase().replace(/\s+/g, '');
+    return (t as any)[sectionKey] || section;
+  };
+
   return (
     <div className="bg-white mb-0.5">
       <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-sm font-medium">
-        {section}
+        {getTranslatedSection(section)}
       </div>
       <div className="p-0.5 space-y-0.5">
         {section === "Assessment Notes" ? (
@@ -96,7 +105,7 @@ const FormSection = ({
             
             {agentFields.length > 0 && (
               <div className="mt-4">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Agent Use Only</h3>
+                <h3 className="text-sm font-medium text-gray-700 mb-2">{t.agentUseOnly}</h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-1 border-t border-gray-200 pt-2">
                   {agentFields.map((field) => (
                     <DraggableFormField
