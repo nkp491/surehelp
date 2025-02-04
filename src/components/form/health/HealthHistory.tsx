@@ -18,19 +18,19 @@ const HealthHistory = ({ formData, setFormData }: HealthHistoryProps) => {
 
   return (
     <div className="space-y-2">
-      <Label>{t.tobaccoUse}</Label>
+      <Label>{t.duiHistory}</Label>
       <RadioGroup 
-        value={formData.tobaccoUse || 'no'}
-        onValueChange={(value) => handleInputChange('tobaccoUse', value)}
+        value={formData.dui || 'no'}
+        onValueChange={(value) => handleInputChange('dui', value)}
         className="flex gap-4"
       >
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="yes" id="tobacco-yes" />
-          <Label htmlFor="tobacco-yes">{t.yes}</Label>
+          <RadioGroupItem value="yes" id="dui-yes" />
+          <Label htmlFor="dui-yes">{t.yes}</Label>
         </div>
         <div className="flex items-center space-x-2">
-          <RadioGroupItem value="no" id="tobacco-no" />
-          <Label htmlFor="tobacco-no">{t.no}</Label>
+          <RadioGroupItem value="no" id="dui-no" />
+          <Label htmlFor="dui-no">{t.no}</Label>
         </div>
       </RadioGroup>
     </div>
