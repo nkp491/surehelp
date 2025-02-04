@@ -100,16 +100,6 @@ const FormSection = ({
               errors={errors}
               submissionId={submissionId}
             />
-            
-            {agentFields.length > 0 && (
-              <AgentSection
-                fields={agentFields}
-                formData={formData}
-                setFormData={setFormData}
-                errors={errors}
-                submissionId={submissionId}
-              />
-            )}
           </div>
         )}
       </div>
