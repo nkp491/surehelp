@@ -93,37 +93,39 @@ const SubmissionsList = ({
   };
 
   return (
-    <Table>
-      <SubmissionsTableHeader onSort={onSort} />
-      <TableBody>
-        {submissions.map((submission, index) => (
-          <TableRow key={index} className="cursor-pointer hover:bg-gray-50">
-            <TableCell className="text-[#2A6F97]">{formatDate(submission.timestamp)}</TableCell>
-            <TableCell className="text-[#2A6F97]">{submission.name}</TableCell>
-            <TableCell className="text-[#2A6F97]">{submission.dob}</TableCell>
-            <TableCell>
-              <StatusBadge outcome={submission.outcome} />
-            </TableCell>
-            <TableCell>
-              <TableActions
-                submission={submission}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onViewProfile={onViewProfile}
-                onExportPDF={handleExportPDF}
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-        {submissions.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-[#2A6F97]">
-              No submissions found
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <div className="rounded-md border">
+      <Table>
+        <SubmissionsTableHeader onSort={onSort} />
+        <TableBody>
+          {submissions.map((submission, index) => (
+            <TableRow key={index} className="hover:bg-gray-50">
+              <TableCell className="py-3 text-[#2A6F97]">{formatDate(submission.timestamp)}</TableCell>
+              <TableCell className="py-3 text-[#2A6F97]">{submission.name}</TableCell>
+              <TableCell className="py-3 text-[#2A6F97]">{submission.dob}</TableCell>
+              <TableCell className="py-3">
+                <StatusBadge outcome={submission.outcome} />
+              </TableCell>
+              <TableCell className="py-3">
+                <TableActions
+                  submission={submission}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                  onViewProfile={onViewProfile}
+                  onExportPDF={handleExportPDF}
+                />
+              </TableCell>
+            </TableRow>
+          ))}
+          {submissions.length === 0 && (
+            <TableRow>
+              <TableCell colSpan={5} className="h-32 text-center text-[#2A6F97]">
+                No submissions found
+              </TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

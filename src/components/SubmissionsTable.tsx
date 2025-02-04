@@ -121,7 +121,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
 
   return (
     <Card className="bg-[#faf7f0]">
-      <CardHeader>
+      <CardHeader className="space-y-4">
         <div className="flex justify-between items-center">
           <CardTitle className="text-[#2A6F97]">Submitted Forms</CardTitle>
           <Button
@@ -133,14 +133,14 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
             Export CSV
           </Button>
         </div>
-        <div className="flex flex-col sm:flex-row gap-4 mt-4">
+        <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
           <FilterBar filters={filters} onFilterChange={setFilters} />
         </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-6">
         <SubmissionTabs
           submissions={processedSubmissions}
           onEdit={onEdit}
@@ -149,34 +149,36 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
           onSort={handleSort}
         />
 
-        <div className="mt-4">
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious 
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <PaginationItem key={page}>
-                  <PaginationLink
-                    onClick={() => setCurrentPage(page)}
-                    isActive={currentPage === page}
-                  >
-                    {page}
-                  </PaginationLink>
+        {totalPages > 1 && (
+          <div className="mt-4">
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                  />
                 </PaginationItem>
-              ))}
-              <PaginationItem>
-                <PaginationNext 
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
-                />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      onClick={() => setCurrentPage(page)}
+                      isActive={currentPage === page}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          </div>
+        )}
 
         {selectedCustomer && (
           <CustomerProfile
