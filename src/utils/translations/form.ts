@@ -117,6 +117,10 @@ export const formTranslations = {
     yearsLeft: "Años Restantes",
     homeValue: "Valor de la Casa",
     equity: "Capital",
-    expenses: "Otros Gastos"
+    expenses: "Otros Gastos",
+    submitAs: "Enviar como",
+    protected: "Protegido",
+    followUp: "Seguimiento",
+    declined: "Rechazado"
   }
 };
