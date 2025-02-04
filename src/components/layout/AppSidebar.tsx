@@ -47,13 +47,13 @@ export function AppSidebar() {
   
   return (
     <Sidebar>
-      <SidebarHeader className="h-[70px] flex items-center px-6 bg-white">
+      <SidebarHeader className="h-[70px] flex items-center px-6 bg-white relative">
         <img 
           src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png" 
           alt="SureHelp" 
           className="h-[40px] w-auto"
         />
-        <SidebarTrigger className="absolute right-[-12px]" />
+        <SidebarTrigger className="absolute right-[-20px] bg-white rounded-full shadow-sm border border-gray-100 p-1 hover:bg-gray-50" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
