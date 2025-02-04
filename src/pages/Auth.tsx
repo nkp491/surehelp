@@ -65,7 +65,7 @@ const Auth = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white p-4">
-      <div className="w-full max-w-md mx-auto">
+      <div className="container max-w-[400px]">
         <AuthHeader view={view} onViewChange={setView} />
 
         {errorMessage && (
@@ -86,9 +86,11 @@ const Auth = () => {
                 },
                 button: {
                   width: '100%',
+                  padding: '8px 16px',
                 },
                 input: {
                   width: '100%',
+                  padding: '8px 12px',
                 },
                 message: {
                   width: '100%',
@@ -96,6 +98,13 @@ const Auth = () => {
                 anchor: {
                   width: '100%',
                 },
+                divider: {
+                  width: '100%',
+                },
+                label: {
+                  width: '100%',
+                  marginBottom: '4px',
+                }
               },
               variables: {
                 default: {
@@ -106,11 +115,13 @@ const Auth = () => {
                 },
               },
               className: {
-                container: 'w-full flex flex-col items-center',
+                container: 'flex flex-col gap-4',
                 button: 'w-full',
                 input: 'w-full rounded-md',
                 message: 'w-full',
                 anchor: 'text-[#2A6F97] hover:text-[#2A6F97]/80',
+                divider: 'w-full',
+                label: 'block w-full mb-1'
               },
             }}
             providers={[]}
