@@ -60,8 +60,8 @@ const FormSection = ({
   });
 
   const regularFields = filteredFields.filter(field => !isSpecialField(field.id));
-  const agentFields = regularFields.filter(field => isAgentField(field.id));
   const nonAgentFields = regularFields.filter(field => !isAgentField(field.id));
+  const agentFields = regularFields.filter(field => isAgentField(field.id));
 
   if (!showSpouse && section.toLowerCase().includes('spouse')) {
     return null;
