@@ -1,8 +1,10 @@
 import { FormField } from "@/types/formTypes";
-import SectionHeader from "./SectionHeader";
-import HealthMetricsRow from "./HealthMetricsRow";
-import TwoColumnLayout from "./TwoColumnLayout";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
+import PrimaryHealth from "./PrimaryHealth";
+import { isAgentField } from "@/utils/fieldCategories";
+import SectionHeader from "./sections/SectionHeader";
+import RegularFieldsSection from "./sections/RegularFieldsSection";
+import AgentSection from "./sections/AgentSection";
 
 interface FormSectionProps {
   section: string;
@@ -25,17 +27,14 @@ const FormSection = ({
 }: FormSectionProps) => {
   const { showSpouse } = useSpouseVisibility();
   
-  // Function to check if a field should be rendered in the special row
   const isSpecialField = (fieldId: string) => {
     return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
   };
 
-  // Function to check if a field is spouse-related
   const isSpouseField = (fieldId: string) => {
     return fieldId.toLowerCase().startsWith('spouse');
   };
 
-  // Filter out spouse fields if spouse toggle is off
   const filteredFields = fields.filter(field => {
     if (isSpouseField(field.id)) {
       return showSpouse;
@@ -43,34 +42,52 @@ const FormSection = ({
     return true;
   });
 
-  // Separate special fields from regular fields
   const regularFields = filteredFields.filter(field => !isSpecialField(field.id));
+  const nonAgentFields = regularFields.filter(field => !isAgentField(field.id));
+  const agentFields = regularFields.filter(field => isAgentField(field.id));
 
-  // Hide entire spouse sections if spouse toggle is off
   if (!showSpouse && section.toLowerCase().includes('spouse')) {
     return null;
   }
 
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm p-2 space-y-1">
-      <SectionHeader section={section} onRemove={onRemove} />
-      
-      {section === "Primary Health Assessment" && (
-        <HealthMetricsRow
-          formData={formData}
-          setFormData={setFormData}
-          errors={errors}
-          submissionId={submissionId}
-        />
-      )}
+  if (section === "Primary Health Assessment") {
+    return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
+  }
 
-      <TwoColumnLayout
-        fields={regularFields}
-        formData={formData}
-        setFormData={setFormData}
-        errors={errors}
-        submissionId={submissionId}
-      />
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-2">
+      <SectionHeader section={section} onRemove={onRemove} />
+      <div className="p-2">
+        {section === "Assessment Notes" ? (
+          <div className="space-y-2">
+            <RegularFieldsSection
+              fields={nonAgentFields}
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              submissionId={submissionId}
+            />
+            
+            {agentFields.length > 0 && (
+              <AgentSection
+                fields={agentFields}
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+                submissionId={submissionId}
+              />
+            )}
+          </div>
+        ) : (
+          <RegularFieldsSection
+            fields={regularFields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={submissionId}
+          />
+        )}
+      </div>
     </div>
   );
 };

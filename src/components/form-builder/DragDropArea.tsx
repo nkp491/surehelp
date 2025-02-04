@@ -31,39 +31,26 @@ const DragDropArea = ({
      'householdExpenses'].includes(field.id)
   );
 
-  const householdFields = fields.filter(field =>
-    ['lifeInsuranceAmount', 'rentOrMortgage', 'remainingBalance', 'yearsLeft',
-     'homeValue', 'equity', 'expenses'].includes(field.id)
-  );
-
   const assessmentFields = fields.filter(field =>
     ['phone', 'email', 'address', 'notes', 'followUpNotes', 'coverageOptions',
      'emergencyContact', 'beneficiaries'].includes(field.id)
   );
 
   return (
-    <div className="w-full px-2 py-4 space-y-4">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+    <div className="w-full px-1 py-2 space-y-2">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-2">
         <FormSection
           title="Primary Health Assessment"
           fields={healthFields}
           formData={formData}
           setFormData={setFormData}
         />
-        <div className="space-y-4">
-          <FormSection
-            title="Income Assessment"
-            fields={incomeFields}
-            formData={formData}
-            setFormData={setFormData}
-          />
-          <FormSection
-            title="Household Income"
-            fields={householdFields}
-            formData={formData}
-            setFormData={setFormData}
-          />
-        </div>
+        <FormSection
+          title="Income Assessment"
+          fields={incomeFields}
+          formData={formData}
+          setFormData={setFormData}
+        />
         <FormSection
           title="Assessment Notes"
           fields={assessmentFields}
