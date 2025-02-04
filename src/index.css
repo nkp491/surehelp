@@ -56,7 +56,12 @@
   }
 
   .form-layout {
-    @apply grid grid-cols-1 lg:grid-cols-3 gap-8 p-8;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    padding: 24px;
+    max-width: 1440px;
+    margin: 0 auto;
   }
 
   .form-section {

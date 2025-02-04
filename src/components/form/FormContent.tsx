@@ -32,7 +32,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="max-w-[1600px] mx-auto p-4 lg:p-6">
+    <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-120px)]">
       <div className="form-layout">
         {/* Primary Health Assessment Column */}
         <div className="space-y-6">
