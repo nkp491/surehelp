@@ -55,7 +55,11 @@ export const formTranslations = {
     yearsLeft: "Years Left",
     homeValue: "Home Value",
     equity: "Equity",
-    expenses: "Other Expenses"
+    expenses: "Other Expenses",
+    submitAs: "Submit as",
+    protected: "Protected",
+    followUp: "Follow-up",
+    declined: "Declined"
   },
   es: {
     addFamilyMember: "Agregar Miembro Familiar",
