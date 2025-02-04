@@ -5,6 +5,7 @@ import PersonalInfo from "@/components/profile/PersonalInfo";
 import PrivacySettings from "@/components/profile/PrivacySettings";
 import NotificationPreferences from "@/components/profile/NotificationPreferences";
 import ProfileLoading from "@/components/profile/ProfileLoading";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LanguageToggle from "@/components/LanguageToggle";
 
 const Profile = () => {
@@ -42,13 +43,17 @@ const Profile = () => {
         />
 
         <div className="flex flex-col gap-6">
-          <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-100">
-            <h3 className="text-lg font-medium mb-4">Language Settings</h3>
-            <div className="flex items-center gap-2">
-              <span className="text-sm text-gray-600">Change Language:</span>
-              <LanguageToggle />
-            </div>
-          </div>
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-foreground">Language Settings</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <span className="text-sm text-foreground">Display Language</span>
+                <LanguageToggle />
+              </div>
+            </CardContent>
+          </Card>
 
           <PrivacySettings
             settings={profile?.privacy_settings || { show_email: false, show_phone: false, show_photo: true }}
