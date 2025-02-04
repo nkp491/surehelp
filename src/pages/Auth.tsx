@@ -64,8 +64,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white p-4">
+      <div className="w-full max-w-md mx-auto">
         <AuthHeader view={view} onViewChange={setView} />
 
         {errorMessage && (
@@ -74,12 +74,29 @@ const Auth = () => {
           </Alert>
         )}
 
-        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md w-full">
+        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md">
           <SupabaseAuth 
             supabaseClient={supabase}
             view={view}
             appearance={{ 
               theme: ThemeSupa,
+              style: {
+                container: {
+                  width: '100%',
+                },
+                button: {
+                  width: '100%',
+                },
+                input: {
+                  width: '100%',
+                },
+                message: {
+                  width: '100%',
+                },
+                anchor: {
+                  width: '100%',
+                },
+              },
               variables: {
                 default: {
                   colors: {
@@ -89,10 +106,11 @@ const Auth = () => {
                 },
               },
               className: {
-                container: 'w-full',
+                container: 'w-full flex flex-col items-center',
                 button: 'w-full',
+                input: 'w-full rounded-md',
+                message: 'w-full',
                 anchor: 'text-[#2A6F97] hover:text-[#2A6F97]/80',
-                input: 'rounded-md',
               },
             }}
             providers={[]}
