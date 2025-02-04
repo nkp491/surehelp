@@ -14,8 +14,26 @@ const MetricInput = ({
   isAP = false,
 }: MetricInputProps) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value.replace(/[^0-9]/g, '');
-    onInputChange(value);
+    // Remove any non-numeric characters except decimal point for AP
+    const sanitizedValue = isAP 
+      ? e.target.value.replace(/[^0-9.]/g, '')
+      : e.target.value.replace(/[^0-9]/g, '');
+    
+    // For AP values, convert to cents before saving
+    if (isAP) {
+      const numericValue = parseFloat(sanitizedValue);
+      if (!isNaN(numericValue)) {
+        const centsValue = Math.round(numericValue * 100);
+        onInputChange(centsValue.toString());
+      } else if (sanitizedValue === '') {
+        onInputChange('0');
+      }
+    } else {
+      // For non-AP metrics, just ensure it's a valid number
+      if (sanitizedValue === '' || !isNaN(Number(sanitizedValue))) {
+        onInputChange(sanitizedValue === '' ? '0' : sanitizedValue);
+      }
+    }
   };
 
   const formatValue = (value: number) => {
