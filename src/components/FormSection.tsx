@@ -71,7 +71,7 @@ const FormSection = ({
       <div className="p-0.5">
         {section === "Assessment Notes" ? (
           <div className="space-y-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+            <div className="form-container">
               {nonAgentFields.map((field) => (
                 <DraggableFormField
                   key={field.id}
@@ -95,7 +95,7 @@ const FormSection = ({
                 <h3 className="text-sm font-medium text-gray-700 mb-2">
                   {t.agentUseOnly}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="form-container">
                   {agentFields.map((field) => (
                     <DraggableFormField
                       key={field.id}
@@ -117,13 +117,24 @@ const FormSection = ({
             )}
           </div>
         ) : (
-          <TwoColumnLayout
-            fields={regularFields}
-            formData={formData}
-            setFormData={setFormData}
-            errors={errors}
-            submissionId={submissionId}
-          />
+          <div className="form-container">
+            {regularFields.map((field) => (
+              <DraggableFormField
+                key={field.id}
+                id={field.id}
+                fieldType={field.type}
+                label={field.label}
+                value={formData[field.id]}
+                onChange={(value) =>
+                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
+                }
+                placeholder={field.placeholder}
+                required={field.required}
+                error={errors[field.id]}
+                submissionId={submissionId}
+              />
+            ))}
+          </div>
         )}
       </div>
     </div>
