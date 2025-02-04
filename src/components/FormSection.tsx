@@ -1,12 +1,10 @@
 import { FormField } from "@/types/formTypes";
-import SectionHeader from "./form/SectionHeader";
-import TwoColumnLayout from "./form/TwoColumnLayout";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
-import DraggableFormField from "./DraggableFormField";
 import PrimaryHealth from "./form/PrimaryHealth";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { translations } from "@/utils/translations";
 import { isAgentField } from "@/utils/fieldCategories";
+import SectionHeader from "./form/sections/SectionHeader";
+import RegularFieldsSection from "./form/sections/RegularFieldsSection";
+import AgentSection from "./form/sections/AgentSection";
 
 interface FormSectionProps {
   section: string;
@@ -28,8 +26,6 @@ const FormSection = ({
   onRemove
 }: FormSectionProps) => {
   const { showSpouse } = useSpouseVisibility();
-  const { language } = useLanguage();
-  const t = translations[language];
   
   const isSpecialField = (fieldId: string) => {
     return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
@@ -58,83 +54,38 @@ const FormSection = ({
     return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
   }
 
-  const getTranslatedSection = (section: string) => {
-    const sectionKey = section.toLowerCase().replace(/\s+/g, '');
-    return (t as any)[sectionKey] || section;
-  };
-
   return (
     <div className="bg-white mb-0.5">
-      <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-xs font-medium">
-        {getTranslatedSection(section)}
-      </div>
+      <SectionHeader section={section} />
       <div className="p-0.5">
         {section === "Assessment Notes" ? (
           <div className="space-y-1">
-            <div className="form-container">
-              {nonAgentFields.map((field) => (
-                <DraggableFormField
-                  key={field.id}
-                  id={field.id}
-                  fieldType={field.type}
-                  label={field.label}
-                  value={formData[field.id]}
-                  onChange={(value) =>
-                    setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-                  }
-                  placeholder={field.placeholder}
-                  required={field.required}
-                  error={errors[field.id]}
-                  submissionId={submissionId}
-                />
-              ))}
-            </div>
+            <RegularFieldsSection
+              fields={nonAgentFields}
+              formData={formData}
+              setFormData={setFormData}
+              errors={errors}
+              submissionId={submissionId}
+            />
             
             {agentFields.length > 0 && (
-              <div className="mt-2">
-                <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-xs font-medium mb-0.5">
-                  {t.agentUseOnly}
-                </div>
-                <div className="form-container">
-                  {agentFields.map((field) => (
-                    <DraggableFormField
-                      key={field.id}
-                      id={field.id}
-                      fieldType={field.type}
-                      label={field.label}
-                      value={formData[field.id]}
-                      onChange={(value) =>
-                        setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-                      }
-                      placeholder={field.placeholder}
-                      required={field.required}
-                      error={errors[field.id]}
-                      submissionId={submissionId}
-                    />
-                  ))}
-                </div>
-              </div>
+              <AgentSection
+                fields={agentFields}
+                formData={formData}
+                setFormData={setFormData}
+                errors={errors}
+                submissionId={submissionId}
+              />
             )}
           </div>
         ) : (
-          <div className="form-container">
-            {regularFields.map((field) => (
-              <DraggableFormField
-                key={field.id}
-                id={field.id}
-                fieldType={field.type}
-                label={field.label}
-                value={formData[field.id]}
-                onChange={(value) =>
-                  setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-                }
-                placeholder={field.placeholder}
-                required={field.required}
-                error={errors[field.id]}
-                submissionId={submissionId}
-              />
-            ))}
-          </div>
+          <RegularFieldsSection
+            fields={regularFields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+            submissionId={submissionId}
+          />
         )}
       </div>
     </div>
