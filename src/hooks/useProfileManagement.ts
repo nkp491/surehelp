@@ -3,32 +3,22 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
+import { useQuery } from "@tanstack/react-query";
 
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [profile, setProfile] = useState<Profile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
 
-  useEffect(() => {
-    getProfile();
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") {
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  async function getProfile() {
-    try {
+  // Profile query with React Query
+  const { data: profile, isLoading } = useQuery({
+    queryKey: ['profile'],
+    queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         navigate("/auth");
-        return;
+        return null;
       }
 
       const { data, error } = await supabase
@@ -39,7 +29,7 @@ export const useProfileManagement = () => {
 
       if (error) throw error;
       
-      const parsedProfile: Profile = {
+      return {
         ...data,
         privacy_settings: typeof data.privacy_settings === 'string' 
           ? JSON.parse(data.privacy_settings)
@@ -47,20 +37,22 @@ export const useProfileManagement = () => {
         notification_preferences: typeof data.notification_preferences === 'string'
           ? JSON.parse(data.notification_preferences)
           : data.notification_preferences
-      };
-      
-      setProfile(parsedProfile);
-    } catch (error) {
-      console.error("Error loading profile:", error);
-      toast({
-        title: "Error loading profile",
-        description: "There was a problem loading your profile. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setLoading(false);
-    }
-  }
+      } as Profile;
+    },
+    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
+    cacheTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
+  });
+
+  // Auth state listener
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_OUT") {
+        navigate("/auth");
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
 
   async function updateProfile(updates: Partial<Profile>) {
     try {
@@ -77,8 +69,6 @@ export const useProfileManagement = () => {
         .eq("id", session.user.id);
 
       if (error) throw error;
-      
-      setProfile(prev => prev ? { ...prev, ...updates } : null);
       
       toast({
         title: "Profile updated",
@@ -106,19 +96,16 @@ export const useProfileManagement = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
-      // Upload image to storage
       const { error: uploadError } = await supabase.storage
         .from('profile_images')
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('profile_images')
         .getPublicUrl(fileName);
 
-      // Update profile with new image URL
       await updateProfile({ profile_image_url: publicUrl });
 
       toast({
@@ -152,7 +139,7 @@ export const useProfileManagement = () => {
 
   return {
     profile,
-    loading,
+    loading: isLoading,
     uploading,
     updateProfile,
     uploadAvatar,

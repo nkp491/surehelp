@@ -9,6 +9,16 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LanguageToggle from "@/components/LanguageToggle";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      cacheTime: 1000 * 60 * 30, // 30 minutes
+    },
+  },
+});
 
 const ProfileContent = () => {
   const {
@@ -77,9 +87,11 @@ const ProfileContent = () => {
 
 const Profile = () => {
   return (
-    <LanguageProvider>
-      <ProfileContent />
-    </LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <ProfileContent />
+      </LanguageProvider>
+    </QueryClientProvider>
   );
 };
 
