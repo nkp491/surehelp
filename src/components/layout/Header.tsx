@@ -11,7 +11,7 @@ const Header = () => {
   return (
     <header className="bg-transparent">
       <div className="max-w-[1800px] mx-auto">
-        <div className="flex justify-end items-center h-[70px] px-8 bg-white">
+        <div className="flex justify-end items-center h-[70px] px-8">
           <ProfileMenu />
         </div>
         

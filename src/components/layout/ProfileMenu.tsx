@@ -84,9 +84,9 @@ const ProfileMenu = () => {
     <div className="flex items-center space-x-4">
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-8 w-8 shadow-md border border-gray-100">
             <AvatarImage src={profileData.profile_image_url || ''} />
-            <AvatarFallback>
+            <AvatarFallback className="bg-white">
               {profileData.first_name?.[0]?.toUpperCase() || <User className="h-4 w-4" />}
             </AvatarFallback>
           </Avatar>
