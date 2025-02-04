@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Profile } from "@/types/profile";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/utils/translations";
 
 interface PrivacySettingsProps {
   settings: {
@@ -9,59 +9,47 @@ interface PrivacySettingsProps {
     show_phone: boolean;
     show_photo: boolean;
   };
-  onUpdate: (updates: Partial<Profile>) => Promise<void>;
+  onUpdate: (data: any) => void;
 }
 
 const PrivacySettings = ({ settings, onUpdate }: PrivacySettingsProps) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  const handleToggle = (key: string) => {
+    onUpdate({
+      privacy_settings: {
+        ...settings,
+        [key]: !settings[key as keyof typeof settings],
+      },
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-foreground">Privacy Settings</CardTitle>
+        <CardTitle className="text-foreground">{t.privacySettings}</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label htmlFor="showEmail" className="text-foreground">Show email to others</Label>
+          <span className="text-sm">{t.showEmail}</span>
           <Switch
-            id="showEmail"
             checked={settings.show_email}
-            onCheckedChange={(checked) =>
-              onUpdate({
-                privacy_settings: {
-                  ...settings,
-                  show_email: checked,
-                },
-              })
-            }
+            onCheckedChange={() => handleToggle('show_email')}
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="showPhone" className="text-foreground">Show phone number to others</Label>
+          <span className="text-sm">{t.showPhone}</span>
           <Switch
-            id="showPhone"
             checked={settings.show_phone}
-            onCheckedChange={(checked) =>
-              onUpdate({
-                privacy_settings: {
-                  ...settings,
-                  show_phone: checked,
-                },
-              })
-            }
+            onCheckedChange={() => handleToggle('show_phone')}
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="showPhoto" className="text-foreground">Show profile photo to others</Label>
+          <span className="text-sm">{t.showPhoto}</span>
           <Switch
-            id="showPhoto"
             checked={settings.show_photo}
-            onCheckedChange={(checked) =>
-              onUpdate({
-                privacy_settings: {
-                  ...settings,
-                  show_photo: checked,
-                },
-              })
-            }
+            onCheckedChange={() => handleToggle('show_photo')}
           />
         </div>
       </CardContent>

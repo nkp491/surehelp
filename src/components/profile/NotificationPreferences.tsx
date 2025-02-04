@@ -1,51 +1,52 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Profile } from "@/types/profile";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/utils/translations";
 
 interface NotificationPreferencesProps {
   preferences: {
     email_notifications: boolean;
     phone_notifications: boolean;
   };
-  onUpdate: (updates: Partial<Profile>) => Promise<void>;
+  onUpdate: (data: any) => void;
 }
 
-const NotificationPreferences = ({ preferences, onUpdate }: NotificationPreferencesProps) => {
+const NotificationPreferences = ({
+  preferences,
+  onUpdate,
+}: NotificationPreferencesProps) => {
+  const { language } = useLanguage();
+  const t = translations[language];
+
+  const handleToggle = (key: string) => {
+    onUpdate({
+      notification_preferences: {
+        ...preferences,
+        [key]: !preferences[key as keyof typeof preferences],
+      },
+    });
+  };
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Notification Preferences</CardTitle>
+        <CardTitle className="text-foreground">
+          {t.notificationPreferences}
+        </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex items-center justify-between">
-          <Label htmlFor="emailNotifications">Email notifications</Label>
+          <span className="text-sm">{t.emailNotifications}</span>
           <Switch
-            id="emailNotifications"
             checked={preferences.email_notifications}
-            onCheckedChange={(checked) =>
-              onUpdate({
-                notification_preferences: {
-                  ...preferences,
-                  email_notifications: checked,
-                },
-              })
-            }
+            onCheckedChange={() => handleToggle('email_notifications')}
           />
         </div>
         <div className="flex items-center justify-between">
-          <Label htmlFor="phoneNotifications">Phone notifications</Label>
+          <span className="text-sm">{t.phoneNotifications}</span>
           <Switch
-            id="phoneNotifications"
             checked={preferences.phone_notifications}
-            onCheckedChange={(checked) =>
-              onUpdate({
-                notification_preferences: {
-                  ...preferences,
-                  phone_notifications: checked,
-                },
-              })
-            }
+            onCheckedChange={() => handleToggle('phone_notifications')}
           />
         </div>
       </CardContent>

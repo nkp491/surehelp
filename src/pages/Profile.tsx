@@ -7,6 +7,8 @@ import NotificationPreferences from "@/components/profile/NotificationPreference
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LanguageToggle from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { translations } from "@/utils/translations";
 
 const Profile = () => {
   const {
@@ -17,6 +19,9 @@ const Profile = () => {
     uploadAvatar,
     signOut
   } = useProfileManagement();
+
+  const { language } = useLanguage();
+  const t = translations[language];
 
   if (loading) {
     return <ProfileLoading />;
@@ -45,11 +50,11 @@ const Profile = () => {
         <div className="flex flex-col gap-6">
           <Card>
             <CardHeader>
-              <CardTitle className="text-foreground">Language Settings</CardTitle>
+              <CardTitle className="text-foreground">{t.languageSettings}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center justify-between">
-                <span className="text-sm text-foreground">Display Language</span>
+                <span className="text-sm text-foreground">{t.displayLanguage}</span>
                 <LanguageToggle />
               </div>
             </CardContent>
