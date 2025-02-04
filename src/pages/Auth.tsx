@@ -60,6 +60,7 @@ const Auth = () => {
           return "Too many attempts. Please try again later.";
       }
     }
+    // Fallback error message
     return error.message || "An unexpected error occurred. Please try again.";
   };
 
@@ -85,48 +86,7 @@ const Auth = () => {
                   colors: {
                     brand: '#2A6F97',
                     brandAccent: '#2A6F97',
-                    inputBackground: 'white',
-                    inputText: '#1f2937',
-                    inputBorder: '#e5e7eb',
-                    inputBorderHover: '#2A6F97',
-                    inputBorderFocus: '#2A6F97',
                   },
-                  space: {
-                    inputPadding: '0.75rem',
-                    buttonPadding: '0.75rem',
-                  },
-                  borderWidths: {
-                    buttonBorderWidth: '1px',
-                    inputBorderWidth: '1px',
-                  },
-                  radii: {
-                    borderRadiusButton: '0.375rem',
-                    buttonBorderRadius: '0.375rem',
-                    inputBorderRadius: '0.375rem',
-                  },
-                  fonts: {
-                    bodyFontFamily: `'Roboto', sans-serif`,
-                    buttonFontFamily: `'Roboto', sans-serif`,
-                    inputFontFamily: `'Roboto', sans-serif`,
-                    labelFontFamily: `'Roboto', sans-serif`,
-                  },
-                },
-              },
-              style: {
-                button: {
-                  fontSize: '1rem',
-                  fontWeight: '500',
-                },
-                input: {
-                  fontSize: '1rem',
-                },
-                label: {
-                  fontSize: '1rem',
-                  color: '#4b5563',
-                },
-                anchor: {
-                  color: '#2A6F97',
-                  fontSize: '0.875rem',
                 },
               },
             }}
