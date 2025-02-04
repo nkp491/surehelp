@@ -53,7 +53,7 @@ export function AppSidebar() {
           alt="SureHelp" 
           className="h-[40px] w-auto"
         />
-        <SidebarTrigger className="absolute right-[-12px] bg-white rounded-full shadow-sm border border-gray-100 p-1 hover:bg-gray-50" />
+        <SidebarTrigger className="absolute right-[-20px] bg-white rounded-full shadow-sm border border-gray-100 p-1 hover:bg-gray-50" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
