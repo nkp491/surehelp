@@ -5,6 +5,7 @@ import { PRIMARY_INCOME_FIELDS } from "./fields/primaryIncomeFields";
 import { SPOUSE_INCOME_FIELDS } from "./fields/spouseIncomeFields";
 import { HOUSEHOLD_INCOME_FIELDS } from "./fields/householdIncomeFields";
 import { ASSESSMENT_NOTES_FIELDS } from "./fields/assessmentNotesFields";
+import { AGENT_FIELDS } from "./fields/agentFields";
 
 export const INITIAL_FIELDS = [
   { section: "Primary Health Assessment", fields: PRIMARY_HEALTH_FIELDS },
@@ -13,4 +14,5 @@ export const INITIAL_FIELDS = [
   { section: "Spouse Income Assessment", fields: SPOUSE_INCOME_FIELDS },
   { section: "Household Income", fields: HOUSEHOLD_INCOME_FIELDS },
   { section: "Assessment Notes", fields: ASSESSMENT_NOTES_FIELDS },
+  { section: "Agent Use Only", fields: AGENT_FIELDS }
 ];

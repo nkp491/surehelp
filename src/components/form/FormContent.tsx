@@ -4,7 +4,6 @@ import { useFormLogic } from "@/hooks/useFormLogic";
 import FormButtons from "./FormButtons";
 import { FormSubmission } from "@/types/form";
 import { useFieldPositions } from "@/components/form-builder/useFieldPositions";
-import DragDropArea from "../form-builder/DragDropArea";
 import { useFormBuilder } from "@/contexts/FormBuilderContext";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
@@ -22,18 +21,9 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const { showSpouse } = useSpouseVisibility();
   const { familyMembers } = useFamilyMembers();
 
-  const filteredFields = sections.reduce((acc, section) => {
-    const sectionFields = section.fields.filter(field => {
-      const isSpouseField = field.id.toLowerCase().includes('spouse');
-      return showSpouse ? true : !isSpouseField;
-    });
-    return [...acc, ...sectionFields];
-  }, []);
-
-  const { fieldPositions, handleDragEnd } = useFieldPositions({
-    section: "Combined Form",
-    fields: filteredFields,
-    selectedField
+  const filteredSections = sections.filter(section => {
+    const isSpouseSection = section.section.toLowerCase().includes('spouse');
+    return showSpouse ? true : !isSpouseSection;
   });
 
   const handleFormSubmit = (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => {
@@ -42,15 +32,17 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="w-full">
-      <DragDropArea
-        fields={filteredFields}
-        fieldPositions={fieldPositions}
-        formData={formData}
-        setFormData={setFormData}
-        selectedField={selectedField}
-        setSelectedField={setSelectedField}
-      />
+    <form onSubmit={(e) => e.preventDefault()} className="w-full space-y-2">
+      {filteredSections.map((section) => (
+        <FormSection
+          key={section.section}
+          section={section.section}
+          fields={section.fields}
+          formData={formData}
+          setFormData={setFormData}
+          errors={errors}
+        />
+      ))}
       
       {familyMembers.map((member, index) => (
         <FormSection
@@ -64,6 +56,10 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
           }}
           errors={{}}
           submissionId={member.id}
+          onRemove={() => {
+            const updatedMembers = familyMembers.filter((_, i) => i !== index);
+            // Update family members context here
+          }}
         />
       ))}
       
