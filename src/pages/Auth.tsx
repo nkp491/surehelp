@@ -60,21 +60,22 @@ const Auth = () => {
           return "Too many attempts. Please try again later.";
       }
     }
+    // Fallback error message
     return error.message || "An unexpected error occurred. Please try again.";
   };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white flex flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md mx-auto">
+      <div className="w-full max-w-md space-y-8">
         <AuthHeader view={view} onViewChange={setView} />
 
         {errorMessage && (
-          <Alert variant="destructive" className="mb-6">
+          <Alert variant="destructive">
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
 
-        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md w-full">
+        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md">
           <SupabaseAuth 
             supabaseClient={supabase}
             view={view}
@@ -86,17 +87,6 @@ const Auth = () => {
                     brand: '#2A6F97',
                     brandAccent: '#2A6F97',
                   },
-                },
-              },
-              style: {
-                container: {
-                  width: '100%',
-                },
-                input: {
-                  width: '100%',
-                },
-                button: {
-                  width: '100%',
                 },
               },
             }}

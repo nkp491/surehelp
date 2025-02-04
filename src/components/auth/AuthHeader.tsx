@@ -7,10 +7,10 @@ interface AuthHeaderProps {
 
 const AuthHeader = ({ view, onViewChange }: AuthHeaderProps) => {
   return (
-    <div className="flex flex-col items-center w-full mb-8">
+    <div className="flex flex-col items-center">
       <img 
-        src="/lovable-uploads/31d1c3a2-d6a9-41e2-a0f3-3b3179cceab8.png" 
-        alt="SureHelp Logo" 
+        src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
+        alt="Logo" 
         className="h-16 object-contain mb-8"
       />
       <Tabs defaultValue={view} className="w-full" onValueChange={(value) => onViewChange(value as "sign_in" | "sign_up")}>
