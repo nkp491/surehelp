@@ -21,7 +21,7 @@ const PrimaryHealth = ({ formData, setFormData, errors }: PrimaryHealthProps) =>
     <div className="w-[449px]">
       <Card className="rounded-[12px]">
         <CardHeader className="bg-[#0096c7] rounded-t-[12px] py-2 px-3.5">
-          <h1 className="text-white font-bold text-base">
+          <h1 className="text-white font-medium text-sm">
             {t.primaryHealthAssessment}
           </h1>
         </CardHeader>
