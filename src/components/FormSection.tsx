@@ -70,7 +70,7 @@ const FormSection = ({
       </div>
       <div className="p-0.5">
         {section === "Assessment Notes" ? (
-          <div className="space-y-1">
+          <div className="space-y-2">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
               {nonAgentFields.map((field) => (
                 <DraggableFormField
@@ -91,11 +91,11 @@ const FormSection = ({
             </div>
             
             {agentFields.length > 0 && (
-              <div className="mt-2 bg-gray-50 p-2 rounded-md">
-                <h3 className="text-sm font-medium text-gray-700 mb-1">
+              <div className="mt-4 bg-gray-50 p-3 rounded-md">
+                <h3 className="text-sm font-medium text-gray-700 mb-2">
                   {t.agentUseOnly}
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                   {agentFields.map((field) => (
                     <DraggableFormField
                       key={field.id}

@@ -19,13 +19,11 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
         <FormBuilderProvider>
           <SpouseVisibilityProvider>
             <div className="w-full max-w-[95vw] mx-auto">
-              <div className="flex justify-end items-center gap-2 mb-2">
+              <div className="flex justify-end items-center gap-2 mb-4">
                 <FamilyMemberToggle />
                 <LanguageToggle />
               </div>
-              <div className="overflow-y-auto max-h-[calc(100vh-120px)]">
-                <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
-              </div>
+              <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
             </div>
           </SpouseVisibilityProvider>
         </FormBuilderProvider>
