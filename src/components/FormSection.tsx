@@ -65,12 +65,12 @@ const FormSection = ({
 
   return (
     <div className="bg-white mb-0.5">
-      <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-sm font-medium">
+      <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-xs font-medium">
         {getTranslatedSection(section)}
       </div>
       <div className="p-0.5">
         {section === "Assessment Notes" ? (
-          <div className="space-y-2">
+          <div className="space-y-1">
             <div className="form-container">
               {nonAgentFields.map((field) => (
                 <DraggableFormField
@@ -91,8 +91,8 @@ const FormSection = ({
             </div>
             
             {agentFields.length > 0 && (
-              <div className="mt-4 bg-gray-50 p-3 rounded-md">
-                <h3 className="text-sm font-medium text-gray-700 mb-2">
+              <div className="mt-2 bg-gray-50 p-2 rounded-md">
+                <h3 className="text-xs font-medium text-gray-700 mb-1">
                   {t.agentUseOnly}
                 </h3>
                 <div className="form-container">
