@@ -15,7 +15,7 @@ const AssessmentFormSection = ({
 }: AssessmentFormSectionProps) => {
   return (
     <Card className="bg-transparent shadow-none border-none w-full">
-      <div className="w-full transform scale-[0.33] origin-top -mt-24 min-h-[300vh]">
+      <div className="w-full mx-auto px-4 pt-4">
         <h2 className="text-xl font-bold text-gray-900">Client Assessment</h2>
         <Collapsible
           open={isFormOpen}
