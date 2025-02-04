@@ -33,7 +33,11 @@ const NotificationPreferences = ({
             <Switch
               id="language-toggle"
               checked={language === 'es'}
-              onCheckedChange={toggleLanguage}
+              onCheckedChange={() => {
+                toggleLanguage();
+                // Force a re-render of the entire app to ensure language changes are applied
+                window.dispatchEvent(new Event('languageChange'));
+              }}
             />
           </div>
         </CardContent>

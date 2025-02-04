@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 type Language = 'en' | 'es';
 
@@ -15,6 +15,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const toggleLanguage = () => {
     setLanguage((prev) => (prev === 'en' ? 'es' : 'en'));
   };
+
+  // Listen for language change events
+  useEffect(() => {
+    const handleLanguageChange = () => {
+      // Force re-render of components using the language context
+      setLanguage(prev => prev);
+    };
+
+    window.addEventListener('languageChange', handleLanguageChange);
+    return () => window.removeEventListener('languageChange', handleLanguageChange);
+  }, []);
 
   return (
     <LanguageContext.Provider value={{ language, toggleLanguage }}>
