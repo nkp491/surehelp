@@ -8,11 +8,7 @@ interface AuthHeaderProps {
 const AuthHeader = ({ view, onViewChange }: AuthHeaderProps) => {
   return (
     <div className="flex flex-col items-center">
-      <img 
-        src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
-        alt="Logo" 
-        className="h-16 object-contain mb-8"
-      />
+      <h1 className="text-[#2A6F97] text-6xl font-bold mb-12">SureHelp</h1>
       <Tabs defaultValue={view} className="w-full" onValueChange={(value) => onViewChange(value as "sign_in" | "sign_up")}>
         <TabsList className="grid w-full grid-cols-2 mb-8">
           <TabsTrigger value="sign_up">Sign Up</TabsTrigger>
