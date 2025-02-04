@@ -47,7 +47,7 @@
   }
 
   .form-field-container {
-    @apply p-0.5 rounded-md bg-white border border-gray-50 transition-all duration-200 min-w-[208px] max-w-[416px];
+    @apply p-0.5 rounded-md bg-white border border-gray-50 transition-all duration-200;
     margin: 0;
   }
 
@@ -58,7 +58,27 @@
   .form-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 0.5rem;
-    padding: 0.25rem;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .form-section {
+    @apply bg-white rounded-lg shadow-sm overflow-hidden;
+  }
+
+  .form-section-header {
+    @apply bg-[#6CAEC2] text-white px-4 py-2 text-base font-medium;
+  }
+
+  .form-section-content {
+    @apply p-4 space-y-4;
+  }
+
+  .form-group {
+    @apply space-y-1;
+  }
+
+  .form-group-horizontal {
+    @apply grid grid-cols-2 gap-4 items-start;
   }
 }

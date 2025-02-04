@@ -58,11 +58,11 @@ const FormSection = ({
   const isAgentSection = section === "Agent Use Only";
 
   return (
-    <div className="bg-white mb-0.5">
+    <div className="form-section">
       <SectionHeader section={section} onRemove={onRemove} />
-      <div className="p-0.5">
+      <div className="form-section-content">
         {isHouseholdSection ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {nonAgentFields.map((field) => (
               <div key={field.id} className={field.id === "expenses" ? "col-span-2" : ""}>
                 <RegularFieldsSection
@@ -76,7 +76,7 @@ const FormSection = ({
             ))}
           </div>
         ) : isAgentSection ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-2">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {agentFields.map((field) => (
               <div key={field.id} className={
                 field.id === "premium" || field.id === "carrierAndProduct" ? "col-span-2" : ""
@@ -92,7 +92,7 @@ const FormSection = ({
             ))}
           </div>
         ) : (
-          <div className="space-y-1">
+          <div className="space-y-4">
             <RegularFieldsSection
               fields={nonAgentFields}
               formData={formData}

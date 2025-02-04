@@ -32,10 +32,10 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <form onSubmit={(e) => e.preventDefault()} className="p-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         {/* Primary Health Assessment Column */}
-        <div className="space-y-2">
+        <div className="space-y-6">
           <FormSection
             key="Primary Health Assessment"
             section="Primary Health Assessment"
@@ -47,7 +47,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
         </div>
 
         {/* Income Assessment Column */}
-        <div className="space-y-2">
+        <div className="space-y-6">
           <FormSection
             key="Primary Income Assessment"
             section="Primary Income Assessment"
@@ -67,7 +67,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
         </div>
 
         {/* Assessment Notes and Agent Use Only Column */}
-        <div className="space-y-2">
+        <div className="space-y-6">
           <FormSection
             key="Assessment Notes"
             section="Assessment Notes"
