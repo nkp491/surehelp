@@ -11,14 +11,13 @@ const Header = () => {
   return (
     <header className="bg-transparent">
       <div className="max-w-[1800px] mx-auto">
-        <div className="flex justify-end items-center h-[70px] px-8">
+        <div className="absolute top-4 right-8 z-50">
           <ProfileMenu />
         </div>
         
         {showMetrics && (
           <>
-            <Separator className="bg-[#D9D9D9] h-[0.5px] opacity-50" />
-            <div className="relative w-full">
+            <div className="relative w-full pt-2">
               <MetricsProvider>
                 <MetricsSection />
               </MetricsProvider>
