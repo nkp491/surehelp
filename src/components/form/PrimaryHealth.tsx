@@ -1,6 +1,4 @@
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { Plus } from "lucide-react";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import PersonalInfo from "./health/PersonalInfo";
@@ -21,13 +19,6 @@ const PrimaryHealth = ({ formData, setFormData, errors }: PrimaryHealthProps) =>
 
   return (
     <div className="w-[449px]">
-      <Button
-        variant="link"
-        className="flex ml-auto text-[#2a6f97] font-semibold mb-1.5"
-      >
-        <Plus className="h-4 w-4 mr-1" /> {t.addFamilyMember}
-      </Button>
-
       <Card className="rounded-[12px]">
         <CardHeader className="bg-[#0096c7] rounded-t-[12px] py-2 px-3.5">
           <h1 className="text-white font-bold text-base">
