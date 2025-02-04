@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from "@/integrations/supabase/client";
 
 type Language = 'en' | 'es';
 
@@ -12,6 +13,26 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
 
+  // Load user's language preference on mount
+  useEffect(() => {
+    const loadLanguagePreference = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('language_preference')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.language_preference) {
+          setLanguage(profile.language_preference as Language);
+        }
+      }
+    };
+
+    loadLanguagePreference();
+  }, []);
+
   const toggleLanguage = () => {
     setLanguage((prev) => (prev === 'en' ? 'es' : 'en'));
   };
@@ -19,7 +40,6 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   // Listen for language change events
   useEffect(() => {
     const handleLanguageChange = () => {
-      // Force re-render of components using the language context
       setLanguage(prev => prev);
     };
 

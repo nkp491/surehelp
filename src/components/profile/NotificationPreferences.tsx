@@ -3,6 +3,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface NotificationPreferencesProps {
   preferences: {
@@ -18,6 +20,36 @@ const NotificationPreferences = ({
 }: NotificationPreferencesProps) => {
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
+  const { toast } = useToast();
+
+  const handleLanguageToggle = async () => {
+    try {
+      const newLanguage = language === 'en' ? 'es' : 'en';
+      
+      // Update language in Supabase
+      const { error } = await supabase
+        .from('profiles')
+        .update({ language_preference: newLanguage })
+        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+
+      if (error) throw error;
+
+      // Toggle language in context
+      toggleLanguage();
+
+      toast({
+        title: "Language Updated",
+        description: "Your language preference has been saved.",
+      });
+    } catch (error) {
+      console.error('Error updating language preference:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update language preference. Please try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -33,11 +65,7 @@ const NotificationPreferences = ({
             <Switch
               id="language-toggle"
               checked={language === 'es'}
-              onCheckedChange={() => {
-                toggleLanguage();
-                // Force a re-render of the entire app to ensure language changes are applied
-                window.dispatchEvent(new Event('languageChange'));
-              }}
+              onCheckedChange={handleLanguageToggle}
             />
           </div>
         </CardContent>
