@@ -39,11 +39,9 @@ const FormField = ({
   const t = translations[language];
 
   const getTranslatedLabel = (label: string) => {
-    // First try to get the exact translation key
     const translatedLabel = (t as any)[label];
     if (translatedLabel) return translatedLabel;
     
-    // If not found, try converting to camelCase
     const key = label.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
     return (t as any)[key] || label;
   };
@@ -62,7 +60,7 @@ const FormField = ({
 
   if (type === "yes_no") {
     return (
-      <div className="relative space-y-1">
+      <div className="relative space-y-2">
         <Label className="text-sm font-medium text-gray-700">
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -70,14 +68,14 @@ const FormField = ({
         <RadioGroup
           value={value}
           onValueChange={onChange}
-          className="flex items-center gap-4"
+          className="flex items-center gap-6"
         >
-          <div className="flex items-center gap-1.5">
-            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-4 w-4" />
             <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">{t.yes}</Label>
           </div>
-          <div className="flex items-center gap-1.5">
-            <RadioGroupItem value="no" id={`${label}-no`} className="h-3.5 w-3.5" />
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="no" id={`${label}-no`} className="h-4 w-4" />
             <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">{t.no}</Label>
           </div>
         </RadioGroup>
@@ -88,7 +86,7 @@ const FormField = ({
 
   if (type === "textarea") {
     return (
-      <div className="relative space-y-1">
+      <div className="relative space-y-2">
         <Label className="text-sm font-medium text-gray-700">
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -97,7 +95,7 @@ const FormField = ({
           value={value || ""}
           onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
-          className="min-h-[80px] bg-gray-50 resize-none text-sm"
+          className="min-h-[100px] bg-gray-50 resize-none text-sm"
           required={required}
           readOnly={readOnly}
         />
@@ -107,12 +105,12 @@ const FormField = ({
   }
 
   const inputClassName = cn(
-    "h-10 bg-gray-50 text-sm",
+    "h-11 bg-gray-50 text-sm",
     type === "age" && "w-[80px]"
   );
 
   return (
-    <div className="relative space-y-1">
+    <div className="relative space-y-2">
       <Label className="text-sm font-medium text-gray-700">
         {getTranslatedLabel(label)}
         {required && <span className="text-red-500 ml-1">*</span>}
