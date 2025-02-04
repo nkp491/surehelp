@@ -32,7 +32,7 @@ const FamilyMemberToggle = () => {
         onClick={handleAddFamilyMember}
         variant="outline"
         size="sm"
-        className="h-7 px-2 text-xs gap-1"
+        className="h-6 px-2 text-xs flex items-center gap-1"
       >
         <Plus className="h-3 w-3" />
         {familyMembers.length}/5
@@ -42,7 +42,7 @@ const FamilyMemberToggle = () => {
           onClick={handleRemoveFamilyMember}
           variant="outline"
           size="sm"
-          className="h-7 px-2 text-xs"
+          className="h-6 px-2 text-xs"
         >
           <Minus className="h-3 w-3" />
         </Button>
