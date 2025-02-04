@@ -40,7 +40,7 @@ export const useProfileManagement = () => {
       } as Profile;
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    cacheTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
+    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
   });
 
   // Auth state listener
