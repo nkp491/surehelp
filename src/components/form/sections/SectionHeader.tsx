@@ -18,7 +18,7 @@ const SectionHeader = ({ section, onRemove }: SectionHeaderProps) => {
   };
 
   return (
-    <div className="bg-[#3B97CB] text-white px-4 py-2 text-base font-medium flex justify-between items-center rounded-t">
+    <div className="form-section-header flex justify-between items-center">
       <span>{getTranslatedSection(section)}</span>
       {onRemove && (
         <Button
