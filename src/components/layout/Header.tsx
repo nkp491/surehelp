@@ -9,9 +9,9 @@ const Header = () => {
   const showMetrics = location.pathname === '/assessment';
 
   return (
-    <header className="bg-transparent w-full">
-      <div className="max-w-[1600px] mx-auto relative px-4">
-        <div className="absolute top-4 right-4 z-50">
+    <header className="bg-transparent">
+      <div className="max-w-[1800px] mx-auto">
+        <div className="absolute top-4 right-8 z-50">
           <ProfileMenu />
         </div>
         

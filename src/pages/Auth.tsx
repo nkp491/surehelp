@@ -64,8 +64,8 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white px-4 py-8">
-      <div className="w-full max-w-[440px] mx-auto">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white p-4">
+      <div className="container max-w-[400px]">
         <AuthHeader view={view} onViewChange={setView} />
 
         {errorMessage && (
@@ -86,11 +86,11 @@ const Auth = () => {
                 },
                 button: {
                   width: '100%',
-                  padding: '10px 16px',
+                  padding: '8px 16px',
                 },
                 input: {
                   width: '100%',
-                  padding: '10px 12px',
+                  padding: '8px 12px',
                 },
                 message: {
                   width: '100%',
@@ -103,7 +103,7 @@ const Auth = () => {
                 },
                 label: {
                   width: '100%',
-                  marginBottom: '6px',
+                  marginBottom: '4px',
                 }
               },
               variables: {
@@ -115,7 +115,7 @@ const Auth = () => {
                 },
               },
               className: {
-                container: 'flex flex-col gap-4 w-full',
+                container: 'flex flex-col gap-4',
                 button: 'w-full',
                 input: 'w-full rounded-md',
                 message: 'w-full',

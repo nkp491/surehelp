@@ -40,12 +40,10 @@ const MainContent = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full max-w-[1920px] mx-auto">
+      <div className="flex min-h-screen w-full">
         <AppSidebar />
-        <SidebarInset className="flex-1 px-4 py-2 w-full max-w-full overflow-x-hidden">
-          <div className="max-w-[1600px] mx-auto w-full">
-            {renderContent()}
-          </div>
+        <SidebarInset className="pt-2">
+          {renderContent()}
         </SidebarInset>
       </div>
     </SidebarProvider>
