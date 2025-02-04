@@ -8,6 +8,7 @@ import { Textarea } from "./ui/textarea";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { cn } from "@/lib/utils";
 
 interface FormFieldProps {
   label: string;
@@ -62,7 +63,7 @@ const FormField = ({
 
   if (type === "yes_no") {
     return (
-      <div className="space-y-1">
+      <div className="relative space-y-1">
         <Label className="text-sm font-medium text-gray-700">
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -70,7 +71,7 @@ const FormField = ({
         <RadioGroup
           value={value}
           onValueChange={onChange}
-          className="flex items-center gap-6"
+          className="flex items-center gap-4"
         >
           <div className="flex items-center gap-1.5">
             <RadioGroupItem value="yes" id={`${label}-yes`} className="h-3.5 w-3.5" />
@@ -81,14 +82,14 @@ const FormField = ({
             <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">{t.no}</Label>
           </div>
         </RadioGroup>
-        {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+        {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
       </div>
     );
   }
 
   if (type === "textarea") {
     return (
-      <div className="space-y-1">
+      <div className="relative space-y-1">
         <Label className="text-sm font-medium text-gray-700">
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
@@ -97,19 +98,22 @@ const FormField = ({
           value={value || ""}
           onChange={handleInputChange}
           placeholder={placeholder}
-          className="min-h-[100px] bg-gray-50 resize-none text-sm"
+          className="min-h-[80px] bg-gray-50 resize-none text-sm"
           required={required}
           readOnly={readOnly}
         />
-        {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+        {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
       </div>
     );
   }
 
-  const inputClassName = type === "age" ? "h-8 bg-gray-50 w-[80px] text-sm" : "h-8 bg-gray-50 text-sm";
+  const inputClassName = cn(
+    "h-10 bg-gray-50 text-sm",
+    type === "age" && "w-[80px]"
+  );
 
   return (
-    <div className="space-y-1">
+    <div className="relative space-y-1">
       <Label className="text-sm font-medium text-gray-700">
         {getTranslatedLabel(label)}
         {required && <span className="text-red-500 ml-1">*</span>}
@@ -123,7 +127,7 @@ const FormField = ({
         required={required}
         readOnly={readOnly}
       />
-      {error && <p className="text-xs text-red-500 mt-0.5">{error}</p>}
+      {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
     </div>
   );
 };
