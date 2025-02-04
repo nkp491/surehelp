@@ -19,10 +19,6 @@ const NotificationPreferences = ({
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
 
-  const handleLanguageToggle = () => {
-    toggleLanguage();
-  };
-
   return (
     <div className="space-y-6">
       <Card>
@@ -32,12 +28,12 @@ const NotificationPreferences = ({
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <Label htmlFor="language-toggle">
-              {language === 'en' ? 'Spanish' : 'English'}
+              {language === 'en' ? 'Español' : 'English'}
             </Label>
             <Switch
               id="language-toggle"
               checked={language === 'es'}
-              onCheckedChange={handleLanguageToggle}
+              onCheckedChange={toggleLanguage}
             />
           </div>
         </CardContent>
@@ -56,7 +52,12 @@ const NotificationPreferences = ({
               id="email-notifications"
               checked={preferences.email_notifications}
               onCheckedChange={(checked) =>
-                onUpdate({ ...preferences, email_notifications: checked })
+                onUpdate({
+                  notification_preferences: {
+                    ...preferences,
+                    email_notifications: checked
+                  }
+                })
               }
             />
           </div>
@@ -68,7 +69,12 @@ const NotificationPreferences = ({
               id="phone-notifications"
               checked={preferences.phone_notifications}
               onCheckedChange={(checked) =>
-                onUpdate({ ...preferences, phone_notifications: checked })
+                onUpdate({
+                  notification_preferences: {
+                    ...preferences,
+                    phone_notifications: checked
+                  }
+                })
               }
             />
           </div>
