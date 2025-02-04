@@ -6,6 +6,7 @@ import DraggableFormField from "./DraggableFormField";
 import PrimaryHealth from "./form/PrimaryHealth";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { isAgentField } from "@/utils/fieldCategories";
 
 interface FormSectionProps {
   section: string;
@@ -36,20 +37,6 @@ const FormSection = ({
 
   const isSpouseField = (fieldId: string) => {
     return fieldId.toLowerCase().startsWith('spouse');
-  };
-
-  const isAgentField = (fieldId: string) => {
-    return [
-      'sourcedFrom',
-      'leadType',
-      'premium',
-      'effectiveDate',
-      'draftDay',
-      'coverageAmount',
-      'accidental',
-      'carrierAndProduct',
-      'policyNumber'
-    ].includes(fieldId);
   };
 
   const filteredFields = fields.filter(field => {
@@ -106,7 +93,7 @@ const FormSection = ({
             {agentFields.length > 0 && (
               <div className="mt-4">
                 <h3 className="text-sm font-medium text-gray-700 mb-2">{t.agentUseOnly}</h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-1 border-t border-gray-200 pt-2">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-1">
                   {agentFields.map((field) => (
                     <DraggableFormField
                       key={field.id}

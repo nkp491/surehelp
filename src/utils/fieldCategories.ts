@@ -24,5 +24,5 @@ export const isAgentField = (fieldId: string): boolean => {
     'sourcedFrom', 'leadType', 'premium', 'effectiveDate', 'draftDay',
     'coverageAmount', 'accidental', 'carrierAndProduct', 'policyNumber'
   ];
-  return agentFields.some(field => fieldId.includes(field));
+  return agentFields.includes(fieldId);
 };
