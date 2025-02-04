@@ -7,10 +7,10 @@ import NotificationPreferences from "@/components/profile/NotificationPreference
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import LanguageToggle from "@/components/LanguageToggle";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 
-const Profile = () => {
+const ProfileContent = () => {
   const {
     profile,
     loading,
@@ -72,6 +72,14 @@ const Profile = () => {
         </div>
       </div>
     </div>
+  );
+};
+
+const Profile = () => {
+  return (
+    <LanguageProvider>
+      <ProfileContent />
+    </LanguageProvider>
   );
 };
 
