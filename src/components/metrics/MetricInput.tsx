@@ -18,6 +18,13 @@ const MetricInput = ({
       ? e.target.value.replace(/[^0-9.]/g, '')
       : e.target.value.replace(/[^0-9]/g, '');
     
+    console.log(`[MetricInput] Processing input change for ${metric}:`, {
+      rawValue: e.target.value,
+      sanitizedValue,
+      isAP,
+      timestamp: new Date().toISOString()
+    });
+
     if (isAP) {
       const numericValue = parseFloat(sanitizedValue);
       if (!isNaN(numericValue)) {
@@ -34,6 +41,13 @@ const MetricInput = ({
       } else if (sanitizedValue === '') {
         onInputChange('0');
       }
+    }
+  };
+
+  const handleBlur = () => {
+    // Ensure the value is properly synced on blur
+    if (!isAP) {
+      onInputChange(currentValue.toString());
     }
   };
 
@@ -54,6 +68,7 @@ const MetricInput = ({
       type="text"
       value={formatValue(currentValue)}
       onChange={handleChange}
+      onBlur={handleBlur}
       className={`h-6 text-center px-1 text-sm bg-transparent ${
         isAP ? 'w-24' : 'w-16'
       }`}

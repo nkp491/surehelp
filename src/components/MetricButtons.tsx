@@ -42,13 +42,25 @@ const MetricButtons = ({
     onDecrement();
   };
 
-  const handleMetricInputChange = (value: string) => {
+  const handleMetricInputChange = async (value: string) => {
     console.log(`[MetricButtons] Input change for ${metric}:`, {
       value,
       metric,
+      currentMetrics: metrics,
       timestamp: new Date().toISOString()
     });
-    handleInputChange(metric as MetricType, value);
+
+    // Ensure we're passing a valid number string
+    const numericValue = isAP ? value : parseInt(value).toString();
+    
+    // Call the context's handleInputChange
+    await handleInputChange(metric as MetricType, numericValue);
+    
+    console.log(`[MetricButtons] After state update for ${metric}:`, {
+      newValue: numericValue,
+      updatedMetrics: metrics,
+      timestamp: new Date().toISOString()
+    });
   };
 
   return (
