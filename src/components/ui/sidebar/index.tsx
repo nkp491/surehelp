@@ -1,7 +1,7 @@
 export { Sidebar } from "./sidebar-components"
 export { SidebarProvider } from "./sidebar-provider"
 export { useSidebar } from "./sidebar-context"
-export type { SidebarContextType } from "./sidebar-context"
+export type { SidebarContext } from "./sidebar-context"
 
 // Re-export all the sidebar components
 export {
