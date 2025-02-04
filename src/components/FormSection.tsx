@@ -59,10 +59,12 @@ const FormSection = ({
 
   return (
     <div className="form-section">
-      <SectionHeader section={section} onRemove={onRemove} />
+      <div className="form-section-header">
+        <SectionHeader section={section} onRemove={onRemove} />
+      </div>
       <div className="form-section-content">
         {isHouseholdSection ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="form-group-horizontal">
             {nonAgentFields.map((field) => (
               <div key={field.id} className={field.id === "expenses" ? "col-span-2" : ""}>
                 <RegularFieldsSection
@@ -76,7 +78,7 @@ const FormSection = ({
             ))}
           </div>
         ) : isAgentSection ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="form-group-horizontal">
             {agentFields.map((field) => (
               <div key={field.id} className={
                 field.id === "premium" || field.id === "carrierAndProduct" ? "col-span-2" : ""
@@ -92,7 +94,7 @@ const FormSection = ({
             ))}
           </div>
         ) : (
-          <div className="space-y-4">
+          <div className="form-group">
             <RegularFieldsSection
               fields={nonAgentFields}
               formData={formData}

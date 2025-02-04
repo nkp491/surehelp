@@ -32,8 +32,8 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="p-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+    <form onSubmit={(e) => e.preventDefault()} className="max-w-[1600px] mx-auto p-4 lg:p-6">
+      <div className="form-layout">
         {/* Primary Health Assessment Column */}
         <div className="space-y-6">
           <FormSection
