@@ -91,10 +91,10 @@ const FormSection = ({
             </div>
             
             {agentFields.length > 0 && (
-              <div className="mt-2 bg-gray-50 p-2 rounded-md">
-                <h3 className="text-xs font-medium text-gray-700 mb-1">
+              <div className="mt-2">
+                <div className="bg-[#00A3E0] text-white px-1.5 py-0.5 text-xs font-medium mb-0.5">
                   {t.agentUseOnly}
-                </h3>
+                </div>
                 <div className="form-container">
                   {agentFields.map((field) => (
                     <DraggableFormField
