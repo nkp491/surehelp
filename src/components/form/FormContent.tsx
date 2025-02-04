@@ -32,17 +32,60 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="w-full space-y-2">
-      {filteredSections.map((section) => (
-        <FormSection
-          key={section.section}
-          section={section.section}
-          fields={section.fields}
-          formData={formData}
-          setFormData={setFormData}
-          errors={errors}
-        />
-      ))}
+    <form onSubmit={(e) => e.preventDefault()} className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+        {/* Primary Health Assessment Column */}
+        <div className="space-y-2">
+          <FormSection
+            key="Primary Health Assessment"
+            section="Primary Health Assessment"
+            fields={sections[0].fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+        </div>
+
+        {/* Income Assessment Column */}
+        <div className="space-y-2">
+          <FormSection
+            key="Primary Income Assessment"
+            section="Primary Income Assessment"
+            fields={sections[2].fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+          <FormSection
+            key="Household Income"
+            section="Household Income"
+            fields={sections[4].fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+        </div>
+
+        {/* Assessment Notes and Agent Use Only Column */}
+        <div className="space-y-2">
+          <FormSection
+            key="Assessment Notes"
+            section="Assessment Notes"
+            fields={sections[5].fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+          <FormSection
+            key="Agent Use Only"
+            section="Agent Use Only"
+            fields={sections[6].fields}
+            formData={formData}
+            setFormData={setFormData}
+            errors={errors}
+          />
+        </div>
+      </div>
       
       {familyMembers.map((member, index) => (
         <FormSection

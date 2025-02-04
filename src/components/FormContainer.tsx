@@ -23,7 +23,9 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
                 <FamilyMemberToggle />
                 <LanguageToggle />
               </div>
-              <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
+              <div className="bg-grid min-h-[calc(100vh-120px)]">
+                <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
+              </div>
             </div>
           </SpouseVisibilityProvider>
         </FormBuilderProvider>
