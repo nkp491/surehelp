@@ -73,12 +73,12 @@ const HealthMetrics = ({ formData, setFormData }: HealthMetricsProps) => {
         </RadioGroup>
       </div>
 
-      <div className="col-span-2">
+      <div className="space-y-2">
         <Label>{t.duiHistory}</Label>
         <RadioGroup 
           value={formData.dui || 'no'}
           onValueChange={(value) => handleInputChange('dui', value)}
-          className="flex gap-4 mt-2"
+          className="flex gap-4"
         >
           <div className="flex items-center space-x-2">
             <RadioGroupItem value="yes" id="dui-yes" />
