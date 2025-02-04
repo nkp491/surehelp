@@ -92,9 +92,6 @@ const ProfileMenu = () => {
           </Avatar>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
-            Profile
-          </DropdownMenuItem>
           <DropdownMenuItem onClick={handleSignOut}>
             Sign Out
           </DropdownMenuItem>
