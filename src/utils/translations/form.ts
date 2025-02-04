@@ -1,4 +1,67 @@
-export const formTranslations = {
+export type FormTranslations = {
+  addFamilyMember: string;
+  primaryHealthAssessment: string;
+  fullName: string;
+  dateOfBirth: string;
+  age: string;
+  height: string;
+  weight: string;
+  feet: string;
+  inches: string;
+  pounds: string;
+  tobaccoUse: string;
+  duiHistory: string;
+  hospitalizations: string;
+  surgeries: string;
+  prescriptionMedications: string;
+  lastMedicalExam: string;
+  familyMedicalConditions: string;
+  employmentStatus: string;
+  occupation: string;
+  employmentIncome: string;
+  selectedInvestments: string;
+  socialSecurityIncome: string;
+  pensionIncome: string;
+  survivorshipIncome: string;
+  totalIncome: string;
+  householdExpenses: string;
+  incomeAssessment: string;
+  householdIncome: string;
+  assessmentNotes: string;
+  phone: string;
+  email: string;
+  address: string;
+  notes: string;
+  followUpNotes: string;
+  coverageOptions: string;
+  emergencyContact: string;
+  beneficiaries: string;
+  yes: string;
+  no: string;
+  agentUseOnly: string;
+  sourcedFrom: string;
+  leadType: string;
+  premium: string;
+  effectiveDate: string;
+  draftDay: string;
+  coverageAmount: string;
+  accidental: string;
+  carrierAndProduct: string;
+  policyNumber: string;
+  lifeInsuranceAmount: string;
+  rentOrMortgage: string;
+  remainingBalance: string;
+  yearsLeft: string;
+  homeValue: string;
+  equity: string;
+  expenses: string;
+  submitAs: string;
+  protected: string;
+  followUp: string;
+  declined: string;
+};
+
+export const formTranslations: Record<'en' | 'es', FormTranslations> = {
   en: {
     addFamilyMember: "Add Family Member",
     primaryHealthAssessment: "Primary Health Assessment",
