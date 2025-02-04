@@ -1,189 +1,78 @@
 export type FormTranslations = {
-  addFamilyMember: string;
-  primaryHealthAssessment: string;
-  fullName: string;
-  dateOfBirth: string;
-  age: string;
-  height: string;
-  weight: string;
-  feet: string;
-  inches: string;
-  pounds: string;
-  tobaccoUse: string;
-  duiHistory: string;
-  hospitalizations: string;
-  surgeries: string;
-  prescriptionMedications: string;
-  lastMedicalExam: string;
-  familyMedicalConditions: string;
-  employmentStatus: string;
-  occupation: string;
-  employmentIncome: string;
-  selectedInvestments: string;
-  socialSecurityIncome: string;
-  pensionIncome: string;
-  survivorshipIncome: string;
-  totalIncome: string;
-  householdExpenses: string;
-  incomeAssessment: string;
-  householdIncome: string;
-  assessmentNotes: string;
-  phone: string;
-  email: string;
-  address: string;
-  notes: string;
-  followUpNotes: string;
-  coverageOptions: string;
-  emergencyContact: string;
-  beneficiaries: string;
-  yes: string;
-  no: string;
-  agentUseOnly: string;
-  sourcedFrom: string;
-  leadType: string;
-  premium: string;
-  effectiveDate: string;
-  draftDay: string;
-  coverageAmount: string;
-  accidental: string;
-  carrierAndProduct: string;
-  policyNumber: string;
-  lifeInsuranceAmount: string;
-  rentOrMortgage: string;
-  remainingBalance: string;
-  yearsLeft: string;
-  homeValue: string;
-  equity: string;
-  expenses: string;
-  submitAs: string;
-  protected: string;
-  followUp: string;
-  declined: string;
+  primaryApplicantName: string;
+  primaryDateOfBirth: string;
+  primaryAge: string;
+  primaryHeight: string;
+  primaryWeight: string;
+  primaryTobaccoUse: string;
+  primaryDUI: string;
+  primaryMedicalConditions: string;
+  primaryOtherMedicalConditions: string;
+  primaryHospitalizations: string;
+  primarySurgeries: string;
+  primaryPrescriptionMedications: string;
+  primaryLastMedicalExam: string;
+  primaryFamilyMedicalConditions: string;
+  primaryEmploymentStatus: string;
+  primaryOccupation: string;
+  primaryEmploymentIncome: string;
+  primaryInvestmentTypes: string;
+  primarySocialSecurityIncome: string;
+  primaryPensionIncome: string;
+  primarySurvivorshipIncome: string;
+  primaryTotalIncome: string;
+  primaryHouseholdExpenses: string;
 };
 
 export const formTranslations: Record<'en' | 'es', FormTranslations> = {
   en: {
-    addFamilyMember: "Add Family Member",
-    primaryHealthAssessment: "Primary Health Assessment",
-    fullName: "Full Name",
-    dateOfBirth: "Date of Birth",
-    age: "Age",
-    height: "Height",
-    weight: "Weight",
-    feet: "ft.",
-    inches: "in.",
-    pounds: "lb.",
-    tobaccoUse: "Tobacco Use",
-    duiHistory: "DUI History",
-    hospitalizations: "Hospitalizations",
-    surgeries: "Surgeries",
-    prescriptionMedications: "Prescription Medications",
-    lastMedicalExam: "Last Medical Exam",
-    familyMedicalConditions: "Family Medical Conditions",
-    employmentStatus: "Employment Status",
-    occupation: "Occupation",
-    employmentIncome: "Employment Income",
-    selectedInvestments: "Investment Types",
-    socialSecurityIncome: "Social Security Income",
-    pensionIncome: "Pension Income",
-    survivorshipIncome: "Survivorship Income",
-    totalIncome: "Total Income",
-    householdExpenses: "Household Expenses",
-    incomeAssessment: "Income Assessment",
-    householdIncome: "Household Income",
-    assessmentNotes: "Assessment Notes",
-    phone: "Phone",
-    email: "Email",
-    address: "Address",
-    notes: "Notes",
-    followUpNotes: "Follow Up Notes",
-    coverageOptions: "Coverage Options",
-    emergencyContact: "Emergency Contact",
-    beneficiaries: "Beneficiaries",
-    yes: "Yes",
-    no: "No",
-    agentUseOnly: "Agent Use Only",
-    sourcedFrom: "Sourced From",
-    leadType: "Lead Type",
-    premium: "Premium",
-    effectiveDate: "Effective Date",
-    draftDay: "Draft Day",
-    coverageAmount: "Coverage Amount",
-    accidental: "Accidental",
-    carrierAndProduct: "Carrier & Product",
-    policyNumber: "Policy Number",
-    lifeInsuranceAmount: "Life Insurance Amount",
-    rentOrMortgage: "Rent/Mortgage",
-    remainingBalance: "Remaining Balance",
-    yearsLeft: "Years Left",
-    homeValue: "Home Value",
-    equity: "Equity",
-    expenses: "Other Expenses",
-    submitAs: "Submit as",
-    protected: "Protected",
-    followUp: "Follow-up",
-    declined: "Declined"
+    primaryApplicantName: "Primary Applicant Name",
+    primaryDateOfBirth: "Primary Date of Birth",
+    primaryAge: "Primary Age",
+    primaryHeight: "Height",
+    primaryWeight: "Primary Weight",
+    primaryTobaccoUse: "Primary Tobacco Use",
+    primaryDUI: "Primary DUI History",
+    primaryMedicalConditions: "Primary Medical Conditions",
+    primaryOtherMedicalConditions: "Primary Other Medical Conditions",
+    primaryHospitalizations: "Primary Hospitalizations",
+    primarySurgeries: "Primary Surgeries",
+    primaryPrescriptionMedications: "Primary Prescription Medications",
+    primaryLastMedicalExam: "Primary Last Medical Exam",
+    primaryFamilyMedicalConditions: "Primary Family Medical Conditions",
+    primaryEmploymentStatus: "Primary Employment Status",
+    primaryOccupation: "Primary Occupation/Duties",
+    primaryEmploymentIncome: "Primary Employment Income",
+    primaryInvestmentTypes: "Investment Types",
+    primarySocialSecurityIncome: "Primary Social Security Income",
+    primaryPensionIncome: "Primary Pension Income",
+    primarySurvivorshipIncome: "Primary Survivorship Income",
+    primaryTotalIncome: "Primary Total Income",
+    primaryHouseholdExpenses: "Primary Household Expenses",
   },
   es: {
-    addFamilyMember: "Agregar Miembro Familiar",
-    primaryHealthAssessment: "Evaluación de Salud Primaria",
-    fullName: "Nombre Completo",
-    dateOfBirth: "Fecha de Nacimiento",
-    age: "Edad",
-    height: "Altura",
-    weight: "Peso",
-    feet: "pies",
-    inches: "pulg.",
-    pounds: "lb.",
-    tobaccoUse: "Uso de Tabaco",
-    duiHistory: "Historial de DUI",
-    hospitalizations: "Hospitalizaciones",
-    surgeries: "Cirugías",
-    prescriptionMedications: "Medicamentos Recetados",
-    lastMedicalExam: "Último Examen Médico",
-    familyMedicalConditions: "Condiciones Médicas Familiares",
-    employmentStatus: "Estado Laboral",
-    occupation: "Ocupación",
-    employmentIncome: "Ingreso Laboral",
-    selectedInvestments: "Tipos de Inversión",
-    socialSecurityIncome: "Ingreso del Seguro Social",
-    pensionIncome: "Ingreso de Pensión",
-    survivorshipIncome: "Ingreso de Sobrevivencia",
-    totalIncome: "Ingreso Total",
-    householdExpenses: "Gastos del Hogar",
-    incomeAssessment: "Evaluación de Ingresos",
-    householdIncome: "Ingreso del Hogar",
-    assessmentNotes: "Notas de Evaluación",
-    phone: "Teléfono",
-    email: "Correo Electrónico",
-    address: "Dirección",
-    notes: "Notas",
-    followUpNotes: "Notas de Seguimiento",
-    coverageOptions: "Opciones de Cobertura",
-    emergencyContact: "Contacto de Emergencia",
-    beneficiaries: "Beneficiarios",
-    yes: "Sí",
-    no: "No",
-    agentUseOnly: "Solo para uso del Agente",
-    sourcedFrom: "Origen",
-    leadType: "Tipo de Lead",
-    premium: "Prima",
-    effectiveDate: "Fecha Efectiva",
-    draftDay: "Día de Cobro",
-    coverageAmount: "Monto de Cobertura",
-    accidental: "Accidental",
-    carrierAndProduct: "Aseguradora y Producto",
-    policyNumber: "Número de Póliza",
-    lifeInsuranceAmount: "Monto de Seguro de Vida",
-    rentOrMortgage: "Renta/Hipoteca",
-    remainingBalance: "Saldo Restante",
-    yearsLeft: "Años Restantes",
-    homeValue: "Valor de la Casa",
-    equity: "Capital",
-    expenses: "Otros Gastos",
-    submitAs: "Enviar como",
-    protected: "Protegido",
-    followUp: "Seguimiento",
-    declined: "Rechazado"
+    primaryApplicantName: "Nombre del Solicitante Principal",
+    primaryDateOfBirth: "Fecha de Nacimiento del Solicitante Principal",
+    primaryAge: "Edad del Solicitante Principal",
+    primaryHeight: "Altura",
+    primaryWeight: "Peso del Solicitante Principal",
+    primaryTobaccoUse: "Uso de Tabaco del Solicitante Principal",
+    primaryDUI: "Historial de DUI del Solicitante Principal",
+    primaryMedicalConditions: "Condiciones Médicas del Solicitante Principal",
+    primaryOtherMedicalConditions: "Otras Condiciones Médicas del Solicitante Principal",
+    primaryHospitalizations: "Hospitalizaciones del Solicitante Principal",
+    primarySurgeries: "Cirugías del Solicitante Principal",
+    primaryPrescriptionMedications: "Medicamentos Recetados del Solicitante Principal",
+    primaryLastMedicalExam: "Último Examen Médico del Solicitante Principal",
+    primaryFamilyMedicalConditions: "Condiciones Médicas Familiares del Solicitante Principal",
+    primaryEmploymentStatus: "Estado Laboral del Solicitante Principal",
+    primaryOccupation: "Ocupación/Deberes del Solicitante Principal",
+    primaryEmploymentIncome: "Ingreso Laboral del Solicitante Principal",
+    primaryInvestmentTypes: "Tipos de Inversión",
+    primarySocialSecurityIncome: "Ingreso del Seguro Social del Solicitante Principal",
+    primaryPensionIncome: "Ingreso de Pensión del Solicitante Principal",
+    primarySurvivorshipIncome: "Ingreso de Sobrevivencia del Solicitante Principal",
+    primaryTotalIncome: "Ingreso Total del Solicitante Principal",
+    primaryHouseholdExpenses: "Gastos del Hogar del Solicitante Principal",
   }
 };

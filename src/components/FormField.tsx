@@ -38,13 +38,12 @@ const FormField = ({
   const { language } = useLanguage();
   const t = translations[language];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    if (onChange) {
-      onChange(e.target.value);
-    }
-  };
-
   const getTranslatedLabel = (label: string) => {
+    // First try to get the exact translation key
+    const translatedLabel = (t as any)[label];
+    if (translatedLabel) return translatedLabel;
+    
+    // If not found, try converting to camelCase
     const key = label.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
     return (t as any)[key] || label;
   };
@@ -96,7 +95,7 @@ const FormField = ({
         </Label>
         <Textarea
           value={value || ""}
-          onChange={handleInputChange}
+          onChange={(e) => onChange?.(e.target.value)}
           placeholder={placeholder}
           className="min-h-[80px] bg-gray-50 resize-none text-sm"
           required={required}
@@ -121,7 +120,7 @@ const FormField = ({
       <Input
         type={type}
         value={value || ""}
-        onChange={handleInputChange}
+        onChange={(e) => onChange?.(e.target.value)}
         placeholder={placeholder}
         className={inputClassName}
         required={required}
