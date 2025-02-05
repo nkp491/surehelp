@@ -7,9 +7,11 @@ import AuthHeader from "@/components/auth/AuthHeader";
 import AuthFormContainer from "@/components/auth/AuthFormContainer";
 import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
+import { useToast } from "@/hooks/use-toast";
 
 const Auth = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState("");
   const [view, setView] = useState<"sign_in" | "sign_up">("sign_up");
 
@@ -28,21 +30,32 @@ const Auth = () => {
     
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", { event, session });
-      if (event === "SIGNED_IN" && session) {
-        navigate("/assessment");
-      }
-      if (event === "SIGNED_OUT") {
-        setErrorMessage("");
-      }
-      if (event === "USER_UPDATED" && !session) {
-        setErrorMessage("There was an error updating your account. Please try again.");
+      
+      switch (event) {
+        case "SIGNED_IN":
+          if (session) navigate("/assessment");
+          break;
+        case "SIGNED_OUT":
+          setErrorMessage("");
+          break;
+        case "PASSWORD_RECOVERY":
+          toast({
+            title: "Password reset email sent",
+            description: "Check your email for the password reset link",
+          });
+          break;
+        case "USER_UPDATED":
+          if (!session) {
+            setErrorMessage("There was an error updating your account. Please try again.");
+          }
+          break;
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, toast]);
 
   return (
     <div className="min-h-screen flex flex-col bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
@@ -62,6 +75,7 @@ const Auth = () => {
               view={view}
               appearance={getAuthFormAppearance()}
               providers={[]}
+              redirectTo={`${window.location.origin}/auth/callback`}
             />
           </AuthFormContainer>
         </div>
