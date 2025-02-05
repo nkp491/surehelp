@@ -23,13 +23,29 @@ const BusinessMetricsContent = () => {
     // Only include metrics within the selected time period
     if ((timePeriod === '7d' && daysDiff <= 7) ||
         (timePeriod === '30d' && daysDiff <= 30) ||
-        (timePeriod === '24h' && daysDiff === 0)) {
+        (timePeriod === '24h' && daysDiff <= 1)) {
+      
+      // Add each metric value to the accumulator
       Object.entries(entry.metrics).forEach(([key, value]) => {
         acc[key] = (acc[key] || 0) + (value || 0);
       });
     }
     return acc;
-  }, {});
+  }, {
+    leads: 0,
+    calls: 0,
+    contacts: 0,
+    scheduled: 0,
+    sits: 0,
+    sales: 0,
+    ap: 0
+  });
+
+  console.log('[BusinessMetrics] Calculated aggregated metrics:', {
+    timePeriod,
+    aggregatedMetrics,
+    historyLength: sortedHistory.length
+  });
   
   return (
     <div className="space-y-8">
