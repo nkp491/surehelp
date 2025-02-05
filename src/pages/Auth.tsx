@@ -6,7 +6,6 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthHeader from "@/components/auth/AuthHeader";
 import AuthFormContainer from "@/components/auth/AuthFormContainer";
 import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
-import { AuthError } from "@supabase/supabase-js";
 import { getErrorMessage } from "@/utils/authErrors";
 
 const Auth = () => {
@@ -46,11 +45,11 @@ const Auth = () => {
   }, [navigate]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+    <div className="min-h-screen flex flex-col bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
       <div className="flex-1 flex items-center justify-center px-4 py-8 w-full max-w-[1440px] mx-auto">
         <div className="w-full max-w-[400px] mx-auto">
           <AuthHeader view={view} onViewChange={setView} />
-
+          
           {errorMessage && (
             <Alert variant="destructive" className="mb-6">
               <AlertDescription>{errorMessage}</AlertDescription>
