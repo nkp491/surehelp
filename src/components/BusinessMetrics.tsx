@@ -8,9 +8,28 @@ import MetricsChart from "./MetricsChart";
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
+import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, handleTimePeriodChange } = useMetrics();
+  const { sortedHistory } = useMetricsHistory();
+  
+  // Calculate aggregated metrics based on time period
+  const aggregatedMetrics = sortedHistory.reduce((acc, entry) => {
+    const entryDate = new Date(entry.date);
+    const now = new Date();
+    const daysDiff = Math.floor((now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+    
+    // Only include metrics within the selected time period
+    if ((timePeriod === '7d' && daysDiff <= 7) ||
+        (timePeriod === '30d' && daysDiff <= 30) ||
+        (timePeriod === '24h' && daysDiff === 0)) {
+      Object.entries(entry.metrics).forEach(([key, value]) => {
+        acc[key] = (acc[key] || 0) + (value || 0);
+      });
+    }
+    return acc;
+  }, {});
   
   return (
     <div className="space-y-8">
@@ -21,7 +40,7 @@ const BusinessMetricsContent = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
-            <MetricsGrid />
+            <MetricsGrid aggregatedMetrics={aggregatedMetrics} />
             <Separator className="my-8" />
             <RatiosGrid />
           </div>

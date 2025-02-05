@@ -1,16 +1,23 @@
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricCard from "./MetricCard";
 
-const MetricsGrid = () => {
+interface MetricsGridProps {
+  aggregatedMetrics: Record<string, number>;
+}
+
+const MetricsGrid = ({ aggregatedMetrics }: MetricsGridProps) => {
   const { metrics, metricInputs, handleInputChange, trends } = useMetrics();
 
-  if (!metrics) {
+  // Use aggregated metrics if available, otherwise fall back to current metrics
+  const displayMetrics = Object.keys(metrics).length > 0 ? metrics : aggregatedMetrics;
+
+  if (!displayMetrics) {
     return null;
   }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
-      {Object.entries(metrics).map(([metric, count]) => (
+      {Object.entries(displayMetrics).map(([metric, count]) => (
         <MetricCard
           key={metric}
           metric={metric}
