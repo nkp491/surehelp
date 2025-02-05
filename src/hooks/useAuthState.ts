@@ -32,27 +32,41 @@ export const useAuthState = () => {
 
     const checkAuth = async () => {
       try {
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-        
-        if (sessionError) throw sessionError;
+        const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
           if (mounted) {
             clearAuthData();
+            setIsLoading(false);
             navigate("/auth", { replace: true });
           }
           return;
         }
 
-        const { error: refreshError } = await supabase.auth.refreshSession();
-        if (refreshError) throw refreshError;
+        // Only try to refresh if we have a session
+        if (session) {
+          try {
+            const { error: refreshError } = await supabase.auth.refreshSession();
+            if (refreshError) {
+              console.error("Session refresh error:", refreshError);
+              await handleAuthError();
+              return;
+            }
+          } catch (refreshError) {
+            console.error("Session refresh error:", refreshError);
+            await handleAuthError();
+            return;
+          }
+        }
 
         if (mounted) {
           setIsLoading(false);
         }
       } catch (error) {
         console.error("Auth error:", error);
-        await handleAuthError();
+        if (mounted) {
+          await handleAuthError();
+        }
       }
     };
     
