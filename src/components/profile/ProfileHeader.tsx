@@ -10,8 +10,8 @@ const ProfileHeader = ({ onSignOut }: ProfileHeaderProps) => {
   const navigate = useNavigate();
 
   return (
-    <div className="flex justify-between items-center py-6 px-4">
-      <div className="flex items-center gap-8">
+    <div className="flex justify-between items-center py-6 px-8">
+      <div className="flex items-center gap-12">
         <Button
           variant="ghost"
           onClick={() => navigate("/")}
@@ -25,7 +25,7 @@ const ProfileHeader = ({ onSignOut }: ProfileHeaderProps) => {
       <Button 
         variant="outline" 
         onClick={onSignOut}
-        className="px-6 py-2 text-base font-medium border-2 hover:bg-blue-50"
+        className="px-8 py-2 text-base font-medium border-2 hover:bg-blue-50 ml-12"
       >
         Sign Out
       </Button>
