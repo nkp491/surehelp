@@ -64,68 +64,70 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white p-4">
-      <div className="container max-w-[400px]">
-        <AuthHeader view={view} onViewChange={setView} />
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+      <div className="flex-1 flex items-center justify-center p-4">
+        <div className="w-full max-w-[400px]">
+          <AuthHeader view={view} onViewChange={setView} />
 
-        {errorMessage && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
+          )}
 
-        <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md">
-          <SupabaseAuth 
-            supabaseClient={supabase}
-            view={view}
-            appearance={{ 
-              theme: ThemeSupa,
-              style: {
-                container: {
-                  width: '100%',
+          <div className="bg-white/90 backdrop-blur-sm p-8 rounded-lg shadow-md">
+            <SupabaseAuth 
+              supabaseClient={supabase}
+              view={view}
+              appearance={{ 
+                theme: ThemeSupa,
+                style: {
+                  container: {
+                    width: '100%',
+                  },
+                  button: {
+                    width: '100%',
+                    padding: '8px 16px',
+                  },
+                  input: {
+                    width: '100%',
+                    padding: '8px 12px',
+                  },
+                  message: {
+                    width: '100%',
+                  },
+                  anchor: {
+                    width: '100%',
+                  },
+                  divider: {
+                    width: '100%',
+                  },
+                  label: {
+                    width: '100%',
+                    marginBottom: '4px',
+                  }
                 },
-                button: {
-                  width: '100%',
-                  padding: '8px 16px',
-                },
-                input: {
-                  width: '100%',
-                  padding: '8px 12px',
-                },
-                message: {
-                  width: '100%',
-                },
-                anchor: {
-                  width: '100%',
-                },
-                divider: {
-                  width: '100%',
-                },
-                label: {
-                  width: '100%',
-                  marginBottom: '4px',
-                }
-              },
-              variables: {
-                default: {
-                  colors: {
-                    brand: '#2A6F97',
-                    brandAccent: '#2A6F97',
+                variables: {
+                  default: {
+                    colors: {
+                      brand: '#2A6F97',
+                      brandAccent: '#2A6F97',
+                    },
                   },
                 },
-              },
-              className: {
-                container: 'flex flex-col gap-4',
-                button: 'w-full',
-                input: 'w-full rounded-md',
-                message: 'w-full',
-                anchor: 'text-[#2A6F97] hover:text-[#2A6F97]/80',
-                divider: 'w-full',
-                label: 'block w-full mb-1'
-              },
-            }}
-            providers={[]}
-          />
+                className: {
+                  container: 'flex flex-col gap-4',
+                  button: 'w-full',
+                  input: 'w-full rounded-md',
+                  message: 'w-full',
+                  anchor: 'text-[#2A6F97] hover:text-[#2A6F97]/80',
+                  divider: 'w-full',
+                  label: 'block w-full mb-1'
+                },
+              }}
+              providers={[]}
+            />
+          </div>
         </div>
       </div>
     </div>
