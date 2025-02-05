@@ -27,8 +27,8 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
   }, [formData.dob]);
 
   return (
-    <div className="grid grid-cols-2 gap-4">
-      <div className="space-y-2">
+    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+      <div className="md:col-span-5 space-y-2">
         <Label htmlFor="name">
           {t.fullName} <span className="text-red-500">*</span>
         </Label>
@@ -40,7 +40,7 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="md:col-span-4 space-y-2">
         <Label htmlFor="dob">
           {t.dateOfBirth} <span className="text-red-500">*</span>
         </Label>
@@ -53,7 +53,7 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
         />
       </div>
 
-      <div className="space-y-2">
+      <div className="md:col-span-3 space-y-2">
         <Label htmlFor="age">
           {t.age}
         </Label>
@@ -61,7 +61,7 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
           id="age"
           value={formData.age || ''}
           readOnly
-          className="bg-gray-50 w-[80px]"
+          className="bg-gray-50 w-full"
         />
       </div>
     </div>
