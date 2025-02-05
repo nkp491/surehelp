@@ -26,27 +26,27 @@ const PrivacySettings = ({ settings, onUpdate }: PrivacySettingsProps) => {
   };
 
   return (
-    <Card>
+    <Card className="shadow-sm">
       <CardHeader>
-        <CardTitle className="text-foreground">{t.privacySettings}</CardTitle>
+        <CardTitle className="text-xl font-semibold text-foreground">{t.privacySettings}</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex items-center justify-between">
-          <span className="text-sm">{t.showEmail}</span>
+      <CardContent className="space-y-6">
+        <div className="flex items-center justify-between py-2">
+          <span className="text-sm font-medium text-gray-700">{t.showEmail}</span>
           <Switch
             checked={settings.show_email}
             onCheckedChange={() => handleToggle('show_email')}
           />
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm">{t.showPhone}</span>
+        <div className="flex items-center justify-between py-2">
+          <span className="text-sm font-medium text-gray-700">{t.showPhone}</span>
           <Switch
             checked={settings.show_phone}
             onCheckedChange={() => handleToggle('show_phone')}
           />
         </div>
-        <div className="flex items-center justify-between">
-          <span className="text-sm">{t.showPhoto}</span>
+        <div className="flex items-center justify-between py-2">
+          <span className="text-sm font-medium text-gray-700">{t.showPhoto}</span>
           <Switch
             checked={settings.show_photo}
             onCheckedChange={() => handleToggle('show_photo')}

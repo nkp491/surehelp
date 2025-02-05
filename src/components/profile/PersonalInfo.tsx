@@ -38,48 +38,51 @@ const PersonalInfo = ({
   };
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle className="text-foreground">{t.personalInfo}</CardTitle>
+    <Card className="shadow-sm">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+        <CardTitle className="text-xl font-semibold text-foreground">{t.personalInfo}</CardTitle>
         <Button
           variant="outline"
           size="sm"
           onClick={() => setIsEditing(!isEditing)}
+          className="px-4"
         >
           {isEditing ? t.save : t.edit}
         </Button>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t.firstName}</label>
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.firstName}</label>
               {isEditing ? (
                 <Input
                   value={formData.first_name}
                   onChange={(e) =>
                     setFormData({ ...formData, first_name: e.target.value })
                   }
+                  className="w-full"
                 />
               ) : (
-                <p className="text-sm">{firstName || '-'}</p>
+                <p className="text-base text-gray-900 pt-1">{firstName || '-'}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t.lastName}</label>
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.lastName}</label>
               {isEditing ? (
                 <Input
                   value={formData.last_name}
                   onChange={(e) =>
                     setFormData({ ...formData, last_name: e.target.value })
                   }
+                  className="w-full"
                 />
               ) : (
-                <p className="text-sm">{lastName || '-'}</p>
+                <p className="text-base text-gray-900 pt-1">{lastName || '-'}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t.email}</label>
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.email}</label>
               {isEditing ? (
                 <Input
                   type="email"
@@ -87,13 +90,14 @@ const PersonalInfo = ({
                   onChange={(e) =>
                     setFormData({ ...formData, email: e.target.value })
                   }
+                  className="w-full"
                 />
               ) : (
-                <p className="text-sm">{email || '-'}</p>
+                <p className="text-base text-gray-900 pt-1">{email || '-'}</p>
               )}
             </div>
-            <div className="space-y-2">
-              <label className="text-sm font-medium">{t.phone}</label>
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.phone}</label>
               {isEditing ? (
                 <Input
                   type="tel"
@@ -101,14 +105,15 @@ const PersonalInfo = ({
                   onChange={(e) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
+                  className="w-full"
                 />
               ) : (
-                <p className="text-sm">{phone || '-'}</p>
+                <p className="text-base text-gray-900 pt-1">{phone || '-'}</p>
               )}
             </div>
           </div>
           {isEditing && (
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <Button type="submit">{t.save}</Button>
             </div>
           )}
