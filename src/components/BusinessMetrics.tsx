@@ -27,7 +27,12 @@ const BusinessMetricsContent = () => {
       
       // Add each metric value to the accumulator
       Object.entries(entry.metrics).forEach(([key, value]) => {
-        acc[key] = (acc[key] || 0) + (value || 0);
+        if (key === 'ap') {
+          // Handle AP separately since it's stored in cents
+          acc[key] = (acc[key] || 0) + (value || 0);
+        } else {
+          acc[key] = (acc[key] || 0) + (Number(value) || 0);
+        }
       });
     }
     return acc;
@@ -44,7 +49,8 @@ const BusinessMetricsContent = () => {
   console.log('[BusinessMetrics] Calculated aggregated metrics:', {
     timePeriod,
     aggregatedMetrics,
-    historyLength: sortedHistory.length
+    historyLength: sortedHistory.length,
+    firstEntry: sortedHistory[0]
   });
   
   return (

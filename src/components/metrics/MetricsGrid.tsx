@@ -8,12 +8,8 @@ interface MetricsGridProps {
 const MetricsGrid = ({ aggregatedMetrics }: MetricsGridProps) => {
   const { metrics, metricInputs, handleInputChange, trends, timePeriod } = useMetrics();
 
-  // Use current metrics only for 24h view, otherwise use aggregated metrics
+  // Always use aggregated metrics for non-24h views
   const displayMetrics = timePeriod === '24h' ? metrics : aggregatedMetrics;
-
-  if (!displayMetrics) {
-    return null;
-  }
 
   console.log('[MetricsGrid] Displaying metrics:', {
     timePeriod,
@@ -21,6 +17,10 @@ const MetricsGrid = ({ aggregatedMetrics }: MetricsGridProps) => {
     aggregatedMetrics,
     currentMetrics: metrics
   });
+
+  if (!displayMetrics) {
+    return null;
+  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
