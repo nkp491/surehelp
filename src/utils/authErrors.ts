@@ -12,6 +12,8 @@ export const getErrorMessage = (error: AuthError) => {
         return 'No user found with these credentials.';
       case 'invalid_grant':
         return 'Invalid login credentials.';
+      case 'otp_expired':
+        return 'The password reset link has expired. Please request a new one.';
       default:
         return `Authentication error: ${error.message}`;
     }

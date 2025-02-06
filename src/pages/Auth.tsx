@@ -43,7 +43,8 @@ const Auth = () => {
         case "PASSWORD_RECOVERY":
           toast({
             title: "Password reset email sent",
-            description: "Check your email for the password reset link",
+            description: "Check your email for the password reset link. The link will expire in 24 hours.",
+            duration: 6000,
           });
           break;
         case "USER_UPDATED":
@@ -53,6 +54,24 @@ const Auth = () => {
           break;
       }
     });
+
+    // Check for OTP expired error in URL
+    const url = new URL(window.location.href);
+    const errorCode = url.searchParams.get("error_code");
+    const errorDescription = url.searchParams.get("error_description");
+    
+    if (errorCode === "otp_expired") {
+      toast({
+        title: "Password Reset Link Expired",
+        description: "The password reset link has expired. Please request a new one.",
+        variant: "destructive",
+        duration: 6000,
+      });
+      // Clear the error from URL
+      url.searchParams.delete("error_code");
+      url.searchParams.delete("error_description");
+      window.history.replaceState({}, "", url.toString());
+    }
 
     return () => subscription.unsubscribe();
   }, [navigate, toast]);
