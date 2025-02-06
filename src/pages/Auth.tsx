@@ -13,12 +13,20 @@ const Auth = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState("");
-  const [view, setView] = useState<"sign_in" | "sign_up">("sign_up");
+  const [view, setView] = useState<"sign_in" | "sign_up" | "update_password">("sign_up");
 
   useEffect(() => {
     const checkSession = async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
       console.log("Initial session check:", { session, error });
+      
+      // Check if we're in a password reset flow
+      const hash = window.location.hash;
+      if (hash && hash.includes('type=recovery')) {
+        setView('update_password');
+        return;
+      }
+      
       if (session) {
         navigate("/assessment");
       }
@@ -41,14 +49,22 @@ const Auth = () => {
           setErrorMessage("");
           break;
         case "PASSWORD_RECOVERY":
+          setView('update_password');
           toast({
-            title: "Password reset email sent",
-            description: "Check your email for the password reset link. The link will expire in 24 hours.",
+            title: "Password reset initiated",
+            description: "Please check your email for the password reset link.",
             duration: 6000,
           });
           break;
         case "USER_UPDATED":
-          if (!session) {
+          if (session) {
+            toast({
+              title: "Password updated",
+              description: "Your password has been successfully updated.",
+              duration: 6000,
+            });
+            navigate("/assessment");
+          } else {
             setErrorMessage("There was an error updating your account. Please try again.");
           }
           break;
@@ -95,6 +111,7 @@ const Auth = () => {
               appearance={getAuthFormAppearance()}
               providers={[]}
               redirectTo={`${window.location.origin}/auth/callback`}
+              showLinks={true}
             />
           </AuthFormContainer>
         </div>
