@@ -57,6 +57,10 @@ const FormSection = ({
   const isHouseholdSection = section === "Household Income";
   const isAgentSection = section === "Agent Use Only";
 
+  const shouldBeHorizontal = (fieldId: string) => {
+    return ['premium', 'coverageAmount'].includes(fieldId);
+  };
+
   return (
     <div className="form-section">
       <div className="form-section-header">
@@ -78,20 +82,39 @@ const FormSection = ({
             ))}
           </div>
         ) : isAgentSection ? (
-          <div className="form-group-horizontal">
-            {agentFields.map((field) => (
-              <div key={field.id} className={
-                field.id === "premium" || field.id === "carrierAndProduct" ? "col-span-2" : ""
-              }>
-                <RegularFieldsSection
-                  fields={[field]}
-                  formData={formData}
-                  setFormData={setFormData}
-                  errors={errors}
-                  submissionId={submissionId}
-                />
-              </div>
-            ))}
+          <div className="grid grid-cols-1 gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              {agentFields
+                .filter(field => !shouldBeHorizontal(field.id))
+                .map((field) => (
+                  <div key={field.id} className={
+                    field.id === "carrierAndProduct" ? "col-span-2" : ""
+                  }>
+                    <RegularFieldsSection
+                      fields={[field]}
+                      formData={formData}
+                      setFormData={setFormData}
+                      errors={errors}
+                      submissionId={submissionId}
+                    />
+                  </div>
+                ))}
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              {agentFields
+                .filter(field => shouldBeHorizontal(field.id))
+                .map((field) => (
+                  <div key={field.id}>
+                    <RegularFieldsSection
+                      fields={[field]}
+                      formData={formData}
+                      setFormData={setFormData}
+                      errors={errors}
+                      submissionId={submissionId}
+                    />
+                  </div>
+                ))}
+            </div>
           </div>
         ) : (
           <div className="form-group">
