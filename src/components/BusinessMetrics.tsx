@@ -12,6 +12,7 @@ import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 import { startOfDay, subDays } from "date-fns";
 import { MetricCount } from "@/types/metrics";
+import { useEffect } from "react";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
@@ -60,15 +61,17 @@ const BusinessMetricsContent = () => {
   };
 
   // Update the aggregated metrics when time period or history changes
-  const aggregatedMetrics = calculateAggregatedMetrics();
-  setAggregatedMetrics(aggregatedMetrics);
+  useEffect(() => {
+    const aggregatedMetrics = calculateAggregatedMetrics();
+    setAggregatedMetrics(aggregatedMetrics);
 
-  console.log('[BusinessMetrics] Calculated aggregated metrics:', {
-    timePeriod,
-    aggregatedMetrics,
-    historyLength: sortedHistory.length,
-    firstEntry: sortedHistory[0]
-  });
+    console.log('[BusinessMetrics] Calculated aggregated metrics:', {
+      timePeriod,
+      aggregatedMetrics,
+      historyLength: sortedHistory.length,
+      firstEntry: sortedHistory[0]
+    });
+  }, [timePeriod, sortedHistory, setAggregatedMetrics]);
   
   return (
     <div className="space-y-8">
@@ -79,7 +82,7 @@ const BusinessMetricsContent = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
-            <MetricsGrid aggregatedMetrics={aggregatedMetrics} />
+            <MetricsGrid aggregatedMetrics={calculateAggregatedMetrics()} />
             <Separator className="my-8" />
             <RatiosGrid />
           </div>
