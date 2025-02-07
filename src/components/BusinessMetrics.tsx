@@ -1,3 +1,4 @@
+
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { MetricsProvider } from "@/contexts/MetricsContext";
@@ -11,7 +12,7 @@ import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 
 const BusinessMetricsContent = () => {
-  const { timePeriod, handleTimePeriodChange } = useMetrics();
+  const { timePeriod } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
   
   // Calculate aggregated metrics based on time period
@@ -27,12 +28,7 @@ const BusinessMetricsContent = () => {
       
       // Add each metric value to the accumulator
       Object.entries(entry.metrics).forEach(([key, value]) => {
-        if (key === 'ap') {
-          // Handle AP separately since it's stored in cents
-          acc[key] = (acc[key] || 0) + (value || 0);
-        } else {
-          acc[key] = (acc[key] || 0) + (Number(value) || 0);
-        }
+        acc[key] = (acc[key] || 0) + (Number(value) || 0);
       });
     }
     return acc;
@@ -69,7 +65,7 @@ const BusinessMetricsContent = () => {
 
           <MetricsChart 
             timePeriod={timePeriod}
-            onTimePeriodChange={handleTimePeriodChange}
+            onTimePeriodChange={() => {}}
           />
 
           <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm text-[#2A6F97]">

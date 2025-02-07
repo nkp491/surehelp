@@ -1,3 +1,4 @@
+
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricCard from "./MetricCard";
 
@@ -8,7 +9,7 @@ interface MetricsGridProps {
 const MetricsGrid = ({ aggregatedMetrics }: MetricsGridProps) => {
   const { metrics, metricInputs, handleInputChange, trends, timePeriod } = useMetrics();
 
-  // Always use aggregated metrics for non-24h views
+  // Use aggregated metrics for non-24h views, otherwise use current day metrics
   const displayMetrics = timePeriod === '24h' ? metrics : aggregatedMetrics;
 
   console.log('[MetricsGrid] Displaying metrics:', {
