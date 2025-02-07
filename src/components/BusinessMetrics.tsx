@@ -13,7 +13,7 @@ import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 import { startOfDay, subDays } from "date-fns";
 
 const BusinessMetricsContent = () => {
-  const { timePeriod } = useMetrics();
+  const { timePeriod, setAggregatedMetrics } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
   
   // Calculate aggregated metrics based on time period
@@ -43,6 +43,9 @@ const BusinessMetricsContent = () => {
     sales: 0,
     ap: 0
   });
+
+  // Update the aggregated metrics in context
+  setAggregatedMetrics(aggregatedMetrics);
 
   console.log('[BusinessMetrics] Calculated aggregated metrics:', {
     timePeriod,
