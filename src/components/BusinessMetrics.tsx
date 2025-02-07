@@ -22,23 +22,17 @@ const BusinessMetricsContent = () => {
     const now = startOfDay(new Date());
     const daysDiff = Math.floor((now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
     
+    // Determine the period range based on selected time period
+    const periodRange = timePeriod === '7d' ? 7 : timePeriod === '30d' ? 30 : 1;
+    
     // Only include metrics within the selected time period
-    const isInPeriod = 
-      (timePeriod === '7d' && daysDiff <= 7) ||
-      (timePeriod === '30d' && daysDiff <= 30) ||
-      (timePeriod === '24h' && daysDiff <= 1);
-
-    if (isInPeriod) {
+    if (daysDiff <= periodRange) {
       // Add each metric value to the accumulator
       Object.entries(entry.metrics).forEach(([key, value]) => {
-        if (key === 'ap') {
-          // Handle AP separately to maintain the correct value in cents
-          acc[key] = (acc[key] || 0) + (Number(value) || 0);
-        } else {
-          acc[key] = (acc[key] || 0) + (Number(value) || 0);
-        }
+        acc[key] = (acc[key] || 0) + (Number(value) || 0);
       });
     }
+    
     return acc;
   }, {
     leads: 0,
