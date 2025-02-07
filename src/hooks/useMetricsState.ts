@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { MetricCount, MetricType, TimePeriod } from '@/types/metrics';
 
@@ -17,6 +18,7 @@ export const useMetricsState = () => {
   const [metricInputs, setMetricInputs] = useState<{[key: string]: string}>({});
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const [trends, setTrends] = useState<{[key: string]: number}>({});
+  const [aggregatedMetrics, setAggregatedMetrics] = useState<MetricCount | null>(null);
   const [dateRange, setDateRange] = useState<{
     from: Date | undefined;
     to: Date | undefined;
@@ -57,6 +59,8 @@ export const useMetricsState = () => {
     setTrends,
     dateRange,
     setDateRange,
+    aggregatedMetrics,
+    setAggregatedMetrics,
     handleInputChange,
     updateMetricValue,
   };

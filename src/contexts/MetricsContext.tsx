@@ -1,3 +1,4 @@
+
 import { createContext, useContext, ReactNode } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { useMetricsStorage } from "@/hooks/useMetricsStorage";
@@ -17,6 +18,8 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     timePeriod,
     trends,
     dateRange,
+    aggregatedMetrics,
+    setAggregatedMetrics,
     setMetrics,
     setPreviousMetrics,
     setTrends,
@@ -90,6 +93,8 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     trends,
     dateRange,
     ratios,
+    aggregatedMetrics,
+    setAggregatedMetrics,
     setDateRange,
     setMetrics,
     handleTimePeriodChange,
