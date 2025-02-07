@@ -11,40 +11,56 @@ import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 import { startOfDay, subDays } from "date-fns";
+import { MetricCount } from "@/types/metrics";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
   
   // Calculate aggregated metrics based on time period
-  const aggregatedMetrics = sortedHistory.reduce((acc, entry) => {
-    const entryDate = new Date(entry.date);
-    const now = startOfDay(new Date());
-    const daysDiff = Math.floor((now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-    
-    // Determine the period range based on selected time period
-    const periodRange = timePeriod === '7d' ? 7 : timePeriod === '30d' ? 30 : 1;
-    
-    // Only include metrics within the selected time period
-    if (daysDiff <= periodRange) {
-      // Add each metric value to the accumulator
-      Object.entries(entry.metrics).forEach(([key, value]) => {
-        acc[key] = (acc[key] || 0) + (Number(value) || 0);
-      });
+  const calculateAggregatedMetrics = () => {
+    if (!sortedHistory.length) {
+      return {
+        leads: 0,
+        calls: 0,
+        contacts: 0,
+        scheduled: 0,
+        sits: 0,
+        sales: 0,
+        ap: 0
+      };
     }
-    
-    return acc;
-  }, {
-    leads: 0,
-    calls: 0,
-    contacts: 0,
-    scheduled: 0,
-    sits: 0,
-    sales: 0,
-    ap: 0
-  });
 
-  // Update the aggregated metrics in context
+    const now = startOfDay(new Date());
+    const periodRange = timePeriod === '7d' ? 7 : timePeriod === '30d' ? 30 : 1;
+
+    return sortedHistory.reduce((acc: MetricCount, entry) => {
+      const entryDate = new Date(entry.date);
+      const daysDiff = Math.floor((now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
+      
+      // Only include metrics within the selected time period
+      if (daysDiff <= periodRange) {
+        Object.entries(entry.metrics).forEach(([key, value]) => {
+          if (key in acc) {
+            acc[key as keyof MetricCount] += Number(value) || 0;
+          }
+        });
+      }
+      
+      return acc;
+    }, {
+      leads: 0,
+      calls: 0,
+      contacts: 0,
+      scheduled: 0,
+      sits: 0,
+      sales: 0,
+      ap: 0
+    });
+  };
+
+  // Update the aggregated metrics when time period or history changes
+  const aggregatedMetrics = calculateAggregatedMetrics();
   setAggregatedMetrics(aggregatedMetrics);
 
   console.log('[BusinessMetrics] Calculated aggregated metrics:', {
