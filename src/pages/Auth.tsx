@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -93,9 +94,9 @@ const Auth = () => {
   }, [navigate, toast]);
 
   return (
-    <div className="min-h-screen flex flex-col bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
-      <div className="flex-1 flex items-center justify-center px-4 py-8 w-full max-w-[1440px] mx-auto">
-        <div className="w-full max-w-[400px] mx-auto">
+    <div className="min-h-screen w-full flex flex-col bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+      <div className="flex-1 flex items-center justify-center px-4 py-12 sm:px-6 lg:px-8">
+        <div className="w-full max-w-md space-y-8">
           <AuthHeader view={view} onViewChange={setView} />
           
           {errorMessage && (
@@ -121,3 +122,4 @@ const Auth = () => {
 };
 
 export default Auth;
+

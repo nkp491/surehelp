@@ -1,3 +1,4 @@
+
 import { cn } from "@/lib/utils";
 
 interface AuthFormContainerProps {
@@ -8,7 +9,7 @@ interface AuthFormContainerProps {
 const AuthFormContainer = ({ children, className }: AuthFormContainerProps) => {
   return (
     <div className={cn(
-      "bg-white/90 backdrop-blur-sm p-6 sm:p-8 rounded-lg shadow-md w-full",
+      "bg-white/90 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-lg w-full border border-gray-100",
       className
     )}>
       {children}
@@ -17,3 +18,4 @@ const AuthFormContainer = ({ children, className }: AuthFormContainerProps) => {
 };
 
 export default AuthFormContainer;
+
