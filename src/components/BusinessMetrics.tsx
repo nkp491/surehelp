@@ -10,7 +10,7 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { startOfDay, subDays } from "date-fns";
+import { startOfDay } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo } from "react";
 
@@ -18,18 +18,18 @@ const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
   
-  // Memoize the calculation function to prevent unnecessary recalculations
-  const calculateAggregatedMetrics = useMemo(() => {
-    const defaultMetrics = {
-      leads: 0,
-      calls: 0,
-      contacts: 0,
-      scheduled: 0,
-      sits: 0,
-      sales: 0,
-      ap: 0
-    };
+  const defaultMetrics = {
+    leads: 0,
+    calls: 0,
+    contacts: 0,
+    scheduled: 0,
+    sits: 0,
+    sales: 0,
+    ap: 0
+  };
 
+  // Memoize the calculation function to prevent unnecessary recalculations
+  const aggregatedMetrics = useMemo(() => {
     if (!sortedHistory?.length) {
       return defaultMetrics;
     }
@@ -56,17 +56,16 @@ const BusinessMetricsContent = () => {
   // Update aggregated metrics when dependencies change
   useEffect(() => {
     if (sortedHistory?.length > 0) {
-      const metrics = calculateAggregatedMetrics;
-      setAggregatedMetrics(metrics);
+      setAggregatedMetrics(aggregatedMetrics);
 
       console.log('[BusinessMetrics] Updated aggregated metrics:', {
         timePeriod,
-        metrics,
+        metrics: aggregatedMetrics,
         historyLength: sortedHistory.length,
         firstEntry: sortedHistory[0]
       });
     }
-  }, [calculateAggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod]);
+  }, [aggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod]);
   
   return (
     <div className="space-y-8">
@@ -77,7 +76,7 @@ const BusinessMetricsContent = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
-            <MetricsGrid aggregatedMetrics={calculateAggregatedMetrics} />
+            <MetricsGrid aggregatedMetrics={aggregatedMetrics} />
             <Separator className="my-8" />
             <RatiosGrid />
           </div>
