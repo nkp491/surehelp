@@ -12,24 +12,26 @@ import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 import { startOfDay, subDays } from "date-fns";
 import { MetricCount } from "@/types/metrics";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
   
-  // Calculate aggregated metrics based on time period
-  const calculateAggregatedMetrics = () => {
-    if (!sortedHistory.length) {
-      return {
-        leads: 0,
-        calls: 0,
-        contacts: 0,
-        scheduled: 0,
-        sits: 0,
-        sales: 0,
-        ap: 0
-      };
+  // Memoize the calculation function to prevent unnecessary recalculations
+  const calculateAggregatedMetrics = useMemo(() => {
+    const defaultMetrics = {
+      leads: 0,
+      calls: 0,
+      contacts: 0,
+      scheduled: 0,
+      sits: 0,
+      sales: 0,
+      ap: 0
+    };
+
+    if (!sortedHistory?.length) {
+      return defaultMetrics;
     }
 
     const now = startOfDay(new Date());
@@ -39,7 +41,6 @@ const BusinessMetricsContent = () => {
       const entryDate = new Date(entry.date);
       const daysDiff = Math.floor((now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
       
-      // Only include metrics within the selected time period
       if (daysDiff <= periodRange) {
         Object.entries(entry.metrics).forEach(([key, value]) => {
           if (key in acc) {
@@ -49,29 +50,23 @@ const BusinessMetricsContent = () => {
       }
       
       return acc;
-    }, {
-      leads: 0,
-      calls: 0,
-      contacts: 0,
-      scheduled: 0,
-      sits: 0,
-      sales: 0,
-      ap: 0
-    });
-  };
+    }, { ...defaultMetrics });
+  }, [timePeriod, sortedHistory]);
 
-  // Update the aggregated metrics when time period or history changes
+  // Update aggregated metrics when dependencies change
   useEffect(() => {
-    const aggregatedMetrics = calculateAggregatedMetrics();
-    setAggregatedMetrics(aggregatedMetrics);
+    if (sortedHistory?.length > 0) {
+      const metrics = calculateAggregatedMetrics;
+      setAggregatedMetrics(metrics);
 
-    console.log('[BusinessMetrics] Calculated aggregated metrics:', {
-      timePeriod,
-      aggregatedMetrics,
-      historyLength: sortedHistory.length,
-      firstEntry: sortedHistory[0]
-    });
-  }, [timePeriod, sortedHistory, setAggregatedMetrics]);
+      console.log('[BusinessMetrics] Updated aggregated metrics:', {
+        timePeriod,
+        metrics,
+        historyLength: sortedHistory.length,
+        firstEntry: sortedHistory[0]
+      });
+    }
+  }, [calculateAggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod]);
   
   return (
     <div className="space-y-8">
@@ -82,7 +77,7 @@ const BusinessMetricsContent = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
-            <MetricsGrid aggregatedMetrics={calculateAggregatedMetrics()} />
+            <MetricsGrid aggregatedMetrics={calculateAggregatedMetrics} />
             <Separator className="my-8" />
             <RatiosGrid />
           </div>
