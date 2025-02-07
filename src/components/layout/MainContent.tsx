@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import SubmittedForms from "@/pages/SubmittedForms";
@@ -7,10 +8,17 @@ import FormContainer from "@/components/FormContainer";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
+import Auth from "@/pages/Auth";
 
 const MainContent = () => {
   const location = useLocation();
 
+  // If we're on the auth page, render it directly without the sidebar layout
+  if (location.pathname === '/auth') {
+    return <Auth />;
+  }
+
+  // For all other routes, use the sidebar layout
   const renderContent = () => {
     // Only render auth-protected content
     const protectedContent = () => {
@@ -30,12 +38,7 @@ const MainContent = () => {
       }
     };
 
-    // Wrap all protected routes with AuthGuard
-    if (location.pathname !== '/auth') {
-      return <AuthGuard>{protectedContent()}</AuthGuard>;
-    }
-
-    return protectedContent();
+    return <AuthGuard>{protectedContent()}</AuthGuard>;
   };
 
   return (
