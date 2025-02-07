@@ -37,7 +37,7 @@ const MetricCard = ({
         currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }).format(value / 100);
+      }).format(value / 100); // Convert cents to dollars for display
     }
     return value.toString();
   };
