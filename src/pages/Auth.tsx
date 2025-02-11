@@ -18,11 +18,26 @@ const Auth = () => {
   const [view, setView] = useState<"sign_in" | "sign_up" | "update_password">("sign_up");
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Get site URL dynamically
+  // Get site URL dynamically and handle preview URLs
   const getSiteUrl = () => {
-    const url = window.location.origin;
-    console.log("Current site URL:", url);
-    return url;
+    const origin = window.location.origin;
+    // Handle preview URLs
+    if (origin.includes('preview--')) {
+      // For preview deployments, use the preview URL
+      console.log("Using preview URL:", origin);
+      return origin;
+    }
+    // For production/development
+    console.log("Using site URL:", origin);
+    return origin;
+  };
+
+  // Get callback URL based on current environment
+  const getCallbackUrl = () => {
+    const siteUrl = getSiteUrl();
+    const callbackUrl = `${siteUrl}/auth/callback`;
+    console.log("Using callback URL:", callbackUrl);
+    return callbackUrl;
   };
 
   useEffect(() => {
@@ -139,7 +154,7 @@ const Auth = () => {
               view={view}
               appearance={getAuthFormAppearance()}
               providers={[]}
-              redirectTo={`${getSiteUrl()}/auth/callback`}
+              redirectTo={getCallbackUrl()}
               showLinks={true}
             />
           </AuthFormContainer>
