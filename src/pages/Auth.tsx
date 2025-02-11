@@ -21,21 +21,15 @@ const Auth = () => {
   // Get site URL dynamically and handle preview URLs
   const getSiteUrl = () => {
     try {
-      // Get the current URL components
-      const protocol = window.location.protocol;
-      const hostname = window.location.hostname;
-      
-      // Special handling for preview URLs
-      if (hostname.includes('preview--')) {
-        const previewUrl = `${protocol}//${hostname}`;
-        console.log("Preview URL detected:", previewUrl);
-        return previewUrl;
+      if (typeof window === 'undefined') {
+        return '';
       }
-      
-      // For production/development
-      const origin = window.location.origin;
-      console.log("Production URL detected:", origin);
-      return origin;
+
+      const currentUrl = new URL(window.location.href);
+      // Remove any path and query parameters
+      const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`;
+      console.log("Base URL detected:", baseUrl);
+      return baseUrl;
     } catch (error) {
       console.error("Error getting site URL:", error);
       return window.location.origin;
@@ -46,14 +40,7 @@ const Auth = () => {
   const getCallbackUrl = () => {
     try {
       const siteUrl = getSiteUrl();
-      let callbackPath = '/auth/callback';
-      
-      // Ensure the callback URL is properly formatted
-      if (!siteUrl.endsWith('/') && !callbackPath.startsWith('/')) {
-        callbackPath = '/' + callbackPath;
-      }
-      
-      const callbackUrl = siteUrl + callbackPath;
+      const callbackUrl = `${siteUrl}/auth/callback`;
       console.log("Callback URL configured as:", callbackUrl);
       return callbackUrl;
     } catch (error) {
