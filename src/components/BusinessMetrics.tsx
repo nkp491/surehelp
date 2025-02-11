@@ -13,10 +13,12 @@ import { useMetricsHistory } from "@/hooks/useMetricsHistory";
 import { startOfDay } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo } from "react";
+import { useAuthStateManager } from "@/hooks/useAuthStateManager";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
+  const { isAuthenticated } = useAuthStateManager();
   
   const defaultMetrics = {
     leads: 0,
@@ -30,7 +32,7 @@ const BusinessMetricsContent = () => {
 
   // Memoize the calculation function to prevent unnecessary recalculations
   const aggregatedMetrics = useMemo(() => {
-    if (!sortedHistory?.length) {
+    if (!sortedHistory?.length || !isAuthenticated) {
       return defaultMetrics;
     }
 
@@ -51,22 +53,27 @@ const BusinessMetricsContent = () => {
       
       return acc;
     }, { ...defaultMetrics });
-  }, [timePeriod, sortedHistory]);
+  }, [timePeriod, sortedHistory, isAuthenticated]);
 
   // Update aggregated metrics when dependencies change
   useEffect(() => {
-    if (sortedHistory?.length > 0) {
+    if (sortedHistory?.length > 0 && isAuthenticated) {
       setAggregatedMetrics(aggregatedMetrics);
 
       console.log('[BusinessMetrics] Updated aggregated metrics:', {
         timePeriod,
         metrics: aggregatedMetrics,
         historyLength: sortedHistory.length,
-        firstEntry: sortedHistory[0]
+        firstEntry: sortedHistory[0],
+        isAuthenticated
       });
     }
-  }, [aggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod]);
+  }, [aggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod, isAuthenticated]);
   
+  if (!isAuthenticated) {
+    return null;
+  }
+
   return (
     <div className="space-y-8">
       <Card className="w-full mb-12 p-8 shadow-lg bg-[#F1F1F1]">
