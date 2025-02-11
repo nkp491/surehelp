@@ -11,8 +11,11 @@ export const AuthRoutes = () => {
   const { isAuthenticated, isLoading } = useAuthStateManager();
 
   if (isLoading) {
+    console.log("Auth loading state:", { isLoading, isAuthenticated });
     return <AuthLoading />;
   }
+
+  console.log("Auth routes state:", { isAuthenticated });
 
   return (
     <Routes>

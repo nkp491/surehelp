@@ -18,6 +18,13 @@ const Auth = () => {
   const [view, setView] = useState<"sign_in" | "sign_up" | "update_password">("sign_up");
   const [isInitializing, setIsInitializing] = useState(true);
 
+  // Get site URL dynamically
+  const getSiteUrl = () => {
+    const url = window.location.origin;
+    console.log("Current site URL:", url);
+    return url;
+  };
+
   useEffect(() => {
     const checkSession = async () => {
       try {
@@ -132,7 +139,7 @@ const Auth = () => {
               view={view}
               appearance={getAuthFormAppearance()}
               providers={[]}
-              redirectTo={`${window.location.origin}/auth/callback`}
+              redirectTo={`${getSiteUrl()}/auth/callback`}
               showLinks={true}
             />
           </AuthFormContainer>
