@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -16,8 +17,14 @@ export const AuthRoutes = () => {
   return (
     <Routes>
       <Route 
-        path="/auth" 
-        element={isAuthenticated ? <Navigate to="/assessment" replace /> : <Auth />} 
+        path="/auth/*" 
+        element={
+          isAuthenticated ? (
+            <Navigate to="/assessment" replace />
+          ) : (
+            <Auth />
+          )
+        } 
       />
       <Route 
         path="/" 
@@ -26,7 +33,7 @@ export const AuthRoutes = () => {
       <Route 
         path="/profile" 
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
             <Profile />
           </ProtectedRoute>
         } 
@@ -34,7 +41,7 @@ export const AuthRoutes = () => {
       <Route 
         path="/metrics" 
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
             <Index />
           </ProtectedRoute>
         } 
@@ -42,7 +49,7 @@ export const AuthRoutes = () => {
       <Route 
         path="/submitted-forms" 
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
             <Index />
           </ProtectedRoute>
         } 
@@ -50,7 +57,7 @@ export const AuthRoutes = () => {
       <Route 
         path="/manager-dashboard" 
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
             <Index />
           </ProtectedRoute>
         } 
@@ -58,7 +65,7 @@ export const AuthRoutes = () => {
       <Route 
         path="/assessment" 
         element={
-          <ProtectedRoute isAuthenticated={isAuthenticated}>
+          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
             <Index />
           </ProtectedRoute>
         } 
