@@ -20,24 +20,39 @@ const Auth = () => {
 
   // Get site URL dynamically and handle preview URLs
   const getSiteUrl = () => {
-    const origin = window.location.origin;
-    // Handle preview URLs
-    if (origin.includes('preview--')) {
-      // For preview deployments, use the preview URL
-      console.log("Using preview URL:", origin);
+    try {
+      const origin = window.location.origin;
+      const hostname = window.location.hostname;
+      
+      // Special handling for preview URLs
+      if (hostname.includes('preview--')) {
+        const previewUrl = origin;
+        console.log("Preview deployment detected:", previewUrl);
+        return previewUrl;
+      }
+      
+      console.log("Using production URL:", origin);
       return origin;
+    } catch (error) {
+      console.error("Error getting site URL:", error);
+      // Fallback to window.location.origin
+      return window.location.origin;
     }
-    // For production/development
-    console.log("Using site URL:", origin);
-    return origin;
   };
 
   // Get callback URL based on current environment
   const getCallbackUrl = () => {
-    const siteUrl = getSiteUrl();
-    const callbackUrl = `${siteUrl}/auth/callback`;
-    console.log("Using callback URL:", callbackUrl);
-    return callbackUrl;
+    try {
+      const siteUrl = getSiteUrl();
+      // Ensure we're using the correct path format
+      const callbackUrl = new URL('/auth/callback', siteUrl).toString();
+      console.log("Callback URL configured as:", callbackUrl);
+      return callbackUrl;
+    } catch (error) {
+      console.error("Error constructing callback URL:", error);
+      // Fallback to basic callback URL
+      return `${window.location.origin}/auth/callback`;
+    }
   };
 
   useEffect(() => {
