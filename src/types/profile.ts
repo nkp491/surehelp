@@ -6,7 +6,7 @@ export type Profile = {
   email: string | null;
   phone: string | null;
   profile_image_url: string | null;
-  role: "super_admin" | "admin" | "manager" | "user" | "guest" | null;
+  role: "agent" | "manager" | null;
   created_at: string;
   updated_at: string;
   last_sign_in: string | null;
