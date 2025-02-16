@@ -315,6 +315,7 @@ export type Database = {
           id: string
           language_preference: string | null
           last_name: string | null
+          last_sign_in: string | null
           notification_preferences: Json | null
           phone: string | null
           privacy_settings: Json | null
@@ -329,6 +330,7 @@ export type Database = {
           id: string
           language_preference?: string | null
           last_name?: string | null
+          last_sign_in?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           privacy_settings?: Json | null
@@ -343,6 +345,7 @@ export type Database = {
           id?: string
           language_preference?: string | null
           last_name?: string | null
+          last_sign_in?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           privacy_settings?: Json | null
