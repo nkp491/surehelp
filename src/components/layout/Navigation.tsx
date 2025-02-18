@@ -8,9 +8,9 @@ const Navigation = () => {
   const isActive = (path: string) => location.pathname === path;
 
   const navigationItems = [
-    { label: 'Assessment', path: '/assessment' },
-    { label: 'Submission', path: '/submitted-forms' },
-    { label: 'Dashboard', path: '/metrics' },
+    { label: 'Client Assessment Form', path: '/assessment' },
+    { label: 'Client Book of Business', path: '/submitted-forms' },
+    { label: 'KPI Insights', path: '/metrics' },
     { label: 'Team', path: '/manager-dashboard' },
   ];
 

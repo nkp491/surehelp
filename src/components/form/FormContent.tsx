@@ -19,7 +19,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { selectedField, setSelectedField } = useFormBuilder();
   const { showSpouse } = useSpouseVisibility();
-  const { familyMembers } = useFamilyMembers();
+  const { familyMembers, updateFamilyMember, removeFamilyMember } = useFamilyMembers();
 
   const filteredSections = sections.filter(section => {
     const isSpouseSection = section.section.toLowerCase().includes('spouse');
@@ -93,16 +93,10 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
           section={`Family Member ${index + 1}`}
           fields={sections[0].fields.filter(field => !field.id.toLowerCase().includes('spouse'))}
           formData={member.data}
-          setFormData={(data) => {
-            const updatedMembers = [...familyMembers];
-            updatedMembers[index] = { ...member, data };
-          }}
+          setFormData={(data) => updateFamilyMember(member.id, data)}
           errors={{}}
           submissionId={member.id}
-          onRemove={() => {
-            const updatedMembers = familyMembers.filter((_, i) => i !== index);
-            // Update family members context here
-          }}
+          onRemove={() => removeFamilyMember(member.id)}
         />
       ))}
       

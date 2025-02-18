@@ -15,6 +15,12 @@ interface FamilyMembersContextType {
 
 const FamilyMembersContext = createContext<FamilyMembersContextType | undefined>(undefined);
 
+const initialMemberData = {
+  selectedConditions: [],
+  employmentStatus: [],
+  selectedInvestments: [],
+};
+
 export function FamilyMembersProvider({ children }: { children: React.ReactNode }) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);
 
@@ -22,7 +28,7 @@ export function FamilyMembersProvider({ children }: { children: React.ReactNode 
     if (familyMembers.length < 5) {
       setFamilyMembers([...familyMembers, { 
         id: crypto.randomUUID(),
-        data: {}
+        data: initialMemberData
       }]);
     }
   };
@@ -33,7 +39,14 @@ export function FamilyMembersProvider({ children }: { children: React.ReactNode 
 
   const updateFamilyMember = (id: string, data: Partial<FormSubmission>) => {
     setFamilyMembers(familyMembers.map(member => 
-      member.id === id ? { ...member, data } : member
+      member.id === id ? { 
+        ...member, 
+        data: {
+          ...initialMemberData,
+          ...member.data,
+          ...data
+        }
+      } : member
     ));
   };
 

@@ -35,10 +35,12 @@ const MedicalConditionsCheckbox = ({
   const mc = medicalConditionsTranslations[language];
 
   const handleCheckboxChange = (condition: string, checked: boolean) => {
+    const currentSelected = Array.isArray(selectedConditions) ? selectedConditions : [];
+    
     if (checked) {
-      onChange([...(selectedConditions || []), condition]);
+      onChange([...currentSelected, condition]);
     } else {
-      onChange((selectedConditions || []).filter((c) => c !== condition));
+      onChange(currentSelected.filter((c) => c !== condition));
     }
   };
 
@@ -48,21 +50,15 @@ const MedicalConditionsCheckbox = ({
         {language === 'en' ? 'Medical Condition' : 'Condición Médica'}
       </Label>
       <div className="grid grid-cols-4 gap-x-8 gap-y-3">
-        {CONDITIONS.map(({ id, label }) => (
-          <div key={id} className="flex items-center space-x-2">
+        {CONDITIONS.map((condition) => (
+          <div key={condition.id} className="flex items-center space-x-2">
             <Checkbox
-              id={id}
-              checked={(selectedConditions || []).includes(id)}
-              onCheckedChange={(checked) =>
-                handleCheckboxChange(id, checked as boolean)
-              }
-              className="rounded-sm border-gray-400"
+              id={condition.id}
+              checked={Array.isArray(selectedConditions) && selectedConditions.includes(condition.id)}
+              onCheckedChange={(checked) => handleCheckboxChange(condition.id, checked as boolean)}
             />
-            <Label
-              htmlFor={id}
-              className="text-sm font-normal leading-none text-gray-700"
-            >
-              {mc[label]}
+            <Label htmlFor={condition.id} className="text-sm font-normal">
+              {mc[condition.label]}
             </Label>
           </div>
         ))}

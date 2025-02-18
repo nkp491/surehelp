@@ -15,17 +15,17 @@ import {
 
 const navigationItems = [
   {
-    title: "Assessment",
+    title: "Client Assessment Form",
     path: "/assessment",
     icon: ClipboardList,
   },
   {
-    title: "Submission",
+    title: "Client Book of Business",
     path: "/submitted-forms",
     icon: ClipboardList,
   },
   {
-    title: "Dashboard",
+    title: "KPI Insights",
     path: "/metrics",
     icon: LayoutDashboard,
   },

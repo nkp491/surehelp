@@ -10,6 +10,13 @@ interface RegularFieldsSectionProps {
 }
 
 const RegularFieldsSection = ({ fields, formData, setFormData, errors, submissionId }: RegularFieldsSectionProps) => {
+  const handleFieldChange = (fieldId: string, value: any) => {
+    setFormData({
+      ...formData,
+      [fieldId]: value
+    });
+  };
+
   return (
     <div className="form-container">
       {fields.map((field) => (
@@ -18,10 +25,8 @@ const RegularFieldsSection = ({ fields, formData, setFormData, errors, submissio
           id={field.id}
           fieldType={field.type}
           label={field.label}
-          value={formData[field.id]}
-          onChange={(value) =>
-            setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-          }
+          value={formData[field.id] || ''}
+          onChange={(value) => handleFieldChange(field.id, value)}
           placeholder={field.placeholder}
           required={field.required}
           error={errors[field.id]}
