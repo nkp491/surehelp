@@ -6,6 +6,9 @@ import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
 import CommissionTracker from "@/pages/CommissionTracker";
+import Home from "@/pages/marketing/Home";
+import Products from "@/pages/marketing/Products";
+import Pricing from "@/pages/marketing/Pricing";
 
 export const AuthRoutes = () => {
   const { isAuthenticated, isLoading } = useAuthStateManager();
@@ -20,6 +23,24 @@ export const AuthRoutes = () => {
   return (
     <Routes>
       <Route 
+        path="/" 
+        element={
+          isAuthenticated ? (
+            <Navigate to="/assessment" replace />
+          ) : (
+            <Home />
+          )
+        } 
+      />
+      <Route 
+        path="/products" 
+        element={<Products />}
+      />
+      <Route 
+        path="/pricing" 
+        element={<Pricing />}
+      />
+      <Route 
         path="/auth/*" 
         element={
           isAuthenticated ? (
@@ -28,10 +49,6 @@ export const AuthRoutes = () => {
             <Auth />
           )
         } 
-      />
-      <Route 
-        path="/" 
-        element={<Navigate to="/assessment" replace />} 
       />
       <Route 
         path="/profile" 
