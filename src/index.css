@@ -1,94 +1,72 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
- 
-@layer base {
-  :root {
-    --background: 0 0% 98%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 189 85% 28%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 189 85% 28%;
-    --radius: 0.5rem;
+
+@layer components {
+  .all-\[unset\] {
+    all: unset;
   }
 }
- 
+
+:root {
+  --shape-corner-small: 8px;
+  --www-modernlife-com-color-grey-97: rgba(251, 252, 245, 1);
+  --www-modernlife-com-color-white-solid: rgba(255, 255, 255, 1);
+  --wwwmodernlifecomblack: rgba(0, 0, 0, 1);
+  --wwwmodernlifecomwhite: rgba(255, 255, 255, 1);
+  --wwwmodernlifecomwhite-bianca: var(--www-modernlife-com-color-white-solid);
+  --background: 0 0% 100%;
+  --foreground: 222.2 47.4% 11.2%;
+  --muted: 210 40% 96.1%;
+  --muted-foreground: 215.4 16.3% 46.9%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222.2 47.4% 11.2%;
+  --border: 214.3 31.8% 91.4%;
+  --input: 214.3 31.8% 91.4%;
+  --card: transparent;
+  --card-foreground: 222.2 47.4% 11.2%;
+  --primary: 222.2 47.4% 11.2%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96.1%;
+  --secondary-foreground: 222.2 47.4% 11.2%;
+  --accent: 210 40% 96.1%;
+  --accent-foreground: 222.2 47.4% 11.2%;
+  --destructive: 0 100% 50%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 215 20.2% 65.1%;
+  --radius: 0.5rem;
+}
+
+.dark {
+  --background: 224 71% 4%;
+  --foreground: 213 31% 91%;
+  --muted: 223 47% 11%;
+  --muted-foreground: 215.4 16.3% 56.9%;
+  --accent: 216 34% 17%;
+  --accent-foreground: 210 40% 98%;
+  --popover: 224 71% 4%;
+  --popover-foreground: 215 20.2% 65.1%;
+  --border: 216 34% 17%;
+  --input: 216 34% 17%;
+  --card: transparent;
+  --card-foreground: 213 31% 91%;
+  --primary: 210 40% 98%;
+  --primary-foreground: 222.2 47.4% 1.2%;
+  --secondary: 222.2 47.4% 11.2%;
+  --secondary-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 216 34% 17%;
+  --radius: 0.5rem;
+}
+
 @layer base {
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
-  }
-}
-
-@layer utilities {
-  .bg-grid {
-    background-size: 16px 16px;
-    background-image: 
-      linear-gradient(to right, rgba(203, 213, 225, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(203, 213, 225, 0.1) 1px, transparent 1px);
-  }
-
-  .form-field-container {
-    @apply p-1.5 rounded-lg bg-white border border-gray-100 transition-all duration-200 hover:border-gray-200;
-    margin: 0;
-  }
-
-  .form-field-container:hover {
-    @apply shadow-sm;
-  }
-
-  .form-layout {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 12px;
-    max-width: 1440px;
-    margin: 0 auto;
-  }
-
-  .form-section {
-    @apply bg-white rounded-xl shadow-sm border border-gray-200;
-  }
-
-  .form-section-header {
-    @apply bg-[#0096c7] text-white px-3 py-1 text-sm font-medium rounded-t-[12px];
-  }
-
-  .form-section-content {
-    @apply p-3 space-y-3;
-  }
-
-  .form-group {
-    @apply space-y-3;
-  }
-
-  .form-group-horizontal {
-    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 items-start;
-  }
-
-  .form-field-label {
-    @apply text-xs font-medium text-gray-700 mb-0.5;
-  }
-
-  .form-field-input {
-    @apply w-full text-sm;
+    font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
