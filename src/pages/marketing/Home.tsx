@@ -18,7 +18,7 @@ const Home = () => {
 
   return (
     <div className="bg-gradient-to-b from-[#2A6F97] to-[#2A6F97]/80 min-h-screen">
-      <div className="max-w-[1440px] mx-auto relative">
+      <div className="container mx-auto max-w-[95vw] lg:max-w-[1400px] relative">
         {/* Navigation */}
         <nav className="flex items-center justify-between px-6 md:px-20 py-4 border-b border-white/20">
           <span 
