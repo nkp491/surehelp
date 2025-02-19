@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import SubmittedForms from "@/pages/SubmittedForms";
@@ -9,6 +8,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import Auth from "@/pages/Auth";
+import CommissionTracker from "@/pages/CommissionTracker";
 
 const MainContent = () => {
   const location = useLocation();
@@ -33,6 +33,8 @@ const MainContent = () => {
           return <Profile />;
         case '/assessment':
           return <FormContainer />;
+        case '/commission-tracker':
+          return <CommissionTracker />;
         default:
           return <Dashboard />;
       }

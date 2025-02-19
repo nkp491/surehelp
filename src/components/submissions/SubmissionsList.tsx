@@ -45,45 +45,22 @@ const SubmissionsList = ({
 
       // Add submission details
       doc.setFontSize(12);
-      const addField = (label: string, value: string | undefined) => {
-        if (value) {
-          doc.text(`${label}: ${value}`, 20, yPos);
+      Object.entries(submission).forEach(([key, value]) => {
+        if (value && typeof value !== 'object') {
+          doc.text(`${key}: ${value}`, 20, yPos);
           yPos += lineHeight;
         }
-      };
-
-      // Personal Information
-      doc.setFont(undefined, 'bold');
-      doc.text("Personal Information", 20, yPos);
-      yPos += lineHeight;
-      doc.setFont(undefined, 'normal');
-
-      addField("Name", submission.name);
-      addField("Date of Birth", submission.dob);
-      addField("Height", submission.height);
-      addField("Weight", submission.weight);
-
-      // Medical Information
-      yPos += lineHeight;
-      doc.setFont(undefined, 'bold');
-      doc.text("Medical Information", 20, yPos);
-      yPos += lineHeight;
-      doc.setFont(undefined, 'normal');
-
-      addField("Tobacco Use", submission.tobaccoUse);
-      addField("Medical Conditions", submission.medicalConditions);
-      addField("Hospitalizations", submission.hospitalizations);
-      addField("Surgeries", submission.surgeries);
-      addField("Medications", submission.prescriptionMedications);
+      });
 
       // Save the PDF
-      doc.save(`assessment-${submission.name}-${new Date().toISOString().split('T')[0]}.pdf`);
-
+      doc.save(`assessment-${submission.timestamp}.pdf`);
+      
       toast({
         title: "Success",
         description: "PDF exported successfully",
       });
     } catch (error) {
+      console.error("Error exporting PDF:", error);
       toast({
         title: "Error",
         description: "Failed to export PDF",
@@ -93,37 +70,42 @@ const SubmissionsList = ({
   };
 
   return (
-    <Table>
-      <SubmissionsTableHeader onSort={onSort} />
-      <TableBody>
-        {submissions.map((submission, index) => (
-          <TableRow key={index} className="cursor-pointer hover:bg-gray-50">
-            <TableCell className="text-[#2A6F97]">{formatDate(submission.timestamp)}</TableCell>
-            <TableCell className="text-[#2A6F97]">{submission.name}</TableCell>
-            <TableCell className="text-[#2A6F97]">{submission.dob}</TableCell>
-            <TableCell>
-              <StatusBadge outcome={submission.outcome} />
-            </TableCell>
-            <TableCell>
-              <TableActions
-                submission={submission}
-                onEdit={onEdit}
-                onDelete={onDelete}
-                onViewProfile={onViewProfile}
-                onExportPDF={handleExportPDF}
-              />
-            </TableCell>
-          </TableRow>
-        ))}
-        {submissions.length === 0 && (
-          <TableRow>
-            <TableCell colSpan={5} className="text-center py-8 text-[#2A6F97]">
-              No submissions found
-            </TableCell>
-          </TableRow>
-        )}
-      </TableBody>
-    </Table>
+    <div className="w-full bg-white rounded-lg border border-gray-100 overflow-hidden">
+      <Table>
+        <SubmissionsTableHeader onSort={onSort} />
+        <TableBody>
+          {submissions.length === 0 ? (
+            <TableRow>
+              <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                No submissions found
+              </TableCell>
+            </TableRow>
+          ) : (
+            submissions.map((submission) => (
+              <TableRow key={submission.timestamp}>
+                <TableCell className="font-medium">
+                  {formatDate(submission.timestamp)}
+                </TableCell>
+                <TableCell>{submission.name || 'N/A'}</TableCell>
+                <TableCell>{submission.dob || 'N/A'}</TableCell>
+                <TableCell>
+                  <StatusBadge outcome={submission.outcome || 'N/A'} />
+                </TableCell>
+                <TableCell>
+                  <TableActions
+                    submission={submission}
+                    onEdit={onEdit}
+                    onDelete={onDelete}
+                    onViewProfile={onViewProfile}
+                    onExportPDF={handleExportPDF}
+                  />
+                </TableCell>
+              </TableRow>
+            ))
+          )}
+        </TableBody>
+      </Table>
+    </div>
   );
 };
 

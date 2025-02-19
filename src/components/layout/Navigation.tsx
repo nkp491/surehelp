@@ -11,6 +11,7 @@ const Navigation = () => {
     { label: 'Client Assessment Form', path: '/assessment' },
     { label: 'Client Book of Business', path: '/submitted-forms' },
     { label: 'KPI Insights', path: '/metrics' },
+    { label: 'Commission Tracker', path: '/commission-tracker' },
     { label: 'Team', path: '/manager-dashboard' },
   ];
 

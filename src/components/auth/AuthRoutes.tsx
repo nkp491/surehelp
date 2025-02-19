@@ -1,4 +1,3 @@
-
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
 import { ProtectedRoute } from "./ProtectedRoute";
@@ -6,6 +5,7 @@ import { AuthLoading } from "./AuthLoading";
 import Auth from "@/pages/Auth";
 import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
+import CommissionTracker from "@/pages/CommissionTracker";
 
 export const AuthRoutes = () => {
   const { isAuthenticated, isLoading } = useAuthStateManager();
@@ -67,6 +67,14 @@ export const AuthRoutes = () => {
       />
       <Route 
         path="/assessment" 
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
+            <Index />
+          </ProtectedRoute>
+        } 
+      />
+      <Route 
+        path="/commission-tracker" 
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
             <Index />

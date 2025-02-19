@@ -87,20 +87,22 @@ const SubmittedForms = () => {
         </div>
       </div>
       
-      {editingSubmission && (
-        <div className="mb-8">
-          <h2 className="text-2xl font-semibold mb-4 text-[#2A6F97]">Edit Submission</h2>
-          <FormContainer 
-            editingSubmission={editingSubmission} 
-            onUpdate={handleUpdate}
-          />
-        </div>
-      )}
+      <div className="space-y-8">
+        {editingSubmission && (
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4 text-[#2A6F97]">Edit Submission</h2>
+            <FormContainer 
+              editingSubmission={editingSubmission} 
+              onUpdate={handleUpdate}
+            />
+          </div>
+        )}
 
-      <SubmissionsTable 
-        submissions={submissions}
-        onEdit={handleEdit}
-      />
+        <SubmissionsTable 
+          submissions={submissions}
+          onEdit={handleEdit}
+        />
+      </div>
     </div>
   );
 };
