@@ -1,82 +1,87 @@
 
 import { Button } from "@/components/ui/button";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+} from "@/components/ui/navigation-menu";
 import { useNavigate } from "react-router-dom";
-import { MoveRight, Menu } from "lucide-react";
+
+const navigationItems = [
+  { label: "Products", href: "/products" },
+  { label: "Pricing", href: "/pricing" },
+];
 
 const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#2A6F97] to-[#2A6F97]/80">
-      <nav className="fixed w-full bg-transparent backdrop-blur-sm border-b border-white/10 z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
-              <span className="text-2xl font-bold text-white">SureHelp</span>
-            </div>
-            <div className="hidden md:flex items-center gap-8">
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/products')}
-                className="text-white/80 hover:text-white hover:bg-white/10"
-              >
-                Products
-              </Button>
-              <Button 
-                variant="ghost" 
-                onClick={() => navigate('/pricing')}
-                className="text-white/80 hover:text-white hover:bg-white/10"
-              >
-                Pricing
-              </Button>
-              <Button 
-                onClick={() => navigate('/auth')}
+    <div className="bg-gradient-to-b from-[#2A6F97] to-[#2A6F97]/80 min-h-screen">
+      <div className="max-w-[1440px] mx-auto relative">
+        {/* Navigation */}
+        <nav className="flex items-center justify-between px-6 md:px-20 py-4 border-b border-white/20">
+          <span 
+            onClick={() => navigate('/')} 
+            className="text-2xl font-bold text-white cursor-pointer"
+          >
+            SureHelp
+          </span>
+
+          <NavigationMenu>
+            <NavigationMenuList className="flex items-center gap-8">
+              {navigationItems.map((item) => (
+                <NavigationMenuItem key={item.label}>
+                  <NavigationMenuLink
+                    onClick={(e) => {
+                      e.preventDefault();
+                      navigate(item.href);
+                    }}
+                    className="text-sm text-white hover:text-white/80 transition-colors cursor-pointer"
+                  >
+                    {item.label}
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
+              <Button
                 variant="secondary"
-                className="bg-white text-[#2A6F97] hover:bg-white/90"
+                onClick={() => navigate('/auth')}
+                className="bg-white/85 text-[#2A6F97] font-extrabold rounded-lg px-4 py-1.5"
               >
                 Login
               </Button>
-            </div>
-            <Button className="md:hidden" size="icon" variant="ghost">
-              <Menu className="h-6 w-6 text-white" />
-            </Button>
-          </div>
-        </div>
-      </nav>
+            </NavigationMenuList>
+          </NavigationMenu>
+        </nav>
 
-      <main>
-        <div className="container mx-auto px-4">
-          <div className="min-h-screen flex items-center">
-            <div className="max-w-2xl">
-              <h1 className="text-4xl md:text-6xl font-bold text-white mb-6">
-                Insurance Assessment Made Simple
+        {/* Hero Section */}
+        <div className="px-6 md:px-20 pt-24">
+          <div className="flex flex-col lg:flex-row">
+            <div className="flex-1">
+              <h1 className="text-4xl md:text-[64px] text-white leading-tight">
+                <span className="font-black">Supercharge your </span>
+                <span className="font-normal">insurance process.</span>
               </h1>
-              <p className="text-lg text-white/80 mb-8">
-                Streamline your insurance assessment process with our comprehensive platform. 
-                Built for insurance professionals who value efficiency and accuracy.
+
+              <p className="mt-8 text-white/80 max-w-[417px]">
+                The Agent Hub will organize and optimize your client data while
+                the KPI analytics will help you manage your team performance.
               </p>
-              <div className="flex flex-col sm:flex-row gap-4">
-                <Button 
-                  onClick={() => navigate('/auth')} 
-                  size="lg"
-                  className="group bg-white text-[#2A6F97] hover:bg-white/90"
-                >
-                  Get Started
-                  <MoveRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform" />
-                </Button>
-                <Button 
-                  variant="secondary" 
-                  size="lg" 
-                  onClick={() => navigate('/products')}
-                  className="bg-white/10 text-white hover:bg-white/20"
-                >
-                  Learn More
-                </Button>
-              </div>
+
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="mt-8 bg-white text-[#2A6F97] rounded-full px-8 py-3 hover:bg-white/90"
+              >
+                Get Started
+              </Button>
+            </div>
+
+            <div className="flex-1 mt-12 lg:mt-0">
+              <div className="w-full h-[630px] bg-white/10 rounded-lg" />
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 };
