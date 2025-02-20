@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MetricCount } from '@/types/metrics';
@@ -45,6 +46,13 @@ export const useMetricsLoad = () => {
     }
   };
 
+  const addOptimisticEntry = async (date: string, metrics: MetricCount) => {
+    setHistory(prev => [{
+      date,
+      metrics
+    }, ...prev]);
+  };
+
   useEffect(() => {
     loadHistory();
   }, []);
@@ -52,5 +60,6 @@ export const useMetricsLoad = () => {
   return {
     history,
     loadHistory,
+    addOptimisticEntry
   };
 };

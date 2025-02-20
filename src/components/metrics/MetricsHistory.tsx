@@ -1,9 +1,11 @@
+
 import { useState } from 'react';
 import { useMetricsHistory } from '@/hooks/useMetricsHistory';
 import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
 import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
 import MetricsContent from './MetricsContent';
 import { useMetrics } from '@/contexts/MetricsContext';
+import { TimePeriod } from '@/types/metrics';
 
 const MetricsHistory = () => {
   const {
@@ -24,7 +26,7 @@ const MetricsHistory = () => {
   const { refreshMetrics } = useMetrics();
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [timePeriod, setTimePeriod] = useState<"24h" | "7d" | "30d" | "custom">("24h");
+  const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const { deleteDate, setDeleteDate, handleDelete } = useMetricsDelete(loadHistory);
 
   const handleSaveAndRefresh = async (date: string) => {
