@@ -21,6 +21,11 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
   timePeriod,
   onTimePeriodChange,
 }) => {
+  const handleDateRangeChange = (dates: { from: Date | undefined; to: Date | undefined }) => {
+    // For now, we'll just use the "from" date to maintain compatibility
+    onDateChange(dates.from);
+  };
+
   return (
     <div className="flex items-center space-x-4">
       <div className="relative">
@@ -34,8 +39,9 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
       </div>
       <DateRangePicker
-        date={selectedDate}
-        onSelect={(date) => onDateChange(date || undefined)}
+        timePeriod={timePeriod}
+        onTimePeriodChange={onTimePeriodChange}
+        onDateRangeChange={handleDateRangeChange}
       />
     </div>
   );
