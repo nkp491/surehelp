@@ -7,7 +7,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
+    <div className="min-h-screen w-screen bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90 bg-grid overflow-x-hidden">
       <nav className="border-b border-white/20 backdrop-blur-sm fixed w-full z-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -32,7 +32,7 @@ const Home = () => {
         </div>
       </nav>
 
-      <main>
+      <main className="w-full">
         <div className="relative isolate pt-24">
           <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
             <div className="text-left">
