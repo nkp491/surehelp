@@ -1,3 +1,4 @@
+
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Pacifico&display=swap');
 
@@ -28,12 +29,6 @@
     --ring: 189 85% 28%;
     --radius: 0.5rem;
   }
-  
-  body {
-    margin: 0;
-    padding: 0;
-    overflow-x: hidden;
-  }
 }
  
 @layer base {
@@ -47,13 +42,10 @@
 
 @layer utilities {
   .bg-grid {
-    @apply relative w-full;
     background-size: clamp(16px, 2vw, 24px) clamp(16px, 2vw, 24px);
     background-image: 
       linear-gradient(to right, rgba(203, 213, 225, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(203, 213, 225, 0.1) 1px, transparent 1px),
-      linear-gradient(to bottom, #0096C7, rgba(0, 45, 203, 0.9));
-    background-position: 0 0;
+      linear-gradient(to bottom, rgba(203, 213, 225, 0.1) 1px, transparent 1px);
   }
 
   .form-field-container {
@@ -102,3 +94,4 @@
     @apply w-full text-sm;
   }
 }
+
