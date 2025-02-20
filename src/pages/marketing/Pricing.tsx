@@ -1,10 +1,75 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle } from "lucide-react";
+import { CheckCircle, DollarSign } from "lucide-react";
+import { Switch } from "@/components/ui/switch";
+import { useState } from "react";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const [isYearly, setIsYearly] = useState(false);
+
+  const pricingData = [
+    {
+      name: "Agent",
+      monthlyPrice: "free",
+      yearlyPrice: "free",
+      description: "The simplest way to try SureHelp",
+      features: [
+        "Up to 15 Client assessment forms/month",
+        "Client book of business",
+        "KPI insights up to 30 days",
+      ]
+    },
+    {
+      name: "Agent Pro",
+      monthlyPrice: "99",
+      yearlyPrice: "948",
+      description: "For growing agent practices",
+      features: [
+        "Up to 150 assessments/month",
+        "Advanced analytics",
+        "Priority email support",
+        "Up to 3 team members"
+      ]
+    },
+    {
+      name: "Manager Pro",
+      monthlyPrice: "199",
+      yearlyPrice: "1,908",
+      description: "For small agency managers",
+      features: [
+        "Up to 500 assessments/month",
+        "Team analytics & reporting",
+        "Priority support",
+        "Up to 10 team members"
+      ]
+    },
+    {
+      name: "Manager Pro Gold",
+      monthlyPrice: "399",
+      yearlyPrice: "3,828",
+      description: "For medium agencies",
+      features: [
+        "1000 assessments/month",
+        "Advanced team analytics",
+        "24/7 priority support",
+        "Up to 25 team members"
+      ]
+    },
+    {
+      name: "Manager Pro Platinum",
+      monthlyPrice: "799",
+      yearlyPrice: "7,668",
+      description: "For large agencies",
+      features: [
+        "Unlimited assessments",
+        "Custom reporting & API access",
+        "Dedicated support team",
+        "Unlimited team members"
+      ]
+    }
+  ];
 
   return (
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
@@ -44,65 +109,24 @@ const Pricing = () => {
                 <p className="mt-6 text-lg leading-8 text-white/80">
                   Choose the plan that works best for you and your team
                 </p>
+                <div className="flex items-center justify-center gap-4 mt-8">
+                  <span className="text-white font-medium">Monthly</span>
+                  <Switch
+                    checked={isYearly}
+                    onCheckedChange={setIsYearly}
+                    className="data-[state=checked]:bg-white"
+                  />
+                  <span className="text-white font-medium">Yearly</span>
+                  {isYearly && (
+                    <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">
+                      Save 20%
+                    </span>
+                  )}
+                </div>
               </div>
 
               <div className="mx-auto mt-16 grid max-w-lg gap-8 lg:max-w-none lg:grid-cols-5">
-                {[
-                  {
-                    name: "Agent",
-                    price: "free",
-                    description: "The simplest way to try SureHelp",
-                    features: [
-                      "Up to 15 Client assessment forms/month",
-                      "Client book of business",
-                      "KPI insights up to 30 days",
-                    ]
-                  },
-                  {
-                    name: "Agent Pro",
-                    price: "99",
-                    description: "For growing agent practices",
-                    features: [
-                      "Up to 150 assessments/month",
-                      "Advanced analytics",
-                      "Priority email support",
-                      "Up to 3 team members"
-                    ]
-                  },
-                  {
-                    name: "Manager Pro",
-                    price: "199",
-                    description: "For small agency managers",
-                    features: [
-                      "Up to 500 assessments/month",
-                      "Team analytics & reporting",
-                      "Priority support",
-                      "Up to 10 team members"
-                    ]
-                  },
-                  {
-                    name: "Manager Pro Gold",
-                    price: "399",
-                    description: "For medium agencies",
-                    features: [
-                      "1000 assessments/month",
-                      "Advanced team analytics",
-                      "24/7 priority support",
-                      "Up to 25 team members"
-                    ]
-                  },
-                  {
-                    name: "Manager Pro Platinum",
-                    price: "799",
-                    description: "For large agencies",
-                    features: [
-                      "Unlimited assessments",
-                      "Custom reporting & API access",
-                      "Dedicated support team",
-                      "Unlimited team members"
-                    ]
-                  }
-                ].map((tier) => (
+                {pricingData.map((tier) => (
                   <div
                     key={tier.name}
                     className="flex flex-col justify-between rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 p-8 xl:p-10"
@@ -115,12 +139,16 @@ const Pricing = () => {
                         {tier.description}
                       </p>
                       <p className="mt-6 flex items-baseline gap-x-1">
-                        {tier.price === "free" ? (
+                        {(isYearly ? tier.yearlyPrice : tier.monthlyPrice) === "free" ? (
                           <span className="text-4xl font-bold tracking-tight text-white">Free</span>
                         ) : (
                           <>
-                            <span className="text-4xl font-bold tracking-tight text-white">${tier.price}</span>
-                            <span className="text-sm font-semibold leading-6 text-white/80">/month</span>
+                            <span className="text-4xl font-bold tracking-tight text-white">
+                              ${isYearly ? tier.yearlyPrice : tier.monthlyPrice}
+                            </span>
+                            <span className="text-sm font-semibold leading-6 text-white/80">
+                              /{isYearly ? 'year' : 'month'}
+                            </span>
                           </>
                         )}
                       </p>
