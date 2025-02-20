@@ -123,8 +123,8 @@ const Pricing = () => {
                         {tier.description}
                       </p>
                       
-                      <div className="mt-6 grid grid-cols-2 gap-x-4">
-                        <div className="text-center">
+                      <div className="mt-6 grid grid-cols-2 divide-x divide-white/20">
+                        <div className="text-center pr-4">
                           <p className="text-sm font-medium text-white/80 mb-2">Monthly</p>
                           {tier.monthlyPrice === "free" ? (
                             <p className="text-2xl font-bold text-white">Free</p>
@@ -135,7 +135,7 @@ const Pricing = () => {
                             </p>
                           )}
                         </div>
-                        <div className="text-center">
+                        <div className="text-center pl-4">
                           <p className="text-sm font-medium text-white/80 mb-2">Yearly</p>
                           {tier.yearlyPrice === "free" ? (
                             <p className="text-2xl font-bold text-white">Free</p>
