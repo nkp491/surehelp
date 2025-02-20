@@ -41,7 +41,7 @@ const TypedText = ({ words }: TypedTextProps) => {
     <span 
       className="relative inline-block text-left font-normal" 
       style={{ 
-        minWidth: `${maxLength + 2}ch`,
+        minWidth: `${maxLength + 1}ch`,
         fontFamily: 'Pacifico, cursive',
         fontSize: '1.1em',
         letterSpacing: '0.05em',
@@ -56,3 +56,4 @@ const TypedText = ({ words }: TypedTextProps) => {
 };
 
 export default TypedText;
+
