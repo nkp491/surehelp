@@ -7,7 +7,7 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
       <nav className="border-b border-white/20 backdrop-blur-sm fixed w-full z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -32,10 +32,10 @@ const Home = () => {
         </div>
       </nav>
 
-      <main>
-        <div className="relative isolate pt-24">
+      <main className="w-screen">
+        <div className="relative isolate pt-24 w-full">
           <div className="w-full px-6 py-24 sm:py-32 lg:px-8">
-            <div className="text-left">
+            <div className="text-left max-w-[90%] xl:max-w-[80%] mx-auto">
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                 Supercharge your
                 <br />
