@@ -11,8 +11,12 @@ const Pricing = () => {
     if (monthlyPrice === "free" || yearlyPrice === "free") return 0;
     const monthly = parseFloat(monthlyPrice.replace(",", ""));
     const yearly = parseFloat(yearlyPrice.replace(",", ""));
-    const annualMonthly = monthly * 12;
-    return Math.round(((annualMonthly - yearly) / annualMonthly) * 100);
+    // Calculate total yearly cost if paying monthly
+    const yearlyTotal = monthly * 12;
+    // Calculate total yearly cost if paying yearly rate
+    const yearlyRateTotal = yearly * 12;
+    // Calculate percentage saved
+    return Math.round(((yearlyTotal - yearlyRateTotal) / yearlyTotal) * 100);
   };
 
   const pricingData = [
