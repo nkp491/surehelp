@@ -1,9 +1,13 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/ui/typed-text";
+
 const Home = () => {
   const navigate = useNavigate();
-  return <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
+
+  return (
+    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
       <nav className="border-b border-white/20 backdrop-blur-sm fixed w-full z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -55,6 +59,8 @@ const Home = () => {
           </div>
         </div>
       </main>
-    </div>;
+    </div>
+  );
 };
+
 export default Home;
