@@ -67,7 +67,7 @@ const Home = () => {
                 <img 
                   src="/lovable-uploads/1988b835-79ca-409a-9adc-d3a1794b7286.png"
                   alt="SureHelp Dashboard"
-                  className="w-[90%] h-auto rounded-lg shadow-2xl"
+                  className="w-[95%] h-auto rounded-lg shadow-2xl transform lg:scale-110"
                 />
                 <div className="absolute -inset-x-20 -top-20 -bottom-20 bg-gradient-to-t from-[#002DCB]/30 to-transparent opacity-30 blur-3xl" />
               </div>
