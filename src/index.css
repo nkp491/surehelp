@@ -42,7 +42,7 @@
 
 @layer utilities {
   .bg-grid {
-    background-size: 16px 16px;
+    background-size: clamp(16px, 2vw, 24px) clamp(16px, 2vw, 24px);
     background-image: 
       linear-gradient(to right, rgba(203, 213, 225, 0.1) 1px, transparent 1px),
       linear-gradient(to bottom, rgba(203, 213, 225, 0.1) 1px, transparent 1px);
@@ -94,3 +94,4 @@
     @apply w-full text-sm;
   }
 }
+
