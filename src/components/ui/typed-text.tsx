@@ -41,14 +41,16 @@ const TypedText = ({ words }: TypedTextProps) => {
     <span 
       className="relative inline-block text-left font-normal" 
       style={{ 
-        minWidth: `${maxLength}ch`,
+        minWidth: `${maxLength + 2}ch`,
         fontFamily: 'Pacifico, cursive',
         fontSize: '1.1em',
+        letterSpacing: '0.05em',
+        paddingRight: '0.25em',
         color: colors[currentWordIndex]
       }}
     >
       {text}
-      <span className="inline-block animate-pulse">|</span>
+      <span className="inline-block animate-pulse ml-1">|</span>
     </span>
   );
 };
