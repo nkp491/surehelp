@@ -39,8 +39,8 @@ const TypedText = ({ words }: TypedTextProps) => {
       className="relative inline-block text-left font-normal text-[#7CC6FE]" 
       style={{ 
         minWidth: `${maxLength}ch`,
-        fontFamily: 'Pacifico, cursive',
-        fontSize: '1.1em'
+        fontFamily: 'Sacramento, cursive',
+        fontSize: '1.5em' // Increased size since Sacramento is naturally smaller
       }}
     >
       {text}
