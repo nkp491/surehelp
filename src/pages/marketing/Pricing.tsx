@@ -75,7 +75,7 @@ const Pricing = () => {
       name: "Manager Pro Platinum",
       monthlyPrice: "1,000",
       yearlyPrice: "600",
-      description: "For large agencies with multiple levels of managers and teams",
+      description: "For large agencies with multiple levels of teams",
       features: [
         "Unlimited client assessment forms/month",
         "Client book of business",
