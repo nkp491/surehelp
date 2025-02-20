@@ -1,14 +1,13 @@
+import React from 'react';
 import AddMetricsButton from "../AddMetricsButton";
 import SearchFilters from "./SearchFilters";
 
 interface MetricsHistoryHeaderProps {
-  selectedDate: Date | undefined;
-  onDateSelect: (date: Date | undefined) => void;
-  onAdd: () => void;
+  selectedDate: Date | null;
+  onDateSelect: (date: Date | null) => void;
+  onAdd: (date: Date) => void;
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  timePeriod: "24h" | "7d" | "30d" | "custom";
-  onTimePeriodChange: (period: "24h" | "7d" | "30d" | "custom") => void;
 }
 
 const MetricsHistoryHeader = ({
@@ -17,18 +16,12 @@ const MetricsHistoryHeader = ({
   onAdd,
   searchTerm,
   onSearchChange,
-  timePeriod,
-  onTimePeriodChange,
 }: MetricsHistoryHeaderProps) => {
   return (
-    <div className="flex flex-col sm:flex-row gap-4 items-center justify-between">
+    <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-4 w-full">
       <SearchFilters
         searchTerm={searchTerm}
         onSearchChange={onSearchChange}
-        selectedDate={selectedDate}
-        onDateChange={onDateSelect}
-        timePeriod={timePeriod}
-        onTimePeriodChange={onTimePeriodChange}
       />
       <AddMetricsButton
         selectedDate={selectedDate}

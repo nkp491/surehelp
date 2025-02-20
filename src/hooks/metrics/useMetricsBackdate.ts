@@ -1,14 +1,15 @@
 import { useState } from 'react';
-import { format } from 'date-fns';
+import { format, startOfDay, addDays } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { MetricCount } from '@/types/metrics';
 
-export const useMetricsBackdate = () => {
+export const useMetricsBackdate = (addOptimisticEntry?: (date: string, metrics: MetricCount) => void) => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const { toast } = useToast();
 
-  const handleAddBackdatedMetrics = async () => {
-    if (!selectedDate) {
+  const handleAddBackdatedMetrics = async (date: Date, onSuccess?: () => Promise<void>) => {
+    if (!date) {
       toast({
         title: "Error",
         description: "Please select a date",
@@ -21,8 +22,18 @@ export const useMetricsBackdate = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
-      const formattedDate = format(selectedDate, 'yyyy-MM-dd');
-      const initialMetrics = {
+      // Adjust for timezone by adding one day and then formatting
+      // This ensures the date stays the same as what the user selected
+      const adjustedDate = addDays(startOfDay(date), 1);
+      const formattedDate = format(adjustedDate, 'yyyy-MM-dd');
+
+      console.log('[MetricsBackdate] Date handling:', {
+        originalDate: date.toISOString(),
+        adjustedDate: adjustedDate.toISOString(),
+        formattedDate,
+      });
+
+      const initialMetrics: MetricCount = {
         leads: 0,
         calls: 0,
         contacts: 0,
@@ -32,15 +43,29 @@ export const useMetricsBackdate = () => {
         ap: 0,
       };
 
+      // Insert the metrics directly at the top level
       const { error } = await supabase
         .from('daily_metrics')
         .insert({
           user_id: user.user.id,
           date: formattedDate,
-          ...initialMetrics
+          ...initialMetrics // Spread the metrics at the top level
         });
 
-      if (error) throw error;
+      if (error) {
+        console.error('[MetricsBackdate] Insert error:', error);
+        throw error;
+      }
+
+      // Call the optimistic update callback if provided
+      if (addOptimisticEntry) {
+        addOptimisticEntry(formattedDate, initialMetrics);
+      }
+
+      // Call the success callback if provided
+      if (onSuccess) {
+        await onSuccess();
+      }
 
       toast({
         title: "Success",

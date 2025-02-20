@@ -1,48 +1,41 @@
+import React from 'react';
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { CalendarIcon, Plus } from "lucide-react";
+import { DatePicker } from "@/components/ui/date-picker";
+import { startOfDay } from "date-fns";
 
 interface AddMetricsButtonProps {
-  selectedDate: Date | undefined;
-  onDateSelect: (date: Date | undefined) => void;
-  onAdd: () => void;
+  selectedDate: Date | null;
+  onDateSelect: (date: Date | null) => void;
+  onAdd: (date: Date) => void;
 }
 
-const AddMetricsButton = ({ selectedDate, onDateSelect, onAdd }: AddMetricsButtonProps) => {
+const AddMetricsButton = ({
+  selectedDate,
+  onDateSelect,
+  onAdd,
+}: AddMetricsButtonProps) => {
+  const handleDateSelect = (date: Date | null) => {
+    if (date) {
+      onDateSelect(startOfDay(date));
+    } else {
+      onDateSelect(null);
+    }
+  };
+
   return (
-    <div className="flex items-center">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="flex items-center gap-2">
-            <Plus className="h-4 w-4" />
-            <CalendarIcon className="h-4 w-4" />
-            Add
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent 
-          className="z-50 bg-white p-0" 
-          align="end"
-          onPointerDownOutside={(e) => e.preventDefault()}
-        >
-          <Calendar
-            mode="single"
-            selected={selectedDate}
-            onSelect={onDateSelect}
-            initialFocus
-            className="rounded-md border shadow-sm"
-          />
-          <div className="p-2 border-t">
-            <Button 
-              className="w-full"
-              onClick={onAdd}
-              disabled={!selectedDate}
-            >
-              Add Entry
-            </Button>
-          </div>
-        </PopoverContent>
-      </Popover>
+    <div className="flex items-center gap-3">
+      <DatePicker
+        selected={selectedDate}
+        onSelect={handleDateSelect}
+        maxDate={new Date()}
+      />
+      <Button
+        onClick={() => selectedDate && onAdd(selectedDate)}
+        disabled={!selectedDate}
+        className="bg-[#2A6F97] text-white hover:bg-[#2A6F97]/90 disabled:bg-gray-200"
+      >
+        Add Historical Entry
+      </Button>
     </div>
   );
 };
