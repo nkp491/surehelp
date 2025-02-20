@@ -38,7 +38,7 @@ const Home = () => {
             <div className="text-center">
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                 Supercharge your{" "}
-                <span className="underline decoration-2">
+                <span className="underline decoration-white decoration-4">
                   <TypedText words={["leadflow", "workflow", "cashflow"]} />
                 </span>.
               </h1>
