@@ -158,7 +158,7 @@ const Pricing = () => {
                       <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-white/80">
                         {tier.features.map((feature) => (
                           <li key={feature} className="flex items-start gap-3">
-                            <CheckCircle className="h-4 w-4 mt-0.5 flex-shrink-0 text-white" />
+                            <CheckCircle className="h-4 w-4 mt-1 flex-shrink-0 text-white" />
                             <span className="flex-1">{feature}</span>
                           </li>
                         ))}
