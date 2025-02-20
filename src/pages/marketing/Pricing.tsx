@@ -7,6 +7,14 @@ import { Separator } from "@/components/ui/separator";
 const Pricing = () => {
   const navigate = useNavigate();
 
+  const calculateSavings = (monthlyPrice: string, yearlyPrice: string) => {
+    if (monthlyPrice === "free" || yearlyPrice === "free") return 0;
+    const monthly = parseFloat(monthlyPrice.replace(",", ""));
+    const yearly = parseFloat(yearlyPrice.replace(",", ""));
+    const annualMonthly = monthly * 12;
+    return Math.round(((annualMonthly - yearly) / annualMonthly) * 100);
+  };
+
   const pricingData = [
     {
       name: "Agent",
@@ -14,57 +22,63 @@ const Pricing = () => {
       yearlyPrice: "free",
       description: "The simplest way to try SureHelp",
       features: [
-        "Up to 15 Client assessment forms/month",
+        "Up to 15 client assessment forms/month",
         "Client book of business",
-        "KPI insights up to 30 days",
+        "KPI insights up to 30 days"
       ]
     },
     {
       name: "Agent Pro",
-      monthlyPrice: "99",
-      yearlyPrice: "948",
-      description: "For growing agent practices",
+      monthlyPrice: "45",
+      yearlyPrice: "25",
+      description: "For growing agents",
       features: [
-        "Up to 150 assessments/month",
-        "Advanced analytics",
-        "Priority email support",
-        "Up to 3 team members"
+        "Unlimited client assessment forms/month",
+        "Client book of business",
+        "Unlimited KPI insights",
+        "Team bulletin"
       ]
     },
     {
       name: "Manager Pro",
-      monthlyPrice: "199",
-      yearlyPrice: "1,908",
-      description: "For small agency managers",
+      monthlyPrice: "250",
+      yearlyPrice: "150",
+      description: "For small agencies with teams",
       features: [
-        "Up to 500 assessments/month",
-        "Team analytics & reporting",
-        "Priority support",
-        "Up to 10 team members"
+        "Unlimited client assessment forms/month",
+        "Client book of business",
+        "Unlimited KPI insights",
+        "Up to 25 linked team member accounts",
+        "Manager dashboard with ratios cards",
+        "Team bulletin"
       ]
     },
     {
       name: "Manager Pro Gold",
-      monthlyPrice: "399",
-      yearlyPrice: "3,828",
+      monthlyPrice: "500",
+      yearlyPrice: "300",
       description: "For medium agencies",
       features: [
-        "1000 assessments/month",
-        "Advanced team analytics",
-        "24/7 priority support",
-        "Up to 25 team members"
+        "Unlimited client assessment forms/month",
+        "Client book of business",
+        "Unlimited KPI insights",
+        "Up to 500 linked team member accounts",
+        "Manager dashboard with ratios cards",
+        "Team bulletin"
       ]
     },
     {
       name: "Manager Pro Platinum",
-      monthlyPrice: "799",
-      yearlyPrice: "7,668",
+      monthlyPrice: "1,000",
+      yearlyPrice: "600",
       description: "For large agencies",
       features: [
-        "Unlimited assessments",
-        "Custom reporting & API access",
-        "Dedicated support team",
-        "Unlimited team members"
+        "Unlimited client assessment forms/month",
+        "Client book of business",
+        "Unlimited KPI insights",
+        "Up to 1,000 linked team member accounts",
+        "Manager dashboard with ratios cards",
+        "Team bulletin"
       ]
     }
   ];
@@ -143,11 +157,13 @@ const Pricing = () => {
                             <div>
                               <p className="text-2xl font-bold text-white">
                                 ${tier.yearlyPrice}
-                                <span className="text-sm font-medium text-white/80">/yr</span>
+                                <span className="text-sm font-medium text-white/80">/mo</span>
                               </p>
-                              <p className="text-xs font-medium text-white/80 mt-1">
-                                (Save 20%)
-                              </p>
+                              {calculateSavings(tier.monthlyPrice, tier.yearlyPrice) > 0 && (
+                                <p className="text-xs font-medium text-white/80 mt-1">
+                                  (Save {calculateSavings(tier.monthlyPrice, tier.yearlyPrice)}%)
+                                </p>
+                              )}
                             </div>
                           )}
                         </div>
