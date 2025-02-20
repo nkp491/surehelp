@@ -11,6 +11,9 @@ const TypedText = ({ words }: TypedTextProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [text, setText] = useState("");
 
+  // Find the longest word to set the minimum width
+  const maxLength = Math.max(...words.map(word => word.length));
+
   useEffect(() => {
     const currentWord = words[currentWordIndex];
     setText(currentWord.substring(0, charIndex));
@@ -32,7 +35,7 @@ const TypedText = ({ words }: TypedTextProps) => {
   }, [charIndex, isDeleting, words, currentWordIndex]);
 
   return (
-    <span className="relative inline-block">
+    <span className="relative inline-block" style={{ minWidth: `${maxLength}ch` }}>
       {text}
       <span className="inline-block animate-pulse">|</span>
     </span>
