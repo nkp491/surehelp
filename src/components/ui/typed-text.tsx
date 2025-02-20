@@ -11,6 +11,9 @@ const TypedText = ({ words }: TypedTextProps) => {
   const [isDeleting, setIsDeleting] = useState(false);
   const [text, setText] = useState("");
 
+  // Colors array matching the words array
+  const colors = ['#33C3F0', '#34D399', '#A78BFA'];
+
   // Find the longest word to set the minimum width
   const maxLength = Math.max(...words.map(word => word.length));
 
@@ -41,7 +44,7 @@ const TypedText = ({ words }: TypedTextProps) => {
         minWidth: `${maxLength}ch`,
         fontFamily: 'Pacifico, cursive',
         fontSize: '1.1em',
-        color: '#34D399'
+        color: colors[currentWordIndex]
       }}
     >
       {text}
