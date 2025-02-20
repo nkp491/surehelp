@@ -53,9 +53,9 @@ const Pricing = () => {
                     price: "free",
                     description: "The simplest way to try SureHelp",
                     features: [
-                      "Up to 15 Client Assessment Forms/month",
-                      "Client Book of Business",
-                      "KPI Insights up to 30 days",
+                      "Up to 15 Client assessment forms/month",
+                      "Client book of business",
+                      "KPI insights up to 30 days",
                     ]
                   },
                   {
