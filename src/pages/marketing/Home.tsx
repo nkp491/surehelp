@@ -35,7 +35,7 @@ const Home = () => {
       <main className="w-screen">
         <div className="relative isolate pt-24 w-full">
           <div className="w-full px-6 py-24 sm:py-32 lg:px-8">
-            <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+            <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-4 items-center">
               <div className="text-left">
                 <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                   Supercharge your
