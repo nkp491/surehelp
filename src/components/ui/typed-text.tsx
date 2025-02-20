@@ -36,12 +36,8 @@ const TypedText = ({ words }: TypedTextProps) => {
 
   return (
     <span 
-      className="relative inline-block text-left font-normal text-[#7CC6FE]" 
-      style={{ 
-        minWidth: `${maxLength}ch`,
-        fontFamily: 'Sacramento, cursive',
-        fontSize: '1.5em' // Increased size since Sacramento is naturally smaller
-      }}
+      className="relative inline-block text-left font-bold text-[#7CC6FE]" 
+      style={{ minWidth: `${maxLength}ch` }}
     >
       {text}
       <span className="inline-block animate-pulse">|</span>
