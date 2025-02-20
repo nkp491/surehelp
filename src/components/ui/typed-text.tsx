@@ -35,7 +35,10 @@ const TypedText = ({ words }: TypedTextProps) => {
   }, [charIndex, isDeleting, words, currentWordIndex]);
 
   return (
-    <span className="relative inline-block text-left" style={{ minWidth: `${maxLength}ch` }}>
+    <span 
+      className="relative inline-block text-left font-bold text-[#7CC6FE]" 
+      style={{ minWidth: `${maxLength}ch` }}
+    >
       {text}
       <span className="inline-block animate-pulse">|</span>
     </span>
