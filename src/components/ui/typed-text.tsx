@@ -36,7 +36,7 @@ const TypedText = ({ words }: TypedTextProps) => {
 
   return (
     <span 
-      className="relative inline-block text-left font-normal text-[#7CC6FE] italic" 
+      className="relative inline-block text-left font-normal text-[#FEF7CD]" 
       style={{ 
         minWidth: `${maxLength}ch`,
         fontFamily: 'Pacifico, cursive',
