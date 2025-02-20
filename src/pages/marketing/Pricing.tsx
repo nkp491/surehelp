@@ -1,13 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { CheckCircle, DollarSign } from "lucide-react";
-import { Switch } from "@/components/ui/switch";
-import { useState } from "react";
+import { CheckCircle } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 
 const Pricing = () => {
   const navigate = useNavigate();
-  const [isYearly, setIsYearly] = useState(false);
 
   const pricingData = [
     {
@@ -109,20 +107,6 @@ const Pricing = () => {
                 <p className="mt-6 text-lg leading-8 text-white/80">
                   Choose the plan that works best for you and your team
                 </p>
-                <div className="flex items-center justify-center gap-4 mt-8">
-                  <span className="text-white font-medium">Monthly</span>
-                  <Switch
-                    checked={isYearly}
-                    onCheckedChange={setIsYearly}
-                    className="data-[state=checked]:bg-white"
-                  />
-                  <span className="text-white font-medium">Yearly</span>
-                  {isYearly && (
-                    <span className="ml-2 inline-flex items-center rounded-full bg-white/10 px-2.5 py-1 text-xs font-semibold text-white">
-                      Save 20%
-                    </span>
-                  )}
-                </div>
               </div>
 
               <div className="mx-auto mt-16 grid max-w-lg gap-8 lg:max-w-none lg:grid-cols-5">
@@ -138,20 +122,39 @@ const Pricing = () => {
                       <p className="mt-4 text-sm leading-6 text-white/80">
                         {tier.description}
                       </p>
-                      <p className="mt-6 flex items-baseline gap-x-1">
-                        {(isYearly ? tier.yearlyPrice : tier.monthlyPrice) === "free" ? (
-                          <span className="text-4xl font-bold tracking-tight text-white">Free</span>
-                        ) : (
-                          <>
-                            <span className="text-4xl font-bold tracking-tight text-white">
-                              ${isYearly ? tier.yearlyPrice : tier.monthlyPrice}
-                            </span>
-                            <span className="text-sm font-semibold leading-6 text-white/80">
-                              /{isYearly ? 'year' : 'month'}
-                            </span>
-                          </>
-                        )}
-                      </p>
+                      
+                      <div className="mt-6 grid grid-cols-2 gap-x-4">
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-white/80 mb-2">Monthly</p>
+                          {tier.monthlyPrice === "free" ? (
+                            <p className="text-2xl font-bold text-white">Free</p>
+                          ) : (
+                            <p className="text-2xl font-bold text-white">
+                              ${tier.monthlyPrice}
+                              <span className="text-sm font-medium text-white/80">/mo</span>
+                            </p>
+                          )}
+                        </div>
+                        <div className="text-center">
+                          <p className="text-sm font-medium text-white/80 mb-2">Yearly</p>
+                          {tier.yearlyPrice === "free" ? (
+                            <p className="text-2xl font-bold text-white">Free</p>
+                          ) : (
+                            <div>
+                              <p className="text-2xl font-bold text-white">
+                                ${tier.yearlyPrice}
+                                <span className="text-sm font-medium text-white/80">/yr</span>
+                              </p>
+                              <p className="text-xs font-medium text-white/80 mt-1">
+                                (Save 20%)
+                              </p>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <Separator className="my-6 bg-white/20" />
+                      
                       <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-white/80">
                         {tier.features.map((feature) => (
                           <li key={feature} className="flex gap-3">
