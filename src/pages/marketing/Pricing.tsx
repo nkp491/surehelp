@@ -46,10 +46,10 @@ const Pricing = () => {
                 </p>
               </div>
 
-              <div className="mx-auto mt-16 grid max-w-lg gap-8 lg:max-w-none lg:grid-cols-3">
+              <div className="mx-auto mt-16 grid max-w-lg gap-8 lg:max-w-none lg:grid-cols-5">
                 {[
                   {
-                    name: "Starter",
+                    name: "Agent",
                     price: "49",
                     description: "Perfect for independent agents",
                     features: [
@@ -60,24 +60,46 @@ const Pricing = () => {
                     ]
                   },
                   {
-                    name: "Professional",
+                    name: "Agent Pro",
                     price: "99",
-                    description: "Great for growing teams",
+                    description: "For growing agent practices",
                     features: [
-                      "Unlimited assessments",
+                      "Up to 150 assessments/month",
                       "Advanced analytics",
-                      "Priority support",
-                      "Up to 5 team members"
+                      "Priority email support",
+                      "Up to 3 team members"
                     ]
                   },
                   {
-                    name: "Enterprise",
-                    price: "299",
-                    description: "For large organizations",
+                    name: "Manager Pro",
+                    price: "199",
+                    description: "For small agency managers",
                     features: [
-                      "Unlimited everything",
-                      "Custom integrations",
-                      "24/7 phone support",
+                      "Up to 500 assessments/month",
+                      "Team analytics & reporting",
+                      "Priority support",
+                      "Up to 10 team members"
+                    ]
+                  },
+                  {
+                    name: "Manager Pro Gold",
+                    price: "399",
+                    description: "For medium agencies",
+                    features: [
+                      "1000 assessments/month",
+                      "Advanced team analytics",
+                      "24/7 priority support",
+                      "Up to 25 team members"
+                    ]
+                  },
+                  {
+                    name: "Manager Pro Platinum",
+                    price: "799",
+                    description: "For large agencies",
+                    features: [
+                      "Unlimited assessments",
+                      "Custom reporting & API access",
+                      "Dedicated support team",
                       "Unlimited team members"
                     ]
                   }
@@ -88,7 +110,7 @@ const Pricing = () => {
                   >
                     <div>
                       <div className="flex items-center justify-between gap-x-4">
-                        <h3 className="text-2xl font-bold text-white">{tier.name}</h3>
+                        <h3 className="text-xl font-bold text-white">{tier.name}</h3>
                       </div>
                       <p className="mt-4 text-sm leading-6 text-white/80">
                         {tier.description}
@@ -108,9 +130,9 @@ const Pricing = () => {
                     </div>
                     <Button
                       onClick={() => navigate('/auth')}
-                      variant={tier.name === "Professional" ? "default" : "outline"}
+                      variant={tier.name === "Manager Pro" ? "default" : "outline"}
                       className={`mt-8 ${
-                        tier.name === "Professional" 
+                        tier.name === "Manager Pro" 
                           ? "bg-white text-[#0096C7] hover:bg-white/90"
                           : "text-white border-white hover:bg-white/10"
                       }`}
