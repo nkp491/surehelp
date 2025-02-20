@@ -43,8 +43,7 @@ const Home = () => {
                   <span className="border-b-4 border-white px-2"><TypedText words={["leadflow", "workflow", "cashflow"]} /></span>.
                 </h1>
                 <p className="mt-6 text-lg leading-8 text-white/80">
-                  Streamline your insurance assessment process with our comprehensive platform. 
-                  Built for insurance professionals who value efficiency and accuracy.
+                  Agent Hub is the first all-in-one platform specifically designed for insurance underwriters and IMOs to streamline their entire sales process. Built for insurance professionals who value efficiency and accuracy.
                 </p>
                 <div className="mt-10 flex items-center gap-x-6">
                   <Button 
@@ -81,3 +80,4 @@ const Home = () => {
 };
 
 export default Home;
+
