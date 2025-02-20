@@ -34,7 +34,7 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
         <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
       </div>
       <DateRangePicker
-        selected={selectedDate}
+        date={selectedDate}
         onSelect={(date) => onDateChange(date || undefined)}
       />
     </div>

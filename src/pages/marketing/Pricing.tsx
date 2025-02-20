@@ -27,7 +27,7 @@ const Pricing = () => {
       description: "The simplest way to try SureHelp",
       features: [
         "Up to 15 client assessment forms/month",
-        "Client book of business",
+        "Client book of business for 15 submissions",
         "KPI insights up to 30 days"
       ]
     },
@@ -38,7 +38,7 @@ const Pricing = () => {
       description: "For growing agents",
       features: [
         "Unlimited client assessment forms/month",
-        "Client book of business",
+        "Unlimited client book of business",
         "Unlimited KPI insights",
         "Team bulletin"
       ]
@@ -50,7 +50,7 @@ const Pricing = () => {
       description: "For small agencies with a couple of managers and teams",
       features: [
         "Unlimited client assessment forms/month",
-        "Client book of business",
+        "Unlimited client book of business",
         "Unlimited KPI insights",
         "Up to 25 linked team member accounts",
         "Manager dashboard with ratios cards",
@@ -64,7 +64,7 @@ const Pricing = () => {
       description: "For medium agencies with multiple managers and teams",
       features: [
         "Unlimited client assessment forms/month",
-        "Client book of business",
+        "Unlimited client book of business",
         "Unlimited KPI insights",
         "Up to 500 linked team member accounts",
         "Manager dashboard with ratios cards",
@@ -75,10 +75,10 @@ const Pricing = () => {
       name: "Manager Pro Platinum",
       monthlyPrice: "1,000",
       yearlyPrice: "600",
-      description: "For large agencies with multiple levels of teams",
+      description: "For large agencies with multiple agencies within",
       features: [
         "Unlimited client assessment forms/month",
-        "Client book of business",
+        "Unlimited client book of business",
         "Unlimited KPI insights",
         "Up to 1,000 linked team member accounts",
         "Manager dashboard with ratios cards",
