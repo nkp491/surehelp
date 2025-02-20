@@ -47,7 +47,7 @@ const Pricing = () => {
       name: "Manager Pro",
       monthlyPrice: "250",
       yearlyPrice: "150",
-      description: "For small agencies with teams",
+      description: "For small agencies with a couple of managers and teams",
       features: [
         "Unlimited client assessment forms/month",
         "Client book of business",
@@ -61,7 +61,7 @@ const Pricing = () => {
       name: "Manager Pro Gold",
       monthlyPrice: "500",
       yearlyPrice: "300",
-      description: "For medium agencies",
+      description: "For medium agencies with multiple managers and teams",
       features: [
         "Unlimited client assessment forms/month",
         "Client book of business",
@@ -75,7 +75,7 @@ const Pricing = () => {
       name: "Manager Pro Platinum",
       monthlyPrice: "1,000",
       yearlyPrice: "600",
-      description: "For large agencies",
+      description: "For large agencies with multiple levels of managers and teams",
       features: [
         "Unlimited client assessment forms/month",
         "Client book of business",
@@ -127,45 +127,45 @@ const Pricing = () => {
                 </p>
               </div>
 
-              <div className="mx-auto mt-16 grid max-w-lg gap-8 lg:max-w-none lg:grid-cols-5">
+              <div className="mx-auto mt-16 grid max-w-lg gap-6 lg:max-w-none lg:grid-cols-5">
                 {pricingData.map((tier) => (
                   <div
                     key={tier.name}
-                    className="flex flex-col justify-between rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 p-8 xl:p-10"
+                    className="flex flex-col justify-between rounded-3xl bg-white/10 backdrop-blur-sm border border-white/20 p-6 xl:p-8 hover:border-white/40 transition-all duration-200"
                   >
                     <div>
                       <div className="flex items-center justify-between gap-x-4">
-                        <h3 className="text-xl font-bold text-white">{tier.name}</h3>
+                        <h3 className="text-lg font-bold text-white">{tier.name}</h3>
                       </div>
-                      <p className="mt-4 text-sm leading-6 text-white/80">
+                      <p className="mt-3 text-sm leading-6 text-white/80 min-h-[48px]">
                         {tier.description}
                       </p>
                       
-                      <div className="mt-6 grid grid-cols-2 divide-x divide-white/20">
-                        <div className="text-center pr-4">
-                          <p className="text-sm font-medium text-white/80 mb-2">Monthly</p>
+                      <div className="mt-5 grid grid-cols-2 divide-x divide-white/20">
+                        <div className="text-center pr-3">
+                          <p className="text-sm font-medium text-white/80">Monthly</p>
                           {tier.monthlyPrice === "free" ? (
-                            <p className="text-2xl font-bold text-white">Free</p>
+                            <p className="text-xl font-bold text-white mt-1">Free</p>
                           ) : (
-                            <p className="text-2xl font-bold text-white">
+                            <p className="text-xl font-bold text-white mt-1">
                               ${tier.monthlyPrice}
-                              <span className="text-sm font-medium text-white/80">/mo</span>
+                              <span className="text-xs font-medium text-white/80">/mo</span>
                             </p>
                           )}
                         </div>
-                        <div className="text-center pl-4">
-                          <p className="text-sm font-medium text-white/80 mb-2">Yearly</p>
+                        <div className="text-center pl-3">
+                          <p className="text-sm font-medium text-white/80">Yearly</p>
                           {tier.yearlyPrice === "free" ? (
-                            <p className="text-2xl font-bold text-white">Free</p>
+                            <p className="text-xl font-bold text-white mt-1">Free</p>
                           ) : (
                             <div>
-                              <p className="text-2xl font-bold text-white">
+                              <p className="text-xl font-bold text-white mt-1">
                                 ${tier.yearlyPrice}
-                                <span className="text-sm font-medium text-white/80">/mo</span>
+                                <span className="text-xs font-medium text-white/80">/mo</span>
                               </p>
                               {calculateSavings(tier.monthlyPrice, tier.yearlyPrice) > 0 && (
-                                <p className="text-xs font-medium text-white/80 mt-1">
-                                  (Save {calculateSavings(tier.monthlyPrice, tier.yearlyPrice)}%)
+                                <p className="text-[11px] font-medium text-emerald-400 mt-0.5">
+                                  Save {calculateSavings(tier.monthlyPrice, tier.yearlyPrice)}%
                                 </p>
                               )}
                             </div>
@@ -173,12 +173,12 @@ const Pricing = () => {
                         </div>
                       </div>
 
-                      <Separator className="my-6 bg-white/20" />
+                      <Separator className="my-5 bg-white/20" />
                       
-                      <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-white/80">
+                      <ul role="list" className="mt-6 space-y-2.5 text-sm leading-6 text-white/80">
                         {tier.features.map((feature) => (
-                          <li key={feature} className="flex items-start gap-3">
-                            <CheckCircle className="h-4 w-4 mt-1 flex-shrink-0 text-white" />
+                          <li key={feature} className="flex items-start gap-2">
+                            <CheckCircle className="h-4 w-4 mt-1 flex-shrink-0 text-emerald-400" />
                             <span className="flex-1">{feature}</span>
                           </li>
                         ))}
@@ -187,7 +187,7 @@ const Pricing = () => {
                     <Button
                       onClick={() => navigate('/auth')}
                       variant={tier.name === "Manager Pro" ? "default" : "outline"}
-                      className={`mt-8 ${
+                      className={`mt-8 w-full ${
                         tier.name === "Manager Pro" 
                           ? "bg-white text-[#0096C7] hover:bg-white/90"
                           : "text-white border-white hover:bg-white/10"
