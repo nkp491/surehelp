@@ -35,7 +35,7 @@ const Home = () => {
       <main className="w-screen">
         <div className="relative isolate pt-24 w-full">
           <div className="w-full px-6 py-24 sm:py-32 lg:px-8">
-            <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+            <div className="max-w-[1440px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
               <div className="text-left">
                 <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                   Supercharge your
@@ -63,11 +63,11 @@ const Home = () => {
                   </Button>
                 </div>
               </div>
-              <div className="relative w-full h-full">
+              <div className="relative w-full h-full flex justify-center items-center px-4 lg:px-0">
                 <img 
                   src="/lovable-uploads/1988b835-79ca-409a-9adc-d3a1794b7286.png"
                   alt="SureHelp Dashboard"
-                  className="w-full h-auto rounded-lg shadow-2xl"
+                  className="w-[90%] h-auto rounded-lg shadow-2xl"
                 />
                 <div className="absolute -inset-x-20 -top-20 -bottom-20 bg-gradient-to-t from-[#002DCB]/30 to-transparent opacity-30 blur-3xl" />
               </div>
@@ -80,4 +80,3 @@ const Home = () => {
 };
 
 export default Home;
-
