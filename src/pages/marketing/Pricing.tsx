@@ -50,13 +50,12 @@ const Pricing = () => {
                 {[
                   {
                     name: "Agent",
-                    price: "49",
-                    description: "Perfect for independent agents",
+                    price: "free",
+                    description: "The simplest way to try SureHelp",
                     features: [
-                      "Up to 50 assessments/month",
-                      "Basic analytics",
-                      "Email support",
-                      "1 team member"
+                      "Up to 15 Client Assessment Forms/month",
+                      "Client Book of Business",
+                      "KPI Insights up to 30 days",
                     ]
                   },
                   {
@@ -116,8 +115,14 @@ const Pricing = () => {
                         {tier.description}
                       </p>
                       <p className="mt-6 flex items-baseline gap-x-1">
-                        <span className="text-4xl font-bold tracking-tight text-white">${tier.price}</span>
-                        <span className="text-sm font-semibold leading-6 text-white/80">/month</span>
+                        {tier.price === "free" ? (
+                          <span className="text-4xl font-bold tracking-tight text-white">Free</span>
+                        ) : (
+                          <>
+                            <span className="text-4xl font-bold tracking-tight text-white">${tier.price}</span>
+                            <span className="text-sm font-semibold leading-6 text-white/80">/month</span>
+                          </>
+                        )}
                       </p>
                       <ul role="list" className="mt-8 space-y-3 text-sm leading-6 text-white/80">
                         {tier.features.map((feature) => (
