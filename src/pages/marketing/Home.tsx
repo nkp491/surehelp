@@ -35,7 +35,7 @@ const Home = () => {
       <main>
         <div className="relative isolate pt-24">
           <div className="mx-auto max-w-7xl px-6 py-24 sm:py-32 lg:px-8">
-            <div className="text-center">
+            <div className="text-left">
               <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                 Supercharge your
                 <br />
@@ -45,7 +45,7 @@ const Home = () => {
                 Streamline your insurance assessment process with our comprehensive platform. 
                 Built for insurance professionals who value efficiency and accuracy.
               </p>
-              <div className="mt-10 flex items-center justify-center gap-x-6">
+              <div className="mt-10 flex items-center gap-x-6">
                 <Button 
                   onClick={() => navigate('/auth')} 
                   size="lg"
