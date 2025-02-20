@@ -45,12 +45,10 @@ const MainContent = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen w-full">
+      <div className="flex min-h-screen">
         <AppSidebar />
-        <SidebarInset className="flex-1 transition-all duration-200">
-          <div className="w-full max-w-[95vw] mx-auto">
-            {renderContent()}
-          </div>
+        <SidebarInset className="flex-1">
+          {renderContent()}
         </SidebarInset>
       </div>
     </SidebarProvider>

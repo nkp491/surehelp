@@ -1,6 +1,6 @@
 import { MetricCount } from "@/types/metrics";
 import MetricsTable from "../MetricsTable";
-import { format } from "date-fns";
+import { format, parseISO, isSameDay, startOfDay } from "date-fns";
 
 interface FilteredMetricsTableProps {
   history: Array<{ date: string; metrics: MetricCount }>;
@@ -29,14 +29,45 @@ const FilteredMetricsTable = ({
   searchTerm,
   selectedDate,
 }: FilteredMetricsTableProps) => {
+  console.log('[FilteredMetricsTable] Filtering history:', {
+    originalCount: history.length,
+    originalDates: history.map(h => ({
+      date: h.date,
+      parsed: parseISO(h.date).toISOString()
+    })),
+    searchTerm,
+    selectedDate: selectedDate?.toISOString()
+  });
+
   const filteredHistory = history.filter(item => {
+    // Search term matching
     const matchesSearch = Object.values(item.metrics).some(value => 
       value.toString().toLowerCase().includes(searchTerm.toLowerCase())
     ) || item.date.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesDate = !selectedDate || item.date === format(selectedDate, 'yyyy-MM-dd');
+    // Date matching - use isSameDay for comparison
+    const matchesDate = !selectedDate || isSameDay(parseISO(item.date), selectedDate);
 
-    return matchesSearch && matchesDate;
+    const result = matchesSearch && matchesDate;
+
+    console.log('[FilteredMetricsTable] Filtering entry:', {
+      date: item.date,
+      parsedDate: parseISO(item.date).toISOString(),
+      selectedDate: selectedDate ? selectedDate.toISOString() : null,
+      matchesSearch,
+      matchesDate,
+      result
+    });
+
+    return result;
+  });
+
+  console.log('[FilteredMetricsTable] Filtered results:', {
+    filteredCount: filteredHistory.length,
+    filteredDates: filteredHistory.map(h => ({
+      date: h.date,
+      parsed: parseISO(h.date).toISOString()
+    }))
   });
 
   return (

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useMetricsHistory } from '@/hooks/useMetricsHistory';
 import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
@@ -35,12 +34,21 @@ const MetricsHistory = () => {
     await refreshMetrics(); // Refresh the current metrics
   };
 
+  const handleAddHistoricalEntry = async (date: Date) => {
+    try {
+      await handleAddBackdatedMetrics(date);
+      await refreshMetrics(); // Refresh the metrics after adding
+    } catch (error) {
+      console.error('[MetricsHistory] Error adding historical entry:', error);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <MetricsHistoryHeader
         selectedDate={selectedDate}
         onDateSelect={setSelectedDate}
-        onAdd={handleAddBackdatedMetrics}
+        onAdd={handleAddHistoricalEntry}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         timePeriod={timePeriod}

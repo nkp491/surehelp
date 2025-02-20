@@ -9,6 +9,7 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import { format } from "date-fns";
 import { Clock, CalendarIcon, CalendarDays } from "lucide-react";
 import { useToast } from "../ui/use-toast";
+import { cn } from "@/lib/utils";
 
 const TimeControls = () => {
   const { timePeriod, dateRange, handleTimePeriodChange, setDateRange } = useMetrics();
@@ -30,40 +31,47 @@ const TimeControls = () => {
     });
   };
 
+  const tabStyle = "px-6 py-2 rounded-t-lg font-medium transition-colors";
+  const activeTabStyle = "bg-[#3F7BA9] text-white";
+  const inactiveTabStyle = "text-[#3F7BA9] hover:bg-[#3F7BA9]/10";
+
   return (
-    <div className="flex gap-4">
-      <Button
-        variant={timePeriod === "24h" ? "default" : "outline"}
+    <div className="flex gap-0.5 items-end justify-end w-full">
+      <button
         onClick={() => handlePeriodChange("24h")}
-        className="flex items-center gap-2"
+        className={cn(
+          tabStyle,
+          timePeriod === "24h" ? activeTabStyle : inactiveTabStyle
+        )}
       >
-        <Clock className="h-4 w-4" />
         Daily
-      </Button>
-      <Button
-        variant={timePeriod === "7d" ? "default" : "outline"}
+      </button>
+      <button
         onClick={() => handlePeriodChange("7d")}
-        className="flex items-center gap-2"
+        className={cn(
+          tabStyle,
+          timePeriod === "7d" ? activeTabStyle : inactiveTabStyle
+        )}
       >
-        <CalendarIcon className="h-4 w-4" />
         Weekly
-      </Button>
-      <Button
-        variant={timePeriod === "30d" ? "default" : "outline"}
+      </button>
+      <button
         onClick={() => handlePeriodChange("30d")}
-        className="flex items-center gap-2"
+        className={cn(
+          tabStyle,
+          timePeriod === "30d" ? activeTabStyle : inactiveTabStyle
+        )}
       >
-        <CalendarDays className="h-4 w-4" />
         Monthly
-      </Button>
+      </button>
       <Popover>
         <PopoverTrigger asChild>
-          <Button
-            variant={timePeriod === "custom" ? "default" : "outline"}
-            className="flex items-center gap-2"
-            onClick={() => handlePeriodChange("custom")}
+          <button
+            className={cn(
+              tabStyle,
+              timePeriod === "custom" ? activeTabStyle : inactiveTabStyle
+            )}
           >
-            <CalendarIcon className="h-4 w-4" />
             {dateRange.from && dateRange.to ? (
               <>
                 {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
@@ -71,7 +79,7 @@ const TimeControls = () => {
             ) : (
               "Custom"
             )}
-          </Button>
+          </button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="end">
           <Calendar

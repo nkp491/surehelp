@@ -35,6 +35,14 @@ const MetricsContent = ({
   onDeleteDialogChange,
   onConfirmDelete,
 }: MetricsContentProps) => {
+  console.log('[MetricsContent] Rendering with:', {
+    historyCount: sortedHistory.length,
+    dates: sortedHistory.map(h => h.date),
+    searchTerm,
+    selectedDate: selectedDate?.toISOString(),
+    editingRow,
+  });
+
   return (
     <>
       <FilteredMetricsTable

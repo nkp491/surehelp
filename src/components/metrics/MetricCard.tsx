@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { Tooltip } from "@/components/ui/tooltip";
@@ -46,11 +45,11 @@ const MetricCard = ({
 
   const getTrendIcon = () => {
     if (trend > 0) {
-      return <TrendingUp className="h-5 w-5 text-green-500" />;
+      return <TrendingUp className="h-4 w-4 text-green-500" />;
     } else if (trend < 0) {
-      return <TrendingDown className="h-5 w-5 text-red-500" />;
+      return <TrendingDown className="h-4 w-4 text-red-500" />;
     }
-    return <Minus className="h-5 w-5 text-gray-400" />;
+    return <Minus className="h-4 w-4 text-gray-400" />;
   };
 
   const getTrendText = () => {
@@ -60,12 +59,15 @@ const MetricCard = ({
   };
 
   return (
-    <Card className={`p-6 transition-all duration-200 hover:shadow-lg ${
-      isAP ? 'bg-gradient-to-br from-[#9b87f5] to-[#7E69AB] text-white' : 'bg-white'
-    }`}>
-      <div className="flex flex-col items-center gap-3">
+    <Card className={`
+      p-4 transition-all duration-200 rounded-lg shadow-sm
+      ${isAP 
+        ? 'bg-[#3F7BA9] text-white' 
+        : 'bg-[#5AA3DC] text-white'}
+    `}>
+      <div className="flex flex-col items-center gap-2">
         <div className="flex items-center gap-2">
-          <h3 className={`font-semibold text-lg ${isAP ? 'text-white text-xl' : 'text-gray-700'}`}>
+          <h3 className="font-medium text-lg">
             {formatMetricName(metric)}
           </h3>
           <TooltipProvider>
@@ -79,9 +81,7 @@ const MetricCard = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className={`text-2xl font-bold ${
-          isAP ? 'text-white' : 'text-gray-900'
-        }`}>
+        <div className="text-3xl font-bold">
           {formatValue(value)}
         </div>
       </div>

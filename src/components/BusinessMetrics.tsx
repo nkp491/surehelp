@@ -1,4 +1,3 @@
-
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { MetricsProvider } from "@/contexts/MetricsContext";
@@ -94,7 +93,7 @@ const BusinessMetricsContent = () => {
           />
 
           <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm text-[#2A6F97]">
-            <h3 className="text-xl font-semibold mb-4 text-left">Historical KPIs</h3>
+            <h3 className="text-xl font-semibold mb-4 text-left">KPI History</h3>
             <MetricsHistory />
           </div>
 

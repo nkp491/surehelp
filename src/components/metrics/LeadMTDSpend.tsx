@@ -14,8 +14,6 @@ const LeadMTDSpend = () => {
         const startDate = format(startOfMonth(new Date()), 'yyyy-MM-dd');
         const endDate = format(endOfToday(), 'yyyy-MM-dd');
 
-        console.log('[LeadMTDSpend] Fetching MTD spend for date range:', { startDate, endDate });
-
         const { data, error } = await supabase
           .from('lead_expenses')
           .select('total_cost')
@@ -28,18 +26,10 @@ const LeadMTDSpend = () => {
           return;
         }
 
-        console.log('[LeadMTDSpend] Retrieved expense data:', data);
-
         // Sum up the total costs (stored in cents)
         const totalInCents = data.reduce((sum, expense) => {
-          console.log('[LeadMTDSpend] Processing expense:', {
-            costInCents: expense.total_cost,
-            runningTotal: sum + expense.total_cost
-          });
           return sum + expense.total_cost;
         }, 0);
-
-        console.log('[LeadMTDSpend] Final total in cents:', totalInCents);
         
         // Store the total in cents
         setMtdSpend(totalInCents);
@@ -64,16 +54,18 @@ const LeadMTDSpend = () => {
   };
 
   return (
-    <Card className="p-6 bg-[#FFFCF6] hover:shadow-lg transition-all duration-200">
-      <div className="flex flex-col items-center gap-3">
-        <h3 className="font-semibold text-lg text-gray-700 text-center">Lead MTD Spend</h3>
-        <span className="text-2xl font-bold text-primary">
-          {isLoading ? (
-            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-          ) : (
-            formatCurrency(mtdSpend || 0)
-          )}
-        </span>
+    <Card className="overflow-hidden">
+      <div className="bg-[#3F7BA9] p-2 text-white">
+        <h3 className="font-medium text-sm text-center">Lead MTD Spend</h3>
+      </div>
+      <div className="bg-[#F5F5F5] p-4 flex items-center justify-center">
+        {isLoading ? (
+          <Loader2 className="h-6 w-6 animate-spin text-[#3F7BA9]" />
+        ) : (
+          <span className="text-2xl font-bold text-[#2A2A2A]">
+            {formatCurrency(mtdSpend || 0)}
+          </span>
+        )}
       </div>
     </Card>
   );
