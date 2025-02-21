@@ -43,7 +43,7 @@ const features = [
 const FeaturesGrid = () => {
   return (
     <section className="w-full py-24">
-      <div className="max-w-5xl mx-auto px-6">
+      <div className="max-w-6xl mx-auto px-6">
         <h2 className="text-4xl font-bold text-center mb-4 text-white">Powerful Features</h2>
         <p className="text-lg text-white/80 text-center mb-16 max-w-2xl mx-auto">
           Everything you need to manage your insurance business effectively in one place.
