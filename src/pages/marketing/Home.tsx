@@ -8,22 +8,24 @@ const Home = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
-      <nav className="border-b bg-white/50 backdrop-blur-sm fixed w-full z-10">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]">
+      <nav className="border-b border-white/20 backdrop-blur-sm fixed w-full z-10">
+        <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-[#2A6F97] cursor-pointer" 
-                onClick={() => navigate('/')}>SureHelp</span>
+              <span className="text-2xl font-bold text-white">SureHelp</span>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/about')}>
-                About
+              <Button variant="ghost" onClick={() => navigate('/products')} className="text-white hover:text-white/90">
+                Products
               </Button>
-              <Button variant="ghost" onClick={() => navigate('/pricing')}>
+              <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:text-white/90">
                 Pricing
               </Button>
-              <Button onClick={() => navigate('/auth')}>
+              <Button 
+                onClick={() => navigate('/auth')}
+                className="bg-white/25 text-[#33C3F0] hover:bg-white"
+              >
                 Login
               </Button>
             </div>
