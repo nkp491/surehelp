@@ -45,21 +45,13 @@ const Home = () => {
                 <p className="mt-6 text-lg leading-8 text-white/80">
                   Agent Hub is the first all-in-one platform specifically designed for insurance underwriters and IMOs to streamline their entire sales process. Built for insurance professionals who value efficiency and accuracy.
                 </p>
-                <div className="mt-10 flex items-center gap-x-6">
+                <div className="mt-10">
                   <Button 
                     onClick={() => navigate('/auth')} 
                     size="lg"
                     className="bg-white/25 text-[#0096C7] hover:bg-white"
                   >
                     Get Started
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="lg" 
-                    onClick={() => navigate('/products')}
-                    className="text-[#0096C7] border-white/25 hover:bg-white/10"
-                  >
-                    Learn More
                   </Button>
                 </div>
               </div>

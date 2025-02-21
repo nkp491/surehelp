@@ -1,3 +1,4 @@
+
 import React from 'react';
 
 interface MetricCardProps {
@@ -31,7 +32,7 @@ const MetricCard: React.FC<MetricCardProps> = ({ metric, value, isCurrency = fal
 };
 
 interface AgentMetricsDisplayProps {
-  metrics: {
+  metrics: Array<{
     key: string;
     metric: string;
     value: number;
@@ -40,7 +41,7 @@ interface AgentMetricsDisplayProps {
       value: number;
       isGood: boolean;
     };
-  }[];
+  }>;
 }
 
 const AgentMetricsDisplay: React.FC<AgentMetricsDisplayProps> = ({ metrics }) => {
