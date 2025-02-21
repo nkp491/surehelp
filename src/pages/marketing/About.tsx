@@ -3,7 +3,7 @@ import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight, Target, Users, Shield } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 const About = () => {
   const navigate = useNavigate();
@@ -25,32 +25,73 @@ const About = () => {
                 </p>
               </div>
 
-              <div className="mt-20 grid grid-cols-1 gap-8 md:grid-cols-3">
-                <div className="flex flex-col items-center text-center p-6 bg-white/10 backdrop-blur-sm rounded-2xl">
-                  <Target className="h-12 w-12 text-white mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Our Mission</h3>
-                  <p className="text-white/80">
-                    To simplify and streamline insurance operations, enabling professionals 
-                    to focus on what matters most - serving their clients.
+              {/* Mission Section */}
+              <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                <div className="h-[400px] rounded-2xl overflow-hidden">
+                  <img 
+                    src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
+                    alt="Mission" 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="space-y-6">
+                  <h2 className="text-3xl font-bold text-white">Our Mission</h2>
+                  <p className="text-lg leading-relaxed text-white/80">
+                    At SureHelp, our mission is to transform the insurance industry through innovative 
+                    technology solutions. We believe in empowering insurance professionals with tools that 
+                    streamline their workflow, enhance client relationships, and drive business growth.
+                  </p>
+                  <p className="text-lg leading-relaxed text-white/80">
+                    By combining cutting-edge technology with deep industry expertise, we're creating a 
+                    future where insurance professionals can focus on what matters most - providing 
+                    exceptional service to their clients while growing their business efficiently.
                   </p>
                 </div>
+              </div>
 
-                <div className="flex flex-col items-center text-center p-6 bg-white/10 backdrop-blur-sm rounded-2xl">
-                  <Users className="h-12 w-12 text-white mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Our Team</h3>
-                  <p className="text-white/80">
-                    A dedicated group of insurance and technology experts working 
-                    together to create the best solutions for insurance professionals.
-                  </p>
-                </div>
-
-                <div className="flex flex-col items-center text-center p-6 bg-white/10 backdrop-blur-sm rounded-2xl">
-                  <Shield className="h-12 w-12 text-white mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Our Values</h3>
-                  <p className="text-white/80">
-                    Innovation, integrity, and excellence in everything we do to 
-                    support the success of our clients.
-                  </p>
+              {/* Team Section */}
+              <div className="mt-32">
+                <h2 className="text-3xl font-bold text-white text-center mb-16">Meet Our Team</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {[
+                    {
+                      image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
+                      name: "John Cooper",
+                      role: "Chief Executive Officer",
+                      description: "20+ years of insurance industry expertise, driving innovation in insurtech."
+                    },
+                    {
+                      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+                      name: "Sarah Mitchell",
+                      role: "Chief Technology Officer",
+                      description: "Tech visionary with a passion for creating intuitive software solutions."
+                    },
+                    {
+                      image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+                      name: "Michael Chang",
+                      role: "Head of Product",
+                      description: "Product strategist focused on delivering value through user-centric design."
+                    },
+                    {
+                      image: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9",
+                      name: "Emily Rodriguez",
+                      role: "Customer Success Lead",
+                      description: "Dedicated to ensuring our clients achieve their business goals."
+                    }
+                  ].map((member, index) => (
+                    <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
+                      <div className="h-48 mb-6 rounded-xl overflow-hidden">
+                        <img 
+                          src={member.image} 
+                          alt={member.name}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                      <h3 className="text-xl font-semibold text-white mb-1">{member.name}</h3>
+                      <p className="text-sm text-white/80 mb-4">{member.role}</p>
+                      <p className="text-sm text-white/60">{member.description}</p>
+                    </div>
+                  ))}
                 </div>
               </div>
 
