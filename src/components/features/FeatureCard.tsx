@@ -19,9 +19,8 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
         relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
         ${isSelected 
           ? 'bg-gradient-to-r from-[#2A0068] to-[#130032]' 
-          : 'bg-white'
+          : 'bg-white hover:ring-2 hover:ring-white/10'
         }
-        ${isSelected ? 'ring-2 ring-white/20' : 'hover:ring-2 hover:ring-white/10'}
       `}
       onClick={() => setIsSelected(!isSelected)}
     >
