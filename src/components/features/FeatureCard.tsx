@@ -29,14 +29,14 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           transition-all duration-300 ease-in-out
           ${isSelected ? 'h-0 opacity-0' : 'h-3/4'}
           w-full overflow-hidden relative
-          ${!isSelected && 'bg-gradient-to-r from-[#33C3F0] to-[#2A0068]'}
+          ${!isSelected && 'bg-gradient-to-r from-[#A78BFA] to-[#2A0068]'}
         `}
       >
         <div className={`
           absolute inset-0 bg-gradient-to-r w-1/4
           ${isSelected 
             ? 'from-[#2A0068] via-[#2A0068] to-transparent' 
-            : 'from-[#33C3F0] via-[#33C3F0] to-transparent'
+            : 'from-[#A78BFA] via-[#A78BFA] to-transparent'
           }
         `} />
         <img 
