@@ -1,4 +1,3 @@
-
 import { Check, X, MoveRight, PhoneCall } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -8,6 +7,12 @@ import { useState } from "react";
 function PricingComparison() {
   const navigate = useNavigate();
   const [isAnnual, setIsAnnual] = useState(false);
+
+  const calculateSavings = (monthlyPrice: number) => {
+    const yearlyPrice = monthlyPrice * 0.8; // 20% discount
+    const monthlySavings = monthlyPrice - yearlyPrice;
+    return `Save $${monthlySavings.toFixed(0)}/mo`;
+  };
 
   return (
     <div className="w-full py-20">
@@ -59,10 +64,13 @@ function PricingComparison() {
               <p className="text-sm text-white/80 h-20">
                 Ideal for experienced agents who need unlimited access and advanced features.
               </p>
-              <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
-                <span className="text-4xl text-white">${isAnnual ? '36' : '45'}</span>
-                <span className="text-sm text-white/80"> / month</span>
-              </p>
+              <div className="flex flex-col mt-8">
+                <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl">
+                  <span className="text-4xl text-white">${isAnnual ? '36' : '45'}</span>
+                  <span className="text-sm text-white/80"> / month</span>
+                </p>
+                {isAnnual && <p className="text-sm text-emerald-400 mt-1">{calculateSavings(45)}</p>}
+              </div>
               <Button 
                 className="gap-4 mt-8 bg-white text-[#0096C7] hover:bg-white/90"
                 onClick={() => navigate('/auth')}
@@ -75,10 +83,13 @@ function PricingComparison() {
               <p className="text-sm text-white/80 h-20">
                 Perfect for small agencies with a growing team of agents and basic management needs.
               </p>
-              <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
-                <span className="text-4xl text-white">${isAnnual ? '200' : '250'}</span>
-                <span className="text-sm text-white/80"> / month</span>
-              </p>
+              <div className="flex flex-col mt-8">
+                <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl">
+                  <span className="text-4xl text-white">${isAnnual ? '200' : '250'}</span>
+                  <span className="text-sm text-white/80"> / month</span>
+                </p>
+                {isAnnual && <p className="text-sm text-emerald-400 mt-1">{calculateSavings(250)}</p>}
+              </div>
               <Button 
                 variant="outline" 
                 className="gap-4 mt-8 text-white border-white hover:bg-white/10"
@@ -92,10 +103,13 @@ function PricingComparison() {
               <p className="text-sm text-white/80 h-20">
                 Designed for medium agencies with multiple teams and comprehensive management requirements.
               </p>
-              <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
-                <span className="text-4xl text-white">${isAnnual ? '400' : '500'}</span>
-                <span className="text-sm text-white/80"> / month</span>
-              </p>
+              <div className="flex flex-col mt-8">
+                <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl">
+                  <span className="text-4xl text-white">${isAnnual ? '400' : '500'}</span>
+                  <span className="text-sm text-white/80"> / month</span>
+                </p>
+                {isAnnual && <p className="text-sm text-emerald-400 mt-1">{calculateSavings(500)}</p>}
+              </div>
               <Button 
                 variant="outline" 
                 className="gap-4 mt-8 text-white border-white hover:bg-white/10"
@@ -109,10 +123,13 @@ function PricingComparison() {
               <p className="text-sm text-white/80 h-20">
                 Enterprise solution for large agencies requiring unlimited capabilities and premium support.
               </p>
-              <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
-                <span className="text-4xl text-white">${isAnnual ? '800' : '1000'}</span>
-                <span className="text-sm text-white/80"> / month</span>
-              </p>
+              <div className="flex flex-col mt-8">
+                <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl">
+                  <span className="text-4xl text-white">${isAnnual ? '800' : '1000'}</span>
+                  <span className="text-sm text-white/80"> / month</span>
+                </p>
+                {isAnnual && <p className="text-sm text-emerald-400 mt-1">{calculateSavings(1000)}</p>}
+              </div>
               <Button 
                 variant="outline" 
                 className="gap-4 mt-8 text-white border-white hover:bg-white/10"
