@@ -35,8 +35,8 @@ const features = [
   {
     title: "Link your accounts to agents and managers",
     description: "By linking accounts, agents and teams can organize their sales process and move even faster",
-    imagePath: "/placeholder.svg",
-    altText: "Account Linking Interface"
+    imagePath: "/lovable-uploads/eb797aa2-dd99-4acc-86fe-44c70da68a43.png",
+    altText: "Team Management Dashboard"
   }
 ];
 
