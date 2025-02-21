@@ -29,12 +29,12 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           bg-gradient-to-r from-[#2A0068] to-[#130032]
         `}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#2A0068] via-[#2A0068] to-transparent w-1/3" />
+        <div className="absolute inset-0 bg-gradient-to-r from-[#2A0068] via-[#2A0068] to-transparent w-1/4" />
         <img 
           src={imagePath} 
           alt={altText}
           className={`
-            w-2/3 h-full object-cover absolute
+            w-[85%] h-full object-cover absolute
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
             right-0 
