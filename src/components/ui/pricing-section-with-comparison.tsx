@@ -1,36 +1,9 @@
-
 import React from 'react';
 import { PricingHeader } from './pricing/PricingHeader';
 import { PricingCard } from './pricing/PricingCard';
 import { FeatureRow } from './pricing/FeatureRow';
 
-const features = [
-  {
-    name: "Client Assessment Form",
-    key: "assessmentForm"
-  },
-  {
-    name: "Client Book of Business",
-    key: "bookOfBusiness"
-  },
-  {
-    name: "KPI Insights",
-    key: "kpiInsights"
-  },
-  {
-    name: "Team Members",
-    key: "teamMembers"
-  },
-  {
-    name: "Manager Dashboard",
-    key: "managerDashboard"
-  },
-  {
-    name: "Team Bulletin",
-    key: "teamBulletin"
-  }
-];
-
+// You can modify the pricing data here
 const pricingData = [
   {
     name: "Agent",
@@ -96,6 +69,33 @@ const pricingData = [
       "Manager dashboard with ratios cards",
       "Team bulletin"
     ]
+  }
+];
+
+const features = [
+  {
+    name: "Client Assessment Form",
+    key: "assessmentForm"
+  },
+  {
+    name: "Client Book of Business",
+    key: "bookOfBusiness"
+  },
+  {
+    name: "KPI Insights",
+    key: "kpiInsights"
+  },
+  {
+    name: "Team Members",
+    key: "teamMembers"
+  },
+  {
+    name: "Manager Dashboard",
+    key: "managerDashboard"
+  },
+  {
+    name: "Team Bulletin",
+    key: "teamBulletin"
   }
 ];
 
