@@ -1,45 +1,61 @@
-import MetricCard from "../metrics/MetricCard";
-import RatioCard from "../metrics/RatioCard";
-import MetricsChart from "../MetricsChart";
-import { AgentMetrics } from "@/types/agent";
+import React from 'react';
 
-interface AgentMetricsDisplayProps {
-  metrics: AgentMetrics;
-  ratios: { label: string; value: string | number }[];
-  chartData: { name: string; value: number }[];
+interface MetricCardProps {
+  metric: string;
+  value: number;
+  isCurrency?: boolean;
+  trend?: {
+    value: number;
+    isGood: boolean;
+  };
+  onInputChange: () => void;
 }
 
-const AgentMetricsDisplay = ({ metrics, ratios }: AgentMetricsDisplayProps) => {
+const MetricCard: React.FC<MetricCardProps> = ({ metric, value, isCurrency = false, trend, onInputChange }) => {
+  const formattedValue = isCurrency ? value.toLocaleString('en-US', {
+    style: 'currency',
+    currency: 'USD',
+  }) : value.toLocaleString();
+
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-7 gap-4">
-        {Object.entries(metrics).map(([metric, value]) => (
-          <MetricCard
-            key={metric}
-            metric={metric}
-            value={value}
-            inputValue={value.toString()}
-            onInputChange={() => {}}
-            isCurrency={metric === 'ap'}
-            trend={10}
-          />
-        ))}
-      </div>
+    <div className="bg-white rounded-lg shadow-md p-4 flex flex-col">
+      <div className="text-sm font-medium text-gray-600">{metric}</div>
+      <div className="text-2xl font-bold text-gray-900">{formattedValue}</div>
+      {trend && (
+        <div className={`text-sm mt-2 ${trend.isGood ? 'text-green-500' : 'text-red-500'}`}>
+          {trend.isGood ? '▲' : '▼'} {trend.value}%
+        </div>
+      )}
+    </div>
+  );
+};
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {ratios.slice(0, 8).map((ratio, index) => (
-          <RatioCard
-            key={index}
-            label={ratio.label}
-            value={ratio.value}
-          />
-        ))}
-      </div>
+interface AgentMetricsDisplayProps {
+  metrics: {
+    key: string;
+    metric: string;
+    value: number;
+    isCurrency?: boolean;
+    trend?: {
+      value: number;
+      isGood: boolean;
+    };
+  }[];
+}
 
-      <MetricsChart 
-        timePeriod="24h"
-        onTimePeriodChange={() => {}}
-      />
+const AgentMetricsDisplay: React.FC<AgentMetricsDisplayProps> = ({ metrics }) => {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {metrics.map((metric) => (
+        <MetricCard
+          key={metric.key}
+          metric={metric.metric}
+          value={metric.value}
+          isCurrency={metric.isCurrency}
+          trend={metric.trend}
+          onInputChange={() => {}}
+        />
+      ))}
     </div>
   );
 };
