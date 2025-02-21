@@ -38,7 +38,7 @@ const NavBar = () => {
             </Button>
             <Button 
               onClick={() => navigate('/auth')}
-              className="bg-white/25 text-[#33C3F0] hover:bg-white"
+              className="bg-white text-[#0096C7] hover:bg-white/90"
             >
               Login
             </Button>
