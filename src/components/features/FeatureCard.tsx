@@ -17,7 +17,10 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
     <Card 
       className={`
         relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
-        bg-gradient-to-r from-[#4A1098] to-[#2A0068]
+        ${isSelected 
+          ? 'bg-gradient-to-r from-[#2A0068] to-[#130032]' 
+          : 'bg-gradient-to-r from-[#4A1098] to-[#2A0068]'
+        }
         ${isSelected ? 'ring-2 ring-white/20' : 'hover:ring-2 hover:ring-white/10'}
       `}
       onClick={() => setIsSelected(!isSelected)}
@@ -29,7 +32,13 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           w-full overflow-hidden relative
         `}
       >
-        <div className="absolute inset-0 bg-gradient-to-r from-[#4A1098] via-[#4A1098] to-transparent w-1/4" />
+        <div className={`
+          absolute inset-0 bg-gradient-to-r w-1/4
+          ${isSelected 
+            ? 'from-[#2A0068] via-[#2A0068] to-transparent' 
+            : 'from-[#4A1098] via-[#4A1098] to-transparent'
+          }
+        `} />
         <img 
           src={imagePath} 
           alt={altText}
