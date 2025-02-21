@@ -134,10 +134,12 @@ function PricingComparison() {
   return (
     <div className="w-full py-20">
       <div className="container mx-auto">
-        <div className="flex text-center justify-center items-center gap-4 flex-col">
+        <div className="flex text-center justify-center items-center gap-8 flex-col">
           <PricingHeader />
           <div className="grid text-left w-full grid-cols-3 lg:grid-cols-6 divide-x divide-white/20 pt-20">
-            <div className="col-span-3 lg:col-span-1"></div>
+            <div className="col-span-3 lg:col-span-1 px-6 py-8">
+              <h3 className="text-lg font-medium text-white mb-4">Features</h3>
+            </div>
             {pricingData.map((plan) => (
               <PricingCard
                 key={plan.name}
