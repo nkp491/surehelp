@@ -1,3 +1,4 @@
+
 import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
 
@@ -11,7 +12,7 @@ const TermsOfUse = () => {
             <div className="mx-auto max-w-4xl">
               <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-                  Terms and Conditions
+                  SureHelp Terms & Conditions
                 </h1>
               </div>
               
