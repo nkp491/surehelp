@@ -29,7 +29,7 @@ const features = [
   {
     title: "Streamlined metric dashboards for managers",
     description: "Managers can view their team's KPI metrics for the day, week, month, and more.",
-    imagePath: "",
+    imagePath: "/lovable-uploads/39b3574f-1c0f-46d9-9a61-d1218c9c2903.png",
     altText: "Success Calculator Dashboard"
   },
   {
