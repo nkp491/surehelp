@@ -13,8 +13,12 @@ const Pricing = () => {
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <span className="text-2xl font-bold text-white cursor-pointer" 
-                onClick={() => navigate('/')}>SureHelp</span>
+              <img 
+                src="/lovable-uploads/e0a19c59-7905-41d6-aae2-e8c9735321c0.png"
+                alt="SureHelp Logo"
+                className="h-8 cursor-pointer"
+                onClick={() => navigate('/')}
+              />
             </div>
             <div className="flex items-center gap-4">
               <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:text-white/90">
