@@ -21,7 +21,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       `}
       onClick={() => setIsSelected(!isSelected)}
     >
-      <div className="h-3/4 w-full overflow-hidden bg-emerald-400/20 relative">
+      <div className="h-3/4 w-full overflow-hidden bg-gradient-to-b from-emerald-400 to-emerald-300 relative">
         <img 
           src={imagePath} 
           alt={altText}
