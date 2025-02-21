@@ -33,10 +33,10 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           src={imagePath} 
           alt={altText}
           className={`
-            w-full h-full object-cover absolute
+            w-[120%] h-full object-cover absolute
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
-            right-0 
+            -left-[20%]
             ${altText === "Lead Information Form" ? 'object-top' : 'object-top'}
           `}
         />
