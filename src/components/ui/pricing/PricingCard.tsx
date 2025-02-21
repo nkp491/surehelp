@@ -9,7 +9,7 @@ interface PricingCardProps {
   description: string;
   monthlyPrice: string | JSX.Element;
   annualPrice: string | JSX.Element;
-  savings?: string | null;
+  savings?: JSX.Element | null;
   isContact?: boolean;
 }
 
@@ -37,7 +37,7 @@ export function PricingCard({
           <p className="text-sm text-white/80">Annual</p>
           <div className="flex flex-col">
             <p className="text-2xl text-white font-semibold">{annualPrice}</p>
-            {savings && <p className="text-sm text-emerald-400 font-medium">{savings}</p>}
+            {savings && <div className="text-sm text-emerald-400 font-medium">{savings}</div>}
           </div>
         </div>
       </div>

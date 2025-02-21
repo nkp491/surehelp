@@ -125,7 +125,12 @@ function PricingComparison() {
     const monthlyCost = parseFloat(monthly.replace(',', ''));
     const yearlyCost = parseFloat(yearly.replace(',', ''));
     const savingsPercentage = ((monthlyCost - yearlyCost) / monthlyCost) * 100;
-    return `Save ${savingsPercentage.toFixed(0)}% w/ this limited time offer`;
+    return (
+      <div className="flex flex-col">
+        <span>Save {savingsPercentage.toFixed(0)}%</span>
+        <span>w/ this limited time offer</span>
+      </div>
+    );
   };
 
   const formatPrice = (price: string) => {
