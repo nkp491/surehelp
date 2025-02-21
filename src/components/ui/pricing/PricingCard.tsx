@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { MoveRight, PhoneCall } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+
 interface PricingCardProps {
   title: string;
   description: string;
@@ -10,6 +12,7 @@ interface PricingCardProps {
   savings?: string | null;
   isContact?: boolean;
 }
+
 export function PricingCard({
   title,
   description,
@@ -38,9 +41,13 @@ export function PricingCard({
           </div>
         </div>
       </div>
-      <Button variant={isContact ? "outline" : title === "Agent" ? "outline" : "default"} className={`gap-4 mt-8 ${isContact ? "text-white border-white hover:bg-white/10" : title === "Agent" ? "text-white border-white hover:bg-white/10" : "bg-white text-[#0096C7] hover:bg-white/90"}`} onClick={() => navigate('/auth')}>
-        {isContact ? "Contact us " : "Get started "} 
-        {isContact ? <PhoneCall className="w-4 h-4" /> : <MoveRight className="w-4 h-4" />}
-      </Button>
+      <div className="flex justify-center">
+        <Button variant={isContact ? "outline" : title === "Agent" ? "outline" : "default"} 
+          className={`gap-4 mt-8 w-fit px-6 ${isContact ? "text-white border-white hover:bg-white/10" : title === "Agent" ? "text-white border-white hover:bg-white/10" : "bg-white text-[#0096C7] hover:bg-white/90"}`} 
+          onClick={() => navigate('/auth')}>
+          {isContact ? "Contact us " : "Get started "} 
+          {isContact ? <PhoneCall className="w-4 h-4" /> : <MoveRight className="w-4 h-4" />}
+        </Button>
+      </div>
     </div>;
 }
