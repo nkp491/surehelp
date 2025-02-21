@@ -58,7 +58,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               `}
             >
               {isSelected && (
-                <p className="text-base text-[#1A1F2C]/90 mt-6">
+                <p className="text-base text-[#1A1F2C]/90 mt-15">
                   {description}
                 </p>
               )}
