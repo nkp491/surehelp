@@ -26,17 +26,17 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           transition-all duration-300 ease-in-out
           ${isSelected ? 'h-0 opacity-0' : 'h-3/4'}
           w-full overflow-hidden relative
-          bg-gradient-to-r from-[#2A0068] to-[#130032]
+          bg-gradient-to-r from-[#130032] to-[#2A0068]
         `}
       >
         <img 
           src={imagePath} 
           alt={altText}
           className={`
-            w-[120%] h-full object-cover absolute
+            w-full h-full object-cover absolute
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
-            -left-[20%]
+            right-0 
             ${altText === "Lead Information Form" ? 'object-top' : 'object-top'}
           `}
         />
