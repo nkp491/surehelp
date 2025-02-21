@@ -16,7 +16,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
   return (
     <Card 
       className={`
-        relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer
+        relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
         ${isSelected ? 'bg-gradient-to-b from-[#0096C7] to-[#002DCB] text-white' : 'bg-white hover:bg-emerald-50'}
       `}
       onClick={() => setIsSelected(!isSelected)}
