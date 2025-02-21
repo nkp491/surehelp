@@ -1,3 +1,4 @@
+
 import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
@@ -54,9 +55,9 @@ const About = () => {
                     </p>
                     <p className="text-lg leading-relaxed text-white/80">
                       This powerful collaboration brings together deep industry insight and cutting-edge 
-                      technology, setting SureHelp apart from other tools. By combining practical 
-                      insurance knowledge with advanced technological solutions, we've created an 
-                      intuitive, easy-to-use platform designed specifically for insurance agents and IMOs.
+                      technology, setting SureHelp apart from other tools. By combining insurance 
+                      knowledge with advanced tech solutions, we've created the Agent Hub specifically 
+                      for insurance agents and IMOs.
                     </p>
                   </div>
                 </div>
@@ -129,3 +130,4 @@ const About = () => {
 };
 
 export default About;
+
