@@ -1,7 +1,12 @@
-import React, { useEffect, useState } from "react";
+
+import React from "react";
 import { Routes, Route, useNavigate, useLocation } from "react-router-dom";
-import { Auth, Home, Pricing, Index } from "@/pages";
 import { useSession, useSupabaseClient } from "@supabase/auth-helpers-react";
+import Home from "@/pages/marketing/Home";
+import About from "@/pages/marketing/About";
+import Auth from "@/pages/Auth";
+import Pricing from "@/pages/marketing/Pricing";
+import Index from "@/pages/Index";
 
 export const AuthRoutes = () => {
   return (
