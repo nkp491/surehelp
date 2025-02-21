@@ -7,8 +7,8 @@ import { useNavigate } from "react-router-dom";
 interface PricingCardProps {
   title: string;
   description: string;
-  monthlyPrice: string;
-  annualPrice: string;
+  monthlyPrice: string | JSX.Element;
+  annualPrice: string | JSX.Element;
   savings?: string | null;
   isContact?: boolean;
 }

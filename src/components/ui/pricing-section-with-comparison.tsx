@@ -128,7 +128,12 @@ function PricingComparison() {
   };
 
   const formatPrice = (price: string) => {
-    return price.toLowerCase() === "free" ? "Free" : `$${price}/mo`;
+    if (price.toLowerCase() === "free") return "Free";
+    return (
+      <>
+        ${price}<span className="text-sm font-normal">/mo</span>
+      </>
+    );
   };
 
   return (
