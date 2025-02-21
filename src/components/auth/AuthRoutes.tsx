@@ -10,6 +10,7 @@ import CommissionTracker from "@/pages/CommissionTracker";
 import Home from "@/pages/marketing/Home";
 import About from "@/pages/marketing/About";
 import Pricing from "@/pages/marketing/Pricing";
+import TermsOfUse from "@/pages/marketing/TermsOfUse";
 
 export const AuthRoutes = () => {
   const { isAuthenticated, isLoading } = useAuthStateManager();
@@ -40,6 +41,10 @@ export const AuthRoutes = () => {
       <Route 
         path="/pricing" 
         element={<Pricing />}
+      />
+      <Route 
+        path="/terms" 
+        element={<TermsOfUse />}
       />
       <Route 
         path="/auth/*" 
