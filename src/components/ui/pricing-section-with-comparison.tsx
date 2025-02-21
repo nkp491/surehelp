@@ -4,9 +4,55 @@ import { PricingHeader } from './pricing/PricingHeader';
 import { PricingCard } from './pricing/PricingCard';
 import { FeatureRow } from './pricing/FeatureRow';
 
+const features = [
+  {
+    name: "Client Assessment Form",
+    key: "assessmentForm"
+  },
+  {
+    name: "Client Book of Business",
+    key: "bookOfBusiness"
+  },
+  {
+    name: "KPI Insights",
+    key: "kpiInsights"
+  },
+  {
+    name: "Team Members",
+    key: "teamMembers"
+  },
+  {
+    name: "Manager Dashboard",
+    key: "managerDashboard"
+  },
+  {
+    name: "Team Bulletin",
+    key: "teamBulletin"
+  }
+];
+
 function PricingComparison() {
   const calculateMonthlyFromAnnual = (monthlyPrice: number) => {
     return (monthlyPrice * 0.8).toFixed(0); // 20% discount
+  };
+
+  const getFeatureValues = (key: string) => {
+    switch (key) {
+      case 'assessmentForm':
+        return ["15/month", "Unlimited", "Unlimited", "Unlimited", "Unlimited"];
+      case 'bookOfBusiness':
+        return ["15 submissions", "Unlimited", "Unlimited", "Unlimited", "Unlimited"];
+      case 'kpiInsights':
+        return ["30 days", "Unlimited", "Unlimited", "Unlimited", "Unlimited"];
+      case 'teamMembers':
+        return [false, true, "Up to 25", "Up to 50", "Unlimited"];
+      case 'managerDashboard':
+        return [false, false, true, true, true];
+      case 'teamBulletin':
+        return [false, true, true, true, true];
+      default:
+        return [false, false, false, false, false];
+    }
   };
 
   return (
@@ -54,30 +100,13 @@ function PricingComparison() {
               isContact
             />
 
-            <FeatureRow 
-              feature="Client Assessment Forms"
-              plans={["15/month", "Unlimited", "Unlimited", "Unlimited", "Unlimited"]}
-            />
-            <FeatureRow
-              feature="Client Book of Business"
-              plans={["15 submissions", "Unlimited", "Unlimited", "Unlimited", "Unlimited"]}
-            />
-            <FeatureRow
-              feature="KPI Insights"
-              plans={["30 days", "Unlimited", "Unlimited", "Unlimited", "Unlimited"]}
-            />
-            <FeatureRow
-              feature="Team Members"
-              plans={[false, true, "Up to 25", "Up to 50", "Unlimited"]}
-            />
-            <FeatureRow
-              feature="Manager Dashboard"
-              plans={[false, false, true, true, true]}
-            />
-            <FeatureRow
-              feature="Team Bulletin"
-              plans={[false, true, true, true, true]}
-            />
+            {features.map((feature) => (
+              <FeatureRow 
+                key={feature.key}
+                feature={feature.name}
+                plans={getFeatureValues(feature.key)}
+              />
+            ))}
           </div>
         </div>
       </div>
