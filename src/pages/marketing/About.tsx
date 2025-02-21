@@ -70,26 +70,26 @@ const About = () => {
                   {[
                     {
                       image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
-                      name: "John Cooper",
-                      role: "Chief Executive Officer",
-                      description: "20+ years of insurance industry expertise, driving innovation in insurtech."
-                    },
-                    {
-                      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-                      name: "Sarah Mitchell",
+                      name: "Nielsen Aragon",
                       role: "Chief Technology Officer",
                       description: "Tech visionary with a passion for creating intuitive software solutions."
                     },
                     {
-                      image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-                      name: "Michael Chang",
+                      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+                      name: "Tho Nguyen",
                       role: "Head of Product",
                       description: "Product strategist focused on delivering value through user-centric design."
                     },
                     {
+                      image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+                      name: "Harold Durana",
+                      role: "Chief Executive Officer",
+                      description: "20+ years of insurance industry expertise, driving innovation in insurtech."
+                    },
+                    {
                       image: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9",
-                      name: "Emily Rodriguez",
-                      role: "Customer Success Lead",
+                      name: "Samir Palavra",
+                      role: "Chief Operations Officer",
                       description: "Dedicated to ensuring our clients achieve their business goals."
                     }
                   ].map((member, index) => (
