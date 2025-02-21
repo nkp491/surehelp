@@ -36,7 +36,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
             -right-[25%] 
-            ${altText === "Lead Information Form" ? 'object-bottom' : 'object-top'}
+            ${altText === "Lead Information Form" ? 'object-top' : 'object-top'}
           `}
         />
       </div>
