@@ -23,11 +23,11 @@ const About = () => {
 
               <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
                 {/* Large Image on Left */}
-                <div className="h-[600px] rounded-2xl overflow-hidden">
+                <div className="h-[600px] rounded-2xl overflow-hidden lg:pr-8">
                   <img 
-                    src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
+                    src="/lovable-uploads/12c860c7-e4fb-44ff-b5c2-4d397dcc14c1.png"
                     alt="Mission" 
-                    className="w-full h-full object-cover"
+                    className="w-full h-full object-cover rounded-2xl"
                   />
                 </div>
 
