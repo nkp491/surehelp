@@ -1,7 +1,15 @@
+
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/ui/typed-text";
 import { BarChart, BookOpen, ClipboardList, LayoutDashboard } from "lucide-react";
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+  CarouselNext,
+  CarouselPrevious,
+} from "@/components/ui/carousel";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -102,34 +110,35 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="relative bg-white/95 w-full py-24">
+        {/* Workflow Section */}
+        <div className="relative w-full py-24">
           <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white mb-4">
                 Streamlined Sales Workflow
               </h2>
-              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              <p className="text-lg leading-8 text-white/80 max-w-2xl mx-auto">
                 Experience a seamlessly integrated platform designed to optimize every step of your insurance sales process
               </p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
-              <div className="hidden lg:block absolute top-24 left-[25%] right-[25%] h-0.5 bg-gradient-to-r from-[#0096C7] to-[#002DCB] z-0" />
-
+            {/* Desktop View */}
+            <div className="hidden lg:grid grid-cols-4 gap-8 relative">
+              <div className="absolute top-24 left-[25%] right-[25%] h-0.5 bg-white/20 z-0" />
               {workflowStages.map((stage, index) => (
                 <div
                   key={stage.title}
-                  className={`relative group p-6 rounded-xl ${stage.bgColor} transition-all duration-300 hover:scale-105 animate-fade-in`}
+                  className={`relative group p-6 rounded-xl backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 animate-fade-in`}
                   style={{ animationDelay: `${index * 150}ms` }}
                 >
                   <div className="flex flex-col items-center text-center space-y-4">
-                    <div className="p-3 rounded-full bg-white shadow-md group-hover:shadow-lg transition-shadow">
-                      <stage.icon className="w-8 h-8 text-[#0096C7]" />
+                    <div className="p-3 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
+                      <stage.icon className="w-8 h-8 text-white" />
                     </div>
-                    <h3 className="text-xl font-semibold text-gray-900">
+                    <h3 className="text-xl font-semibold text-white">
                       {stage.title}
                     </h3>
-                    <p className="text-gray-600">
+                    <p className="text-white/80">
                       {stage.description}
                     </p>
                   </div>
@@ -137,11 +146,47 @@ const Home = () => {
               ))}
             </div>
 
+            {/* Mobile/Tablet Carousel View */}
+            <div className="lg:hidden">
+              <Carousel
+                opts={{
+                  align: "start",
+                  loop: true,
+                }}
+                className="w-full"
+              >
+                <CarouselContent>
+                  {workflowStages.map((stage, index) => (
+                    <CarouselItem key={stage.title} className="md:basis-1/2">
+                      <div
+                        className={`relative group p-6 rounded-xl backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 animate-fade-in h-full`}
+                        style={{ animationDelay: `${index * 150}ms` }}
+                      >
+                        <div className="flex flex-col items-center text-center space-y-4">
+                          <div className="p-3 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
+                            <stage.icon className="w-8 h-8 text-white" />
+                          </div>
+                          <h3 className="text-xl font-semibold text-white">
+                            {stage.title}
+                          </h3>
+                          <p className="text-white/80">
+                            {stage.description}
+                          </p>
+                        </div>
+                      </div>
+                    </CarouselItem>
+                  ))}
+                </CarouselContent>
+                <CarouselPrevious className="hidden md:flex" />
+                <CarouselNext className="hidden md:flex" />
+              </Carousel>
+            </div>
+
             <div className="mt-16 text-center">
               <Button 
                 onClick={() => navigate('/auth')} 
                 size="lg"
-                className="bg-[#0096C7] hover:bg-[#0096C7]/90 text-white"
+                className="bg-white text-[#0096C7] hover:bg-white/90"
               >
                 Start Your Journey
               </Button>
