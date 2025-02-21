@@ -16,8 +16,8 @@ const Pricing = () => {
                 onClick={() => navigate('/')}>SureHelp</span>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/products')} className="text-white hover:text-white/90">
-                Products
+              <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:text-white/90">
+                About
               </Button>
               <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:text-white/90">
                 Pricing
