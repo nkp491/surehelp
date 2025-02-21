@@ -1,4 +1,6 @@
+
 import FeatureCard from "./FeatureCard";
+
 const features = [{
   title: "Enter lead information with ease",
   description: "Use our client Assessment Form to easily input client data to track and manage your leads through the entire sales pipeline with our intuitive system.",
@@ -22,7 +24,7 @@ const features = [{
 }, {
   title: "Streamlined metric dashboards for managers",
   description: "Managers can view their team's KPI metrics for the day, week, month, and more.",
-  imagePath: "/lovable-uploads/39b3574f-1c0f-46d9-9a61-d1218c9c2903.png",
+  imagePath: "/lovable-uploads/81ac6ea8-c2b9-484b-99fa-0a0abf976b32.png",
   altText: "Success Calculator Dashboard"
 }, {
   title: "Link your accounts to agents and managers",
@@ -30,17 +32,23 @@ const features = [{
   imagePath: "/lovable-uploads/eb797aa2-dd99-4acc-86fe-44c70da68a43.png",
   altText: "Team Management Dashboard"
 }];
+
 const FeaturesGrid = () => {
-  return <section className="w-full py-24">
+  return (
+    <section className="w-full py-24">
       <div className="max-w-6xl mx-auto px-6">
         <h2 className="text-4xl font-bold text-center mb-4 text-white">Agent Hub's Powerful Features</h2>
         <p className="text-lg text-white/80 text-center mb-16 max-w-2xl mx-auto">
           Everything you need to manage your insurance business effectively in one place.
         </p>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
-          {features.map((feature, index) => <FeatureCard key={index} {...feature} />)}
+          {features.map((feature, index) => (
+            <FeatureCard key={index} {...feature} />
+          ))}
         </div>
       </div>
-    </section>;
+    </section>
+  );
 };
+
 export default FeaturesGrid;
