@@ -21,44 +21,47 @@ const About = () => {
                 </h1>
               </div>
 
-              {/* Mission Section */}
-              <div className="mt-20 flex justify-end">
-                <div className="max-w-3xl">
-                  <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
-                  <p className="text-lg leading-8 text-white/80">
-                    At SureHelp, we are dedicated to improving the sales workflow by organizing the underwriting process 
-                    and utilizing real-time data to work for you. Every day, agents waste 
-                    countless hours jumping between different systems, losing track of leads, and 
-                    struggling to measure performance. We provide a seamless, all-in-one platform 
-                    designed to bring clarity, efficiency, and success to your workflow.
-                  </p>
-                </div>
-              </div>
-
-              {/* Story Section */}
-              <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                <div className="h-[400px] rounded-2xl overflow-hidden">
+              <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+                {/* Large Image on Left */}
+                <div className="h-[600px] rounded-2xl overflow-hidden">
                   <img 
                     src="https://images.unsplash.com/photo-1488590528505-98d2b5aba04b"
                     alt="Mission" 
                     className="w-full h-full object-cover"
                   />
                 </div>
-                <div className="space-y-6">
-                  <h2 className="text-3xl font-bold text-white">Our Story</h2>
-                  <p className="text-lg leading-relaxed text-white/80">
-                    SureHelp was founded when Harold and Samir—both seasoned leaders in the life 
-                    insurance industry—recognized the urgent need to modernize and streamline an 
-                    agent's sales workflow. Their vision for a more efficient, technology-driven 
-                    solution led them to partner with Nielsen and Tho, two experienced technologists 
-                    with over a decade of expertise in building innovative digital platforms.
-                  </p>
-                  <p className="text-lg leading-relaxed text-white/80">
-                    This powerful collaboration brings together deep industry insight and cutting-edge 
-                    technology, setting SureHelp apart from other tools. By combining practical 
-                    insurance knowledge with advanced technological solutions, we've created an 
-                    intuitive, easy-to-use platform designed specifically for insurance agents and IMOs.
-                  </p>
+
+                {/* Content on Right */}
+                <div className="space-y-16">
+                  {/* Mission Section */}
+                  <div>
+                    <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
+                    <p className="text-lg leading-8 text-white/80">
+                      At SureHelp, we are dedicated to improving the sales workflow by organizing the underwriting process 
+                      and utilizing real-time data to work for you. Every day, agents waste 
+                      countless hours jumping between different systems, losing track of leads, and 
+                      struggling to measure performance. We provide a seamless, all-in-one platform 
+                      designed to bring clarity, efficiency, and success to your workflow.
+                    </p>
+                  </div>
+
+                  {/* Story Section */}
+                  <div className="space-y-6">
+                    <h2 className="text-3xl font-bold text-white">Our Story</h2>
+                    <p className="text-lg leading-relaxed text-white/80">
+                      SureHelp was founded when Harold and Samir—both seasoned leaders in the life 
+                      insurance industry—recognized the urgent need to modernize and streamline an 
+                      agent's sales workflow. Their vision for a more efficient, technology-driven 
+                      solution led them to partner with Nielsen and Tho, two experienced technologists 
+                      with over a decade of expertise in building innovative digital platforms.
+                    </p>
+                    <p className="text-lg leading-relaxed text-white/80">
+                      This powerful collaboration brings together deep industry insight and cutting-edge 
+                      technology, setting SureHelp apart from other tools. By combining practical 
+                      insurance knowledge with advanced technological solutions, we've created an 
+                      intuitive, easy-to-use platform designed specifically for insurance agents and IMOs.
+                    </p>
+                  </div>
                 </div>
               </div>
 
