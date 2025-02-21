@@ -48,7 +48,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       >
         <div className="flex justify-between items-start">
           <div>
-            <h3 className={`font-semibold text-lg ${isSelected ? 'text-[#1A1F2C]' : 'text-gray-900'}`}>
+            <h3 className={`text-xl ${isSelected ? 'text-[#1A1F2C]' : 'text-gray-900'}`}>
               {title}
             </h3>
             <div 
