@@ -1,8 +1,7 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/ui/typed-text";
-import { BarChart, BookOpen, ClipboardList, LayoutDashboard } from "lucide-react";
+import { BarChart, BookOpen, Building, ClipboardList, LayoutDashboard } from "lucide-react";
 import {
   Carousel,
   CarouselContent,
@@ -110,7 +109,6 @@ const Home = () => {
           </div>
         </div>
 
-        {/* Workflow Section */}
         <div className="relative w-full py-24">
           <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -122,37 +120,41 @@ const Home = () => {
               </p>
             </div>
 
-            {/* Desktop View */}
-            <div className="hidden lg:block relative h-[600px]">
-              {/* SVG Connector Lines */}
-              <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 600">
-                <path
-                  d="M400,150 C550,150 650,250 650,300 C650,350 550,450 400,450 C250,450 150,350 150,300 C150,250 250,150 400,150"
-                  fill="none"
-                  stroke="#22C55E"
-                  strokeWidth="2"
-                  strokeDasharray="8 4"
-                />
-              </svg>
-              
-              {workflowStages.map((stage, index) => {
-                const angle = (index * 90 * Math.PI) / 180;
-                const radius = 200;
-                const centerX = 400;
-                const centerY = 300;
-                const x = centerX + radius * Math.cos(angle);
-                const y = centerY + radius * Math.sin(angle);
+            <div className="hidden lg:block relative h-[600px] perspective-1000">
+              <div className="absolute inset-0 w-full h-full" style={{ perspective: "1000px", transformStyle: "preserve-3d" }}>
+                {[0, 1, 2].map((i) => (
+                  <svg key={i} className="absolute inset-0 w-full h-full" style={{ transform: `translateZ(${i * 10}px)` }} viewBox="0 0 800 600">
+                    <ellipse
+                      cx="400"
+                      cy="300"
+                      rx="250"
+                      ry="150"
+                      fill="none"
+                      stroke="#22C55E"
+                      strokeWidth="2"
+                      strokeDasharray="8 4"
+                      style={{ opacity: 1 - i * 0.2 }}
+                    />
+                  </svg>
+                ))}
+              </div>
 
-                return (
-                  <div
-                    key={stage.title}
-                    className="absolute w-48 h-48 animate-fade-in"
-                    style={{
-                      transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
-                      animationDelay: `${index * 150}ms`,
-                    }}
-                  >
-                    <div className="p-6 rounded-full backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 group h-full w-full flex items-center justify-center">
+              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                <div className="p-8 rounded-full backdrop-blur-md bg-white/10 border border-white/20 center-pulse">
+                  <Building className="w-12 h-12 text-white" />
+                </div>
+              </div>
+              
+              {workflowStages.map((stage, index) => (
+                <div
+                  key={stage.title}
+                  className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 orbital-animation"
+                  style={{
+                    animationDelay: `${-index * 5}s`,
+                  }}
+                >
+                  <div className="w-48 h-48 counter-rotate">
+                    <div className="p-6 rounded-full backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 group h-full w-full flex items-center justify-center shadow-lg">
                       <div className="flex flex-col items-center text-center space-y-3">
                         <div className="p-3 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
                           <stage.icon className="w-6 h-6 text-white" />
@@ -166,11 +168,10 @@ const Home = () => {
                       </div>
                     </div>
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
 
-            {/* Mobile/Tablet Carousel View */}
             <div className="lg:hidden">
               <Carousel
                 opts={{
