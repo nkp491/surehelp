@@ -59,12 +59,12 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
             >
               {isSelected && (
                 <>
-                  <p className="text-sm text-[#1A1F2C]/90 mt-2 mb-4">
+                  <p className="text-base text-[#1A1F2C]/90 mt-2 mb-4">
                     {description}
                   </p>
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-[#1A1F2C]">Key Features:</h4>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-[#1A1F2C]/90">
+                    <h4 className="text-base font-medium text-[#1A1F2C]">Key Features:</h4>
+                    <ul className="list-disc list-inside space-y-2 text-base text-[#1A1F2C]/90">
                       <li>Enhanced user experience with intuitive design</li>
                       <li>Seamless integration with existing systems</li>
                       <li>Real-time updates and notifications</li>
