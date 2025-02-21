@@ -5,7 +5,7 @@ const features = [
   {
     title: "Enter lead information with ease",
     description: "Use our client Assessment Form to easily input client data to track and manage your leads through the entire sales pipeline with our intuitive system.",
-    imagePath: "/lovable-uploads/e18fc40a-264d-405d-909a-59abaf978727.png",
+    imagePath: "/lovable-uploads/23ae3a68-49e1-4541-aebb-35e91813f481.png",
     altText: "Lead Information Form"
   },
   {
