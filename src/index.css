@@ -94,21 +94,11 @@
   }
 
   @keyframes orbit {
-    from {
-      transform: rotate(0deg) translateX(200px) translateZ(50px) rotate(0deg);
-    }
-    to {
-      transform: rotate(360deg) translateX(200px) translateZ(50px) rotate(-360deg);
-    }
-  }
-
-  @keyframes counterRotate {
-    from {
-      transform: rotate(360deg);
-    }
-    to {
-      transform: rotate(0deg);
-    }
+    0% { transform: rotateY(0deg) translateZ(250px) rotateY(0deg) scale(0.8); }
+    25% { transform: rotateY(90deg) translateZ(250px) rotateY(-90deg) scale(1); }
+    50% { transform: rotateY(180deg) translateZ(250px) rotateY(-180deg) scale(0.8); }
+    75% { transform: rotateY(270deg) translateZ(250px) rotateY(-270deg) scale(0.6); }
+    100% { transform: rotateY(360deg) translateZ(250px) rotateY(-360deg) scale(0.8); }
   }
 
   @keyframes centerPulse {
@@ -126,13 +116,18 @@
     }
   }
 
-  .orbital-animation {
-    animation: orbit 20s linear infinite;
-    transform-origin: center;
+  .carousel-container {
+    transform-style: preserve-3d;
+    perspective: 1000px;
   }
 
-  .counter-rotate {
-    animation: counterRotate 20s linear infinite;
+  .carousel-item {
+    position: absolute;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .orbital-animation {
+    animation: orbit 20s linear infinite;
   }
 
   .center-pulse {
