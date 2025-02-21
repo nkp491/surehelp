@@ -14,7 +14,7 @@ const Pricing = () => {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <img 
-                src="/lovable-uploads/e0a19c59-7905-41d6-aae2-e8c9735321c0.png"
+                src="/lovable-uploads/b13a0f6e-9e88-478b-b26d-66c2b71c55c0.png"
                 alt="SureHelp Logo"
                 className="h-8 cursor-pointer"
                 onClick={() => navigate('/')}
