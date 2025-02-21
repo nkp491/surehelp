@@ -21,11 +21,11 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       `}
       onClick={() => setIsSelected(!isSelected)}
     >
-      <div className="h-3/4 w-full overflow-hidden bg-gray-100">
+      <div className="h-3/4 w-full overflow-hidden bg-emerald-400/20 relative">
         <img 
           src={imagePath} 
           alt={altText}
-          className="w-full h-full object-cover object-top"
+          className="w-[120%] h-full object-cover object-top absolute -right-[20%]"
         />
       </div>
       
