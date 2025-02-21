@@ -23,5 +23,5 @@ const ContactSection = () => {
   );
 };
 
-export default ContactForm;
+export default ContactSection;
 
