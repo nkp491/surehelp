@@ -25,7 +25,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
         <img 
           src={imagePath} 
           alt={altText}
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover object-top"
         />
       </div>
       
