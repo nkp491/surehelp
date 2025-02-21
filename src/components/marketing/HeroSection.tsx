@@ -31,7 +31,7 @@ const HeroSection = () => {
               </Button>
             </div>
           </div>
-          <div className="relative w-full h-full flex justify-center items-center lg:-mr-4">
+          <div className="relative w-full h-full flex justify-center items-center lg:-ml-4">
             <img 
               src="/lovable-uploads/1988b835-79ca-409a-9adc-d3a1794b7286.png"
               alt="SureHelp Dashboard"
