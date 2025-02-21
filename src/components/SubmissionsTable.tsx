@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { useToast } from "@/components/ui/use-toast";
 import { FormSubmission } from "@/types/form";
 import CustomerProfile from "./CustomerProfile";
@@ -129,28 +128,28 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   };
 
   return (
-    <Card className="bg-[#faf7f0] w-full">
-      <CardHeader className="space-y-4">
-        <div className="flex justify-between items-center">
-          <CardTitle className="text-[#2A6F97]">Submitted Forms</CardTitle>
-          <Button
-            onClick={handleExport}
-            className="flex items-center gap-2"
-            variant="outline"
-            disabled={!submissions.length}
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </Button>
-        </div>
-        <div className="flex flex-col sm:flex-row gap-4">
+    <div className="space-y-8">
+      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm text-[#2A6F97]">
+        <div className="flex flex-col sm:flex-row gap-4 w-full">
           <div className="flex-1">
             <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
-          <FilterBar filters={filters} onFilterChange={setFilters} />
+          <div className="flex items-center gap-4">
+            <FilterBar filters={filters} onFilterChange={setFilters} />
+            <Button
+              onClick={handleExport}
+              className="flex items-center gap-2"
+              variant="outline"
+              disabled={!submissions.length}
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
+            </Button>
+          </div>
         </div>
-      </CardHeader>
-      <CardContent className="p-6">
+      </div>
+
+      <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
         <SubmissionTabs
           submissions={processedSubmissions}
           onEdit={onEdit}
@@ -189,22 +188,22 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
             </Pagination>
           </div>
         )}
+      </div>
 
-        {selectedCustomer && (
-          <CustomerProfile
-            customer={selectedCustomer}
-            isOpen={true}
-            onClose={() => setSelectedCustomer(null)}
-          />
-        )}
-
-        <DeleteDialog
-          isOpen={deleteDialogOpen}
-          onOpenChange={setDeleteDialogOpen}
-          onConfirm={confirmDelete}
+      {selectedCustomer && (
+        <CustomerProfile
+          customer={selectedCustomer}
+          isOpen={true}
+          onClose={() => setSelectedCustomer(null)}
         />
-      </CardContent>
-    </Card>
+      )}
+
+      <DeleteDialog
+        isOpen={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onConfirm={confirmDelete}
+      />
+    </div>
   );
 };
 

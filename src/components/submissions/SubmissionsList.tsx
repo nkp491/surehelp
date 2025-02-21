@@ -70,7 +70,7 @@ const SubmissionsList = ({
   };
 
   return (
-    <div className="w-full bg-white rounded-lg border border-gray-100 overflow-hidden">
+    <div className="rounded-lg overflow-hidden">
       <Table>
         <SubmissionsTableHeader onSort={onSort} />
         <TableBody>
@@ -82,7 +82,7 @@ const SubmissionsList = ({
             </TableRow>
           ) : (
             submissions.map((submission) => (
-              <TableRow key={submission.timestamp}>
+              <TableRow key={submission.timestamp} className="hover:bg-gray-50">
                 <TableCell className="font-medium">
                   {formatDate(submission.timestamp)}
                 </TableCell>

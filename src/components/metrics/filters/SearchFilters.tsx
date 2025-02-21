@@ -1,26 +1,26 @@
-
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import DateRangePicker from "@/components/charts/DateRangePicker";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TimePeriod } from "@/types/metrics";
 
 interface SearchFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
   selectedDate?: Date;
-  onDateChange: (date: Date | undefined) => void;
+  onDateChange: (date: Date | null) => void;
   timePeriod: TimePeriod;
   onTimePeriodChange: (period: TimePeriod) => void;
 }
 
-const SearchFilters: React.FC<SearchFiltersProps> = ({
+const SearchFilters = ({
   searchTerm,
   onSearchChange,
   selectedDate,
   onDateChange,
   timePeriod,
   onTimePeriodChange,
-}) => {
+}: SearchFiltersProps) => {
   const handleDateRangeChange = (dates: { from: Date | undefined; to: Date | undefined }) => {
     // For now, we'll just use the "from" date to maintain compatibility
     onDateChange(dates.from);
@@ -45,6 +45,6 @@ const SearchFilters: React.FC<SearchFiltersProps> = ({
       />
     </div>
   );
-}
+};
 
 export default SearchFilters;

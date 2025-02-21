@@ -23,17 +23,29 @@ export const SubmissionTabs = ({
 }: SubmissionTabsProps) => {
   return (
     <Tabs defaultValue="protected" className="w-full">
-      <TabsList className="grid w-full grid-cols-3 mb-4">
-        <TabsTrigger value="protected" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
-          Protected ({submissions.protected.length})
-        </TabsTrigger>
-        <TabsTrigger value="follow-up" className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white">
-          Follow-up ({submissions.followUp.length})
-        </TabsTrigger>
-        <TabsTrigger value="declined" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
-          Declined ({submissions.declined.length})
-        </TabsTrigger>
-      </TabsList>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">CLIENT SUBMISSIONS</h2>
+        <TabsList className="grid w-[400px] grid-cols-3">
+          <TabsTrigger 
+            value="protected" 
+            className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
+          >
+            Protected ({submissions.protected.length})
+          </TabsTrigger>
+          <TabsTrigger 
+            value="follow-up" 
+            className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
+          >
+            Follow-up ({submissions.followUp.length})
+          </TabsTrigger>
+          <TabsTrigger 
+            value="declined" 
+            className="data-[state=active]:bg-red-500 data-[state=active]:text-white"
+          >
+            Declined ({submissions.declined.length})
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
       <TabsContent value="protected">
         <SubmissionsList 

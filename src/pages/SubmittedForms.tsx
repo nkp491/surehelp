@@ -4,6 +4,7 @@ import SubmissionsTable from "@/components/SubmissionsTable";
 import FormContainer from "@/components/FormContainer";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { Card } from "@/components/ui/card";
 
 const SubmittedForms = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
@@ -79,29 +80,35 @@ const SubmittedForms = () => {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
+    <div className="container mx-auto px-4 sm:px-6 py-4">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900">Submitted Forms</h2>
-          <p className="text-muted-foreground mt-1">View and manage all form submissions in one place</p>
+          <h2 className="text-2xl font-bold text-gray-900">Client Book of Business</h2>
+          <p className="text-muted-foreground mt-1">View and manage all client submissions</p>
         </div>
       </div>
-      
-      <div className="space-y-8">
-        {editingSubmission && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4 text-[#2A6F97]">Edit Submission</h2>
-            <FormContainer 
-              editingSubmission={editingSubmission} 
-              onUpdate={handleUpdate}
-            />
-          </div>
-        )}
 
-        <SubmissionsTable 
-          submissions={submissions}
-          onEdit={handleEdit}
-        />
+      <div className="space-y-6">
+        <Card className="w-full p-4 sm:p-6 shadow-sm bg-[#F1F1F1]">
+          <div className="space-y-6">
+            {editingSubmission && (
+              <div className="bg-white p-6 rounded-lg shadow-sm">
+                <h2 className="text-xl font-bold mb-4 text-[#2A6F97]">Edit Submission</h2>
+                <FormContainer 
+                  editingSubmission={editingSubmission} 
+                  onUpdate={handleUpdate}
+                />
+              </div>
+            )}
+
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+              <SubmissionsTable 
+                submissions={submissions}
+                onEdit={handleEdit}
+              />
+            </div>
+          </div>
+        </Card>
       </div>
     </div>
   );

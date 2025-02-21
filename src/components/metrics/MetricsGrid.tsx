@@ -1,4 +1,3 @@
-
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricCard from "./MetricCard";
 
@@ -24,14 +23,12 @@ const MetricsGrid = ({ aggregatedMetrics }: MetricsGridProps) => {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-8 gap-4">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
       {Object.entries(displayMetrics).map(([metric, count]) => (
         <MetricCard
           key={`${metric}-${timePeriod}`} // Add timePeriod to force re-render
           metric={metric}
           value={count}
-          inputValue={metricInputs[metric] || '0'}
-          onInputChange={(value) => handleInputChange(metric as any, value)}
           isCurrency={metric === 'ap'}
           trend={trends[metric] || 0}
         />

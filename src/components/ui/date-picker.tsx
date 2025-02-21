@@ -23,8 +23,15 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
 
+  const handleOpenChange = (isOpen: boolean) => {
+    setOpen(isOpen);
+    if (!isOpen && !selected) {
+      onSelect(null);
+    }
+  };
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}

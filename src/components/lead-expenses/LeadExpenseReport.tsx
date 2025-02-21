@@ -149,9 +149,9 @@ const LeadExpenseReport = () => {
   };
 
   return (
-    <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm">
-      <div className="flex justify-between items-center mb-6">
-        <h2 className="text-2xl font-bold">Lead Expense Report</h2>
+    <div>
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold">LEAD EXPENSE REPORT</h2>
         <AddExpenseDialog
           isOpen={isAddOpen}
           onOpenChange={setIsAddOpen}

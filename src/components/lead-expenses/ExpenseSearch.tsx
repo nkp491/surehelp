@@ -80,7 +80,7 @@ const ExpenseSearch = ({ onSearch }: ExpenseSearchProps) => {
   };
 
   return (
-    <div className="space-y-4 mb-6">
+    <div className="space-y-4 mb-6 bg-white p-4 rounded-lg shadow-sm">
       <div className="flex gap-4">
         <div className="relative flex-1">
           <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -117,6 +117,7 @@ const ExpenseSearch = ({ onSearch }: ExpenseSearchProps) => {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
             triggerSearch(searchTerm, selectedTags, sortField, sortDirection === 'asc' ? 'desc' : 'asc');
           }}
+          className="text-[#2A6F97]"
         >
           {sortDirection === 'asc' ? '↑' : '↓'}
         </Button>

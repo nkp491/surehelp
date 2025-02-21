@@ -16,7 +16,7 @@ const ChartControls = ({
           KPI Visualization
         </h2>
       </div>
-      <div className="flex flex-col sm:flex-row gap-4 justify-end">
+      <div className="flex items-center gap-4">
         <DateRangePicker 
           timePeriod={timePeriod} 
           onTimePeriodChange={onTimePeriodChange} 

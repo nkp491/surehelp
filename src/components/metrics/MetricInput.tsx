@@ -1,4 +1,5 @@
 import { Input } from "@/components/ui/input";
+import { useState, useEffect, useRef } from "react";
 
 interface MetricInputProps {
   metric: string;
@@ -13,61 +14,143 @@ const MetricInput = ({
   onInputChange,
   isAP = false,
 }: MetricInputProps) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const sanitizedValue = isAP 
-      ? e.target.value.replace(/[^0-9.]/g, '')
-      : e.target.value.replace(/[^0-9]/g, '');
-    
-    console.log(`[MetricInput] Processing input change for ${metric}:`, {
-      rawValue: e.target.value,
-      sanitizedValue,
-      isAP,
-      timestamp: new Date().toISOString()
-    });
+  const [inputValue, setInputValue] = useState('');
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const cursorPositionRef = useRef<number | null>(null);
+  const previousLengthRef = useRef<number>(0);
 
+  // Update input value when currentValue changes from outside
+  useEffect(() => {
+    if (!isFocused) {
+      if (isAP) {
+        // Don't format with toFixed when not focused, just convert to decimal
+        setInputValue(String(currentValue / 100));
+      } else {
+        setInputValue(currentValue.toString());
+      }
+    }
+  }, [currentValue, isAP, isFocused]);
+
+  // Restore cursor position after state update
+  useEffect(() => {
+    if (isFocused && inputRef.current && cursorPositionRef.current !== null) {
+      // Calculate the new cursor position based on the length difference
+      const lengthDiff = inputValue.length - previousLengthRef.current;
+      const newPosition = cursorPositionRef.current + (lengthDiff > 0 ? 0 : lengthDiff);
+      const finalPosition = Math.max(0, Math.min(newPosition, inputValue.length));
+      
+      inputRef.current.setSelectionRange(finalPosition, finalPosition);
+      previousLengthRef.current = inputValue.length;
+    }
+  }, [inputValue, isFocused]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const cursorPosition = e.target.selectionStart || 0;
+    const value = e.target.value;
+    const prevValue = inputValue;
+    
     if (isAP) {
-      const numericValue = parseFloat(sanitizedValue);
-      if (!isNaN(numericValue)) {
-        const centsValue = Math.round(numericValue * 100);
-        onInputChange(centsValue.toString());
-      } else if (sanitizedValue === '') {
-        onInputChange('0');
+      // For AP, allow one decimal point and up to 2 decimal places
+      const parts = value.split('.');
+      const hasDecimal = parts.length > 1;
+      const decimalPart = hasDecimal ? parts[1] : '';
+      
+      if (
+        parts.length <= 2 && // Only one decimal point
+        decimalPart.length <= 2 && // Max 2 decimal places
+        /^\d*\.?\d*$/.test(value) // Only numbers and one decimal
+      ) {
+        // Store the cursor position relative to the decimal point
+        const prevDecimalIndex = prevValue.indexOf('.');
+        const newDecimalIndex = value.indexOf('.');
+        const isBeforeDecimal = cursorPosition <= (newDecimalIndex === -1 ? value.length : newDecimalIndex);
+        
+        setInputValue(value);
+        previousLengthRef.current = prevValue.length;
+        cursorPositionRef.current = cursorPosition;
+        
+        // Only update parent if we have a valid number
+        const numericValue = parseFloat(value || '0');
+        if (!isNaN(numericValue)) {
+          const centsValue = Math.round(numericValue * 100);
+          onInputChange(centsValue.toString());
+        }
       }
     } else {
-      // For non-AP metrics, ensure it's a valid number and convert empty to 0
-      const numericValue = parseInt(sanitizedValue);
+      // For non-AP metrics, only allow integers
+      const sanitizedValue = value.replace(/[^0-9]/g, '');
+      setInputValue(sanitizedValue);
+      previousLengthRef.current = prevValue.length;
+      cursorPositionRef.current = cursorPosition;
+      
+      const numericValue = parseInt(sanitizedValue || '0');
       if (!isNaN(numericValue)) {
         onInputChange(numericValue.toString());
-      } else if (sanitizedValue === '') {
-        onInputChange('0');
+      }
+    }
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    if (isAP) {
+      const value = String(currentValue / 100);
+      setInputValue(value);
+      previousLengthRef.current = value.length;
+      
+      // Let the user start typing from the beginning
+      if (inputRef.current) {
+        inputRef.current.setSelectionRange(0, 0);
       }
     }
   };
 
   const handleBlur = () => {
-    // Ensure the value is properly synced on blur
-    if (!isAP) {
+    setIsFocused(false);
+    cursorPositionRef.current = null;
+    previousLengthRef.current = 0;
+    
+    if (isAP) {
+      // Format the value properly on blur
+      const numericValue = parseFloat(inputValue || '0');
+      if (!isNaN(numericValue)) {
+        const centsValue = Math.round(numericValue * 100);
+        onInputChange(centsValue.toString());
+      } else {
+        setInputValue('0');
+        onInputChange('0');
+      }
+    } else {
+      // For non-AP metrics, ensure the value is properly synced
       onInputChange(currentValue.toString());
+      setInputValue(currentValue.toString());
     }
   };
 
-  const formatValue = (value: number) => {
-    if (isAP) {
+  const displayValue = () => {
+    if (!isAP) return inputValue;
+    
+    if (isFocused) {
+      // When focused, show the raw input value
+      return inputValue;
+    } else {
+      // When not focused, show the formatted currency
       return new Intl.NumberFormat('en-US', {
         style: 'currency',
         currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }).format(value / 100);
+      }).format(currentValue / 100);
     }
-    return value.toString();
   };
 
   return (
     <Input
+      ref={inputRef}
       type="text"
-      value={formatValue(currentValue)}
+      value={displayValue()}
       onChange={handleChange}
+      onFocus={handleFocus}
       onBlur={handleBlur}
       className={`h-6 text-center px-1 text-sm bg-transparent ${
         isAP ? 'w-24' : 'w-16'

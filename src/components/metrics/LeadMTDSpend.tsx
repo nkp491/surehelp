@@ -54,19 +54,19 @@ const LeadMTDSpend = () => {
   };
 
   return (
-    <Card className="overflow-hidden">
-      <div className="bg-[#3F7BA9] p-2 text-white">
-        <h3 className="font-medium text-sm text-center">Lead MTD Spend</h3>
-      </div>
-      <div className="bg-[#F5F5F5] p-4 flex items-center justify-center">
-        {isLoading ? (
-          <Loader2 className="h-6 w-6 animate-spin text-[#3F7BA9]" />
-        ) : (
-          <span className="text-2xl font-bold text-[#2A2A2A]">
+    <Card className="p-2 bg-gray-100 rounded-lg text-center shadow-sm">
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin text-gray-500 mx-auto" />
+      ) : (
+        <>
+          <div className="text-sm font-semibold text-red-600">
             {formatCurrency(mtdSpend || 0)}
-          </span>
-        )}
-      </div>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Lead MTD Spend
+          </div>
+        </>
+      )}
     </Card>
   );
 };

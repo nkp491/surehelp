@@ -1,13 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { Tooltip } from "@/components/ui/tooltip";
-import { TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
 
 interface MetricCardProps {
   metric: string;
   value: number;
-  inputValue: string;
-  onInputChange: (value: string) => void;
   isCurrency?: boolean;
   trend?: number;
 }
@@ -59,15 +56,10 @@ const MetricCard = ({
   };
 
   return (
-    <Card className={`
-      p-4 transition-all duration-200 rounded-lg shadow-sm
-      ${isAP 
-        ? 'bg-[#3F7BA9] text-white' 
-        : 'bg-[#5AA3DC] text-white'}
-    `}>
+    <Card className="p-3 bg-gray-50 rounded-lg shadow-sm">
       <div className="flex flex-col items-center gap-2">
         <div className="flex items-center gap-2">
-          <h3 className="font-medium text-lg">
+          <h3 className="text-sm font-medium text-gray-700">
             {formatMetricName(metric)}
           </h3>
           <TooltipProvider>
@@ -81,7 +73,7 @@ const MetricCard = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className="text-3xl font-bold">
+        <div className={`text-lg font-bold ${isAP ? 'text-green-600' : 'text-gray-900'}`}>
           {formatValue(value)}
         </div>
       </div>

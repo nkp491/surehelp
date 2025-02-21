@@ -44,27 +44,29 @@ const MetricsContent = ({
   });
 
   return (
-    <>
-      <FilteredMetricsTable
-        history={sortedHistory}
-        editingRow={editingRow}
-        editedValues={editedValues}
-        onEdit={onEdit}
-        onSave={onSave}
-        onCancel={onCancel}
-        onSort={onSort}
-        onValueChange={onValueChange}
-        onDelete={onDelete}
-        searchTerm={searchTerm}
-        selectedDate={selectedDate}
-      />
+    <div className="space-y-4">
+      <div className="overflow-x-auto rounded-lg border">
+        <FilteredMetricsTable
+          history={sortedHistory}
+          editingRow={editingRow}
+          editedValues={editedValues}
+          onEdit={onEdit}
+          onSave={onSave}
+          onCancel={onCancel}
+          onSort={onSort}
+          onValueChange={onValueChange}
+          onDelete={onDelete}
+          searchTerm={searchTerm}
+          selectedDate={selectedDate}
+        />
+      </div>
 
       <DeleteMetricDialog
         isOpen={!!deleteDate}
         onOpenChange={onDeleteDialogChange}
         onConfirm={onConfirmDelete}
       />
-    </>
+    </div>
   );
 };
 

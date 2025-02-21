@@ -35,18 +35,18 @@ const ExpenseTable = ({
   };
 
   return (
-    <div className="rounded-md border">
+    <div className="rounded-md border bg-white">
       <Table>
         <ExpenseTableHeader onSort={onSort} />
         <TableBody>
           {expenses.map((expense) => (
-            <TableRow key={expense.id}>
-              <TableCell>{format(new Date(expense.purchase_date), 'MMM dd, yyyy')}</TableCell>
-              <TableCell>{expense.source}</TableCell>
-              <TableCell>{expense.lead_type.join(', ')}</TableCell>
-              <TableCell>{expense.lead_count}</TableCell>
-              <TableCell>{formatCurrency(expense.total_cost)}</TableCell>
-              <TableCell>
+            <TableRow key={expense.id} className="hover:bg-gray-50">
+              <TableCell className="py-3">{format(new Date(expense.purchase_date), 'MMM dd, yyyy')}</TableCell>
+              <TableCell className="py-3">{expense.source}</TableCell>
+              <TableCell className="py-3">{expense.lead_type.join(', ')}</TableCell>
+              <TableCell className="py-3">{expense.lead_count}</TableCell>
+              <TableCell className="py-3 text-red-600 font-medium">{formatCurrency(expense.total_cost)}</TableCell>
+              <TableCell className="py-3">
                 <ExpenseRowActions
                   expense={expense}
                   onEdit={onEdit}

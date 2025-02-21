@@ -1,4 +1,3 @@
-
 import { useMetrics } from "@/contexts/MetricsContext";
 import RatioCard from "./RatioCard";
 import LeadMTDSpend from "./LeadMTDSpend";
@@ -13,7 +12,7 @@ const RatiosGrid = () => {
   const ratios = calculateRatios(metricsToUse);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
       <LeadMTDSpend />
       {ratios.map((ratio, index) => (
         <RatioCard

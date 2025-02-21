@@ -7,7 +7,7 @@ import { MetricCount } from '@/types/metrics';
 import { useToast } from '@/hooks/use-toast';
 
 export const useMetricsHistory = () => {
-  const { history, loadHistory, addOptimisticEntry } = useMetricsLoad();
+  const { history, loadHistory, addOptimisticEntry, isLoading, loadMoreHistory } = useMetricsLoad();
   const { sortedHistory, handleSort } = useMetricsSort(history);
   const {
     editingRow,
@@ -86,6 +86,8 @@ export const useMetricsHistory = () => {
     handleCancel,
     handleValueChange,
     loadHistory,
+    isLoading,
+    loadMoreHistory,
     validateMetrics,
     calculateTrends,
   };

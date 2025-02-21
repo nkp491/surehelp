@@ -13,6 +13,8 @@ import { startOfDay } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo } from "react";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
@@ -92,12 +94,14 @@ const BusinessMetricsContent = () => {
             onTimePeriodChange={() => {}}
           />
 
-          <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm text-[#2A6F97]">
-            <h3 className="text-xl font-semibold mb-4 text-left">KPI History</h3>
+          <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold">KPI HISTORY</h2>
+            </div>
             <MetricsHistory />
           </div>
 
-          <div className="bg-[#FFFCF6] p-6 rounded-lg shadow-sm text-[#2A6F97]">
+          <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
             <LeadExpenseReport />
           </div>
         </div>

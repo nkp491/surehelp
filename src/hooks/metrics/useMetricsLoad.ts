@@ -2,14 +2,16 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MetricCount } from '@/types/metrics';
 import { useToast } from '@/hooks/use-toast';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, subMonths } from 'date-fns';
 
 export const useMetricsLoad = () => {
   const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
   const loadHistory = useCallback(async (retryCount = 0) => {
     try {
+      setIsLoading(true);
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) {
         console.log('[MetricsLoad] No user found, returning empty history');
@@ -23,10 +25,14 @@ export const useMetricsLoad = () => {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
+      // Get data from the last 3 months by default
+      const threeMonthsAgo = format(subMonths(new Date(), 3), 'yyyy-MM-dd');
+
       const { data, error } = await supabase
         .from('daily_metrics')
         .select('*')
         .eq('user_id', user.user.id)
+        .gte('date', threeMonthsAgo)
         .order('date', { ascending: false });
 
       if (error) {
@@ -36,12 +42,9 @@ export const useMetricsLoad = () => {
 
       console.log('[MetricsLoad] Raw data from database:', {
         count: data?.length,
-        dates: data?.map(d => ({
-          original: d.date,
-          parsed: parseISO(d.date).toISOString(),
-          formatted: format(parseISO(d.date), 'yyyy-MM-dd')
-        })),
-        data
+        dateRange: `${threeMonthsAgo} to now`,
+        firstEntry: data?.[0],
+        lastEntry: data?.[data.length - 1]
       });
 
       const formattedHistory = data.map(entry => {
@@ -63,14 +66,6 @@ export const useMetricsLoad = () => {
         };
       });
 
-      console.log('[MetricsLoad] Formatted history:', {
-        count: formattedHistory.length,
-        dates: formattedHistory.map(h => ({
-          date: h.date,
-          parsed: parseISO(h.date).toISOString()
-        }))
-      });
-
       // Update state in a single atomic operation
       setHistory(formattedHistory);
       return formattedHistory;
@@ -86,50 +81,77 @@ export const useMetricsLoad = () => {
         variant: "destructive",
       });
       return [];
+    } finally {
+      setIsLoading(false);
     }
   }, [toast]);
 
+  const loadMoreHistory = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const { data: user } = await supabase.auth.getUser();
+      if (!user.user || history.length === 0) return;
+
+      const oldestEntry = history[history.length - 1];
+      const { data, error } = await supabase
+        .from('daily_metrics')
+        .select('*')
+        .eq('user_id', user.user.id)
+        .lt('date', oldestEntry.date)
+        .order('date', { ascending: false })
+        .limit(20);
+
+      if (error) throw error;
+
+      const formattedNewHistory = data.map(entry => ({
+        date: format(parseISO(entry.date), 'yyyy-MM-dd'),
+        metrics: {
+          leads: entry.leads || 0,
+          calls: entry.calls || 0,
+          contacts: entry.contacts || 0,
+          scheduled: entry.scheduled || 0,
+          sits: entry.sits || 0,
+          sales: entry.sales || 0,
+          ap: entry.ap || 0,
+        }
+      }));
+
+      setHistory(prev => [...prev, ...formattedNewHistory]);
+      return formattedNewHistory;
+    } catch (error) {
+      console.error('[MetricsLoad] Error loading more history:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load more history",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [history, toast]);
+
   const addOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
-    console.log('[MetricsLoad] Adding optimistic entry:', { 
-      date,
-      parsed: parseISO(date).toISOString(),
-      metrics 
-    });
-    
     setHistory(prev => {
       const newEntry = { date, metrics };
       const existingIndex = prev.findIndex(entry => entry.date === date);
       
       if (existingIndex >= 0) {
-        // Replace existing entry
         const updated = [...prev];
         updated[existingIndex] = newEntry;
-        console.log('[MetricsLoad] Updated existing entry:', {
-          date,
-          updatedHistory: updated.map(h => h.date)
-        });
         return updated;
       } else {
-        // Add new entry and sort by date
-        const updated = [...prev, newEntry];
-        const sorted = updated.sort((a, b) => 
-          parseISO(b.date).getTime() - parseISO(a.date).getTime()
-        );
-        console.log('[MetricsLoad] Added new entry:', {
-          date,
-          sortedDates: sorted.map(h => h.date)
-        });
-        return sorted;
+        const updated = [newEntry, ...prev];
+        return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
       }
     });
   }, []);
 
-  // Load history on mount and set up real-time subscription
+  // Load initial history and set up real-time subscription
   useEffect(() => {
     console.log('[MetricsLoad] Initial load starting...');
     loadHistory();
 
-    // Set up real-time subscription
+    // Set up real-time subscription for recent changes only
     const channel = supabase
       .channel('metrics-changes')
       .on(
@@ -137,15 +159,12 @@ export const useMetricsLoad = () => {
         {
           event: '*',
           schema: 'public',
-          table: 'daily_metrics'
+          table: 'daily_metrics',
+          filter: `date=gte.${format(subMonths(new Date(), 1), 'yyyy-MM-dd')}`
         },
         async (payload) => {
           console.log('[MetricsLoad] Real-time update received:', payload);
-          const updatedHistory = await loadHistory();
-          console.log('[MetricsLoad] History after real-time update:', {
-            count: updatedHistory.length,
-            dates: updatedHistory.map(h => h.date)
-          });
+          await loadHistory();
         }
       )
       .subscribe();
@@ -158,7 +177,9 @@ export const useMetricsLoad = () => {
 
   return {
     history,
+    isLoading,
     loadHistory,
+    loadMoreHistory,
     addOptimisticEntry
   };
 };

@@ -7,12 +7,12 @@ interface RatioCardProps {
 
 const RatioCard = ({ label, value }: RatioCardProps) => {
   return (
-    <Card className="overflow-hidden">
-      <div className="bg-[#3F7BA9] p-2 text-white">
-        <h3 className="font-medium text-sm text-center">{label}</h3>
+    <Card className="p-2 bg-gray-100 rounded-lg text-center shadow-sm">
+      <div className="text-sm font-semibold text-gray-900">
+        {value}
       </div>
-      <div className="bg-[#F5F5F5] p-4 flex items-center justify-center">
-        <span className="text-2xl font-bold text-[#2A2A2A]">{value}</span>
+      <div className="text-xs text-muted-foreground">
+        {label}
       </div>
     </Card>
   );
