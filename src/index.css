@@ -129,8 +129,8 @@
   }
 
   @keyframes orbit {
-    0% { transform: rotate(0deg) translateX(400px) rotateX(60deg); }
-    100% { transform: rotate(360deg) translateX(400px) rotateX(60deg); }
+    0% { transform: rotate(0deg) translateX(400px) rotateZ(-60deg); }
+    100% { transform: rotate(360deg) translateX(400px) rotateZ(-60deg); }
   }
 
   @keyframes centerPulse {
