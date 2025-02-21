@@ -33,6 +33,9 @@ const Footer = () => {
             <button onClick={() => navigate('/auth')} className="text-white/60 hover:text-white text-sm">
               Login
             </button>
+            <a href="#" className="text-white/60 hover:text-white text-sm">
+              Terms of Use
+            </a>
           </nav>
           <p className="text-center text-xs leading-5 text-white/60">
             &copy; {new Date().getFullYear()} SureHelp. All rights reserved.
