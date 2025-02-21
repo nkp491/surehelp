@@ -29,8 +29,8 @@ const features = [
   {
     title: "Streamlined metric dashboards for managers",
     description: "Managers can view their team's KPI metrics for the day, week, month, and more.",
-    imagePath: "/lovable-uploads/7209445a-88a8-4ece-b3d0-de0ae3208141.png",
-    altText: "Team Performance Dashboard"
+    imagePath: "/lovable-uploads/8b81bd95-d641-4384-a3e5-3abab126994c.png",
+    altText: "Success Calculator Dashboard"
   },
   {
     title: "Link your accounts to agents and managers",
