@@ -19,7 +19,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
         relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
         ${isSelected 
           ? 'bg-gradient-to-r from-[#2A0068] to-[#130032]' 
-          : 'bg-gradient-to-r from-[#4A1098] to-[#2A0068]'
+          : 'bg-white'
         }
         ${isSelected ? 'ring-2 ring-white/20' : 'hover:ring-2 hover:ring-white/10'}
       `}
@@ -36,7 +36,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           absolute inset-0 bg-gradient-to-r w-1/4
           ${isSelected 
             ? 'from-[#2A0068] via-[#2A0068] to-transparent' 
-            : 'from-[#4A1098] via-[#4A1098] to-transparent'
+            : 'from-white via-white to-transparent'
           }
         `} />
         <img 
@@ -61,7 +61,10 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       >
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="text-xl font-semibold text-white">
+            <h3 className={`
+              text-xl font-semibold
+              ${isSelected ? 'text-white' : 'text-gray-800'}
+            `}>
               {title}
             </h3>
             <div 
@@ -83,7 +86,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               ${isSelected ? 'rotate-45' : 'rotate-0'}
             `}
           >
-            <Plus className="text-white" size={24} />
+            <Plus className={`${isSelected ? 'text-white' : 'text-gray-800'}`} size={24} />
           </div>
         </div>
       </div>
