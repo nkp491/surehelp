@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { PricingHeader } from './pricing/PricingHeader';
 import { PricingCard } from './pricing/PricingCard';
@@ -124,7 +125,7 @@ function PricingComparison() {
     const monthlyCost = parseFloat(monthly.replace(',', ''));
     const yearlyCost = parseFloat(yearly.replace(',', ''));
     const savingsPercentage = ((monthlyCost - yearlyCost) / monthlyCost) * 100;
-    return `Save ${savingsPercentage.toFixed(0)}%`;
+    return `Save ${savingsPercentage.toFixed(0)}% with this limited time offer`;
   };
 
   const formatPrice = (price: string) => {

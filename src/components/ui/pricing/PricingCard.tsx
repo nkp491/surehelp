@@ -1,7 +1,9 @@
+
 import React from 'react';
 import { MoveRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+
 interface PricingCardProps {
   title: string;
   description: string;
@@ -10,6 +12,7 @@ interface PricingCardProps {
   savings?: string | null;
   isContact?: boolean;
 }
+
 export function PricingCard({
   title,
   description,
@@ -34,7 +37,7 @@ export function PricingCard({
           <p className="text-sm text-white/80">Annual</p>
           <div className="flex flex-col">
             <p className="text-2xl text-white font-semibold">{annualPrice}</p>
-            {savings && <p className="text-sm text-emerald-400">{savings}</p>}
+            {savings && <p className="text-sm text-emerald-400 font-medium">{savings}</p>}
           </div>
         </div>
       </div>
