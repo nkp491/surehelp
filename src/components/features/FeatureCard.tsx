@@ -25,7 +25,8 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
         className={`
           transition-all duration-300 ease-in-out
           ${isSelected ? 'h-0 opacity-0' : 'h-3/4'}
-          w-full overflow-hidden bg-[#130032] relative
+          w-[90%] mx-auto overflow-hidden relative
+          bg-gradient-to-r from-[#130032] to-[#2A0068]
         `}
       >
         <img 
