@@ -30,17 +30,17 @@ export function PricingCard({
         <p className="text-sm text-white/80 h-20 mt-2">{description}</p>
       </div>
       <div className="flex flex-col md:flex-row gap-4 relative flex-grow">
-        <div className="flex-1 flex flex-col gap-2 md:pr-6">
-          <div>
+        <div className="flex-1 flex flex-col gap-2 md:pr-4">
+          <div className="min-w-[120px]">
             <p className="text-sm text-white/80">Monthly</p>
             <p className="text-2xl text-white">{monthlyPrice}</p>
           </div>
         </div>
         <div className="w-px h-full bg-white/20 absolute left-1/2 -translate-x-1/2 top-0 hidden md:block"></div>
-        <div className="flex-1 flex flex-col gap-2 md:pl-2">
-          <div className="w-full text-left">
+        <div className="flex-1 flex flex-col gap-2 md:pl-1">
+          <div className="min-w-[120px]">
             <p className="text-sm text-white/80">Annual</p>
-            <div className="flex flex-col w-full">
+            <div className="flex flex-col">
               <p className="text-2xl text-white">{annualPrice}</p>
               {savings && <p className="text-sm text-emerald-400">{savings}</p>}
             </div>
