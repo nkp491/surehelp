@@ -1,5 +1,6 @@
 
 import NavBar from "@/components/marketing/NavBar";
+import Footer from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { ArrowRight, Target, Users, Shield } from "lucide-react";
@@ -68,6 +69,7 @@ const About = () => {
           </div>
         </div>
       </main>
+      <Footer />
     </div>
   );
 };

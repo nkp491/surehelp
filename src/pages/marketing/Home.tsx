@@ -1,5 +1,6 @@
 
 import NavBar from "@/components/marketing/NavBar";
+import Footer from "@/components/marketing/Footer";
 import HeroSection from "@/components/marketing/HeroSection";
 import FeaturesGrid from "@/components/features/FeaturesGrid";
 
@@ -11,6 +12,7 @@ const Home = () => {
         <HeroSection />
         <FeaturesGrid />
       </main>
+      <Footer />
     </div>
   );
 };

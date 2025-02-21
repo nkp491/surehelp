@@ -2,6 +2,7 @@
 import { PricingComparison } from "@/components/ui/pricing-section-with-comparison";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import Footer from "@/components/marketing/Footer";
 
 const Pricing = () => {
   const navigate = useNavigate();
@@ -36,6 +37,7 @@ const Pricing = () => {
       <main className="w-screen pt-16">
         <PricingComparison />
       </main>
+      <Footer />
     </div>
   );
 };
