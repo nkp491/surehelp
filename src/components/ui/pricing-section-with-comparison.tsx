@@ -72,14 +72,14 @@ function PricingComparison() {
               title="Agent Pro"
               description="Ideal for experienced agents who need unlimited access and advanced features."
               monthlyPrice={45}
-              annualPrice={calculateMonthlyFromAnnual(45)}
+              annualPrice={36}
               savings="$9"
             />
             <PricingCard
               title="Manager Pro"
               description="Perfect for small agencies with a growing team of agents and basic management needs."
               monthlyPrice={250}
-              annualPrice={calculateMonthlyFromAnnual(250)}
+              annualPrice={200}
               savings="$50"
               isContact
             />
@@ -87,7 +87,7 @@ function PricingComparison() {
               title="Manager Pro Gold"
               description="Designed for medium agencies with multiple teams and comprehensive management requirements."
               monthlyPrice={500}
-              annualPrice={calculateMonthlyFromAnnual(500)}
+              annualPrice={400}
               savings="$100"
               isContact
             />
@@ -95,7 +95,7 @@ function PricingComparison() {
               title="Manager Pro Platinum"
               description="Enterprise solution for large agencies requiring unlimited capabilities and premium support."
               monthlyPrice={1000}
-              annualPrice={calculateMonthlyFromAnnual(1000)}
+              annualPrice={800}
               savings="$200"
               isContact
             />
