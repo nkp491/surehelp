@@ -5,6 +5,15 @@ import { useNavigate } from "react-router-dom";
 const NavBar = () => {
   const navigate = useNavigate();
 
+  const scrollToContact = () => {
+    const contactSection = document.querySelector('#contact-section');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/#contact-section');
+    }
+  };
+
   return (
     <nav className="border-b border-white/20 backdrop-blur-sm fixed w-full z-10">
       <div className="w-full px-4 sm:px-6 lg:px-8">
@@ -23,6 +32,9 @@ const NavBar = () => {
             </Button>
             <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:text-white/90">
               Pricing
+            </Button>
+            <Button variant="ghost" onClick={scrollToContact} className="text-white hover:text-white/90">
+              Contact Us
             </Button>
             <Button 
               onClick={() => navigate('/auth')}

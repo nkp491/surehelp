@@ -3,7 +3,7 @@ import ContactForm from "./ContactForm";
 
 const ContactSection = () => {
   return (
-    <section className="w-full py-24 px-6">
+    <section id="contact-section" className="w-full py-24 px-6">
       <div className="max-w-6xl mx-auto">
         <div className="bg-white/20 backdrop-blur-sm rounded-xl p-8 shadow-lg">
           <div className="grid md:grid-cols-2 gap-12 items-start">
@@ -24,4 +24,3 @@ const ContactSection = () => {
 };
 
 export default ContactSection;
-
