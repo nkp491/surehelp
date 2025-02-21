@@ -11,7 +11,7 @@ const features = [
   {
     title: "Manage your client book of business",
     description: "You'll grow your client book of business with every assessment form submission—all your leads in one place.",
-    imagePath: "/placeholder.svg",
+    imagePath: "/lovable-uploads/ce47041b-fff4-44bf-95c5-aa1550bd745b.png",
     altText: "Client Management Dashboard"
   },
   {
