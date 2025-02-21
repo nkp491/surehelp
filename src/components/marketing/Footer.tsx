@@ -5,6 +5,15 @@ import { Mail, Instagram } from "lucide-react";
 const Footer = () => {
   const navigate = useNavigate();
 
+  const scrollToContact = () => {
+    const contactSection = document.querySelector('#contact-section');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      navigate('/#contact-section');
+    }
+  };
+
   return (
     <footer className="w-full bg-white/5 backdrop-blur-sm border-t border-white/10">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between">
@@ -26,6 +35,9 @@ const Footer = () => {
             </button>
             <button onClick={() => navigate('/auth')} className="text-white/60 hover:text-white text-sm">
               Login
+            </button>
+            <button onClick={scrollToContact} className="text-white/60 hover:text-white text-sm">
+              Contact Us
             </button>
             <button onClick={() => navigate('/terms')} className="text-white/60 hover:text-white text-sm">
               Terms of Use
