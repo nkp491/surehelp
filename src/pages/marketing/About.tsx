@@ -1,4 +1,3 @@
-
 import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
@@ -97,7 +96,7 @@ const About = () => {
               </div>
 
               <div className="mt-20 text-center">
-                <h2 className="text-3xl font-bold text-white mb-6">Ready to Transform Your Insurance Business?</h2>
+                <h2 className="text-3xl font-bold text-white mb-6">Try Agent Hub Now</h2>
                 <Button 
                   onClick={() => navigate('/auth')}
                   size="lg"
@@ -117,4 +116,3 @@ const About = () => {
 };
 
 export default About;
-
