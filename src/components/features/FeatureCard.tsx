@@ -26,14 +26,15 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           transition-all duration-300 ease-in-out
           ${isSelected ? 'h-0 opacity-0' : 'h-3/4'}
           w-full overflow-hidden relative
-          bg-gradient-to-r from-[#130032] to-[#2A0068]
+          bg-gradient-to-r from-[#2A0068] to-[#130032]
         `}
       >
+        <div className="absolute inset-0 bg-gradient-to-r from-[#2A0068] via-[#2A0068] to-transparent w-1/3" />
         <img 
           src={imagePath} 
           alt={altText}
           className={`
-            w-full h-full object-cover absolute
+            w-2/3 h-full object-cover absolute
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
             right-0 
