@@ -23,7 +23,7 @@ const Home = () => {
               </Button>
               <Button 
                 onClick={() => navigate('/auth')}
-                className="bg-white text-[#0096C7] hover:bg-white/90"
+                className="bg-white/90 text-[#0096C7] hover:bg-white"
               >
                 Login
               </Button>
@@ -49,7 +49,7 @@ const Home = () => {
                   <Button 
                     onClick={() => navigate('/auth')} 
                     size="lg"
-                    className="bg-white text-[#0096C7] hover:bg-white/90"
+                    className="bg-white/90 text-[#0096C7] hover:bg-white"
                   >
                     Get Started
                   </Button>
@@ -57,7 +57,7 @@ const Home = () => {
                     variant="outline" 
                     size="lg" 
                     onClick={() => navigate('/products')}
-                    className="text-white border-white hover:bg-white/10"
+                    className="text-white border-white/90 hover:bg-white/10"
                   >
                     Learn More
                   </Button>
