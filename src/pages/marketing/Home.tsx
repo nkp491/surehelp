@@ -2,6 +2,7 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/ui/typed-text";
+import FeaturesGrid from "@/components/features/FeaturesGrid";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -66,6 +67,8 @@ const Home = () => {
             </div>
           </div>
         </div>
+        
+        <FeaturesGrid />
       </main>
     </div>
   );
