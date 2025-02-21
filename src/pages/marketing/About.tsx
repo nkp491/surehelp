@@ -22,15 +22,17 @@ const About = () => {
               </div>
 
               {/* Mission Section */}
-              <div className="mt-20">
-                <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
-                <p className="text-lg leading-8 text-white/80 max-w-3xl">
-                  At SureHelp, we are dedicated to making insurance agents' lives easier by organizing 
-                  the underwriting process and optimizing sales workflows. Every day, agents waste 
-                  countless hours jumping between different systems, losing track of leads, and 
-                  struggling to measure performance. We provide a seamless, all-in-one platform 
-                  designed to bring clarity, efficiency, and success to your workflow.
-                </p>
+              <div className="mt-20 flex justify-end">
+                <div className="max-w-3xl">
+                  <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
+                  <p className="text-lg leading-8 text-white/80">
+                    At SureHelp, we are dedicated to improving the sales workflow by organizing the underwriting process 
+                    and utilizing real-time data to work for you. Every day, agents waste 
+                    countless hours jumping between different systems, losing track of leads, and 
+                    struggling to measure performance. We provide a seamless, all-in-one platform 
+                    designed to bring clarity, efficiency, and success to your workflow.
+                  </p>
+                </div>
               </div>
 
               {/* Story Section */}
