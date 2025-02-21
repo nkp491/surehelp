@@ -38,7 +38,7 @@ export function PricingCard({
         </div>
         <div className="w-px h-full bg-white/20 absolute left-1/2 -translate-x-1/2 top-0 hidden md:block"></div>
         {/* Adjust these classes to position the annual pricing */}
-        <div className="flex-1 flex flex-col gap-2 md:pl-8">
+        <div className="flex-1 flex flex-col gap-2 md:pl-4">
           <div className="w-full">
             <p className="text-sm text-white/80">Annual</p>
             <div className="flex flex-col">
