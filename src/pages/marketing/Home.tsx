@@ -1,44 +1,37 @@
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/ui/typed-text";
-import { BarChart, BookOpen, Building, ClipboardList, LayoutDashboard } from "lucide-react";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
-
-const workflowStages = [
-  {
-    icon: ClipboardList,
-    title: "Client Assessment Form",
-    description: "Streamline client onboarding with our comprehensive assessment form",
-    bgColor: "bg-[#D3E4FD]",
-  },
-  {
-    icon: BookOpen,
-    title: "Client Book of Business",
-    description: "Manage your entire client portfolio in one centralized location",
-    bgColor: "bg-[#F2FCE2]",
-  },
-  {
-    icon: BarChart,
-    title: "KPI Insights",
-    description: "Track performance metrics and identify growth opportunities",
-    bgColor: "bg-[#FEF7CD]",
-  },
-  {
-    icon: LayoutDashboard,
-    title: "Manager Dashboard",
-    description: "Monitor team performance and optimize sales operations",
-    bgColor: "bg-[#9b87f5]/10",
-  },
-];
+import { BarChart, BookOpen, ClipboardList, LayoutDashboard } from "lucide-react";
 
 const Home = () => {
   const navigate = useNavigate();
+
+  const workflowStages = [
+    {
+      icon: ClipboardList,
+      title: "Client Assessment Form",
+      description: "Streamline client onboarding with our comprehensive assessment form",
+      bgColor: "bg-[#D3E4FD]",
+    },
+    {
+      icon: BookOpen,
+      title: "Client Book of Business",
+      description: "Manage your entire client portfolio in one centralized location",
+      bgColor: "bg-[#F2FCE2]",
+    },
+    {
+      icon: BarChart,
+      title: "KPI Insights",
+      description: "Track performance metrics and identify growth opportunities",
+      bgColor: "bg-[#FEF7CD]",
+    },
+    {
+      icon: LayoutDashboard,
+      title: "Manager Dashboard",
+      description: "Monitor team performance and optimize sales operations",
+      bgColor: "bg-[#9b87f5]/10",
+    },
+  ];
 
   return (
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
@@ -74,9 +67,7 @@ const Home = () => {
                 <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                   Supercharge your
                   <br />
-                  <span className="border-b-4 border-white px-2">
-                    <TypedText words={["leadflow", "workflow", "cashflow"]} />
-                  </span>
+                  <span className="border-b-4 border-white px-2"><TypedText words={["leadflow", "workflow", "cashflow"]} /></span>.
                 </h1>
                 <p className="mt-6 text-lg leading-8 text-white/80">
                   Agent Hub is the first all-in-one platform specifically designed for insurance underwriters and IMOs to streamline their entire sales process. Built for insurance professionals who value efficiency and accuracy.
@@ -111,98 +102,46 @@ const Home = () => {
           </div>
         </div>
 
-        <div className="relative w-full py-24">
+        <div className="relative bg-white/95 w-full py-24">
           <div className="max-w-[1440px] mx-auto px-6 lg:px-8">
             <div className="text-center mb-16">
-              <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-white mb-4">
+              <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
                 Streamlined Sales Workflow
               </h2>
-              <p className="text-lg leading-8 text-white/80 max-w-2xl mx-auto">
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
                 Experience a seamlessly integrated platform designed to optimize every step of your insurance sales process
               </p>
             </div>
 
-            {/* Desktop 3D Carousel */}
-            <div className="hidden lg:block relative h-[600px] perspective-1000">
-              <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 carousel-container w-[600px] h-[600px]">
-                {/* Center Hub */}
-                <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
-                  <div className="p-8 rounded-full backdrop-blur-md bg-white/10 border border-white/20 center-pulse shadow-lg">
-                    <Building className="w-12 h-12 text-white" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 relative">
+              <div className="hidden lg:block absolute top-24 left-[25%] right-[25%] h-0.5 bg-gradient-to-r from-[#0096C7] to-[#002DCB] z-0" />
+
+              {workflowStages.map((stage, index) => (
+                <div
+                  key={stage.title}
+                  className={`relative group p-6 rounded-xl ${stage.bgColor} transition-all duration-300 hover:scale-105 animate-fade-in`}
+                  style={{ animationDelay: `${index * 150}ms` }}
+                >
+                  <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-3 rounded-full bg-white shadow-md group-hover:shadow-lg transition-shadow">
+                      <stage.icon className="w-8 h-8 text-[#0096C7]" />
+                    </div>
+                    <h3 className="text-xl font-semibold text-gray-900">
+                      {stage.title}
+                    </h3>
+                    <p className="text-gray-600">
+                      {stage.description}
+                    </p>
                   </div>
                 </div>
-
-                {/* Carousel Items */}
-                {workflowStages.map((stage, index) => (
-                  <div
-                    key={stage.title}
-                    className="carousel-item orbital-animation"
-                    style={{
-                      animationDelay: `${-index * (20 / workflowStages.length)}s`,
-                    }}
-                  >
-                    <div className="w-64 h-64 p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 
-                                  transition-all duration-300 hover:scale-105 group shadow-lg hover:shadow-xl
-                                  hover:bg-white/10 hover:border-white/20">
-                      <div className="flex flex-col items-center text-center space-y-4 h-full justify-center">
-                        <div className="p-4 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
-                          <stage.icon className="w-8 h-8 text-white" />
-                        </div>
-                        <h3 className="text-xl font-semibold text-white">
-                          {stage.title}
-                        </h3>
-                        <p className="text-sm text-white/80">
-                          {stage.description}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Mobile Carousel */}
-            <div className="lg:hidden">
-              <Carousel
-                opts={{
-                  align: "start",
-                  loop: true,
-                }}
-                className="w-full"
-              >
-                <CarouselContent>
-                  {workflowStages.map((stage, index) => (
-                    <CarouselItem key={stage.title} className="md:basis-1/2">
-                      <div
-                        className="relative group p-6 rounded-2xl backdrop-blur-sm bg-white/5 border border-white/10 
-                                  transition-all duration-300 hover:scale-105 animate-fade-in aspect-square"
-                        style={{ animationDelay: `${index * 150}ms` }}
-                      >
-                        <div className="flex flex-col items-center text-center space-y-3 h-full justify-center">
-                          <div className="p-3 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
-                            <stage.icon className="w-6 h-6 text-white" />
-                          </div>
-                          <h3 className="text-lg font-semibold text-white">
-                            {stage.title}
-                          </h3>
-                          <p className="text-sm text-white/80 line-clamp-2">
-                            {stage.description}
-                          </p>
-                        </div>
-                      </div>
-                    </CarouselItem>
-                  ))}
-                </CarouselContent>
-                <CarouselPrevious className="hidden md:flex" />
-                <CarouselNext className="hidden md:flex" />
-              </Carousel>
+              ))}
             </div>
 
             <div className="mt-16 text-center">
               <Button 
                 onClick={() => navigate('/auth')} 
                 size="lg"
-                className="bg-white text-[#0096C7] hover:bg-white/90"
+                className="bg-[#0096C7] hover:bg-[#0096C7]/90 text-white"
               >
                 Start Your Journey
               </Button>
