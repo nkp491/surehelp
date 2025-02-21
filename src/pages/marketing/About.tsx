@@ -78,11 +78,11 @@ const About = () => {
                     },
                     {
                       name: "Harold Durana",
-                      description: "15+ years of insurance industry expertise, driving innovation in insurtech."
+                      description: "Has a gold jacket, do we need to say more?"
                     },
                     {
                       name: "Samir Palavra",
-                      description: "15+ years of insurance industry expertise, dedicated to ensuring our clients achieve their business goals."
+                      description: "15+ years of insurance industry expertise, driving innovation in insurtech."
                     }
                   ].map((member, index) => (
                     <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
