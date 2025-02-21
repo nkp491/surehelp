@@ -127,9 +127,9 @@ const Home = () => {
               {/* SVG Connector Lines */}
               <svg className="absolute inset-0 w-full h-full" viewBox="0 0 800 600">
                 <path
-                  d="M400,150 A150,150 0 0,1 650,300 A150,150 0 0,1 400,450 A150,150 0 0,1 150,300 A150,150 0 0,1 400,150"
+                  d="M400,150 C550,150 650,250 650,300 C650,350 550,450 400,450 C250,450 150,350 150,300 C150,250 250,150 400,150"
                   fill="none"
-                  stroke="rgba(255,255,255,0.2)"
+                  stroke="#22C55E"
                   strokeWidth="2"
                   strokeDasharray="8 4"
                 />
@@ -146,21 +146,21 @@ const Home = () => {
                 return (
                   <div
                     key={stage.title}
-                    className="absolute w-64 animate-fade-in"
+                    className="absolute w-48 h-48 animate-fade-in"
                     style={{
                       transform: `translate(-50%, -50%) translate(${x}px, ${y}px)`,
                       animationDelay: `${index * 150}ms`,
                     }}
                   >
-                    <div className="p-6 rounded-xl backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 group">
-                      <div className="flex flex-col items-center text-center space-y-4">
+                    <div className="p-6 rounded-full backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 group h-full w-full flex items-center justify-center">
+                      <div className="flex flex-col items-center text-center space-y-3">
                         <div className="p-3 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
-                          <stage.icon className="w-8 h-8 text-white" />
+                          <stage.icon className="w-6 h-6 text-white" />
                         </div>
-                        <h3 className="text-xl font-semibold text-white">
+                        <h3 className="text-lg font-semibold text-white">
                           {stage.title}
                         </h3>
-                        <p className="text-white/80">
+                        <p className="text-sm text-white/80 line-clamp-2">
                           {stage.description}
                         </p>
                       </div>
@@ -183,17 +183,17 @@ const Home = () => {
                   {workflowStages.map((stage, index) => (
                     <CarouselItem key={stage.title} className="md:basis-1/2">
                       <div
-                        className={`relative group p-6 rounded-xl backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 animate-fade-in h-full`}
+                        className="relative group p-6 rounded-full backdrop-blur-sm bg-white/5 border border-white/10 transition-all duration-300 hover:scale-105 animate-fade-in aspect-square"
                         style={{ animationDelay: `${index * 150}ms` }}
                       >
-                        <div className="flex flex-col items-center text-center space-y-4">
+                        <div className="flex flex-col items-center text-center space-y-3 h-full justify-center">
                           <div className="p-3 rounded-full bg-white/10 shadow-md group-hover:shadow-lg transition-shadow">
-                            <stage.icon className="w-8 h-8 text-white" />
+                            <stage.icon className="w-6 h-6 text-white" />
                           </div>
-                          <h3 className="text-xl font-semibold text-white">
+                          <h3 className="text-lg font-semibold text-white">
                             {stage.title}
                           </h3>
-                          <p className="text-white/80">
+                          <p className="text-sm text-white/80 line-clamp-2">
                             {stage.description}
                           </p>
                         </div>
