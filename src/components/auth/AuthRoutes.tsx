@@ -8,6 +8,7 @@ import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
 import CommissionTracker from "@/pages/CommissionTracker";
 import Home from "@/pages/marketing/Home";
+import About from "@/pages/marketing/About";
 import Pricing from "@/pages/marketing/Pricing";
 
 export const AuthRoutes = () => {
@@ -34,7 +35,7 @@ export const AuthRoutes = () => {
       />
       <Route 
         path="/about" 
-        element={<Home />}
+        element={<About />}
       />
       <Route 
         path="/pricing" 
