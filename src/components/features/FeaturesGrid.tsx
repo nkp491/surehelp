@@ -3,40 +3,40 @@ import FeatureCard from "./FeatureCard";
 
 const features = [
   {
-    title: "Lead Management",
-    description: "Track and manage your leads through the entire sales pipeline with our intuitive system.",
+    title: "Enter lead information with ease",
+    description: "Use our client Assessment Form to easily input client data to track and manage your leads through the entire sales pipeline with our intuitive system.",
     imagePath: "/lovable-uploads/e18fc40a-264d-405d-909a-59abaf978727.png",
-    altText: "Health Assessment Form Interface"
+    altText: "Lead Information Form"
   },
   {
-    title: "Performance Analytics",
-    description: "Real-time insights into your team's performance with detailed metrics and reports.",
+    title: "Manage your client book of business",
+    description: "You'll grow your client book of business with every assessment form submission—all your leads in one place.",
     imagePath: "/placeholder.svg",
-    altText: "Analytics Dashboard"
+    altText: "Client Management Dashboard"
   },
   {
-    title: "Client Assessment",
-    description: "Streamlined client evaluation process with customizable assessment forms.",
+    title: "KPI insights to track your cashflow",
+    description: "The KPI tracker allows you to log your status: leads, calls, contacts, scheduled, sits, sales, and AP. You'll be able to summarize your progress and track your cashflow.",
     imagePath: "/placeholder.svg",
-    altText: "Client Assessment Tools"
+    altText: "KPI Tracking Dashboard"
   },
   {
-    title: "Team Collaboration",
-    description: "Seamlessly work together with integrated team communication and sharing tools.",
+    title: "Collaborate with your team",
+    description: "Get access to the team bulletin and never miss an announcement again.",
     imagePath: "/placeholder.svg",
-    altText: "Team Collaboration Features"
+    altText: "Team Collaboration Interface"
   },
   {
-    title: "Automated Workflows",
-    description: "Automate repetitive tasks and streamline your business processes.",
+    title: "Streamlined metric dashboards for managers",
+    description: "Managers can view their team's KPI metrics for the day, week, month, and more.",
     imagePath: "/placeholder.svg",
-    altText: "Workflow Automation"
+    altText: "Manager Dashboard"
   },
   {
-    title: "Document Management",
-    description: "Centralized document storage and management for all your client files.",
+    title: "Link your accounts to agents and managers",
+    description: "By linking accounts, agents and teams can organize their sales process and move even faster",
     imagePath: "/placeholder.svg",
-    altText: "Document Management System"
+    altText: "Account Linking Interface"
   }
 ];
 
