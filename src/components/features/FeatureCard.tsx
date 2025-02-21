@@ -17,7 +17,8 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
     <Card 
       className={`
         relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
-        ${isSelected ? 'bg-gray-50' : 'bg-white hover:bg-emerald-50'}
+        bg-gradient-to-r from-[#2A0068] to-[#130032]
+        ${isSelected ? 'ring-2 ring-white/20' : 'hover:ring-2 hover:ring-white/10'}
       `}
       onClick={() => setIsSelected(!isSelected)}
     >
@@ -26,7 +27,6 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           transition-all duration-300 ease-in-out
           ${isSelected ? 'h-0 opacity-0' : 'h-3/4'}
           w-full overflow-hidden relative
-          bg-gradient-to-r from-[#2A0068] to-[#130032]
         `}
       >
         <div className="absolute inset-0 bg-gradient-to-r from-[#2A0068] via-[#2A0068] to-transparent w-1/4" />
@@ -52,7 +52,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       >
         <div className="flex justify-between items-start">
           <div>
-            <h3 className={`text-xl font-semibold ${isSelected ? 'text-[#1A1F2C]' : 'text-gray-900'}`}>
+            <h3 className="text-xl font-semibold text-white">
               {title}
             </h3>
             <div 
@@ -62,7 +62,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               `}
             >
               {isSelected && (
-                <p className="text-base text-[#1A1F2C]/90 mt-6">
+                <p className="text-base text-white/80 mt-6">
                   {description}
                 </p>
               )}
@@ -74,7 +74,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               ${isSelected ? 'rotate-45' : 'rotate-0'}
             `}
           >
-            <Plus className={isSelected ? 'text-[#1A1F2C]' : 'text-gray-600'} size={24} />
+            <Plus className="text-white" size={24} />
           </div>
         </div>
       </div>
