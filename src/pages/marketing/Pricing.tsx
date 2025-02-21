@@ -7,7 +7,7 @@ const Pricing = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
+    <div className="relative min-h-screen w-full bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
       <nav className="border-b border-white/20 backdrop-blur-sm fixed w-full z-10">
         <div className="w-full px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
@@ -33,7 +33,7 @@ const Pricing = () => {
         </div>
       </nav>
 
-      <main className="w-screen pt-16">
+      <main className="w-full pt-16">
         <PricingComparison />
       </main>
     </div>
