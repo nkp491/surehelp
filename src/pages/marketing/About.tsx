@@ -17,9 +17,14 @@ const About = () => {
             <div className="mx-auto max-w-7xl">
               <div className="text-center">
                 <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
-                  Our Mission: Transforming Chaos into Clarity
+                  Transforming Chaos into Clarity
                 </h1>
-                <p className="mt-6 text-lg leading-8 text-white/80 max-w-2xl mx-auto">
+              </div>
+
+              {/* Mission Section */}
+              <div className="mt-20">
+                <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
+                <p className="text-lg leading-8 text-white/80 max-w-3xl">
                   At SureHelp, we are dedicated to making insurance agents' lives easier by organizing 
                   the underwriting process and optimizing sales workflows. Every day, agents waste 
                   countless hours jumping between different systems, losing track of leads, and 
@@ -28,7 +33,7 @@ const About = () => {
                 </p>
               </div>
 
-              {/* Mission Section */}
+              {/* Story Section */}
               <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                 <div className="h-[400px] rounded-2xl overflow-hidden">
                   <img 
