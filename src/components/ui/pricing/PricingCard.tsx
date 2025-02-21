@@ -7,9 +7,9 @@ import { useNavigate } from "react-router-dom";
 interface PricingCardProps {
   title: string;
   description: string;
-  monthlyPrice: string | number;
-  annualPrice: string | number;
-  savings?: string;
+  monthlyPrice: string;
+  annualPrice: string;
+  savings?: string | null;
   isContact?: boolean;
 }
 
@@ -33,7 +33,7 @@ export function PricingCard({
         <div className="flex-1 flex flex-col gap-2">
           <div>
             <p className="text-sm text-white/80">Monthly</p>
-            <p className="text-2xl text-white">{typeof monthlyPrice === 'number' ? `$${monthlyPrice}` : monthlyPrice}</p>
+            <p className="text-2xl text-white">{monthlyPrice}</p>
           </div>
         </div>
         <div className="w-px h-full bg-white/20 absolute left-1/2 top-0 hidden md:block"></div>
@@ -41,8 +41,8 @@ export function PricingCard({
           <div>
             <p className="text-sm text-white/80">Annual</p>
             <div className="flex flex-col">
-              <p className="text-2xl text-white">{typeof annualPrice === 'number' ? `$${annualPrice}` : annualPrice}</p>
-              {savings && <p className="text-sm text-emerald-400">Save {savings}/mo</p>}
+              <p className="text-2xl text-white">{annualPrice}</p>
+              {savings && <p className="text-sm text-emerald-400">{savings}</p>}
             </div>
           </div>
         </div>

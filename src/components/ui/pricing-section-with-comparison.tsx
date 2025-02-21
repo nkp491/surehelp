@@ -123,7 +123,12 @@ function PricingComparison() {
     if (monthly === "free" || yearly === "free") return null;
     const monthlyCost = parseFloat(monthly.replace(',', ''));
     const yearlyCost = parseFloat(yearly.replace(',', ''));
-    return `$${(monthlyCost - yearlyCost).toFixed(0)}`;
+    const savingsPercentage = ((monthlyCost - yearlyCost) / monthlyCost) * 100;
+    return `Save ${savingsPercentage.toFixed(0)}%`;
+  };
+
+  const formatPrice = (price: string) => {
+    return price.toLowerCase() === "free" ? "Free" : `$${price}/mo`;
   };
 
   return (
@@ -138,8 +143,8 @@ function PricingComparison() {
                 key={plan.name}
                 title={plan.name}
                 description={plan.description}
-                monthlyPrice={plan.monthlyPrice.toLowerCase() === "free" ? "Free" : parseInt(plan.monthlyPrice.replace(',', ''))}
-                annualPrice={plan.yearlyPrice.toLowerCase() === "free" ? "Free" : parseInt(plan.yearlyPrice.replace(',', ''))}
+                monthlyPrice={formatPrice(plan.monthlyPrice)}
+                annualPrice={formatPrice(plan.yearlyPrice)}
                 savings={calculateSavings(plan.monthlyPrice, plan.yearlyPrice)}
                 isContact={plan.name.toLowerCase().includes('manager')}
               />
