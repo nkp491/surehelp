@@ -17,7 +17,7 @@ const Footer = () => {
           </a>
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
-          <nav className="flex justify-center space-x-6 mb-8 md:mb-6">
+          <nav className="flex justify-center space-x-6 mb-8 md:mb-4">
             <button onClick={() => navigate('/about')} className="text-white/60 hover:text-white text-sm">
               About
             </button>
