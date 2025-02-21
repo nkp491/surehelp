@@ -49,15 +49,16 @@ const Home = () => {
                   <Button 
                     onClick={() => navigate('/auth')} 
                     size="lg"
-                    className="bg-white text-[#0096C7] hover:bg-white/90"
+                    variant="outline"
+                    className="text-white border-white hover:bg-white/10"
                   >
                     Get Started
                   </Button>
                   <Button 
-                    variant="outline" 
+                    variant="ghost" 
                     size="lg" 
                     onClick={() => navigate('/products')}
-                    className="text-white border-white hover:bg-white/10"
+                    className="text-white hover:bg-white/10"
                   >
                     Learn More
                   </Button>
