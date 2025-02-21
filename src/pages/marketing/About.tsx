@@ -21,7 +21,7 @@ const About = () => {
                 </h1>
               </div>
 
-              <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+              <div className="mt-20 grid grid-cols-1 lg:grid-cols-[45%_55%] gap-16 items-start">
                 {/* Large Image on Left */}
                 <div className="h-[600px] rounded-2xl overflow-hidden lg:pl-0">
                   <img 
