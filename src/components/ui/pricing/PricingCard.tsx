@@ -45,7 +45,7 @@ export function PricingCard({
       </div>
       <Button 
         variant={isContact ? "outline" : title === "Agent" ? "outline" : "default"}
-        className={`gap-4 mt-auto ${
+        className={`gap-4 mt-8 ${
           isContact ? "text-white border-white hover:bg-white/10" :
           title === "Agent" ? "text-white border-white hover:bg-white/10" :
           "bg-white text-[#0096C7] hover:bg-white/90"
