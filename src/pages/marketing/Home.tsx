@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import TypedText from "@/components/ui/typed-text";
@@ -124,7 +123,7 @@ const Home = () => {
             </div>
 
             {/* Desktop 3D Carousel */}
-            <div className="hidden lg:block relative h-[600px]">
+            <div className="hidden lg:block relative h-[600px] perspective-1000">
               <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 carousel-container w-[600px] h-[600px]">
                 {/* Center Hub */}
                 <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-20">
