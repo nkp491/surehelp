@@ -1,6 +1,6 @@
 
 import { useNavigate } from "react-router-dom";
-import { Twitter, Facebook, Linkedin, Mail } from "lucide-react";
+import { Mail, Instagram } from "lucide-react";
 
 const Footer = () => {
   const navigate = useNavigate();
@@ -9,17 +9,11 @@ const Footer = () => {
     <footer className="w-full bg-white/5 backdrop-blur-sm border-t border-white/10">
       <div className="mx-auto max-w-7xl px-6 py-12 md:flex md:items-center md:justify-between">
         <div className="flex justify-center space-x-6 md:order-2">
-          <a href="#" className="text-white/60 hover:text-white">
-            <Twitter className="h-5 w-5" />
-          </a>
-          <a href="#" className="text-white/60 hover:text-white">
-            <Facebook className="h-5 w-5" />
-          </a>
-          <a href="#" className="text-white/60 hover:text-white">
-            <Linkedin className="h-5 w-5" />
-          </a>
           <a href="mailto:contact@surehelp.com" className="text-white/60 hover:text-white">
             <Mail className="h-5 w-5" />
+          </a>
+          <a href="#" className="text-white/60 hover:text-white">
+            <Instagram className="h-5 w-5" />
           </a>
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
