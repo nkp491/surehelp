@@ -10,11 +10,16 @@ const NavBar = () => {
       <div className="w-full px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center">
-            <span className="text-2xl font-bold text-white">SureHelp</span>
+            <span 
+              className="text-2xl font-bold text-white cursor-pointer" 
+              onClick={() => navigate('/')}
+            >
+              SureHelp
+            </span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/products')} className="text-white hover:text-white/90">
-              Products
+            <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:text-white/90">
+              About
             </Button>
             <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:text-white/90">
               Pricing

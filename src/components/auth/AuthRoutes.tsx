@@ -8,7 +8,6 @@ import Index from "@/pages/Index";
 import Profile from "@/pages/Profile";
 import CommissionTracker from "@/pages/CommissionTracker";
 import Home from "@/pages/marketing/Home";
-import Products from "@/pages/marketing/Products";
 import Pricing from "@/pages/marketing/Pricing";
 
 export const AuthRoutes = () => {
@@ -34,8 +33,8 @@ export const AuthRoutes = () => {
         } 
       />
       <Route 
-        path="/products" 
-        element={<Products />}
+        path="/about" 
+        element={<Home />}
       />
       <Route 
         path="/pricing" 
@@ -95,7 +94,7 @@ export const AuthRoutes = () => {
         path="/commission-tracker" 
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <Index />
+            <CommissionTracker />
           </ProtectedRoute>
         } 
       />
