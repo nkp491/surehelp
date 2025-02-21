@@ -1,11 +1,12 @@
-
 import { Check, Minus, MoveRight, PhoneCall } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 function PricingComparison() {
   const navigate = useNavigate();
+  const [isAnnual, setIsAnnual] = useState(false);
 
   return (
     <div className="w-full py-20">
@@ -20,7 +21,21 @@ function PricingComparison() {
               Choose the plan that works best for you and your team
             </p>
           </div>
-          <div className="grid text-left w-full grid-cols-3 lg:grid-cols-4 divide-x divide-white/20 pt-20">
+          <div className="flex items-center gap-4 mt-8">
+            <button 
+              className={`px-4 py-2 rounded-lg transition-all ${!isAnnual ? 'bg-white text-[#0096C7]' : 'text-white hover:bg-white/10'}`}
+              onClick={() => setIsAnnual(false)}
+            >
+              Monthly
+            </button>
+            <button 
+              className={`px-4 py-2 rounded-lg transition-all ${isAnnual ? 'bg-white text-[#0096C7]' : 'text-white hover:bg-white/10'}`}
+              onClick={() => setIsAnnual(true)}
+            >
+              Yearly (Save 20%)
+            </button>
+          </div>
+          <div className="grid text-left w-full grid-cols-3 lg:grid-cols-6 divide-x divide-white/20 pt-20">
             <div className="col-span-3 lg:col-span-1"></div>
             <div className="px-3 py-1 md:px-6 md:py-4 gap-2 flex flex-col">
               <p className="text-2xl text-white">Agent</p>
@@ -44,7 +59,7 @@ function PricingComparison() {
                 For growing agents
               </p>
               <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
-                <span className="text-4xl text-white">$45</span>
+                <span className="text-4xl text-white">${isAnnual ? '36' : '45'}</span>
                 <span className="text-sm text-white/80"> / month</span>
               </p>
               <Button 
@@ -57,10 +72,10 @@ function PricingComparison() {
             <div className="px-3 py-1 md:px-6 md:py-4 gap-2 flex flex-col">
               <p className="text-2xl text-white">Manager Pro</p>
               <p className="text-sm text-white/80">
-                For small agencies with a couple of managers and teams
+                For small agencies
               </p>
               <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
-                <span className="text-4xl text-white">$250</span>
+                <span className="text-4xl text-white">${isAnnual ? '200' : '250'}</span>
                 <span className="text-sm text-white/80"> / month</span>
               </p>
               <Button 
@@ -71,15 +86,59 @@ function PricingComparison() {
                 Contact us <PhoneCall className="w-4 h-4" />
               </Button>
             </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 gap-2 flex flex-col">
+              <p className="text-2xl text-white">Manager Pro Gold</p>
+              <p className="text-sm text-white/80">
+                For medium-sized agencies
+              </p>
+              <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
+                <span className="text-4xl text-white">${isAnnual ? '400' : '500'}</span>
+                <span className="text-sm text-white/80"> / month</span>
+              </p>
+              <Button 
+                variant="outline" 
+                className="gap-4 mt-8 text-white border-white hover:bg-white/10"
+                onClick={() => navigate('/auth')}
+              >
+                Contact us <PhoneCall className="w-4 h-4" />
+              </Button>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 gap-2 flex flex-col">
+              <p className="text-2xl text-white">Manager Pro Platinum</p>
+              <p className="text-sm text-white/80">
+                For large agencies
+              </p>
+              <p className="flex flex-col lg:flex-row lg:items-center gap-2 text-xl mt-8">
+                <span className="text-4xl text-white">${isAnnual ? '800' : '1000'}</span>
+                <span className="text-sm text-white/80"> / month</span>
+              </p>
+              <Button 
+                variant="outline" 
+                className="gap-4 mt-8 text-white border-white hover:bg-white/10"
+                onClick={() => navigate('/auth')}
+              >
+                Contact us <PhoneCall className="w-4 h-4" />
+              </Button>
+            </div>
+            
             <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4">
               <b className="text-white">Features</b>
             </div>
             <div></div>
             <div></div>
             <div></div>
+            <div></div>
+            <div></div>
+
             <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 text-white">Client Assessment Forms</div>
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <p className="text-white/80 text-sm">15/month</p>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
             </div>
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <p className="text-white/80 text-sm">Unlimited</p>
@@ -99,11 +158,23 @@ function PricingComparison() {
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <p className="text-white/80 text-sm">Unlimited</p>
             </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
+            </div>
             <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 text-white">
               KPI Insights
             </div>
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <p className="text-white/80 text-sm">30 days</p>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
             </div>
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <p className="text-white/80 text-sm">Unlimited</p>
@@ -123,6 +194,12 @@ function PricingComparison() {
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <p className="text-white/80 text-sm">Up to 25</p>
             </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Up to 50</p>
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <p className="text-white/80 text-sm">Unlimited</p>
+            </div>
             <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 text-white">
               Manager Dashboard
             </div>
@@ -135,11 +212,23 @@ function PricingComparison() {
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <Check className="w-4 h-4 text-emerald-400" />
             </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <Check className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <Check className="w-4 h-4 text-emerald-400" />
+            </div>
             <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 text-white">
               Team Bulletin
             </div>
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <Minus className="w-4 h-4 text-white/60" />
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <Check className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
+              <Check className="w-4 h-4 text-emerald-400" />
             </div>
             <div className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
               <Check className="w-4 h-4 text-emerald-400" />
