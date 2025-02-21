@@ -30,18 +30,20 @@ export function PricingCard({
         <p className="text-sm text-white/80 h-20 mt-2">{description}</p>
       </div>
       <div className="flex flex-col md:flex-row gap-4 relative flex-grow">
-        <div className="flex-1 flex flex-col gap-2 md:pr-6">
+        <div className="flex-1 flex flex-col gap-2 md:pr-8">
           <div>
             <p className="text-sm text-white/80">Monthly</p>
             <p className="text-2xl text-white">{monthlyPrice}</p>
           </div>
         </div>
         <div className="w-px h-full bg-white/20 absolute left-1/2 -translate-x-1/2 top-0 hidden md:block"></div>
-        <div className="flex-1 flex flex-col gap-2 md:pl-4">
+        {/* Adjust these classes to position the annual pricing */}
+        <div className="flex-1 flex flex-col gap-2 md:pl-8">
           <div className="w-full">
             <p className="text-sm text-white/80">Annual</p>
             <div className="flex flex-col">
-              <p className="text-2xl text-white text-left">{annualPrice}</p>
+              {/* Add positioning classes here */}
+              <p className="text-2xl text-white pl-0">{annualPrice}</p>
               {savings && <p className="text-sm text-emerald-400">{savings}</p>}
             </div>
           </div>
