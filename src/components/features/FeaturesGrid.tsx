@@ -1,12 +1,11 @@
-
 import FeatureCard from "./FeatureCard";
 
 const features = [
   {
     title: "Lead Management",
     description: "Track and manage your leads through the entire sales pipeline with our intuitive system.",
-    imagePath: "/placeholder.svg",
-    altText: "Lead Management System"
+    imagePath: "/lovable-uploads/e18fc40a-264d-405d-909a-59abaf978727.png",
+    altText: "Health Assessment Form Interface"
   },
   {
     title: "Performance Analytics",
