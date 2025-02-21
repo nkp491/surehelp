@@ -22,29 +22,33 @@ const TermsOfUse = () => {
                 </p>
 
                 <div className="text-white/80 space-y-6">
-                  <p>
+                  {/* Section 1: Welcome */}
+                  <div contentEditable className="focus:outline-none focus:ring-2 focus:ring-white/20 rounded p-2">
                     Welcome to SureHelp. By accessing and using our platform, you agree to be bound by these Terms of Use.
-                  </p>
+                  </div>
 
+                  {/* Section 2: Acceptance */}
                   <h2 className="text-2xl font-semibold text-white mt-8 mb-4">1. Acceptance of Terms</h2>
-                  <p>
+                  <div contentEditable className="focus:outline-none focus:ring-2 focus:ring-white/20 rounded p-2">
                     By accessing and using the SureHelp platform, you acknowledge that you have read, 
                     understood, and agree to be bound by these terms.
-                  </p>
+                  </div>
 
+                  {/* Section 3: User Responsibilities */}
                   <h2 className="text-2xl font-semibold text-white mt-8 mb-4">2. User Responsibilities</h2>
-                  <p>
+                  <div contentEditable className="focus:outline-none focus:ring-2 focus:ring-white/20 rounded p-2">
                     Users are responsible for maintaining the confidentiality of their account information 
                     and for all activities that occur under their account.
-                  </p>
+                  </div>
 
+                  {/* Section 4: Privacy Policy */}
                   <h2 className="text-2xl font-semibold text-white mt-8 mb-4">3. Privacy Policy</h2>
-                  <p>
+                  <div contentEditable className="focus:outline-none focus:ring-2 focus:ring-white/20 rounded p-2">
                     Your use of SureHelp is also governed by our Privacy Policy. Please review our Privacy 
                     Policy, which also governs the Platform and informs users of our data collection practices.
-                  </p>
+                  </div>
 
-                  {/* Additional sections can be added here */}
+                  {/* You can add more sections by copying the pattern above */}
                 </div>
               </div>
             </div>
