@@ -1,3 +1,5 @@
+
+import React from 'react';
 import { Check, X, MoveRight, PhoneCall } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -30,16 +32,21 @@ function PricingComparison() {
               <p className="text-sm text-white/80 h-20">
                 Perfect for individual agents looking to streamline their client assessment process.
               </p>
-              <div className="flex flex-col gap-2 mt-8">
-                <div className="flex justify-between items-center border-b border-white/20 pb-4">
-                  <div>
-                    <p className="text-sm text-white/80">Monthly</p>
-                    <p className="text-2xl text-white">Free</p>
+              <div className="flex flex-col md:flex-row gap-4 mt-8 relative">
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                    <div>
+                      <p className="text-sm text-white/80">Monthly</p>
+                      <p className="text-2xl text-white">Free</p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-white/80">Annual</p>
-                  <p className="text-2xl text-white">Free</p>
+                <div className="w-px h-full bg-white/20 absolute left-1/2 top-0 hidden md:block"></div>
+                <div className="flex-1 flex flex-col gap-2">
+                  <div>
+                    <p className="text-sm text-white/80">Annual</p>
+                    <p className="text-2xl text-white">Free</p>
+                  </div>
                 </div>
               </div>
               <Button 
@@ -55,18 +62,23 @@ function PricingComparison() {
               <p className="text-sm text-white/80 h-20">
                 Ideal for experienced agents who need unlimited access and advanced features.
               </p>
-              <div className="flex flex-col gap-2 mt-8">
-                <div className="flex justify-between items-center border-b border-white/20 pb-4">
-                  <div>
-                    <p className="text-sm text-white/80">Monthly</p>
-                    <p className="text-2xl text-white">$45</p>
+              <div className="flex flex-col md:flex-row gap-4 mt-8 relative">
+                <div className="flex-1 flex flex-col gap-2">
+                  <div className="flex justify-between items-center border-b border-white/20 pb-4">
+                    <div>
+                      <p className="text-sm text-white/80">Monthly</p>
+                      <p className="text-2xl text-white">$45</p>
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <p className="text-sm text-white/80">Annual</p>
-                  <div className="flex flex-col">
-                    <p className="text-2xl text-white">${calculateMonthlyFromAnnual(45)}</p>
-                    <p className="text-sm text-emerald-400">Save $9/mo</p>
+                <div className="w-px h-full bg-white/20 absolute left-1/2 top-0 hidden md:block"></div>
+                <div className="flex-1 flex flex-col gap-2">
+                  <div>
+                    <p className="text-sm text-white/80">Annual</p>
+                    <div className="flex flex-col">
+                      <p className="text-2xl text-white">${calculateMonthlyFromAnnual(45)}</p>
+                      <p className="text-sm text-emerald-400">Save $9/mo</p>
+                    </div>
                   </div>
                 </div>
               </div>
