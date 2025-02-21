@@ -1,3 +1,4 @@
+
 import FeatureCard from "./FeatureCard";
 
 const features = [
@@ -22,8 +23,8 @@ const features = [
   {
     title: "Collaborate with your team",
     description: "Get access to the team bulletin and never miss an announcement again.",
-    imagePath: "/placeholder.svg",
-    altText: "Team Collaboration Interface"
+    imagePath: "/lovable-uploads/87f39ac5-3898-4a40-8f90-4a3b2bfe6a19.png",
+    altText: "Team Bulletin Board"
   },
   {
     title: "Streamlined metric dashboards for managers",
