@@ -32,9 +32,10 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           src={imagePath} 
           alt={altText}
           className={`
-            w-[120%] h-full object-cover object-top absolute -right-[25%]
+            w-[120%] h-full object-cover absolute
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
+            ${altText === "Success Calculator Dashboard" ? '-right-[35%] object-left' : '-right-[25%] object-top'}
           `}
         />
       </div>
@@ -79,4 +80,3 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
 };
 
 export default FeatureCard;
-
