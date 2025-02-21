@@ -10,7 +10,7 @@ interface FeatureRowProps {
 export function FeatureRow({ feature, plans }: FeatureRowProps) {
   return (
     <>
-      <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 text-white">{feature}</div>
+      <div className="px-3 lg:px-6 col-span-3 lg:col-span-1 py-4 text-white whitespace-nowrap">{feature}</div>
       {plans.map((value, index) => (
         <div key={index} className="px-3 py-1 md:px-6 md:py-4 flex justify-center">
           {typeof value === 'boolean' ? (
