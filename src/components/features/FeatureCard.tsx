@@ -18,7 +18,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       className={`
         relative h-[350px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
         ${isSelected 
-          ? 'bg-gradient-to-r from-[#2A0068] to-[#130032]' 
+          ? 'bg-[#2A0068]' 
           : 'bg-[#F8FAFC] hover:ring-2 hover:ring-white/10'
         }
       `}
