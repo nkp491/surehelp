@@ -1,4 +1,3 @@
-
 import FeatureCard from "./FeatureCard";
 
 const features = [
@@ -17,7 +16,7 @@ const features = [
   {
     title: "KPI insights to track your cashflow",
     description: "The KPI tracker allows you to log your status: leads, calls, contacts, scheduled, sits, sales, and AP. You'll be able to summarize your progress and track your cashflow.",
-    imagePath: "/placeholder.svg",
+    imagePath: "/lovable-uploads/1c140e77-c297-47fb-a6db-01e7c2e99114.png",
     altText: "KPI Tracking Dashboard"
   },
   {
@@ -62,4 +61,3 @@ const FeaturesGrid = () => {
 };
 
 export default FeaturesGrid;
-
