@@ -121,7 +121,9 @@
   .carousel-item {
     position: absolute;
     transition: all 0.5s ease-in-out;
-    transform-origin: center;
+    transform-origin: center center;
+    transform-style: preserve-3d;
+    backface-visibility: visible;
   }
 
   .orbital-animation {
@@ -129,8 +131,12 @@
   }
 
   @keyframes orbit {
-    0% { transform: rotate(0deg) translateX(400px) rotateZ(-60deg); }
-    100% { transform: rotate(360deg) translateX(400px) rotateZ(-60deg); }
+    0% { 
+      transform: rotateX(60deg) rotateY(0deg) translateX(400px) translateY(-50px) rotateX(-60deg);
+    }
+    100% { 
+      transform: rotateX(60deg) rotateY(360deg) translateX(400px) translateY(-50px) rotateX(-60deg);
+    }
   }
 
   @keyframes centerPulse {
