@@ -16,7 +16,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
   return (
     <Card 
       className={`
-        relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
+        relative h-[350px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
         ${isSelected 
           ? 'bg-gradient-to-r from-[#2A0068] to-[#130032]' 
           : 'bg-white hover:ring-2 hover:ring-white/10'
@@ -55,14 +55,14 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       <div 
         className={`
           transition-all duration-300 ease-in-out
-          ${isSelected ? 'h-full pt-8' : 'h-1/4'}
+          ${isSelected ? 'h-full pt-6' : 'h-1/4'}
           w-full px-6 py-4 absolute bottom-0 left-0
         `}
       >
         <div className="flex justify-between items-start">
           <div>
             <h3 className={`
-              text-xl font-semibold
+              text-lg font-semibold
               ${isSelected ? 'text-white' : 'text-gray-800'}
             `}>
               {title}
@@ -74,7 +74,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               `}
             >
               {isSelected && (
-                <p className="text-base text-white/80 mt-6">
+                <p className="text-sm text-white/80 mt-4">
                   {description}
                 </p>
               )}
@@ -86,7 +86,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               ${isSelected ? 'rotate-45' : 'rotate-0'}
             `}
           >
-            <Plus className={`${isSelected ? 'text-white' : 'text-gray-800'}`} size={24} />
+            <Plus className={`${isSelected ? 'text-white' : 'text-gray-800'}`} size={20} />
           </div>
         </div>
       </div>
