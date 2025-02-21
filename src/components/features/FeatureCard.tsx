@@ -17,7 +17,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
     <Card 
       className={`
         relative h-[400px] rounded-xl overflow-hidden transition-all duration-300 ease-in-out cursor-pointer border-0
-        ${isSelected ? 'bg-gradient-to-b from-[#0096C7] to-[#002DCB] text-white' : 'bg-white hover:bg-emerald-50'}
+        ${isSelected ? 'bg-white' : 'bg-white hover:bg-emerald-50'}
       `}
       onClick={() => setIsSelected(!isSelected)}
     >
@@ -48,7 +48,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
       >
         <div className="flex justify-between items-start">
           <div>
-            <h3 className={`font-semibold text-lg ${isSelected ? 'text-white' : 'text-gray-900'}`}>
+            <h3 className={`font-semibold text-lg ${isSelected ? 'text-[#1A1F2C]' : 'text-gray-900'}`}>
               {title}
             </h3>
             <div 
@@ -59,12 +59,12 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
             >
               {isSelected && (
                 <>
-                  <p className="text-sm text-white/90 mt-2 mb-4">
+                  <p className="text-sm text-[#1A1F2C]/90 mt-2 mb-4">
                     {description}
                   </p>
                   <div className="space-y-3">
-                    <h4 className="text-sm font-medium text-white">Key Features:</h4>
-                    <ul className="list-disc list-inside space-y-2 text-sm text-white/90">
+                    <h4 className="text-sm font-medium text-[#1A1F2C]">Key Features:</h4>
+                    <ul className="list-disc list-inside space-y-2 text-sm text-[#1A1F2C]/90">
                       <li>Enhanced user experience with intuitive design</li>
                       <li>Seamless integration with existing systems</li>
                       <li>Real-time updates and notifications</li>
@@ -81,7 +81,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
               ${isSelected ? 'rotate-45' : 'rotate-0'}
             `}
           >
-            <Plus className={isSelected ? 'text-white' : 'text-gray-600'} size={24} />
+            <Plus className={isSelected ? 'text-[#1A1F2C]' : 'text-gray-600'} size={24} />
           </div>
         </div>
       </div>
