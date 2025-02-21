@@ -3,7 +3,7 @@ import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, UserRound } from "lucide-react";
 
 const About = () => {
   const navigate = useNavigate();
@@ -69,37 +69,29 @@ const About = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                   {[
                     {
-                      image: "https://images.unsplash.com/photo-1581092795360-fd1ca04f0952",
                       name: "Nielsen Aragon",
                       role: "Chief Technology Officer",
                       description: "Tech visionary with a passion for creating intuitive software solutions."
                     },
                     {
-                      image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
                       name: "Tho Nguyen",
                       role: "Head of Product",
                       description: "Product strategist focused on delivering value through user-centric design."
                     },
                     {
-                      image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
                       name: "Harold Durana",
                       role: "Chief Executive Officer",
                       description: "20+ years of insurance industry expertise, driving innovation in insurtech."
                     },
                     {
-                      image: "https://images.unsplash.com/photo-1434494878577-86c23bcb06b9",
                       name: "Samir Palavra",
                       role: "Chief Operations Officer",
                       description: "Dedicated to ensuring our clients achieve their business goals."
                     }
                   ].map((member, index) => (
                     <div key={index} className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 text-center">
-                      <div className="h-48 mb-6 rounded-xl overflow-hidden">
-                        <img 
-                          src={member.image} 
-                          alt={member.name}
-                          className="w-full h-full object-cover"
-                        />
+                      <div className="flex justify-center items-center h-48 mb-6">
+                        <UserRound className="w-32 h-32 text-white/80" />
                       </div>
                       <h3 className="text-xl font-semibold text-white mb-1">{member.name}</h3>
                       <p className="text-sm text-white/80 mb-4">{member.role}</p>
