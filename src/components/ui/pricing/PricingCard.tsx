@@ -37,7 +37,7 @@ export function PricingCard({
           </div>
         </div>
         <div className="w-px h-full bg-white/20 absolute left-1/2 -translate-x-1/2 top-0 hidden md:block"></div>
-        <div className="flex-1 flex flex-col gap-2 md:pl-6">
+        <div className="flex-1 flex flex-col gap-2 md:pl-2">
           <div>
             <p className="text-sm text-white/80">Annual</p>
             <div className="flex flex-col">
