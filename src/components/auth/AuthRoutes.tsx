@@ -1,3 +1,4 @@
+
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
 import { ProtectedRoute } from "./ProtectedRoute";
