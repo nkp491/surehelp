@@ -1,4 +1,3 @@
-
 import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
 import { Button } from "@/components/ui/button";
@@ -37,11 +36,9 @@ const About = () => {
                   <div>
                     <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
                     <p className="text-lg leading-8 text-white/80">
-                      At SureHelp, we are dedicated to improving the sales workflow by organizing the underwriting process 
-                      and utilizing real-time data to work for you. Every day, agents waste 
-                      countless hours jumping between different systems, losing track of leads, and 
-                      struggling to measure performance. We provide a seamless, all-in-one platform 
-                      designed to bring clarity, efficiency, and success to your workflow.
+                      Every day, agents waste countless hours jumping between different systems, losing track of leads, and 
+                      struggling to measure performance. At SureHelp, we are dedicated to providing an all-in-one platform 
+                      designed to organize the sales workflow and utilizing real-time data to work for you.
                     </p>
                   </div>
 
@@ -132,4 +129,3 @@ const About = () => {
 };
 
 export default About;
-
