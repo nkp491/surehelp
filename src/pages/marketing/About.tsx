@@ -21,9 +21,9 @@ const About = () => {
                 </h1>
               </div>
 
-              <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+              <div className="mt-20 grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
                 {/* Large Image on Left */}
-                <div className="h-[600px] rounded-2xl overflow-hidden lg:pr-8">
+                <div className="h-[600px] rounded-2xl overflow-hidden lg:pl-0">
                   <img 
                     src="/lovable-uploads/12c860c7-e4fb-44ff-b5c2-4d397dcc14c1.png"
                     alt="Mission" 
@@ -32,7 +32,7 @@ const About = () => {
                 </div>
 
                 {/* Content on Right */}
-                <div className="space-y-16">
+                <div className="space-y-20 lg:pr-12">
                   {/* Mission Section */}
                   <div>
                     <h2 className="text-3xl font-bold text-white mb-6">Mission</h2>
