@@ -32,7 +32,7 @@ const FeatureCard = ({ title, description, imagePath, altText }: FeatureCardProp
           src={imagePath} 
           alt={altText}
           className={`
-            w-[120%] h-full object-cover object-top absolute -right-[20%]
+            w-[120%] h-full object-cover object-top absolute -right-[25%]
             transition-transform duration-300
             ${isSelected ? 'translate-y-[-100%] opacity-0' : 'translate-y-0 opacity-100'}
           `}
