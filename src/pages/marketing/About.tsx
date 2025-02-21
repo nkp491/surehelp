@@ -70,22 +70,18 @@ const About = () => {
                   {[
                     {
                       name: "Nielsen Aragon",
-                      role: "Chief Technology Officer",
                       description: "Tech visionary with a passion for creating intuitive software solutions."
                     },
                     {
                       name: "Tho Nguyen",
-                      role: "Head of Product",
                       description: "Product strategist focused on delivering value through user-centric design."
                     },
                     {
                       name: "Harold Durana",
-                      role: "Chief Executive Officer",
                       description: "20+ years of insurance industry expertise, driving innovation in insurtech."
                     },
                     {
                       name: "Samir Palavra",
-                      role: "Chief Operations Officer",
                       description: "Dedicated to ensuring our clients achieve their business goals."
                     }
                   ].map((member, index) => (
@@ -93,8 +89,7 @@ const About = () => {
                       <div className="flex justify-center items-center h-48 mb-6">
                         <UserRound className="w-32 h-32 text-white/80" />
                       </div>
-                      <h3 className="text-xl font-semibold text-white mb-1">{member.name}</h3>
-                      <p className="text-sm text-white/80 mb-4">{member.role}</p>
+                      <h3 className="text-xl font-semibold text-white mb-4">{member.name}</h3>
                       <p className="text-sm text-white/60">{member.description}</p>
                     </div>
                   ))}
