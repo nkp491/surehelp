@@ -58,13 +58,11 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
         <Label htmlFor="dob">
           {t.dateOfBirth} <span className="text-red-500">*</span>
         </Label>
-        <div className="w-full">
-          <DatePicker
-            selected={formData.dob ? new Date(formData.dob) : null}
-            onSelect={handleDateSelect}
-            maxDate={today}
-          />
-        </div>
+        <DatePicker
+          selected={formData.dob ? new Date(formData.dob) : null}
+          onSelect={handleDateSelect}
+          maxDate={today}
+        />
       </div>
 
       <div className="md:col-span-3 space-y-2">
@@ -83,4 +81,3 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
 };
 
 export default PersonalInfo;
-
