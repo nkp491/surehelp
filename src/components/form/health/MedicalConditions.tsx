@@ -1,3 +1,4 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -47,14 +48,17 @@ const MedicalConditions = ({ formData, setFormData }: MedicalConditionsProps) =>
               checked={(formData.selectedConditions || []).includes(condition)}
               onCheckedChange={(checked) => handleConditionChange(condition, checked as boolean)}
             />
-            <Label htmlFor={condition} className="text-xs">
+            <Label 
+              htmlFor={condition} 
+              className="text-sm font-normal"
+            >
               {mc[condition]}
             </Label>
           </div>
         ))}
         <div className="flex items-center space-x-2">
           <Checkbox id="other" />
-          <Label htmlFor="other" className="text-xs">
+          <Label htmlFor="other" className="text-sm font-normal">
             Other:
           </Label>
           <Input 
