@@ -8,20 +8,12 @@ import FormContainer from "@/components/FormContainer";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import Auth from "@/pages/Auth";
 import CommissionTracker from "@/pages/CommissionTracker";
 
 const MainContent = () => {
   const location = useLocation();
 
-  // Auth page is now rendered with its own layout
-  if (location.pathname === '/auth') {
-    return <Auth />;
-  }
-
-  // For all other routes, use the sidebar layout
   const renderContent = () => {
-    // Only render auth-protected content
     const protectedContent = () => {
       switch (location.pathname) {
         case '/metrics':

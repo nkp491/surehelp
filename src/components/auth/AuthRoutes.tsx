@@ -1,16 +1,8 @@
 
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
-import { ProtectedRoute } from "./ProtectedRoute";
 import { AuthLoading } from "./AuthLoading";
 import Auth from "@/pages/Auth";
-import Index from "@/pages/Index";
-import Profile from "@/pages/Profile";
-import CommissionTracker from "@/pages/CommissionTracker";
-import Home from "@/pages/marketing/Home";
-import About from "@/pages/marketing/About";
-import Pricing from "@/pages/marketing/Pricing";
-import TermsOfUse from "@/pages/marketing/TermsOfUse";
 
 export const AuthRoutes = () => {
   const { isAuthenticated, isLoading } = useAuthStateManager();
@@ -22,92 +14,13 @@ export const AuthRoutes = () => {
 
   console.log("Auth routes state:", { isAuthenticated });
 
+  if (isAuthenticated) {
+    return <Navigate to="/assessment" replace />;
+  }
+
   return (
     <Routes>
-      <Route 
-        path="/" 
-        element={
-          isAuthenticated ? (
-            <Navigate to="/assessment" replace />
-          ) : (
-            <Home />
-          )
-        } 
-      />
-      <Route 
-        path="/about" 
-        element={<About />}
-      />
-      <Route 
-        path="/pricing" 
-        element={<Pricing />}
-      />
-      <Route 
-        path="/terms" 
-        element={<TermsOfUse />}
-      />
-      <Route 
-        path="/auth/*" 
-        element={
-          isAuthenticated ? (
-            <Navigate to="/assessment" replace />
-          ) : (
-            <Auth />
-          )
-        } 
-      />
-      <Route 
-        path="/profile" 
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <Profile />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/metrics" 
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <Index />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/submitted-forms" 
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <Index />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/manager-dashboard" 
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <Index />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/assessment" 
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <Index />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="/commission-tracker" 
-        element={
-          <ProtectedRoute isAuthenticated={isAuthenticated} redirectTo="/auth">
-            <CommissionTracker />
-          </ProtectedRoute>
-        } 
-      />
-      <Route 
-        path="*" 
-        element={<Navigate to="/auth" replace />} 
-      />
+      <Route path="*" element={<Auth />} />
     </Routes>
   );
 };
