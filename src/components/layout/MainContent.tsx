@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import SubmittedForms from "@/pages/SubmittedForms";
@@ -45,10 +46,12 @@ const MainContent = () => {
 
   return (
     <SidebarProvider defaultOpen={true}>
-      <div className="flex min-h-screen">
+      <div className="flex min-h-screen w-full">
         <AppSidebar />
         <SidebarInset className="flex-1">
-          {renderContent()}
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
+            {renderContent()}
+          </div>
         </SidebarInset>
       </div>
     </SidebarProvider>

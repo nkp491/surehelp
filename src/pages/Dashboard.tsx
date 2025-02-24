@@ -1,15 +1,16 @@
+
 import BusinessMetrics from "@/components/BusinessMetrics";
 
 const Dashboard = () => {
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm border border-[#fbfaf8] mb-8">
-        <div>
-          <h2 className="text-2xl font-bold text-gray-900">Dashboard</h2>
-          <p className="text-muted-foreground mt-1">Track and analyze your key performance indicators in real-time</p>
+    <div className="space-y-6 py-6 sm:py-8 md:py-10">
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
+        <div className="max-w-3xl">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Dashboard</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">Track and analyze your key performance indicators in real-time</p>
         </div>
       </div>
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         <BusinessMetrics />
       </div>
     </div>
