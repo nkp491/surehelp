@@ -1,9 +1,11 @@
+
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { useEffect } from "react";
-import { differenceInYears, parse } from "date-fns";
+import { differenceInYears } from "date-fns";
+import { DatePicker } from "@/components/ui/date-picker";
 
 interface PersonalInfoProps {
   formData: any;
@@ -18,13 +20,25 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
+  const handleDateSelect = (date: Date | null) => {
+    if (date) {
+      // Store date as ISO string to maintain compatibility with existing data structure
+      handleInputChange('dob', date.toISOString().split('T')[0]);
+    }
+  };
+
   useEffect(() => {
     if (formData.dob) {
-      const birthDate = parse(formData.dob, 'yyyy-MM-dd', new Date());
+      const birthDate = new Date(formData.dob);
       const calculatedAge = differenceInYears(new Date(), birthDate);
       handleInputChange('age', calculatedAge.toString());
     }
   }, [formData.dob]);
+
+  // Calculate max date (today) and min date (120 years ago)
+  const today = new Date();
+  const minDate = new Date();
+  minDate.setFullYear(today.getFullYear() - 120);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
@@ -44,13 +58,13 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
         <Label htmlFor="dob">
           {t.dateOfBirth} <span className="text-red-500">*</span>
         </Label>
-        <Input 
-          id="dob"
-          type="date"
-          value={formData.dob || ''}
-          onChange={(e) => handleInputChange('dob', e.target.value)}
-          className="bg-gray-50"
-        />
+        <div className="w-full">
+          <DatePicker
+            selected={formData.dob ? new Date(formData.dob) : null}
+            onSelect={handleDateSelect}
+            maxDate={today}
+          />
+        </div>
       </div>
 
       <div className="md:col-span-3 space-y-2">
@@ -69,3 +83,4 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
 };
 
 export default PersonalInfo;
+
