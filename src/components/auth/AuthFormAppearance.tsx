@@ -7,7 +7,6 @@ export const getAuthFormAppearance = () => ({
     container: {
       width: '100%',
       maxWidth: '100%',
-      margin: '0 auto',
     },
     button: {
       width: '100%',
@@ -50,7 +49,7 @@ export const getAuthFormAppearance = () => ({
     },
   },
   className: {
-    container: 'flex flex-col gap-4 w-full mx-auto',
+    container: 'flex flex-col gap-4 w-full',
     button: 'w-full hover:bg-[#2A6F97]/90 transition-colors',
     input: 'w-full rounded-md focus:ring-2 focus:ring-[#2A6F97]/20 focus:border-[#2A6F97]',
     message: 'w-full text-sm',
