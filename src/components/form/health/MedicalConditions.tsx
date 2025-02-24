@@ -56,13 +56,13 @@ const MedicalConditions = ({ formData, setFormData }: MedicalConditionsProps) =>
             </Label>
           </div>
         ))}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center space-x-2 col-span-1">
           <Checkbox id="other" />
-          <Label htmlFor="other" className="text-sm font-normal">
+          <Label htmlFor="other" className="text-sm font-normal whitespace-nowrap">
             Other:
           </Label>
           <Input 
-            className="h-6"
+            className="h-6 flex-1"
             value={formData.otherConditions || ''}
             onChange={(e) => setFormData((prev: any) => ({
               ...prev,
