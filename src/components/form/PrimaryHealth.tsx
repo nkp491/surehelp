@@ -9,6 +9,7 @@ import MedicalConditions from "./health/MedicalConditions";
 import DetailedHistory from "./health/DetailedHistory";
 import MetricsSection from "@/components/dashboard/MetricsSection";
 import { Separator } from "@/components/ui/separator";
+import { MetricsProvider } from "@/contexts/MetricsContext";
 
 interface PrimaryHealthProps {
   formData: any;
@@ -22,7 +23,9 @@ const PrimaryHealth = ({ formData, setFormData, errors }: PrimaryHealthProps) =>
 
   return (
     <div className="space-y-4">
-      <MetricsSection />
+      <MetricsProvider>
+        <MetricsSection />
+      </MetricsProvider>
       <Separator className="my-2" />
       
       <Card className="rounded-[12px]">
