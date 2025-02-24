@@ -18,4 +18,3 @@ const AuthFormContainer = ({ children, className }: AuthFormContainerProps) => {
 };
 
 export default AuthFormContainer;
-

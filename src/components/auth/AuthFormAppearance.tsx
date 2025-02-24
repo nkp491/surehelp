@@ -1,3 +1,4 @@
+
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 
 export const getAuthFormAppearance = () => ({
@@ -5,6 +6,8 @@ export const getAuthFormAppearance = () => ({
   style: {
     container: {
       width: '100%',
+      maxWidth: '100%',
+      margin: '0 auto',
     },
     button: {
       width: '100%',
@@ -25,16 +28,14 @@ export const getAuthFormAppearance = () => ({
       margin: '8px 0',
     },
     anchor: {
-      width: '100%',
       color: '#2A6F97',
       textDecoration: 'none',
     },
     divider: {
-      width: '100%',
       margin: '16px 0',
     },
     label: {
-      width: '100%',
+      display: 'block',
       marginBottom: '4px',
       color: '#4b5563',
       fontSize: '0.875rem',
@@ -49,12 +50,12 @@ export const getAuthFormAppearance = () => ({
     },
   },
   className: {
-    container: 'flex flex-col gap-4',
+    container: 'flex flex-col gap-4 w-full mx-auto',
     button: 'w-full hover:bg-[#2A6F97]/90 transition-colors',
     input: 'w-full rounded-md focus:ring-2 focus:ring-[#2A6F97]/20 focus:border-[#2A6F97]',
     message: 'w-full text-sm',
     anchor: 'text-[#2A6F97] hover:text-[#2A6F97]/80 transition-colors',
     divider: 'w-full bg-gray-200',
-    label: 'block w-full mb-1 text-sm font-medium text-gray-700'
+    label: 'block text-sm font-medium text-gray-700'
   },
 });
