@@ -7,6 +7,8 @@ import HealthMetrics from "./health/HealthMetrics";
 import HealthHistory from "./health/HealthHistory";
 import MedicalConditions from "./health/MedicalConditions";
 import DetailedHistory from "./health/DetailedHistory";
+import Counter from "@/components/Counter";
+import { Separator } from "@/components/ui/separator";
 
 interface PrimaryHealthProps {
   formData: any;
@@ -19,7 +21,10 @@ const PrimaryHealth = ({ formData, setFormData, errors }: PrimaryHealthProps) =>
   const t = translations[language];
 
   return (
-    <div>
+    <div className="space-y-4">
+      <Counter />
+      <Separator className="my-2" />
+      
       <Card className="rounded-[12px]">
         <CardHeader className="bg-[#0096c7] rounded-t-[12px] py-1 px-3">
           <h1 className="text-white font-medium text-sm">
