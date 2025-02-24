@@ -6,7 +6,6 @@ export const getAuthFormAppearance = () => ({
   style: {
     container: {
       width: '100%',
-      maxWidth: '100%',
     },
     button: {
       width: '100%',
