@@ -1,3 +1,4 @@
+
 import React from "react";
 import { INITIAL_FIELDS } from "./FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
@@ -33,9 +34,9 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
 
   return (
     <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-120px)]">
-      <div className="form-layout">
+      <div className="grid grid-cols-3 gap-3 p-3 max-w-[1440px] mx-auto">
         {/* Primary Health Assessment Column */}
-        <div className="space-y-6">
+        <div className="col-span-3 lg:col-span-1 space-y-6">
           <FormSection
             key="Primary Health Assessment"
             section="Primary Health Assessment"
@@ -47,7 +48,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
         </div>
 
         {/* Income Assessment Column */}
-        <div className="space-y-6">
+        <div className="col-span-3 lg:col-span-1 space-y-6">
           <FormSection
             key="Primary Income Assessment"
             section="Primary Income Assessment"
@@ -67,7 +68,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
         </div>
 
         {/* Assessment Notes and Agent Use Only Column */}
-        <div className="space-y-6">
+        <div className="col-span-3 lg:col-span-1 space-y-6">
           <FormSection
             key="Assessment Notes"
             section="Assessment Notes"
