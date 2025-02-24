@@ -41,8 +41,9 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
   minDate.setFullYear(today.getFullYear() - 120);
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
-      <div className="md:col-span-5 space-y-2">
+    <div className="space-y-6">
+      {/* Full Name Row */}
+      <div className="w-full space-y-2">
         <Label htmlFor="name">
           {t.fullName} <span className="text-red-500">*</span>
         </Label>
@@ -54,27 +55,30 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
         />
       </div>
 
-      <div className="md:col-span-4 space-y-2">
-        <Label htmlFor="dob">
-          {t.dateOfBirth} <span className="text-red-500">*</span>
-        </Label>
-        <DatePicker
-          selected={formData.dob ? new Date(formData.dob) : null}
-          onSelect={handleDateSelect}
-          maxDate={today}
-        />
-      </div>
+      {/* Date of Birth and Age Row */}
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+        <div className="md:col-span-8 space-y-2">
+          <Label htmlFor="dob">
+            {t.dateOfBirth} <span className="text-red-500">*</span>
+          </Label>
+          <DatePicker
+            selected={formData.dob ? new Date(formData.dob) : null}
+            onSelect={handleDateSelect}
+            maxDate={today}
+          />
+        </div>
 
-      <div className="md:col-span-3 space-y-2">
-        <Label htmlFor="age">
-          {t.age}
-        </Label>
-        <Input 
-          id="age"
-          value={formData.age || ''}
-          readOnly
-          className="bg-gray-50 w-full"
-        />
+        <div className="md:col-span-4 space-y-2">
+          <Label htmlFor="age">
+            {t.age}
+          </Label>
+          <Input 
+            id="age"
+            value={formData.age || ''}
+            readOnly
+            className="bg-gray-50 w-full"
+          />
+        </div>
       </div>
     </div>
   );
