@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
@@ -18,7 +19,7 @@ const PrimaryHealth = ({ formData, setFormData, errors }: PrimaryHealthProps) =>
   const t = translations[language];
 
   return (
-    <div className="w-[449px]">
+    <div>
       <Card className="rounded-[12px]">
         <CardHeader className="bg-[#0096c7] rounded-t-[12px] py-1 px-3">
           <h1 className="text-white font-medium text-sm">
