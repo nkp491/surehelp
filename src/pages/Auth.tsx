@@ -146,9 +146,9 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
-      <div className="flex-1 flex items-center justify-center px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="w-full max-w-md mx-auto space-y-6">
+    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+      <div className="w-full max-w-md px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+        <div className="space-y-6">
           <AuthHeader view={view} onViewChange={setView} />
           
           {errorMessage && (
