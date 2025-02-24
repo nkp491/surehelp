@@ -14,7 +14,7 @@ import CommissionTracker from "@/pages/CommissionTracker";
 const MainContent = () => {
   const location = useLocation();
 
-  // If we're on the auth page, render it directly without the sidebar layout
+  // Auth page is now rendered with its own layout
   if (location.pathname === '/auth') {
     return <Auth />;
   }

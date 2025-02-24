@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthHeader from "@/components/auth/AuthHeader";
 import AuthFormContainer from "@/components/auth/AuthFormContainer";
+import AuthLayout from "@/components/auth/AuthLayout";
 import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
 import { useToast } from "@/hooks/use-toast";
@@ -18,7 +18,6 @@ const Auth = () => {
   const [view, setView] = useState<"sign_in" | "sign_up" | "update_password">("sign_up");
   const [isInitializing, setIsInitializing] = useState(true);
 
-  // Get site URL dynamically and handle preview URLs
   const getSiteUrl = () => {
     try {
       if (typeof window === 'undefined') {
@@ -26,7 +25,6 @@ const Auth = () => {
       }
 
       const currentUrl = new URL(window.location.href);
-      // Remove any path and query parameters
       const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`;
       console.log("Base URL detected:", baseUrl);
       return baseUrl;
@@ -36,7 +34,6 @@ const Auth = () => {
     }
   };
 
-  // Get callback URL based on current environment
   const getCallbackUrl = () => {
     try {
       const siteUrl = getSiteUrl();
@@ -55,7 +52,6 @@ const Auth = () => {
         const { data: { session }, error } = await supabase.auth.getSession();
         console.log("Initial session check:", { session, error });
         
-        // Check if we're in a password reset flow
         const hash = window.location.hash;
         if (hash && hash.includes('type=recovery')) {
           setView('update_password');
@@ -118,7 +114,6 @@ const Auth = () => {
       }
     });
 
-    // Check for OTP expired error in URL
     const url = new URL(window.location.href);
     const errorCode = url.searchParams.get("error_code");
     const errorDescription = url.searchParams.get("error_description");
@@ -130,7 +125,6 @@ const Auth = () => {
         variant: "destructive",
         duration: 6000,
       });
-      // Clear the error from URL
       url.searchParams.delete("error_code");
       url.searchParams.delete("error_description");
       window.history.replaceState({}, "", url.toString());
@@ -146,30 +140,28 @@ const Auth = () => {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col items-center justify-center bg-grid bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
-      <div className="w-full max-w-md px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
-        <div className="space-y-6">
-          <AuthHeader view={view} onViewChange={setView} />
-          
-          {errorMessage && (
-            <Alert variant="destructive" className="mb-6">
-              <AlertDescription>{errorMessage}</AlertDescription>
-            </Alert>
-          )}
+    <AuthLayout>
+      <div className="space-y-6">
+        <AuthHeader view={view} onViewChange={setView} />
+        
+        {errorMessage && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertDescription>{errorMessage}</AlertDescription>
+          </Alert>
+        )}
 
-          <AuthFormContainer>
-            <SupabaseAuth 
-              supabaseClient={supabase}
-              view={view}
-              appearance={getAuthFormAppearance()}
-              providers={[]}
-              redirectTo={getCallbackUrl()}
-              showLinks={true}
-            />
-          </AuthFormContainer>
-        </div>
+        <AuthFormContainer>
+          <SupabaseAuth 
+            supabaseClient={supabase}
+            view={view}
+            appearance={getAuthFormAppearance()}
+            providers={[]}
+            redirectTo={getCallbackUrl()}
+            showLinks={true}
+          />
+        </AuthFormContainer>
       </div>
-    </div>
+    </AuthLayout>
   );
 };
 
