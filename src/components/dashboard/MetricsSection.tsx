@@ -50,7 +50,7 @@ const MetricsSection = () => {
       }`}
     >
       <div className="py-2">
-        <div className="flex items-center justify-between gap-1">
+        <div className="max-w-4xl mx-auto flex items-center justify-center gap-8">
           <div className="flex">
             {(Object.keys(metrics) as MetricType[]).map((metric, index, array) => (
               <MetricButtons
