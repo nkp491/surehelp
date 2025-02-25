@@ -58,13 +58,17 @@ const FormSection = ({
   const isIncomeSection = section === "Primary Income Assessment";
   const isHouseholdSection = section === "Household Income";
   const isAgentSection = section === "Agent Use Only";
+  const isAssessmentNotes = section === "Assessment Notes";
 
   const shouldBeHorizontal = (fieldId: string) => {
     return ['premium', 'coverageAmount'].includes(fieldId);
   };
 
   return (
-    <div className="form-section">
+    <div className={cn(
+      "form-section",
+      isAssessmentNotes ? "mt-8" : ""
+    )}>
       <div className="form-section-header">
         <SectionHeader section={section} onRemove={onRemove} />
       </div>
