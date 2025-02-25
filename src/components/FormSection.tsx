@@ -58,6 +58,7 @@ const FormSection = ({
   const isIncomeSection = section === "Primary Income Assessment";
   const isHouseholdSection = section === "Household Income";
   const isAgentSection = section === "Agent Use Only";
+  const isAssessmentNotesSection = section === "Assessment Notes";
 
   const shouldBeHorizontal = (fieldId: string) => {
     return ['premium', 'coverageAmount'].includes(fieldId);
@@ -68,7 +69,7 @@ const FormSection = ({
       <div className="form-section-header">
         <SectionHeader section={section} onRemove={onRemove} />
       </div>
-      <div className={`form-section-content ${isIncomeSection ? 'space-y-4' : 'space-y-3'}`}>
+      <div className={`form-section-content ${isIncomeSection ? 'space-y-4' : isAssessmentNotesSection ? 'space-y-6' : 'space-y-3'}`}>
         {isHouseholdSection ? (
           <div className="form-group-horizontal">
             {nonAgentFields.map((field) => (
