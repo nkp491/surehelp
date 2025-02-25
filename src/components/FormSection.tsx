@@ -6,6 +6,7 @@ import { isAgentField } from "@/utils/fieldCategories";
 import SectionHeader from "./form/sections/SectionHeader";
 import RegularFieldsSection from "./form/sections/RegularFieldsSection";
 import AgentSection from "./form/sections/AgentSection";
+import { cn } from "@/lib/utils";
 
 interface FormSectionProps {
   section: string;
