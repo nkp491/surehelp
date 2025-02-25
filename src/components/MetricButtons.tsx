@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
@@ -66,7 +67,7 @@ const MetricButtons = ({
   return (
     <div className="flex items-center">
       <div className="flex flex-col items-center gap-0.5 mx-[2px]">
-        <h3 className="font-medium text-xs text-primary">
+        <h3 className="font-medium text-sm text-primary">
           {formatMetricName(metric)}
         </h3>
         <Card className="bg-transparent p-0.5 border-0 shadow-none">
