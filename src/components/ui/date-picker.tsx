@@ -11,6 +11,13 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DatePickerProps {
   selected: Date | null;
@@ -25,10 +32,12 @@ export function DatePicker({
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
+  const [year, setYear] = React.useState<number>(selected?.getFullYear() || new Date().getFullYear());
 
   React.useEffect(() => {
     if (selected) {
       setInputValue(format(selected, "MM/dd/yyyy"));
+      setYear(selected.getFullYear());
     }
   }, [selected]);
 
@@ -55,6 +64,21 @@ export function DatePicker({
     }
   };
 
+  // Generate array of years from 120 years ago to current year
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 121 }, (_, i) => currentYear - 120 + i);
+
+  const handleYearChange = (value: string) => {
+    const newYear = parseInt(value);
+    setYear(newYear);
+    
+    if (selected) {
+      const newDate = new Date(selected);
+      newDate.setFullYear(newYear);
+      onSelect(newDate);
+    }
+  };
+
   return (
     <div className="relative">
       <Input
@@ -76,6 +100,23 @@ export function DatePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
+          <div className="p-3 border-b">
+            <Select
+              value={year.toString()}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Select year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <Calendar
             mode="single"
             selected={selected}
@@ -85,6 +126,7 @@ export function DatePicker({
             }}
             disabled={(date) => maxDate ? date > maxDate : false}
             initialFocus
+            year={year}
           />
         </PopoverContent>
       </Popover>
