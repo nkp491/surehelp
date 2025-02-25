@@ -1,3 +1,4 @@
+
 import { FormField } from "@/types/formTypes";
 import DraggableFormField from "../../DraggableFormField";
 
@@ -18,7 +19,7 @@ const RegularFieldsSection = ({ fields, formData, setFormData, errors, submissio
   };
 
   return (
-    <div className="form-container">
+    <div className="space-y-6">
       {fields.map((field) => (
         <DraggableFormField
           key={field.id}
