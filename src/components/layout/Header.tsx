@@ -12,7 +12,7 @@ const Header = () => {
     <header className="bg-transparent">
       <div className="max-w-[1800px] mx-auto">
         {showMetrics && (
-          <div className="relative w-full py-3">
+          <div className="relative w-full">
             <MetricsProvider>
               <MetricsSection />
             </MetricsProvider>
