@@ -69,7 +69,7 @@
   }
 
   .form-section-header {
-    @apply bg-[#0096c7] text-white pl-[12px] text-sm font-medium rounded-t-[12px] flex items-center;
+    @apply bg-[#0096c7] text-white pl-[8px] text-sm font-medium rounded-t-[12px] flex items-center;
     height: 28px;
   }
 
