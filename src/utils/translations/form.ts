@@ -1,3 +1,4 @@
+
 export type FormTranslations = {
   // Existing keys
   primaryApplicantName: string;
@@ -16,6 +17,7 @@ export type FormTranslations = {
   primaryFamilyMedicalConditions: string;
   primaryEmploymentStatus: string;
   primaryOccupation: string;
+  primaryOccupationBold: string;
   primaryEmploymentIncome: string;
   primaryInvestmentTypes: string;
   primarySocialSecurityIncome: string;
@@ -72,6 +74,7 @@ export const formTranslations: Record<'en' | 'es', FormTranslations> = {
     primaryFamilyMedicalConditions: "Primary Family Medical Conditions",
     primaryEmploymentStatus: "Primary Employment Status",
     primaryOccupation: "Primary Occupation/Duties",
+    primaryOccupationBold: "Primary Occupation/Duties",
     primaryEmploymentIncome: "Primary Employment Income",
     primaryInvestmentTypes: "Investment Types",
     primarySocialSecurityIncome: "Primary Social Security Income",
@@ -126,6 +129,7 @@ export const formTranslations: Record<'en' | 'es', FormTranslations> = {
     primaryFamilyMedicalConditions: "Condiciones Médicas Familiares del Solicitante Principal",
     primaryEmploymentStatus: "Estado Laboral del Solicitante Principal",
     primaryOccupation: "Ocupación/Deberes del Solicitante Principal",
+    primaryOccupationBold: "Ocupación/Deberes del Solicitante Principal",
     primaryEmploymentIncome: "Ingreso Laboral del Solicitante Principal",
     primaryInvestmentTypes: "Tipos de Inversión",
     primarySocialSecurityIncome: "Ingreso del Seguro Social del Solicitante Principal",
