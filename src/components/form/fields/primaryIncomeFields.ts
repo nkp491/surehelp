@@ -1,8 +1,9 @@
+
 import { FormField } from "@/types/formTypes";
 
 export const PRIMARY_INCOME_FIELDS: FormField[] = [
   { id: "employmentStatus", type: "employmentStatus", label: "primaryEmploymentStatus" },
-  { id: "occupation", type: "text", label: "primaryOccupation", placeholder: "Enter primary occupation and duties" },
+  { id: "occupation", type: "text", label: "primaryOccupationBold", placeholder: "Enter primary occupation and duties" },
   { id: "employmentIncome", type: "currency", label: "primaryEmploymentIncome", placeholder: "Enter primary employment income" },
   { id: "selectedInvestments", type: "investmentTypes", label: "primaryInvestmentTypes" },
   { id: "socialSecurityIncome", type: "currency", label: "primarySocialSecurityIncome", placeholder: "Enter primary social security income" },
