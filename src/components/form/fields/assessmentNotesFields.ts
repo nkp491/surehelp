@@ -7,29 +7,25 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
     id: "phone", 
     type: "text", 
     label: "Phone", 
-    placeholder: "Enter phone number",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter phone number"
   },
   { 
     id: "email", 
     type: "text", 
     label: "Email", 
-    placeholder: "Enter email address",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter email address"
   },
   { 
     id: "address", 
     type: "text", 
     label: "Address", 
-    placeholder: "Enter address",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter address"
   },
   { 
     id: "emergencyContact", 
     type: "text", 
     label: "Emergency Contact", 
-    placeholder: "Enter emergency contact",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter emergency contact"
   },
   
   // Notes Group
@@ -37,29 +33,25 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
     id: "notes", 
     type: "textarea", 
     label: "Notes", 
-    placeholder: "Enter general notes",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter general notes"
   },
   { 
     id: "followUpNotes", 
     type: "textarea", 
     label: "Follow Up Notes", 
-    placeholder: "Enter follow up notes",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter follow up notes"
   },
   { 
     id: "coverageOptions", 
     type: "textarea", 
     label: "Coverage Options", 
-    placeholder: "Enter coverage options",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter coverage options"
   },
   { 
     id: "beneficiaries", 
     type: "textarea", 
     label: "Beneficiary(ies)", 
-    placeholder: "Enter beneficiaries",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter beneficiaries"
   },
 
   // Agent Use Only Fields
@@ -67,8 +59,7 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
     id: "sourcedFrom", 
     type: "text", 
     label: "Sourced From", 
-    placeholder: "Enter source",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter source"
   },
   { 
     id: "leadType", 
@@ -80,55 +71,47 @@ export const ASSESSMENT_NOTES_FIELDS: FormField[] = [
       "Live Transfer",
       "Referral",
       "Other"
-    ],
-    labelClassName: "mb-2 mt-4"
+    ]
   },
   { 
     id: "premium", 
     type: "currency", 
     label: "Premium", 
-    placeholder: "Enter premium",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter premium"
   },
   { 
     id: "effectiveDate", 
     type: "date", 
-    label: "Effective Date",
-    labelClassName: "mb-2 mt-4"
+    label: "Effective Date"
   },
   { 
     id: "draftDay", 
     type: "text", 
     label: "Draft Day", 
-    placeholder: "Enter draft day",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter draft day"
   },
   { 
     id: "coverageAmount", 
     type: "currency", 
     label: "Coverage Amount", 
-    placeholder: "Enter coverage amount",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter coverage amount"
   },
   { 
     id: "accidental", 
     type: "text", 
     label: "Accidental", 
-    placeholder: "Enter accidental",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter accidental"
   },
   { 
     id: "carrierAndProduct", 
     type: "text", 
     label: "Carrier & Product", 
-    placeholder: "Enter carrier and product",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter carrier and product"
   },
   { 
     id: "policyNumber", 
     type: "text", 
     label: "Policy Number", 
-    placeholder: "Enter policy number",
-    labelClassName: "mb-2 mt-4"
+    placeholder: "Enter policy number"
   }
 ];
