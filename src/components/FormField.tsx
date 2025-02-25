@@ -47,12 +47,7 @@ const FormField = ({
     return (t as any)[key] || label;
   };
 
-  // Determine if the label should be bold based on the field type
-  const shouldBeBold = type === "employmentStatus" || label === "primaryOccupation";
-  const labelClassName = cn(
-    "text-sm text-gray-700",
-    shouldBeBold ? "font-bold" : "font-medium"
-  );
+  const labelClassName = "text-sm font-medium text-gray-700";
 
   if (type === "height") {
     return <HeightField value={value} onChange={onChange} required={required} error={error} />;
