@@ -1,3 +1,4 @@
+
 import React from "react";
 import HeightField from "./form-fields/HeightField";
 import CurrencyField from "./form-fields/CurrencyField";
@@ -46,6 +47,13 @@ const FormField = ({
     return (t as any)[key] || label;
   };
 
+  // Determine if the label should be bold based on the field type
+  const shouldBeBold = type === "employmentStatus" || label === "primaryOccupation";
+  const labelClassName = cn(
+    "text-sm text-gray-700",
+    shouldBeBold ? "font-bold" : "font-medium"
+  );
+
   if (type === "height") {
     return <HeightField value={value} onChange={onChange} required={required} error={error} />;
   }
@@ -61,7 +69,7 @@ const FormField = ({
   if (type === "yes_no") {
     return (
       <div className="relative space-y-2">
-        <Label className="text-sm font-medium text-gray-700">
+        <Label className={labelClassName}>
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
@@ -87,7 +95,7 @@ const FormField = ({
   if (type === "textarea") {
     return (
       <div className="relative space-y-2">
-        <Label className="text-sm font-medium text-gray-700">
+        <Label className={labelClassName}>
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
@@ -111,7 +119,7 @@ const FormField = ({
 
   return (
     <div className="relative space-y-2">
-      <Label className="text-sm font-medium text-gray-700">
+      <Label className={labelClassName}>
         {getTranslatedLabel(label)}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
