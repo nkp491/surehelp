@@ -1,3 +1,4 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -40,7 +41,7 @@ const EmploymentStatusCheckbox = ({
 
   return (
     <div className="space-y-4">
-      <Label className="text-base font-semibold">
+      <Label className="text-xs font-medium text-gray-700">
         {language === 'en' ? 'Employment Status' : 'Estado Laboral'}
       </Label>
       <div className="grid grid-cols-2 gap-4">
