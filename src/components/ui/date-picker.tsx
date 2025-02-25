@@ -79,6 +79,9 @@ export function DatePicker({
     }
   };
 
+  // Create a date object for the selected year and current month
+  const defaultMonth = new Date(year, new Date().getMonth());
+
   return (
     <div className="relative">
       <Input
@@ -126,7 +129,7 @@ export function DatePicker({
             }}
             disabled={(date) => maxDate ? date > maxDate : false}
             initialFocus
-            year={year}
+            defaultMonth={defaultMonth}
           />
         </PopoverContent>
       </Popover>
