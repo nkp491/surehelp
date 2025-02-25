@@ -19,7 +19,7 @@ const RegularFieldsSection = ({ fields, formData, setFormData, errors, submissio
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {fields.map((field) => (
         <DraggableFormField
           key={field.id}
