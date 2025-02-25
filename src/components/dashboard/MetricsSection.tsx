@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import MetricButtons from "@/components/MetricButtons";
 import { useMetrics } from "@/contexts/MetricsContext";
@@ -49,7 +50,7 @@ const MetricsSection = () => {
       }`}
     >
       <div className="py-2">
-        <div className="flex flex-col items-center gap-1">
+        <div className="flex items-center justify-between gap-1">
           <div className="flex">
             {(Object.keys(metrics) as MetricType[]).map((metric, index, array) => (
               <MetricButtons
