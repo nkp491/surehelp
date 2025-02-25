@@ -41,7 +41,7 @@ const EmploymentStatusCheckbox = ({
 
   return (
     <div className="space-y-4">
-      <Label className="text-xs font-medium text-gray-700">
+      <Label className="text-sm font-medium text-gray-700">
         {language === 'en' ? 'Employment Status' : 'Estado Laboral'}
       </Label>
       <div className="grid grid-cols-2 gap-4">
