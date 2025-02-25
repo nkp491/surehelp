@@ -129,7 +129,8 @@ export function DatePicker({
             }}
             disabled={(date) => maxDate ? date > maxDate : false}
             initialFocus
-            defaultMonth={defaultMonth}
+            month={defaultMonth}
+            onMonthChange={() => {}}
           />
         </PopoverContent>
       </Popover>
