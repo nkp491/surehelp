@@ -50,7 +50,7 @@ const MetricsSection = () => {
         isVisible ? 'translate-y-0' : 'translate-y-full opacity-0'
       }`}
     >
-      <Card className="py-3 mx-auto max-w-[1440px] backdrop-blur-sm bg-white/80 shadow-sm border border-gray-100">
+      <Card className="py-3 mx-auto max-w-[1440px] backdrop-blur-sm bg-white/80 shadow-sm border-none">
         <div className="flex flex-col items-center gap-2">
           <div className="flex items-center justify-center px-4">
             <div className="flex items-center gap-1">
