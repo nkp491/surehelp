@@ -1,3 +1,4 @@
+
 import { FormField } from "@/types/formTypes";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import PrimaryHealth from "./form/PrimaryHealth";
@@ -54,6 +55,7 @@ const FormSection = ({
     return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
   }
 
+  const isIncomeSection = section === "Primary Income Assessment";
   const isHouseholdSection = section === "Household Income";
   const isAgentSection = section === "Agent Use Only";
 
@@ -66,11 +68,25 @@ const FormSection = ({
       <div className="form-section-header">
         <SectionHeader section={section} onRemove={onRemove} />
       </div>
-      <div className="form-section-content">
+      <div className={`form-section-content ${isIncomeSection ? 'space-y-4' : 'space-y-3'}`}>
         {isHouseholdSection ? (
           <div className="form-group-horizontal">
             {nonAgentFields.map((field) => (
               <div key={field.id} className={field.id === "expenses" ? "col-span-2" : ""}>
+                <RegularFieldsSection
+                  fields={[field]}
+                  formData={formData}
+                  setFormData={setFormData}
+                  errors={errors}
+                  submissionId={submissionId}
+                />
+              </div>
+            ))}
+          </div>
+        ) : isIncomeSection ? (
+          <div className="grid grid-cols-1 gap-5">
+            {nonAgentFields.map((field) => (
+              <div key={field.id}>
                 <RegularFieldsSection
                   fields={[field]}
                   formData={formData}
