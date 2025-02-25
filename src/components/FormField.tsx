@@ -1,4 +1,3 @@
-
 import React from "react";
 import HeightField from "./form-fields/HeightField";
 import CurrencyField from "./form-fields/CurrencyField";
@@ -47,7 +46,7 @@ const FormField = ({
     return (t as any)[key] || label;
   };
 
-  const labelClassName = "text-sm font-medium text-gray-700";
+  const labelClassName = "text-sm font-medium text-gray-700 mt-4 mb-2";
 
   if (type === "height") {
     return <HeightField value={value} onChange={onChange} required={required} error={error} />;

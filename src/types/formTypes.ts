@@ -1,3 +1,4 @@
+
 export interface FormValues {
   name: string;
   dob: string;
@@ -21,6 +22,7 @@ export interface FormField {
   required?: boolean;
   placeholder?: string;
   options?: string[];
+  labelClassName?: string;
 }
 
 export interface FormSection {
