@@ -6,7 +6,6 @@ import { isAgentField } from "@/utils/fieldCategories";
 import SectionHeader from "./form/sections/SectionHeader";
 import RegularFieldsSection from "./form/sections/RegularFieldsSection";
 import AgentSection from "./form/sections/AgentSection";
-import { cn } from "@/lib/utils";
 
 interface FormSectionProps {
   section: string;
@@ -59,17 +58,13 @@ const FormSection = ({
   const isIncomeSection = section === "Primary Income Assessment";
   const isHouseholdSection = section === "Household Income";
   const isAgentSection = section === "Agent Use Only";
-  const isAssessmentNotes = section === "Assessment Notes";
 
   const shouldBeHorizontal = (fieldId: string) => {
     return ['premium', 'coverageAmount'].includes(fieldId);
   };
 
   return (
-    <div className={cn(
-      "form-section",
-      isAssessmentNotes ? "mt-8" : ""
-    )}>
+    <div className="form-section">
       <div className="form-section-header">
         <SectionHeader section={section} onRemove={onRemove} />
       </div>
