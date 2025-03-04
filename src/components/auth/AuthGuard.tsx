@@ -13,18 +13,21 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const location = useLocation();
   const currentPath = location.pathname;
 
-  // If the route is public, render children regardless of auth state
+  // For public routes, render children immediately without auth check
   if (isPublicRoute(currentPath)) {
+    console.log("Public route accessed, skipping auth check:", currentPath);
     return <>{children}</>;
   }
 
   // Show loading screen while authentication state is being determined
   if (isLoading) {
+    console.log("AuthGuard loading:", currentPath);
     return <LoadingScreen />;
   }
   
-  // We now rely on the useAuthState hook to handle redirects
-  // for non-public routes where the user is not authenticated
+  // If auth check complete and on a protected route, render children
+  // The useAuthState hook handles redirects for non-authenticated users
+  console.log("Auth check complete, rendering protected route:", currentPath, { isAuthenticated });
   return <>{children}</>;
 };
 

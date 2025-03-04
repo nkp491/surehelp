@@ -43,14 +43,15 @@ export const useAuthState = () => {
 
     const checkAuth = async () => {
       try {
-        // If we're on a public route, we don't need to check authentication
+        // If we're on a public route, skip authentication check and just set loading to false
         if (isPublicRoute(currentPath)) {
           if (mounted) {
             setIsLoading(false);
-            return;
           }
+          return;
         }
 
+        // For protected routes, check authentication status
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -61,6 +62,7 @@ export const useAuthState = () => {
             
             // Only navigate if we're not already on a public route
             if (!isPublicRoute(currentPath)) {
+              console.log("No session, redirecting to /auth", currentPath);
               navigate("/auth", { replace: true });
             }
           }

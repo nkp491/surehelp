@@ -6,7 +6,8 @@ export const publicRoutes = [
   '/auth',
   '/auth/terms',
   '/terms',
-  '/auth/callback'
+  '/auth/callback',
+  '/auth/*' // Add wildcard for all auth routes
 ];
 
 /**
@@ -18,8 +19,11 @@ export const isPublicRoute = (path: string): boolean => {
     if (route === path) return true;
     
     // Check if path starts with a public route pattern
-    if (route.endsWith('/*') && path.startsWith(route.slice(0, -2))) {
-      return true;
+    if (route.endsWith('/*')) {
+      const baseRoute = route.slice(0, -2);
+      if (path === baseRoute || path.startsWith(baseRoute + '/')) {
+        return true;
+      }
     }
     
     return false;

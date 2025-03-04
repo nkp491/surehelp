@@ -27,8 +27,14 @@ const AuthStateHandler = ({
     
     const checkSession = async () => {
       try {
+        // Skip auth check if not on auth routes
+        if (!currentPath.startsWith('/auth')) {
+          if (mounted) setIsInitializing(false);
+          return;
+        }
+
         const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Initial session check:", { session, error });
+        console.log("Auth page session check:", { session, error });
         
         const hash = window.location.hash;
         if (hash && hash.includes('type=recovery')) {
@@ -56,16 +62,12 @@ const AuthStateHandler = ({
     };
     
     // Only check session if we're on an auth page
-    if (currentPath.startsWith('/auth')) {
-      checkSession();
-    } else if (mounted) {
-      setIsInitializing(false);
-    }
+    checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
       
-      console.log("Auth state change:", { event, session });
+      console.log("Auth state change in AuthStateHandler:", { event, session, currentPath });
       
       switch (event) {
         case "SIGNED_IN":
@@ -76,6 +78,7 @@ const AuthStateHandler = ({
           break;
         case "SIGNED_OUT":
           setErrorMessage("");
+          // Don't redirect if already on an auth page
           break;
         case "PASSWORD_RECOVERY":
           setView('update_password');
