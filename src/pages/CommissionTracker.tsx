@@ -27,19 +27,18 @@ const CommissionTracker = () => {
         <Collapsible
           open={isFeatureOpen}
           onOpenChange={setIsFeatureOpen}
-          className="max-w-2xl mx-auto"
         >
-          <Alert variant="default" className="bg-gradient-to-r from-[#FEF7CD] to-[#FDE1D3] border-[#F97316]/20">
+          <Alert variant="default" className="bg-gradient-to-r from-[#FEF7CD] to-[#FDE1D3] border-[#F97316]/20 transform transition-all duration-300 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Sparkle className="h-5 w-5 text-[#F97316] animate-pulse" />
                 <AlertTitle className="font-semibold text-[#F97316]">
                   <span className="mr-1">Coming Soon:</span>
-                  <span>Advanced Commission Tracking</span>
+                  <span className="animate-pulse">Advanced Commission Tracking</span>
                 </AlertTitle>
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0 hover:bg-[#F97316]/10">
+                <Button variant="ghost" size="sm" className="w-9 p-0 hover:bg-[#F97316]/10 transition-all duration-200">
                   {isFeatureOpen ? (
                     <ChevronUp className="h-4 w-4 text-[#F97316]" />
                   ) : (
@@ -88,19 +87,18 @@ const CommissionTracker = () => {
         <Collapsible
           open={isReportingOpen}
           onOpenChange={setIsReportingOpen}
-          className="max-w-2xl mx-auto"
         >
-          <Alert variant="default" className="bg-gradient-to-r from-[#E5DEFF] to-[#D3E4FD] border-[#8B5CF6]/20">
+          <Alert variant="default" className="bg-gradient-to-r from-[#E5DEFF] to-[#D3E4FD] border-[#8B5CF6]/20 transform transition-all duration-300 hover:shadow-lg">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Rocket className="h-5 w-5 text-[#8B5CF6] animate-pulse" />
                 <AlertTitle className="font-semibold text-[#8B5CF6]">
                   <span className="mr-1">Coming Soon:</span>
-                  <span>Advanced Reporting</span>
+                  <span className="animate-pulse">Advanced Reporting</span>
                 </AlertTitle>
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0 hover:bg-[#8B5CF6]/10">
+                <Button variant="ghost" size="sm" className="w-9 p-0 hover:bg-[#8B5CF6]/10 transition-all duration-200">
                   {isReportingOpen ? (
                     <ChevronUp className="h-4 w-4 text-[#8B5CF6]" />
                   ) : (
