@@ -21,6 +21,8 @@ const AuthStateHandler = ({
   const { toast } = useToast();
 
   useEffect(() => {
+    let mounted = true;
+    
     const checkSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession();
@@ -29,13 +31,14 @@ const AuthStateHandler = ({
         const hash = window.location.hash;
         if (hash && hash.includes('type=recovery')) {
           setView('update_password');
-          setIsInitializing(false);
+          if (mounted) setIsInitializing(false);
           return;
         }
         
         if (session) {
           const returnUrl = new URLSearchParams(location.search).get('returnUrl');
           navigate(returnUrl || "/assessment", { replace: true });
+          return;
         }
         
         if (error) {
@@ -43,16 +46,18 @@ const AuthStateHandler = ({
           setErrorMessage(getErrorMessage(error));
         }
         
-        setIsInitializing(false);
+        if (mounted) setIsInitializing(false);
       } catch (error) {
         console.error("Auth error:", error);
-        setIsInitializing(false);
+        if (mounted) setIsInitializing(false);
       }
     };
     
     checkSession();
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      if (!mounted) return;
+      
       console.log("Auth state change:", { event, session });
       
       switch (event) {
@@ -103,7 +108,10 @@ const AuthStateHandler = ({
       window.history.replaceState({}, "", url.toString());
     }
 
-    return () => subscription.unsubscribe();
+    return () => {
+      mounted = false;
+      subscription.unsubscribe();
+    };
   }, [navigate, toast, location, setErrorMessage, setView, setIsInitializing]);
 
   return null;

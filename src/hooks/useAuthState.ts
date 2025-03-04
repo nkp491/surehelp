@@ -1,12 +1,15 @@
+
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useAuthState = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const clearAuthData = () => {
     Object.keys(localStorage).forEach(key => {
@@ -19,12 +22,18 @@ export const useAuthState = () => {
   const handleAuthError = async () => {
     clearAuthData();
     await supabase.auth.signOut();
+    setIsAuthenticated(false);
+    
     toast({
       title: "Session Expired",
       description: "Please sign in again",
       variant: "destructive",
     });
-    navigate("/auth", { replace: true });
+    
+    // Only navigate if we're not already on an auth page
+    if (!location.pathname.startsWith('/auth')) {
+      navigate("/auth", { replace: true });
+    }
   };
 
   useEffect(() => {
@@ -37,8 +46,13 @@ export const useAuthState = () => {
         if (!session) {
           if (mounted) {
             clearAuthData();
+            setIsAuthenticated(false);
             setIsLoading(false);
-            navigate("/auth", { replace: true });
+            
+            // Only navigate if we're not already on an auth page
+            if (!location.pathname.startsWith('/auth')) {
+              navigate("/auth", { replace: true });
+            }
           }
           return;
         }
@@ -49,17 +63,22 @@ export const useAuthState = () => {
             const { error: refreshError } = await supabase.auth.refreshSession();
             if (refreshError) {
               console.error("Session refresh error:", refreshError);
-              await handleAuthError();
+              if (mounted) {
+                await handleAuthError();
+              }
               return;
             }
           } catch (refreshError) {
             console.error("Session refresh error:", refreshError);
-            await handleAuthError();
+            if (mounted) {
+              await handleAuthError();
+            }
             return;
           }
         }
 
         if (mounted) {
+          setIsAuthenticated(true);
           setIsLoading(false);
         }
       } catch (error) {
@@ -79,8 +98,14 @@ export const useAuthState = () => {
       
       if (event === 'SIGNED_OUT') {
         clearAuthData();
-        navigate("/auth", { replace: true });
+        setIsAuthenticated(false);
+        
+        // Only navigate if we're not already on an auth page
+        if (!location.pathname.startsWith('/auth')) {
+          navigate("/auth", { replace: true });
+        }
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setIsAuthenticated(true);
         setIsLoading(false);
       }
     });
@@ -89,7 +114,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, location.pathname]);
 
-  return { isLoading };
+  return { isLoading, isAuthenticated };
 };

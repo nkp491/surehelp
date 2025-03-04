@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AuthRoutes } from "@/components/auth/AuthRoutes";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import MainContent from "@/components/layout/MainContent";
+import Index from "@/pages/Index";
 
 function App() {
   return (
@@ -14,8 +15,11 @@ function App() {
       <LanguageProvider>
         <Router>
           <Routes>
-            {/* Auth routes rendered without SidebarProvider */}
+            {/* Auth routes (no AuthGuard here to prevent infinite redirects) */}
             <Route path="/auth/*" element={<AuthRoutes />} />
+            
+            {/* Root route with Index page, already has AuthGuard inside */}
+            <Route path="/" element={<Index />} />
             
             {/* All other routes rendered with SidebarProvider */}
             <Route path="/*" element={<MainContent />} />
