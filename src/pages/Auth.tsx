@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -195,13 +196,14 @@ const Auth = () => {
             providers={[]}
             redirectTo={getCallbackUrl()}
             showLinks={true}
-            onSubmit={(formData) => {
-              if (view === "sign_up" && !termsAccepted) {
-                setShowTermsError(true);
-                return Promise.reject(new Error("You must accept the Terms and Conditions"));
+            onlyThirdPartyProviders={false}
+            magicLink={false}
+            localization={{
+              variables: {
+                sign_up: {
+                  button_label: termsAccepted ? "Sign up" : "Accept Terms & Sign up"
+                }
               }
-              
-              return Promise.resolve();
             }}
           />
           
