@@ -1,5 +1,5 @@
 
-import { AlertCircle, ChevronUp, ChevronDown, DollarSign } from "lucide-react";
+import { ChevronUp, ChevronDown, Sparkle, Rocket } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { 
@@ -8,6 +8,7 @@ import {
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const CommissionTracker = () => {
   const [isFeatureOpen, setIsFeatureOpen] = useState(true);
@@ -28,34 +29,49 @@ const CommissionTracker = () => {
           onOpenChange={setIsFeatureOpen}
           className="max-w-2xl mx-auto"
         >
-          <Alert variant="default">
+          <Alert variant="default" className="bg-gradient-to-r from-[#FEF7CD] to-[#FDE1D3] border-[#F97316]/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <AlertCircle className="h-4 w-4" />
-                <AlertTitle>Coming Soon: Advanced Commission Tracking</AlertTitle>
+                <Sparkle className="h-5 w-5 text-[#F97316] animate-pulse" />
+                <AlertTitle className="font-semibold text-[#F97316]">
+                  <span className="mr-1">Coming Soon:</span>
+                  <span>Advanced Commission Tracking</span>
+                </AlertTitle>
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0">
+                <Button variant="ghost" size="sm" className="w-9 p-0 hover:bg-[#F97316]/10">
                   {isFeatureOpen ? (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4 text-[#F97316]" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 text-[#F97316]" />
                   )}
                   <span className="sr-only">Toggle content</span>
                 </Button>
               </CollapsibleTrigger>
             </div>
-            <CollapsibleContent>
+            <CollapsibleContent className="animate-accordion-down">
               <AlertDescription className="mt-4">
-                <p className="mb-4">
+                <p className="mb-4 text-[#9E5B00]">
                   We're building powerful commission tracking features to help you manage and forecast your earnings. Coming soon:
                 </p>
-                <ul className="list-disc list-inside mb-4 space-y-2">
-                  <li>Real-time commission calculations</li>
-                  <li>Commission forecasting and projections</li>
-                  <li>Split commission management</li>
-                  <li>Historical commission analytics</li>
-                  <li>Commission payment tracking</li>
+                <ul className="mb-4 space-y-2">
+                  {[
+                    "Real-time commission calculations",
+                    "Commission forecasting and projections",
+                    "Split commission management",
+                    "Historical commission analytics",
+                    "Commission payment tracking"
+                  ].map((item, index) => (
+                    <li 
+                      key={index} 
+                      className={cn(
+                        "pl-6 relative text-[#9E5B00] transition-all duration-200 hover:translate-x-1",
+                        "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-2 before:w-2 before:rounded-full before:bg-[#F97316]"
+                      )}
+                    >
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </AlertDescription>
             </CollapsibleContent>
@@ -74,34 +90,49 @@ const CommissionTracker = () => {
           onOpenChange={setIsReportingOpen}
           className="max-w-2xl mx-auto"
         >
-          <Alert variant="default">
+          <Alert variant="default" className="bg-gradient-to-r from-[#E5DEFF] to-[#D3E4FD] border-[#8B5CF6]/20">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <DollarSign className="h-4 w-4" />
-                <AlertTitle>Coming Soon: Advanced Reporting</AlertTitle>
+                <Rocket className="h-5 w-5 text-[#8B5CF6] animate-pulse" />
+                <AlertTitle className="font-semibold text-[#8B5CF6]">
+                  <span className="mr-1">Coming Soon:</span>
+                  <span>Advanced Reporting</span>
+                </AlertTitle>
               </div>
               <CollapsibleTrigger asChild>
-                <Button variant="ghost" size="sm" className="w-9 p-0">
+                <Button variant="ghost" size="sm" className="w-9 p-0 hover:bg-[#8B5CF6]/10">
                   {isReportingOpen ? (
-                    <ChevronUp className="h-4 w-4" />
+                    <ChevronUp className="h-4 w-4 text-[#8B5CF6]" />
                   ) : (
-                    <ChevronDown className="h-4 w-4" />
+                    <ChevronDown className="h-4 w-4 text-[#8B5CF6]" />
                   )}
                   <span className="sr-only">Toggle content</span>
                 </Button>
               </CollapsibleTrigger>
             </div>
-            <CollapsibleContent>
+            <CollapsibleContent className="animate-accordion-down">
               <AlertDescription className="mt-4">
-                <p className="mb-4">
+                <p className="mb-4 text-[#5B399B]">
                   Generate comprehensive commission reports with advanced features including:
                 </p>
-                <ul className="list-disc list-inside mb-4 space-y-2">
-                  <li>Customizable report templates</li>
-                  <li>Commission breakdown by product/service</li>
-                  <li>Team commission reports</li>
-                  <li>Export options (PDF, Excel, CSV)</li>
-                  <li>Automated report scheduling</li>
+                <ul className="mb-4 space-y-2">
+                  {[
+                    "Customizable report templates",
+                    "Commission breakdown by product/service",
+                    "Team commission reports",
+                    "Export options (PDF, Excel, CSV)",
+                    "Automated report scheduling"
+                  ].map((item, index) => (
+                    <li 
+                      key={index} 
+                      className={cn(
+                        "pl-6 relative text-[#5B399B] transition-all duration-200 hover:translate-x-1",
+                        "before:absolute before:left-0 before:top-1/2 before:-translate-y-1/2 before:h-2 before:w-2 before:rounded-full before:bg-[#8B5CF6]"
+                      )}
+                    >
+                      {item}
+                    </li>
+                  ))}
                 </ul>
               </AlertDescription>
             </CollapsibleContent>
@@ -112,4 +143,4 @@ const CommissionTracker = () => {
   );
 };
 
-export default CommissionTracker; 
+export default CommissionTracker;
