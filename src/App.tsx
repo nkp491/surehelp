@@ -8,6 +8,7 @@ import { AuthRoutes } from "@/components/auth/AuthRoutes";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import MainContent from "@/components/layout/MainContent";
 import Index from "@/pages/Index";
+import TermsOfUse from "@/pages/marketing/TermsOfUse";
 
 function App() {
   return (
@@ -15,7 +16,10 @@ function App() {
       <LanguageProvider>
         <Router>
           <Routes>
-            {/* Auth routes (no AuthGuard here to prevent infinite redirects) */}
+            {/* Public routes - no authentication required */}
+            <Route path="/terms" element={<TermsOfUse />} />
+            
+            {/* Auth routes - no authentication required */}
             <Route path="/auth/*" element={<AuthRoutes />} />
             
             {/* Root route with Index page, already has AuthGuard inside */}

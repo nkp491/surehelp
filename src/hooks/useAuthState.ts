@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { isPublicRoute } from "@/utils/routeConfig";
 
 export const useAuthState = () => {
   const navigate = useNavigate();
@@ -10,6 +11,7 @@ export const useAuthState = () => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const currentPath = location.pathname;
 
   const clearAuthData = () => {
     Object.keys(localStorage).forEach(key => {
@@ -30,8 +32,8 @@ export const useAuthState = () => {
       variant: "destructive",
     });
     
-    // Only navigate if we're not already on an auth page
-    if (!location.pathname.startsWith('/auth')) {
+    // Only navigate if we're not already on a public route
+    if (!isPublicRoute(currentPath)) {
       navigate("/auth", { replace: true });
     }
   };
@@ -41,6 +43,14 @@ export const useAuthState = () => {
 
     const checkAuth = async () => {
       try {
+        // If we're on a public route, we don't need to check authentication
+        if (isPublicRoute(currentPath)) {
+          if (mounted) {
+            setIsLoading(false);
+            return;
+          }
+        }
+
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -49,8 +59,8 @@ export const useAuthState = () => {
             setIsAuthenticated(false);
             setIsLoading(false);
             
-            // Only navigate if we're not already on an auth page
-            if (!location.pathname.startsWith('/auth')) {
+            // Only navigate if we're not already on a public route
+            if (!isPublicRoute(currentPath)) {
               navigate("/auth", { replace: true });
             }
           }
@@ -100,8 +110,8 @@ export const useAuthState = () => {
         clearAuthData();
         setIsAuthenticated(false);
         
-        // Only navigate if we're not already on an auth page
-        if (!location.pathname.startsWith('/auth')) {
+        // Only navigate if we're not already on a public route
+        if (!isPublicRoute(currentPath)) {
           navigate("/auth", { replace: true });
         }
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
@@ -114,7 +124,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast, location.pathname]);
+  }, [navigate, toast, currentPath]);
 
   return { isLoading, isAuthenticated };
 };

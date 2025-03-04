@@ -4,6 +4,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { getErrorMessage } from "@/utils/authErrors";
+import { isPublicRoute } from "@/utils/routeConfig";
 
 interface AuthStateHandlerProps {
   setErrorMessage: (message: string) => void;
@@ -19,6 +20,7 @@ const AuthStateHandler = ({
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const currentPath = location.pathname;
 
   useEffect(() => {
     let mounted = true;
@@ -53,7 +55,12 @@ const AuthStateHandler = ({
       }
     };
     
-    checkSession();
+    // Only check session if we're on an auth page
+    if (currentPath.startsWith('/auth')) {
+      checkSession();
+    } else if (mounted) {
+      setIsInitializing(false);
+    }
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
@@ -112,7 +119,7 @@ const AuthStateHandler = ({
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast, location, setErrorMessage, setView, setIsInitializing]);
+  }, [navigate, toast, location, setErrorMessage, setView, setIsInitializing, currentPath]);
 
   return null;
 };
