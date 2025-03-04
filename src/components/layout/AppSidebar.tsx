@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { LayoutDashboard, ClipboardList, Users2, UserCircle, DollarSign, BookOpen } from "lucide-react";
 import {
@@ -122,7 +123,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="h-12 px-4 text-lg font-bold text-[#8B5CF6] bg-[#F5F3FF] rounded-md my-2">Agent Hub</SidebarGroupLabel>
+          <SidebarGroupLabel className="h-12 px-4 text-lg font-bold">Agent Hub</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {navigationItems.map((item) => (
