@@ -7,8 +7,7 @@ interface ProfileHeaderProps {
 
 const ProfileHeader = ({ onSignOut }: ProfileHeaderProps) => {
   return (
-    <div className="flex justify-between items-center py-6 px-8">
-      <h1 className="text-3xl font-bold text-[#2A6F97] tracking-tight">Profile Settings</h1>
+    <div className="flex justify-end items-center py-6 px-8">
       <Button 
         variant="outline" 
         onClick={onSignOut}
