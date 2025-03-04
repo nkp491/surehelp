@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { FormSubmission } from "@/types/form";
 import SubmissionsTable from "@/components/SubmissionsTable";
@@ -25,7 +24,6 @@ const SubmittedForms = () => {
 
       if (error) throw error;
 
-      // Transform the data to match FormSubmission type
       const transformedData = data.map(submission => ({
         ...(JSON.parse(submission.data as string) as Omit<FormSubmission, 'timestamp' | 'outcome'>),
         timestamp: submission.timestamp,
@@ -81,15 +79,14 @@ const SubmittedForms = () => {
   };
 
   return (
-    <div className="container mx-auto px-4 sm:px-6 py-4">
-      <div className="space-y-6 sm:space-y-8">
-        <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
-          <div className="max-w-3xl">
-            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Client Book of Business</h2>
-            <p className="text-sm sm:text-base text-muted-foreground mt-1">View and manage all client submissions</p>
-          </div>
+    <div className="space-y-6 py-6 sm:py-8 md:py-10">
+      <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
+        <div className="max-w-3xl">
+          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900">Client Book of Business</h2>
+          <p className="text-sm sm:text-base text-muted-foreground mt-1">View and manage all client submissions</p>
         </div>
-
+      </div>
+      <div className="space-y-6 sm:space-y-8">
         <Card className="w-full p-4 sm:p-6 shadow-sm bg-[#F1F1F1]">
           <div className="space-y-6">
             {editingSubmission && (
