@@ -9,6 +9,7 @@ import AuthLayout from "@/components/auth/AuthLayout";
 import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
 import { useToast } from "@/hooks/use-toast";
+import TermsCheckbox from "@/components/auth/TermsCheckbox";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -17,6 +18,8 @@ const Auth = () => {
   const [errorMessage, setErrorMessage] = useState("");
   const [view, setView] = useState<"sign_in" | "sign_up" | "update_password">("sign_up");
   const [isInitializing, setIsInitializing] = useState(true);
+  const [termsAccepted, setTermsAccepted] = useState(false);
+  const [showTermsError, setShowTermsError] = useState(false);
 
   const getSiteUrl = () => {
     try {
@@ -44,6 +47,36 @@ const Auth = () => {
       console.error("Error constructing callback URL:", error);
       return `${window.location.origin}/auth/callback`;
     }
+  };
+
+  const handleSignUp = async (credentials: { email: string; password: string }) => {
+    if (view === "sign_up" && !termsAccepted) {
+      setShowTermsError(true);
+      return { error: new Error("You must accept the Terms and Conditions to sign up") };
+    }
+    
+    setShowTermsError(false);
+    
+    const { data, error } = await supabase.auth.signUp({
+      email: credentials.email,
+      password: credentials.password,
+      options: {
+        emailRedirectTo: getCallbackUrl(),
+        data: {
+          terms_accepted: termsAccepted ? new Date().toISOString() : null
+        }
+      }
+    });
+    
+    if (!error && data.user) {
+      toast({
+        title: "Account created",
+        description: "Your account has been created successfully.",
+        duration: 5000,
+      });
+    }
+    
+    return { data, error };
   };
 
   useEffect(() => {
@@ -133,6 +166,10 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast, location]);
 
+  useEffect(() => {
+    setShowTermsError(false);
+  }, [view]);
+
   if (isInitializing) {
     return <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -158,7 +195,32 @@ const Auth = () => {
             providers={[]}
             redirectTo={getCallbackUrl()}
             showLinks={true}
+            onSubmit={(formData) => {
+              if (view === "sign_up" && !termsAccepted) {
+                setShowTermsError(true);
+                return Promise.reject(new Error("You must accept the Terms and Conditions"));
+              }
+              
+              return Promise.resolve();
+            }}
           />
+          
+          {view === "sign_up" && (
+            <>
+              <TermsCheckbox 
+                isChecked={termsAccepted} 
+                onCheckedChange={setTermsAccepted} 
+              />
+              
+              {showTermsError && (
+                <Alert variant="destructive" className="mt-2">
+                  <AlertDescription>
+                    You must accept the Terms and Conditions to sign up
+                  </AlertDescription>
+                </Alert>
+              )}
+            </>
+          )}
         </AuthFormContainer>
       </div>
     </AuthLayout>
