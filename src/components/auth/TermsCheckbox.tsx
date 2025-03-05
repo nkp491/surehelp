@@ -1,5 +1,4 @@
 
-import { useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
@@ -25,7 +24,7 @@ const TermsCheckbox = ({ isChecked, onCheckedChange }: TermsCheckboxProps) => {
         >
           I agree to the{" "}
           <Link 
-            to="/terms" 
+            to="/auth/terms" 
             className="text-blue-600 hover:text-blue-800 hover:underline"
             target="_blank"
             rel="noopener noreferrer"
