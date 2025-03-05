@@ -1,50 +1,43 @@
 
-import { Button } from "@/components/ui/button";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 
 interface AuthHeaderProps {
   view: "sign_in" | "sign_up" | "update_password";
-  onViewChange: (view: "sign_in" | "sign_up" | "update_password") => void;
+  onViewChange: (value: "sign_in" | "sign_up" | "update_password") => void;
 }
 
 const AuthHeader = ({ view, onViewChange }: AuthHeaderProps) => {
-  let title = "Welcome back";
-  let description = "Enter your credentials to access your account";
-  
-  if (view === "sign_up") {
-    title = "Create an account";
-    description = "Enter your details to get started";
-  } else if (view === "update_password") {
-    title = "Reset your password";
-    description = "Enter a new secure password for your account";
-  }
-  
   return (
-    <div className="space-y-2 text-center">
-      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
-      <p className="text-sm text-muted-foreground">{description}</p>
-      
-      {view !== "update_password" && (
-        <div className="flex justify-center gap-2 pt-2">
-          <Button
-            variant={view === "sign_in" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onViewChange("sign_in")}
-            className="min-w-24"
-          >
-            Sign In
-          </Button>
-          <Button
-            variant={view === "sign_up" ? "default" : "outline"}
-            size="sm"
-            onClick={() => onViewChange("sign_up")}
-            className="min-w-24"
-          >
-            Sign Up
-          </Button>
+    <div className="flex flex-col items-center space-y-2">
+      <img 
+        src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png" 
+        alt="Logo" 
+        className="h-16 object-contain mb-4"
+      />
+      {view === "update_password" ? (
+        <div className="text-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-900">Reset Password</h2>
+          <p className="text-lg text-gray-600">Enter your new password below</p>
         </div>
+      ) : (
+        <Tabs defaultValue={view} className="w-full" onValueChange={(value) => onViewChange(value as "sign_in" | "sign_up")}>
+          <TabsList className="grid w-full grid-cols-2 mb-6">
+            <TabsTrigger value="sign_up">Sign Up</TabsTrigger>
+            <TabsTrigger value="sign_in">Sign In</TabsTrigger>
+          </TabsList>
+          <TabsContent value="sign_up">
+            <h2 className="text-2xl font-bold text-gray-900 text-center">Create an account</h2>
+            <p className="text-lg text-gray-600 text-center">Supercharge your process!</p>
+          </TabsContent>
+          <TabsContent value="sign_in">
+            <h2 className="text-2xl font-bold text-gray-900 text-center">Welcome back</h2>
+            <p className="text-lg text-gray-600 text-center">Sign in to your account</p>
+          </TabsContent>
+        </Tabs>
       )}
     </div>
   );
 };
 
 export default AuthHeader;
+

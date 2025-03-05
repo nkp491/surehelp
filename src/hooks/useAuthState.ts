@@ -1,17 +1,12 @@
-
 import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { isPublicRoute } from "@/utils/routeConfig";
 
 export const useAuthState = () => {
   const navigate = useNavigate();
-  const location = useLocation();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
-  const currentPath = location.pathname;
 
   const clearAuthData = () => {
     Object.keys(localStorage).forEach(key => {
@@ -24,18 +19,12 @@ export const useAuthState = () => {
   const handleAuthError = async () => {
     clearAuthData();
     await supabase.auth.signOut();
-    setIsAuthenticated(false);
-    
     toast({
       title: "Session Expired",
       description: "Please sign in again",
       variant: "destructive",
     });
-    
-    // Only navigate if we're not already on a public route
-    if (!isPublicRoute(currentPath)) {
-      navigate("/auth", { replace: true });
-    }
+    navigate("/auth", { replace: true });
   };
 
   useEffect(() => {
@@ -43,62 +32,34 @@ export const useAuthState = () => {
 
     const checkAuth = async () => {
       try {
-        // If we're on a public route, skip authentication check and just set loading to false
-        if (isPublicRoute(currentPath)) {
-          console.log("Public route detected, skipping auth check:", currentPath);
-          if (mounted) {
-            setIsLoading(false);
-          }
-          return;
-        }
-
-        console.log("Protected route detected, checking auth:", currentPath);
-        
-        // For protected routes, check authentication status
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
-          console.log("No active session found for protected route");
           if (mounted) {
             clearAuthData();
-            setIsAuthenticated(false);
             setIsLoading(false);
-            
-            // Only navigate if we're not already on a public route
-            if (!isPublicRoute(currentPath)) {
-              console.log("Redirecting to /auth from:", currentPath);
-              navigate("/auth", { replace: true });
-            }
+            navigate("/auth", { replace: true });
           }
           return;
         }
 
-        console.log("Session found, attempting to refresh");
-        
         // Only try to refresh if we have a session
         if (session) {
           try {
             const { error: refreshError } = await supabase.auth.refreshSession();
             if (refreshError) {
               console.error("Session refresh error:", refreshError);
-              if (mounted) {
-                await handleAuthError();
-              }
+              await handleAuthError();
               return;
             }
           } catch (refreshError) {
             console.error("Session refresh error:", refreshError);
-            if (mounted) {
-              await handleAuthError();
-            }
+            await handleAuthError();
             return;
           }
         }
 
-        console.log("Authentication successful for protected route");
-        
         if (mounted) {
-          setIsAuthenticated(true);
           setIsLoading(false);
         }
       } catch (error) {
@@ -118,14 +79,8 @@ export const useAuthState = () => {
       
       if (event === 'SIGNED_OUT') {
         clearAuthData();
-        setIsAuthenticated(false);
-        
-        // Only navigate if we're not already on a public route
-        if (!isPublicRoute(currentPath)) {
-          navigate("/auth", { replace: true });
-        }
+        navigate("/auth", { replace: true });
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(true);
         setIsLoading(false);
       }
     });
@@ -134,7 +89,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast, currentPath]);
+  }, [navigate, toast]);
 
-  return { isLoading, isAuthenticated };
+  return { isLoading };
 };
