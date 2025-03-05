@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+
+import { useEffect, useState, useCallback } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -20,6 +21,7 @@ const Auth = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsError, setShowTermsError] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getSiteUrl = () => {
     try {
@@ -49,9 +51,38 @@ const Auth = () => {
     }
   };
 
+  // Intercept the form submission to enforce terms acceptance
+  const handleFormSubmit = useCallback(async (event: Event) => {
+    try {
+      const form = event.target as HTMLFormElement;
+      
+      // Only intercept sign up submissions
+      if (view !== "sign_up") return;
+      
+      // Check if terms are accepted
+      if (!termsAccepted) {
+        event.preventDefault();
+        event.stopPropagation();
+        setShowTermsError(true);
+        setIsSubmitting(false);
+        return false;
+      }
+      
+      setShowTermsError(false);
+      return true;
+    } catch (error) {
+      console.error("Form intercept error:", error);
+      return true;
+    }
+  }, [view, termsAccepted]);
+
+  // Custom sign up handler that enforces terms acceptance
   const handleSignUp = async (credentials: { email: string; password: string }) => {
+    setIsSubmitting(true);
+    
     if (view === "sign_up" && !termsAccepted) {
       setShowTermsError(true);
+      setIsSubmitting(false);
       return { error: new Error("You must accept the Terms and Conditions to sign up") };
     }
     
@@ -67,6 +98,8 @@ const Auth = () => {
         }
       }
     });
+    
+    setIsSubmitting(false);
     
     if (!error && data.user) {
       toast({
@@ -166,6 +199,41 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast, location]);
 
+  // Attach event listener to forms when they're created by Supabase Auth UI
+  useEffect(() => {
+    const attachFormListeners = () => {
+      const signUpForm = document.querySelector('form[data-supabase-auth-view="sign_up"]');
+      if (signUpForm) {
+        console.log("Attaching form submission listener to sign up form");
+        signUpForm.addEventListener('submit', (e) => {
+          if (!termsAccepted) {
+            e.preventDefault();
+            e.stopPropagation();
+            setShowTermsError(true);
+            return false;
+          }
+          setShowTermsError(false);
+          return true;
+        });
+      }
+    };
+
+    // Allow time for Supabase Auth UI to render the form
+    const timer = setTimeout(attachFormListeners, 500);
+    
+    // Re-attach listeners when view changes
+    const observer = new MutationObserver(() => {
+      attachFormListeners();
+    });
+    
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    return () => {
+      clearTimeout(timer);
+      observer.disconnect();
+    };
+  }, [view, termsAccepted]);
+
   useEffect(() => {
     setShowTermsError(false);
   }, [view]);
@@ -195,13 +263,13 @@ const Auth = () => {
             providers={[]}
             redirectTo={getCallbackUrl()}
             showLinks={true}
-            onSubmit={(formData) => {
-              if (view === "sign_up" && !termsAccepted) {
-                setShowTermsError(true);
-                return Promise.reject(new Error("You must accept the Terms and Conditions"));
+            onSubmit={handleFormSubmit}
+            localization={{
+              variables: {
+                sign_up: {
+                  button_label: termsAccepted ? "Sign up" : "Accept terms to sign up"
+                }
               }
-              
-              return Promise.resolve();
             }}
           />
           

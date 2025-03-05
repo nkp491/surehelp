@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -7,6 +8,7 @@ export const useAuthState = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const clearAuthData = () => {
     Object.keys(localStorage).forEach(key => {
@@ -24,6 +26,7 @@ export const useAuthState = () => {
       description: "Please sign in again",
       variant: "destructive",
     });
+    setIsAuthenticated(false);
     navigate("/auth", { replace: true });
   };
 
@@ -37,8 +40,8 @@ export const useAuthState = () => {
         if (!session) {
           if (mounted) {
             clearAuthData();
+            setIsAuthenticated(false);
             setIsLoading(false);
-            navigate("/auth", { replace: true });
           }
           return;
         }
@@ -60,6 +63,7 @@ export const useAuthState = () => {
         }
 
         if (mounted) {
+          setIsAuthenticated(true);
           setIsLoading(false);
         }
       } catch (error) {
@@ -79,8 +83,10 @@ export const useAuthState = () => {
       
       if (event === 'SIGNED_OUT') {
         clearAuthData();
+        setIsAuthenticated(false);
         navigate("/auth", { replace: true });
       } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+        setIsAuthenticated(true);
         setIsLoading(false);
       }
     });
@@ -91,5 +97,5 @@ export const useAuthState = () => {
     };
   }, [navigate, toast]);
 
-  return { isLoading };
+  return { isLoading, isAuthenticated };
 };
