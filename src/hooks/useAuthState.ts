@@ -45,16 +45,20 @@ export const useAuthState = () => {
       try {
         // If we're on a public route, skip authentication check and just set loading to false
         if (isPublicRoute(currentPath)) {
+          console.log("Public route detected, skipping auth check:", currentPath);
           if (mounted) {
             setIsLoading(false);
           }
           return;
         }
 
+        console.log("Protected route detected, checking auth:", currentPath);
+        
         // For protected routes, check authentication status
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
+          console.log("No active session found for protected route");
           if (mounted) {
             clearAuthData();
             setIsAuthenticated(false);
@@ -62,13 +66,15 @@ export const useAuthState = () => {
             
             // Only navigate if we're not already on a public route
             if (!isPublicRoute(currentPath)) {
-              console.log("No session, redirecting to /auth", currentPath);
+              console.log("Redirecting to /auth from:", currentPath);
               navigate("/auth", { replace: true });
             }
           }
           return;
         }
 
+        console.log("Session found, attempting to refresh");
+        
         // Only try to refresh if we have a session
         if (session) {
           try {
@@ -89,6 +95,8 @@ export const useAuthState = () => {
           }
         }
 
+        console.log("Authentication successful for protected route");
+        
         if (mounted) {
           setIsAuthenticated(true);
           setIsLoading(false);

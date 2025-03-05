@@ -33,15 +33,16 @@ const AuthStateHandler = ({
           return;
         }
 
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Auth page session check:", { session, error });
-        
         const hash = window.location.hash;
         if (hash && hash.includes('type=recovery')) {
           setView('update_password');
           if (mounted) setIsInitializing(false);
           return;
         }
+
+        // Only check session if we're on an auth page (already verified above)
+        const { data: { session }, error } = await supabase.auth.getSession();
+        console.log("Auth page session check:", { session, error });
         
         if (session) {
           const returnUrl = new URLSearchParams(location.search).get('returnUrl');
