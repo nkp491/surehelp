@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -210,6 +211,14 @@ const Auth = () => {
           return true;
         });
       }
+      
+      // Find and modify the sign up button
+      const signUpButton = document.querySelector('form[data-supabase-auth-view="sign_up"] button[type="submit"]');
+      if (signUpButton && !termsAccepted) {
+        signUpButton.setAttribute('disabled', !termsAccepted ? 'true' : 'false');
+      } else if (signUpButton) {
+        signUpButton.removeAttribute('disabled');
+      }
     };
 
     const timer = setTimeout(attachFormListeners, 500);
@@ -236,6 +245,35 @@ const Auth = () => {
     </div>;
   }
 
+  // Get a customized appearance config based on terms acceptance
+  const getCustomAppearance = () => {
+    const baseAppearance = getAuthFormAppearance();
+    
+    // Modify the button styling based on terms acceptance
+    if (view === "sign_up") {
+      return {
+        ...baseAppearance,
+        style: {
+          ...baseAppearance.style,
+          button: {
+            ...baseAppearance.style.button,
+            opacity: termsAccepted ? '1' : '0.6',
+            cursor: termsAccepted ? 'pointer' : 'not-allowed',
+          }
+        },
+        className: {
+          ...baseAppearance.className,
+          button: `${baseAppearance.className.button} ${!termsAccepted ? 'pointer-events-none' : ''}`
+        },
+        variables: {
+          ...baseAppearance.variables,
+        }
+      };
+    }
+    
+    return baseAppearance;
+  };
+
   return (
     <AuthLayout>
       <div className="space-y-6">
@@ -251,14 +289,14 @@ const Auth = () => {
           <SupabaseAuth 
             supabaseClient={supabase}
             view={view}
-            appearance={getAuthFormAppearance()}
+            appearance={getCustomAppearance()}
             providers={[]}
             redirectTo={getCallbackUrl()}
             showLinks={true}
             localization={{
               variables: {
                 sign_up: {
-                  button_label: termsAccepted ? "Sign up" : "Accept terms to sign up"
+                  button_label: "Sign up"
                 }
               }
             }}
