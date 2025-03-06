@@ -321,6 +321,7 @@ export type Database = {
           privacy_settings: Json | null
           profile_image_url: string | null
           role: Database["public"]["Enums"]["user_role"] | null
+          terms_accepted_at: string | null
           updated_at: string
         }
         Insert: {
@@ -336,6 +337,7 @@ export type Database = {
           privacy_settings?: Json | null
           profile_image_url?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          terms_accepted_at?: string | null
           updated_at?: string
         }
         Update: {
@@ -351,6 +353,7 @@ export type Database = {
           privacy_settings?: Json | null
           profile_image_url?: string | null
           role?: Database["public"]["Enums"]["user_role"] | null
+          terms_accepted_at?: string | null
           updated_at?: string
         }
         Relationships: []

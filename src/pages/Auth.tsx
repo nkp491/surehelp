@@ -1,4 +1,3 @@
-
 import { useEffect, useState, useCallback } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -84,13 +83,16 @@ const Auth = () => {
     
     setShowTermsError(false);
     
+    const termsAcceptedTimestamp = termsAccepted ? new Date().toISOString() : null;
+    console.log("Terms accepted timestamp:", termsAcceptedTimestamp);
+    
     const { data, error } = await supabase.auth.signUp({
       email: credentials.email,
       password: credentials.password,
       options: {
         emailRedirectTo: getCallbackUrl(),
         data: {
-          terms_accepted: termsAccepted ? new Date().toISOString() : null
+          terms_accepted: termsAcceptedTimestamp
         }
       }
     });
@@ -245,11 +247,9 @@ const Auth = () => {
     </div>;
   }
 
-  // Get a customized appearance config based on terms acceptance
   const getCustomAppearance = () => {
     const baseAppearance = getAuthFormAppearance();
     
-    // Modify the button styling based on terms acceptance
     if (view === "sign_up") {
       return {
         ...baseAppearance,

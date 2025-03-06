@@ -1,9 +1,11 @@
+
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
 import PersonalInfo from "@/components/profile/PersonalInfo";
 import PrivacySettings from "@/components/profile/PrivacySettings";
 import NotificationPreferences from "@/components/profile/NotificationPreferences";
+import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
@@ -65,6 +67,8 @@ const ProfileContent = () => {
             preferences={profile?.notification_preferences || { email_notifications: true, phone_notifications: false }}
             onUpdate={updateProfile}
           />
+          
+          <TermsAcceptance />
         </div>
       </div>
     </div>
