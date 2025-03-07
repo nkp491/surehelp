@@ -30,7 +30,7 @@ const TermsAcceptance = () => {
           <div className="flex items-center gap-2">
             <span className="text-sm text-gray-600">Status:</span>
             {hasAcceptedTerms ? (
-              <Badge variant="success" className="bg-green-500 hover:bg-green-600">Accepted</Badge>
+              <Badge variant="default" className="bg-green-500 hover:bg-green-600">Accepted</Badge>
             ) : (
               <Badge variant="destructive">Not Accepted</Badge>
             )}
