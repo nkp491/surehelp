@@ -5,7 +5,6 @@ import SubmittedForms from "@/pages/SubmittedForms";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import Profile from "@/pages/Profile";
 import FormContainer from "@/components/FormContainer";
-import AuthGuard from "@/components/auth/AuthGuard";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import CommissionTracker from "@/pages/CommissionTracker";
@@ -14,26 +13,22 @@ const MainContent = () => {
   const location = useLocation();
 
   const renderContent = () => {
-    const protectedContent = () => {
-      switch (location.pathname) {
-        case '/metrics':
-          return <Dashboard />;
-        case '/submitted-forms':
-          return <SubmittedForms />;
-        case '/manager-dashboard':
-          return <ManagerDashboard />;
-        case '/profile':
-          return <Profile />;
-        case '/assessment':
-          return <FormContainer />;
-        case '/commission-tracker':
-          return <CommissionTracker />;
-        default:
-          return <Dashboard />;
-      }
-    };
-
-    return <AuthGuard>{protectedContent()}</AuthGuard>;
+    switch (location.pathname) {
+      case '/metrics':
+        return <Dashboard />;
+      case '/submitted-forms':
+        return <SubmittedForms />;
+      case '/manager-dashboard':
+        return <ManagerDashboard />;
+      case '/profile':
+        return <Profile />;
+      case '/assessment':
+        return <FormContainer />;
+      case '/commission-tracker':
+        return <CommissionTracker />;
+      default:
+        return <Dashboard />;
+    }
   };
 
   return (
