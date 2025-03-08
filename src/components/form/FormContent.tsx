@@ -1,4 +1,3 @@
-
 import React from "react";
 import { INITIAL_FIELDS } from "./FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
@@ -9,6 +8,7 @@ import { useFormBuilder } from "@/contexts/FormBuilderContext";
 import { useSpouseVisibility } from "@/contexts/SpouseVisibilityContext";
 import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
 import FormSection from "@/components/FormSection";
+import DirectTotalIncomeCalculator from "@/components/form-fields/DirectTotalIncomeCalculator";
 
 interface FormContentProps {
   editingSubmission?: FormSubmission | null;
@@ -34,6 +34,8 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
 
   return (
     <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-180px)] pb-8">
+      <DirectTotalIncomeCalculator formData={formData} setFormData={setFormData} />
+      
       <div className="form-layout">
         {/* Primary Health Assessment Column */}
         <div className="space-y-6">

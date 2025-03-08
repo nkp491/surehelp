@@ -20,7 +20,8 @@ export const useFormLogic = (
   } = useFormState(editingSubmission);
 
   const { age } = useAgeCalculation(formData.dob, "");
-  const { totalIncome } = useIncomeCalculation(formData);
+  // We're still using useIncomeCalculation but not applying its results
+  const { totalIncome: calculatedTotalIncome } = useIncomeCalculation(formData);
   const { validateForm } = useFormValidation();
 
   const { handleSubmit: submitForm } = useFormSubmission(
@@ -32,12 +33,29 @@ export const useFormLogic = (
   );
 
   useEffect(() => {
-    setFormData(prev => ({
-      ...prev,
-      age,
-      totalIncome,
-    }));
-  }, [age, totalIncome, setFormData]);
+    console.log("useFormLogic - age changed:", age);
+    console.log("Current formData:", {
+      age: formData.age,
+      totalIncome: formData.totalIncome
+    });
+    
+    // Only update the age, NEVER update totalIncome
+    // This ensures we don't interfere with the direct calculation from FormSection
+    setFormData(prev => {
+      const updated = {
+        ...prev,
+        age,
+        // We're not touching totalIncome at all
+      };
+      
+      console.log("Updated formData with age only:", {
+        age: updated.age,
+        totalIncome: prev.totalIncome // Preserve existing totalIncome
+      });
+      
+      return updated;
+    });
+  }, [age, setFormData]); // Removed totalIncome from dependencies
 
   const handleSubmit = async (e: React.MouseEvent<HTMLButtonElement> | React.FormEvent, outcome: string) => {
     const validationErrors = validateForm(formData);

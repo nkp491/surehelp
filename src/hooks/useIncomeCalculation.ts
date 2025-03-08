@@ -9,38 +9,126 @@ interface IncomeFields {
   spouseSocialSecurityIncome: string;
   spousePensionIncome: string;
   spouseSurvivorshipIncome: string;
+  selectedInvestments?: string[];
+  selectedInvestments_amounts?: Record<string, string>;
+  selectedInvestments_total?: string;
+  spouseSelectedInvestments?: string[];
+  spouseSelectedInvestments_amounts?: Record<string, string>;
+  spouseSelectedInvestments_total?: string;
+  _lastUpdate?: number;
 }
 
 export const useIncomeCalculation = (formData: IncomeFields) => {
   const [totalIncome, setTotalIncome] = useState("0.00");
   const [spouseTotalIncome, setSpouseTotalIncome] = useState("0.00");
 
+  // Helper function to clean and parse income values
+  const cleanAndParse = (value: string): number => {
+    if (!value) return 0;
+    // Remove any non-numeric characters except decimal point
+    const cleanValue = value.replace(/[^\d.]/g, '');
+    return parseFloat(cleanValue) || 0;
+  };
+
   useEffect(() => {
-    const employment = parseFloat(formData.employmentIncome) || 0;
-    const socialSecurity = parseFloat(formData.socialSecurityIncome) || 0;
-    const pension = parseFloat(formData.pensionIncome) || 0;
-    const survivorship = parseFloat(formData.survivorshipIncome) || 0;
-    const total = employment + socialSecurity + pension + survivorship;
+    // Debug logs
+    console.log("Income Calculation - Form Data:", {
+      employmentIncome: formData.employmentIncome,
+      socialSecurityIncome: formData.socialSecurityIncome,
+      pensionIncome: formData.pensionIncome,
+      survivorshipIncome: formData.survivorshipIncome,
+      selectedInvestments: formData.selectedInvestments,
+      selectedInvestments_amounts: formData.selectedInvestments_amounts,
+      selectedInvestments_total: formData.selectedInvestments_total,
+      _lastUpdate: formData._lastUpdate
+    });
+
+    // Get investment income from the pre-calculated total if available
+    let investmentIncome = 0;
+    
+    // DIRECT ACCESS: Check if we have a selectedInvestments_total field
+    if (formData.selectedInvestments_total) {
+      investmentIncome = cleanAndParse(formData.selectedInvestments_total);
+      console.log("Using pre-calculated investment total:", investmentIncome);
+    }
+    // If not available, calculate it from the individual investments
+    else if (formData.selectedInvestments && formData.selectedInvestments_amounts) {
+      investmentIncome = formData.selectedInvestments.reduce((total, type) => {
+        const amount = formData.selectedInvestments_amounts?.[type] || '0';
+        const numAmount = cleanAndParse(amount);
+        return total + numAmount;
+      }, 0);
+      console.log("Calculated investment total from amounts:", investmentIncome);
+    }
+
+    // Parse other income values
+    const employment = cleanAndParse(formData.employmentIncome);
+    const socialSecurity = cleanAndParse(formData.socialSecurityIncome);
+    const pension = cleanAndParse(formData.pensionIncome);
+    const survivorship = cleanAndParse(formData.survivorshipIncome);
+    
+    // Calculate total income
+    const total = employment + socialSecurity + pension + survivorship + investmentIncome;
+    
+    console.log("Total Income Calculation:", {
+      employment,
+      socialSecurity,
+      pension,
+      survivorship,
+      investmentIncome,
+      total,
+      formValues: {
+        employmentIncome: formData.employmentIncome,
+        socialSecurityIncome: formData.socialSecurityIncome,
+        pensionIncome: formData.pensionIncome,
+        survivorshipIncome: formData.survivorshipIncome,
+        selectedInvestments_total: formData.selectedInvestments_total
+      }
+    });
+    
+    // Update the total income state
     setTotalIncome(total.toFixed(2));
   }, [
     formData.employmentIncome,
     formData.socialSecurityIncome,
     formData.pensionIncome,
-    formData.survivorshipIncome
+    formData.survivorshipIncome,
+    formData.selectedInvestments,
+    formData.selectedInvestments_amounts,
+    formData.selectedInvestments_total,
+    formData._lastUpdate
   ]);
 
   useEffect(() => {
-    const employment = parseFloat(formData.spouseEmploymentIncome) || 0;
-    const socialSecurity = parseFloat(formData.spouseSocialSecurityIncome) || 0;
-    const pension = parseFloat(formData.spousePensionIncome) || 0;
-    const survivorship = parseFloat(formData.spouseSurvivorshipIncome) || 0;
-    const total = employment + socialSecurity + pension + survivorship;
+    // Get spouse investment income from the pre-calculated total if available
+    let spouseInvestmentIncome = 0;
+    if (formData.spouseSelectedInvestments_total) {
+      spouseInvestmentIncome = cleanAndParse(formData.spouseSelectedInvestments_total);
+    }
+    // If not available, calculate it from the individual investments
+    else if (formData.spouseSelectedInvestments && formData.spouseSelectedInvestments_amounts) {
+      spouseInvestmentIncome = formData.spouseSelectedInvestments.reduce((total, type) => {
+        const amount = formData.spouseSelectedInvestments_amounts?.[type] || '0';
+        const numAmount = cleanAndParse(amount);
+        return total + numAmount;
+      }, 0);
+    }
+
+    const employment = cleanAndParse(formData.spouseEmploymentIncome);
+    const socialSecurity = cleanAndParse(formData.spouseSocialSecurityIncome);
+    const pension = cleanAndParse(formData.spousePensionIncome);
+    const survivorship = cleanAndParse(formData.spouseSurvivorshipIncome);
+    const total = employment + socialSecurity + pension + survivorship + spouseInvestmentIncome;
     setSpouseTotalIncome(total.toFixed(2));
   }, [
     formData.spouseEmploymentIncome,
     formData.spouseSocialSecurityIncome,
     formData.spousePensionIncome,
-    formData.spouseSurvivorshipIncome
+    formData.spouseSurvivorshipIncome,
+    formData.spouseSelectedInvestments,
+    formData.spouseSelectedInvestments_amounts,
+    formData.spouseSelectedInvestments_total,
+    formData._lastUpdate
   ]);
 
   return { totalIncome, spouseTotalIncome };

@@ -13,6 +13,8 @@ interface DraggableFieldProps {
   onSelect: () => void;
   isSelected: boolean;
   style?: React.CSSProperties;
+  investmentAmounts?: Record<string, string>;
+  onInvestmentAmountChange?: (type: string, amount: string) => void;
 }
 
 const DraggableField = ({
@@ -25,6 +27,8 @@ const DraggableField = ({
   height = "auto",
   alignment = "left",
   style = {},
+  investmentAmounts = {},
+  onInvestmentAmountChange = () => {},
 }: DraggableFieldProps) => {
   const combinedStyle = {
     ...style,
@@ -48,6 +52,8 @@ const DraggableField = ({
         label={label}
         value={value}
         onChange={onChange}
+        investmentAmounts={investmentAmounts}
+        onInvestmentAmountChange={onInvestmentAmountChange}
       />
     </div>
   );
