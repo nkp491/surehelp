@@ -1,4 +1,3 @@
-
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -7,6 +6,8 @@ import PrivacySettings from "@/components/profile/PrivacySettings";
 import NotificationPreferences from "@/components/profile/NotificationPreferences";
 import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
+import UserRole from "@/components/profile/UserRole";
+import PasswordSettings from "@/components/profile/PasswordSettings";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -58,6 +59,10 @@ const ProfileContent = () => {
         />
 
         <div className="flex flex-col gap-6">
+          <UserRole role={profile?.role} />
+
+          <PasswordSettings />
+
           <PrivacySettings
             settings={profile?.privacy_settings || { show_email: false, show_phone: false, show_photo: true }}
             onUpdate={updateProfile}
