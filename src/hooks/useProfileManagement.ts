@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -63,9 +64,14 @@ export const useProfileManagement = () => {
         return;
       }
 
+      // Convert the role type to a string that Supabase can handle
+      const supabaseUpdates = {
+        ...updates
+      };
+
       const { error } = await supabase
         .from("profiles")
-        .update(updates)
+        .update(supabaseUpdates)
         .eq("id", session.user.id);
 
       if (error) throw error;
