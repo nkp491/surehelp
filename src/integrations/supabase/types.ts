@@ -398,7 +398,7 @@ export type Database = {
     Enums: {
       user_role:
         | "agent"
-        | "manager"
+        | "manager_pro"
         | "beta_user"
         | "manager_pro_gold"
         | "manager_pro_platinum"

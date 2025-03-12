@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 
 interface UserRoleProps {
-  role: "agent" | "manager" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;
+  role: "agent" | "manager_pro" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;
 }
 
 const UserRole = ({ role }: UserRoleProps) => {
@@ -18,7 +18,7 @@ const UserRole = ({ role }: UserRoleProps) => {
       case "manager_pro_platinum": return "outline"; // Same variant as gold but with different styling
       case "manager_pro_gold": return "outline"; 
       case "agent_pro": return "outline"; // Custom styling for agent pro
-      case "manager": return "default";
+      case "manager_pro": return "default";
       case "beta_user": return "destructive";
       default: return "secondary";
     }
@@ -33,7 +33,7 @@ const UserRole = ({ role }: UserRoleProps) => {
     if (role === "manager_pro_gold") return "Manager Pro Gold";
     if (role === "manager_pro_platinum") return "Manager Pro Platinum";
     if (role === "agent_pro") return "Agent Pro";
-    if (role === "manager") return "Manager Pro"; // Updated to display "Manager Pro" instead of "Manager"
+    if (role === "manager_pro") return "Manager Pro";
     
     // For other roles, just capitalize the first letter
     return role.charAt(0).toUpperCase() + role.slice(1);
