@@ -402,6 +402,7 @@ export type Database = {
         | "beta_user"
         | "manager_pro_gold"
         | "manager_pro_platinum"
+        | "agent_pro"
     }
     CompositeTypes: {
       [_ in never]: never
