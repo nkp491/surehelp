@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 
 interface UserRoleProps {
-  role: "agent" | "manager" | "beta_user" | "manager_pro_gold" | null;
+  role: "agent" | "manager" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | null;
 }
 
 const UserRole = ({ role }: UserRoleProps) => {
@@ -15,7 +15,8 @@ const UserRole = ({ role }: UserRoleProps) => {
   // Function to determine badge variant based on role
   const getBadgeVariant = (role: string | null) => {
     switch(role) {
-      case "manager_pro_gold": return "outline"; // New gold outline variant
+      case "manager_pro_platinum": return "outline"; // Same variant as gold but with different styling
+      case "manager_pro_gold": return "outline"; 
       case "manager": return "default";
       case "beta_user": return "destructive";
       default: return "secondary";
@@ -29,6 +30,7 @@ const UserRole = ({ role }: UserRoleProps) => {
     // Special cases for multi-word roles
     if (role === "beta_user") return "Beta User";
     if (role === "manager_pro_gold") return "Manager Pro Gold";
+    if (role === "manager_pro_platinum") return "Manager Pro Platinum";
     
     // For other roles, just capitalize the first letter
     return role.charAt(0).toUpperCase() + role.slice(1);
@@ -41,7 +43,16 @@ const UserRole = ({ role }: UserRoleProps) => {
       </CardHeader>
       <CardContent>
         <div className="flex items-center">
-          <Badge variant={getBadgeVariant(role)} className={`text-sm ${role === "manager_pro_gold" ? "border-yellow-500 text-yellow-700 bg-yellow-50" : ""}`}>
+          <Badge 
+            variant={getBadgeVariant(role)} 
+            className={`text-sm ${
+              role === "manager_pro_gold" 
+                ? "border-yellow-500 text-yellow-700 bg-yellow-50" 
+                : role === "manager_pro_platinum" 
+                  ? "border-purple-500 text-purple-700 bg-purple-50" 
+                  : ""
+            }`}
+          >
             {getRoleDisplay(role)}
           </Badge>
         </div>
