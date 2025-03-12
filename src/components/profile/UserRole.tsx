@@ -5,7 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 
 interface UserRoleProps {
-  role: "agent" | "manager" | "beta_user" | null;
+  role: "agent" | "manager" | "beta_user" | "manager_pro_gold" | null;
 }
 
 const UserRole = ({ role }: UserRoleProps) => {
@@ -15,6 +15,7 @@ const UserRole = ({ role }: UserRoleProps) => {
   // Function to determine badge variant based on role
   const getBadgeVariant = (role: string | null) => {
     switch(role) {
+      case "manager_pro_gold": return "outline"; // New gold outline variant
       case "manager": return "default";
       case "beta_user": return "destructive";
       default: return "secondary";
@@ -25,8 +26,9 @@ const UserRole = ({ role }: UserRoleProps) => {
   const getRoleDisplay = (role: string | null) => {
     if (!role) return "Agent";
     
-    // Special case for beta_user to display as "Beta User"
+    // Special cases for multi-word roles
     if (role === "beta_user") return "Beta User";
+    if (role === "manager_pro_gold") return "Manager Pro Gold";
     
     // For other roles, just capitalize the first letter
     return role.charAt(0).toUpperCase() + role.slice(1);
@@ -39,7 +41,7 @@ const UserRole = ({ role }: UserRoleProps) => {
       </CardHeader>
       <CardContent>
         <div className="flex items-center">
-          <Badge variant={getBadgeVariant(role)} className="text-sm">
+          <Badge variant={getBadgeVariant(role)} className={`text-sm ${role === "manager_pro_gold" ? "border-yellow-500 text-yellow-700 bg-yellow-50" : ""}`}>
             {getRoleDisplay(role)}
           </Badge>
         </div>
