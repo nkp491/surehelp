@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -64,21 +63,9 @@ export const useProfileManagement = () => {
         return;
       }
 
-      // Create a copy of updates that will be compatible with Supabase types
-      const supabaseUpdates = { ...updates };
-      
-      // Handle the role type mismatch
-      // If role is 'manager_pro_gold', we'll temporarily store it as 'manager'
-      // until the database enum is updated
-      if (supabaseUpdates.role === 'manager_pro_gold') {
-        // Type assertion to overcome TypeScript error
-        // We'll restore the proper role after the database update
-        (supabaseUpdates as any).role = 'manager';
-      }
-
       const { error } = await supabase
         .from("profiles")
-        .update(supabaseUpdates)
+        .update(updates)
         .eq("id", session.user.id);
 
       if (error) throw error;
