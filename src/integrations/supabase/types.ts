@@ -391,18 +391,21 @@ export type Database = {
       user_roles: {
         Row: {
           assigned_at: string
+          email: string | null
           id: string
           role: string
           user_id: string
         }
         Insert: {
           assigned_at?: string
+          email?: string | null
           id?: string
           role: string
           user_id: string
         }
         Update: {
           assigned_at?: string
+          email?: string | null
           id?: string
           role?: string
           user_id?: string

@@ -12,7 +12,7 @@ export const useProfileManagement = () => {
   const [uploading, setUploading] = useState(false);
 
   // Profile query with React Query
-  const { data: profile, isLoading } = useQuery({
+  const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ['profile'],
     queryFn: async () => {
       const { data: { session } } = await supabase.auth.getSession();
@@ -34,7 +34,7 @@ export const useProfileManagement = () => {
       // Fetch user roles
       const { data: userRoles, error: rolesError } = await supabase
         .from("user_roles")
-        .select("role")
+        .select("role, email")
         .eq("user_id", session.user.id);
         
       if (rolesError) throw rolesError;
@@ -83,6 +83,19 @@ export const useProfileManagement = () => {
         .eq("id", session.user.id);
 
       if (error) throw error;
+      
+      // If email is updated, update it in user_roles table as well
+      if (updates.email) {
+        const { error: rolesError } = await supabase
+          .from("user_roles")
+          .update({ email: updates.email })
+          .eq("user_id", session.user.id);
+          
+        if (rolesError) throw rolesError;
+      }
+      
+      // Refetch profile data to ensure we have the latest
+      refetch();
       
       toast({
         title: "Profile updated",
