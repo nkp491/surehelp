@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Badge } from "@/components/ui/badge";
 import { Loader2 } from "lucide-react";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
-import { formatRoleName } from "./SingleUserRoleManager";
+import { formatRoleName } from "@/components/role-management/roleUtils";
 
 interface UserCheckboxListProps {
   users: UserWithRoles[] | undefined;
