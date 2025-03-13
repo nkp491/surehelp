@@ -76,8 +76,17 @@ export const useProfileManagement = () => {
         return;
       }
 
-      // Remove roles and other non-column properties from updates object
+      // Create a clean copy of updates for database
       const { roles, ...updatesToSave } = updates as any;
+      
+      // Handle JSON fields properly
+      if (updatesToSave.privacy_settings && typeof updatesToSave.privacy_settings !== 'string') {
+        updatesToSave.privacy_settings = JSON.stringify(updatesToSave.privacy_settings);
+      }
+      
+      if (updatesToSave.notification_preferences && typeof updatesToSave.notification_preferences !== 'string') {
+        updatesToSave.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
+      }
 
       // Log what we're sending to debug
       console.log("Updating profile with:", updatesToSave);
