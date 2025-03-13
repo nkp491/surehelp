@@ -181,7 +181,7 @@ export default function RoleManagement() {
               </div>
               
               {/* Beta User */}
-              <div className="border-b pb-4">
+              <div>
                 <h3 className="font-semibold text-lg mb-2">Beta User</h3>
                 <p className="text-muted-foreground mb-2">
                   Special role for testing new features.
@@ -190,20 +190,6 @@ export default function RoleManagement() {
                   <li>Early access to new features</li>
                   <li>Feedback opportunities</li>
                   <li>Can be combined with other roles</li>
-                </ul>
-              </div>
-              
-              {/* System Admin */}
-              <div>
-                <h3 className="font-semibold text-lg mb-2">System Admin</h3>
-                <p className="text-muted-foreground mb-2">
-                  Administrative role with full system access.
-                </p>
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Role management</li>
-                  <li>System configuration</li>
-                  <li>User management</li>
-                  <li>Access to all features</li>
                 </ul>
               </div>
             </CardContent>
