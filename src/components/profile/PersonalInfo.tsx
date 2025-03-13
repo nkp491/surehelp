@@ -59,6 +59,11 @@ const PersonalInfo = ({
       // Log the data being submitted
       console.log("Submitting personal info:", formData);
       
+      // Compare with previous data to see what's changed
+      console.log("Previous data:", { firstName, lastName, email, phone });
+      console.log("Has first_name changed?", formData.first_name !== firstName);
+      console.log("Has last_name changed?", formData.last_name !== lastName);
+      
       // Call the update function
       await onUpdate(formData);
       

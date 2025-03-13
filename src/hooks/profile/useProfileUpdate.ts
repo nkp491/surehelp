@@ -95,16 +95,36 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
         }
       }
       
+      // Update profiles table - Ensure correct JSON serialization for JSON fields
+      if (updatesToSave.privacy_settings) {
+        // Make sure privacy_settings is stored as a proper JSON object
+        if (typeof updatesToSave.privacy_settings !== 'string') {
+          updatesToSave.privacy_settings = updatesToSave.privacy_settings;
+        }
+      }
+      
+      if (updatesToSave.notification_preferences) {
+        // Make sure notification_preferences is stored as a proper JSON object
+        if (typeof updatesToSave.notification_preferences !== 'string') {
+          updatesToSave.notification_preferences = updatesToSave.notification_preferences;
+        }
+      }
+      
+      console.log("Updating profiles table with:", updatesToSave);
+      
       // Update profile in database
-      const { error: profileError } = await supabase
+      const { data: updateResult, error: profileError } = await supabase
         .from("profiles")
         .update(updatesToSave)
-        .eq("id", session.user.id);
+        .eq("id", session.user.id)
+        .select();
         
       if (profileError) {
         console.error("Error updating profile in database:", profileError);
         throw profileError;
       }
+      
+      console.log("Profile updated successfully:", updateResult);
       
       // Invalidate the profile query to force a refetch
       invalidateProfile();
