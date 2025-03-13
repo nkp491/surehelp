@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,6 +9,7 @@ import { useUserSearch } from "@/hooks/useUserSearch";
 import { Input } from "@/components/ui/input";
 import { UserCheckboxList } from "./UserCheckboxList";
 import { bulkRoleOperation } from "@/utils/roles";
+import { BulkPasswordReset } from "./BulkPasswordReset";
 
 export function BulkUserRoleManager() {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
@@ -53,7 +53,6 @@ export function BulkUserRoleManager() {
           title: "Success",
           description: result.message,
         });
-        // Reset selection after successful operation
         setSelectedUserIds([]);
       } else {
         toast({
@@ -112,61 +111,78 @@ export function BulkUserRoleManager() {
         <div className="border-t pt-4 mt-4">
           <h3 className="font-medium mb-3">
             <Users className="h-4 w-4 inline mr-1" />
-            Bulk Action for Selected Users
+            Bulk Actions for Selected Users
           </h3>
           
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="bulk-action">
-                Action
-              </label>
-              <Select value={action} onValueChange={(value: "assign" | "remove") => setAction(value)}>
-                <SelectTrigger id="bulk-action">
-                  <SelectValue placeholder="Select action" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="assign">Assign Role</SelectItem>
-                  <SelectItem value="remove">Remove Role</SelectItem>
-                </SelectContent>
-              </Select>
+          <div className="grid grid-cols-1 gap-4 mb-4">
+            <div className="border rounded-md p-4 bg-muted/30">
+              <h4 className="font-medium mb-2">Password Reset</h4>
+              <p className="text-sm text-muted-foreground mb-3">
+                Send password reset emails to selected users
+              </p>
+              <BulkPasswordReset 
+                selectedUserIds={selectedUserIds}
+                users={users}
+                disabled={isLoading}
+              />
             </div>
             
-            <div>
-              <label className="block text-sm font-medium mb-1" htmlFor="bulk-role">
-                Role
-              </label>
-              <Select value={role} onValueChange={setRole}>
-                <SelectTrigger id="bulk-role">
-                  <SelectValue placeholder="Select role" />
-                </SelectTrigger>
-                <SelectContent>
-                  {availableRoles.map((r) => (
-                    <SelectItem key={r} value={r}>
-                      {r.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="border rounded-md p-4 bg-muted/30">
+              <h4 className="font-medium mb-2">Role Management</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="bulk-action">
+                    Action
+                  </label>
+                  <Select value={action} onValueChange={(value: "assign" | "remove") => setAction(value)}>
+                    <SelectTrigger id="bulk-action">
+                      <SelectValue placeholder="Select action" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="assign">Assign Role</SelectItem>
+                      <SelectItem value="remove">Remove Role</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium mb-1" htmlFor="bulk-role">
+                    Role
+                  </label>
+                  <Select value={role} onValueChange={setRole}>
+                    <SelectTrigger id="bulk-role">
+                      <SelectValue placeholder="Select role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableRoles.map((r) => (
+                        <SelectItem key={r} value={r}>
+                          {r.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              
+              <Button 
+                onClick={handleBulkRoleAction}
+                disabled={isLoading || selectedUserIds.length === 0 || !role}
+                className="w-full"
+                variant={action === "remove" ? "destructive" : "default"}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {action === "assign" ? "Assigning..." : "Removing..."}
+                  </>
+                ) : (
+                  <>
+                    {action === "assign" ? "Assign Role to" : "Remove Role from"} {selectedUserIds.length} Users
+                  </>
+                )}
+              </Button>
             </div>
           </div>
-          
-          <Button 
-            onClick={handleBulkRoleAction}
-            disabled={isLoading || selectedUserIds.length === 0 || !role}
-            className="w-full"
-            variant={action === "remove" ? "destructive" : "default"}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                {action === "assign" ? "Assigning..." : "Removing..."}
-              </>
-            ) : (
-              <>
-                {action === "assign" ? "Assign Role to" : "Remove Role from"} {selectedUserIds.length} Users
-              </>
-            )}
-          </Button>
         </div>
       </CardContent>
     </Card>
