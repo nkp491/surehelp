@@ -26,7 +26,7 @@ export function RolesList({
   const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
   const { toast } = useToast();
 
-  // Filter users based on search query
+  // Filter users based on search query and selected role
   const filteredUsers = filterUsers(users, searchQuery);
 
   // Handle role assignment

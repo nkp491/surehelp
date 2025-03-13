@@ -1,7 +1,5 @@
 
 import { useRoleManagement } from "@/hooks/useRoleManagement";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { translations } from "@/utils/translations";
 import { AccessControl } from "@/components/role-management/AccessControl";
 import { RoleManagementContent } from "@/components/role-management/RoleManagementContent";
 import { Toaster } from "@/components/ui/toaster";
@@ -15,8 +13,6 @@ export default function RoleManagement() {
     removeRole,
     isAssigningRole 
   } = useRoleManagement();
-  const { language } = useLanguage();
-  const t = translations[language];
 
   return (
     <AccessControl>
