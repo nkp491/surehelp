@@ -9,6 +9,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import CommissionTracker from "@/pages/CommissionTracker";
 import RoleManagement from "@/pages/RoleManagement";
+import TeamPage from "@/pages/Team";
 
 const MainContent = () => {
   const location = useLocation();
@@ -29,6 +30,8 @@ const MainContent = () => {
         return <CommissionTracker />;
       case '/role-management':
         return <RoleManagement />;
+      case '/team':
+        return <TeamPage />;
       default:
         return <Dashboard />;
     }
