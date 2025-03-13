@@ -22,8 +22,8 @@ export const useTeamManagement = () => {
   // Combined loading state
   const isLoading = isLoadingTeamOps || isLoadingMemberOps;
 
-  // Create a function to use team members that returns the query
-  const useTeamMembers = (teamId?: string) => {
+  // Create a function to get team members that returns the query
+  const getTeamMembersQuery = (teamId?: string) => {
     return fetchTeamMembers(teamId);
   };
 
@@ -35,7 +35,7 @@ export const useTeamManagement = () => {
     updateTeam,
     
     // Team members
-    useTeamMembers,
+    useTeamMembers: getTeamMembersQuery,
     getTeamMembers,
     addTeamMember,
     removeTeamMember,
