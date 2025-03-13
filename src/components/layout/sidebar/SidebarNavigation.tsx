@@ -12,6 +12,7 @@ import {
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
 
 type SidebarNavigationProps = {
   navigationItems: NavigationItem[];
@@ -20,8 +21,9 @@ type SidebarNavigationProps = {
 export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hasRequiredRole, userRoles, hasSystemAdminRole } = useRoleCheck();
+  const { hasRequiredRole, userRoles, hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
   const [renderedItems, setRenderedItems] = useState<NavigationItem[]>([]);
+  const [isNavigating, setIsNavigating] = useState(false);
   
   // Pre-process navigation items when userRoles are available
   useEffect(() => {
@@ -31,6 +33,13 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       // Always show all items for system_admin
       if (hasSystemAdminRole) {
         console.log("User is system_admin, showing all navigation items");
+        setRenderedItems(navigationItems);
+        return;
+      }
+      
+      // While loading roles, show all navigation items with a loading indicator
+      if (isLoadingRoles) {
+        console.log("Roles still loading, showing all items temporarily");
         setRenderedItems(navigationItems);
         return;
       }
@@ -60,14 +69,9 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
           setRenderedItems(filtered);
         }
       } else {
-        // No roles yet, but authenticated - show a loading state or default items
-        console.log("No roles loaded yet, showing loading state");
-        // Show at least the primary navigation items while roles load
-        const defaultItems = navigationItems.filter(item => 
-          !item.requiredRoles || 
-          (item.requiredRoles.includes('agent'))
-        );
-        setRenderedItems(defaultItems.length ? defaultItems : navigationItems.slice(0, 3));
+        // No roles yet, but authenticated - show all items while roles load
+        console.log("No roles loaded yet, showing all items temporarily");
+        setRenderedItems(navigationItems);
       }
     } catch (error) {
       console.error("Error in navigation rendering:", error);
@@ -75,24 +79,23 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       setRenderedItems(navigationItems);
       toast.error("Error loading navigation. Please refresh the page.");
     }
-  }, [navigationItems, userRoles, hasRequiredRole, hasSystemAdminRole]);
+  }, [navigationItems, userRoles, hasRequiredRole, hasSystemAdminRole, isLoadingRoles]);
   
-  // Safety check - if no items rendered, show all items
-  useEffect(() => {
-    if (renderedItems.length === 0 && navigationItems.length > 0) {
-      console.warn("No navigation items rendered, using fallback");
-      setRenderedItems(navigationItems);
-    }
-  }, [renderedItems, navigationItems]);
-  
-  // Handle navigation with safety check
+  // Handle navigation with safety check and loading state
   const handleNavigation = (path: string) => {
+    if (isNavigating || path === location.pathname) return;
+    
+    setIsNavigating(true);
     console.log("Navigating to:", path);
+    
     try {
       navigate(path);
+      // Reset navigation state after a delay
+      setTimeout(() => setIsNavigating(false), 1000);
     } catch (error) {
       console.error("Navigation error:", error);
       toast.error("Navigation failed. Please try again.");
+      setIsNavigating(false);
     }
   };
   
@@ -102,15 +105,23 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       <SidebarGroupContent>
         <SidebarMenu>
           {renderedItems.length === 0 ? (
-            <div className="px-4 py-2 text-sm text-muted-foreground">Loading navigation...</div>
+            <div className="px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span>Loading navigation...</span>
+            </div>
           ) : (
             renderedItems.map((item) => (
               <SidebarMenuItem key={item.path}>
                 <SidebarMenuButton
                   onClick={() => handleNavigation(item.path)}
+                  disabled={isNavigating}
                   data-active={location.pathname === item.path}
                 >
-                  <item.icon className="w-5 h-5" />
+                  {isNavigating && location.pathname === item.path ? (
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                  ) : (
+                    <item.icon className="w-5 h-5" />
+                  )}
                   <span>{item.title}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

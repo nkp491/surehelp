@@ -10,7 +10,7 @@ import LoadingSkeleton from "@/components/ui/loading-skeleton";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
 
-// Lazily load all components with a small delay to improve perceived performance
+// Lazily load all components
 const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
 const LazySubmittedForms = lazy(() => import("@/pages/SubmittedForms"));
 const LazyManagerDashboard = lazy(() => import("@/pages/ManagerDashboard"));
@@ -50,55 +50,66 @@ preloadComponents();
 
 const MainContent = () => {
   const location = useLocation();
-  const [stablePathname, setStablePathname] = useState(location.pathname);
   const { hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
+  const [isPageLoading, setIsPageLoading] = useState(true);
   
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
-
-  // Update stable pathname when location changes
+  
+  // Reset loading state on route change
   useEffect(() => {
     console.log('MainContent: Location changed to', location.pathname);
-    setStablePathname(location.pathname);
+    setIsPageLoading(true);
+    
+    // Set a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setIsPageLoading(false);
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
   }, [location.pathname]);
 
-  // Content rendering with stable component reference
+  // Content rendering with proper loading states
   const renderContent = () => {
-    // Get the component for the stable pathname
-    const StableComponent = COMPONENT_MAP[stablePathname as keyof typeof COMPONENT_MAP];
+    // Get the component for the current path
+    const Component = COMPONENT_MAP[location.pathname as keyof typeof COMPONENT_MAP];
     
-    if (!StableComponent) {
-      console.error(`No component found for path: ${stablePathname}`);
+    if (!Component) {
+      console.error(`No component found for path: ${location.pathname}`);
       toast.error("Page not found");
-      return <div className="p-8">Page not found</div>;
+      return (
+        <div className="p-8 text-center">
+          <h2 className="text-xl font-semibold mb-2">Page not found</h2>
+          <p className="text-muted-foreground">The page you're looking for doesn't exist or has been moved.</p>
+        </div>
+      );
     }
     
-    console.log('MainContent: Rendering', stablePathname, 'with roles', requiredRoles);
+    // Show loading state during initial page load
+    if (isPageLoading && isLoadingRoles) {
+      return <LoadingSkeleton />;
+    }
     
+    // System admins get direct access to all pages without role checks
     if (hasSystemAdminRole) {
-      // System admins get direct access to all pages without role checks
       console.log('User is system_admin, bypassing role checks');
       return (
         <Suspense fallback={<LoadingSkeleton />}>
-          <StableComponent />
+          <Component />
         </Suspense>
       );
     }
     
-    // If roles are still loading, show a simple loading state to prevent flicker
-    if (isLoadingRoles) {
-      return <LoadingSkeleton />;
-    }
-    
+    // For regular users, check role-based access
     return (
       <Suspense fallback={<LoadingSkeleton />}>
         {requiredRoles ? (
           <RoleBasedRoute requiredRoles={requiredRoles}>
-            <StableComponent />
+            <Component />
           </RoleBasedRoute>
         ) : (
-          <StableComponent />
+          <Component />
         )}
       </Suspense>
     );
