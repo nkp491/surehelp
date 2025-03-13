@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +38,24 @@ const PersonalInfo = ({
     setIsEditing(false);
   };
 
+  // Update form data when props change
+  useState(() => {
+    setFormData({
+      first_name: firstName || '',
+      last_name: lastName || '',
+      email: email || '',
+      phone: phone || ''
+    });
+  });
+
+  const handleToggleEdit = () => {
+    if (isEditing) {
+      // If we're currently editing and toggling off, submit the form
+      onUpdate(formData);
+    }
+    setIsEditing(!isEditing);
+  };
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -44,7 +63,7 @@ const PersonalInfo = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={() => setIsEditing(!isEditing)}
+          onClick={handleToggleEdit}
           className="px-4"
         >
           {isEditing ? t.save : t.edit}
