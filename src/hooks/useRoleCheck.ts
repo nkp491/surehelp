@@ -19,17 +19,24 @@ export function useRoleCheck() {
     queryKey: ["user-roles"],
     queryFn: async () => {
       const cachedRoles = getRolesFromCache();
-      if (cachedRoles.length > 0) return cachedRoles;
+      if (cachedRoles && Array.isArray(cachedRoles) && cachedRoles.length > 0) {
+        console.log('Using cached roles:', cachedRoles);
+        return cachedRoles;
+      }
 
       const storageRoles = getRolesFromStorage();
-      if (storageRoles.length > 0) {
+      if (Array.isArray(storageRoles) && storageRoles.length > 0) {
+        console.log('Using roles from storage:', storageRoles);
         setRolesInCache(storageRoles);
         return storageRoles;
       }
 
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return [];
+        if (!user) {
+          console.log('No authenticated user found, returning empty roles array');
+          return [];
+        }
 
         const { data: userRoles, error } = await supabase
           .from('user_roles')
@@ -46,7 +53,7 @@ export function useRoleCheck() {
           return [];
         } else {
           const roles = userRoles?.map(r => r.role) || [];
-          console.log('Fetched user roles:', roles);
+          console.log('Fetched user roles from database:', roles);
           
           // Store the roles in cache
           setRolesInCache(roles);

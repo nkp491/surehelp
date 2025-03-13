@@ -17,22 +17,35 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   
   useEffect(() => {
+    console.log('AuthGuard: Auth state:', { isLoading, isAuthenticated, isInitialCheck });
+    
+    // Add a safety timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      if (isInitialCheck && isLoading) {
+        console.log('AuthGuard: Forcing initial check completion after timeout');
+        setIsInitialCheck(false);
+      }
+    }, 2000); // 2 second safety timeout
+    
     if (!isLoading) {
       if (isAuthenticated === false) {
+        console.log('AuthGuard: User not authenticated, redirecting to auth');
         // Invalidate role cache when logging out
         invalidateRolesCache();
         navigate("/auth", { replace: true });
       }
       setIsInitialCheck(false);
     }
-  }, [isLoading, isAuthenticated, navigate, toast]);
+    
+    return () => clearTimeout(timeoutId);
+  }, [isLoading, isAuthenticated, navigate, toast, isInitialCheck]);
 
   // Show loading only on initial check
   if (isLoading && isInitialCheck) {
-    return <LoadingScreen />;
+    return <LoadingScreen message="Verifying authentication..." />;
   }
   
-  if (!isAuthenticated) {
+  if (!isAuthenticated && !isLoading) {
     return null;
   }
 

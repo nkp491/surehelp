@@ -35,7 +35,8 @@ export function RoleBasedRoute({
     }
     
     // Fast path: System admin always gets access
-    if (userRoles.includes('system_admin')) {
+    if (Array.isArray(userRoles) && userRoles.includes('system_admin')) {
+      console.log('User is system_admin, access granted immediately');
       setFinalAccess(true);
       return;
     }
@@ -43,6 +44,7 @@ export function RoleBasedRoute({
     // Fast path: Client-side verification passes
     const clientVerified = hasRequiredRole(requiredRoles);
     if (clientVerified) {
+      console.log('Client-side role verification passed');
       setFinalAccess(true);
       return;
     }
@@ -50,6 +52,7 @@ export function RoleBasedRoute({
     // Check cache for previous server verification result
     const cachedVerification = getVerificationFromCache(requiredRoles);
     if (cachedVerification !== undefined) {
+      console.log('Using cached verification result:', cachedVerification);
       setServerVerified(cachedVerification);
       setFinalAccess(cachedVerification);
       return;
@@ -67,7 +70,8 @@ export function RoleBasedRoute({
         setServerVerified(false);
         setFinalAccess(false);
       } else {
-        const hasAccess = data.hasRequiredRole || false;
+        const hasAccess = data?.hasRequiredRole || false;
+        console.log('Server verification result:', hasAccess);
         setServerVerified(hasAccess);
         setFinalAccess(hasAccess);
         // Cache the server verification result
@@ -88,7 +92,8 @@ export function RoleBasedRoute({
     if (isLoadingRoles) return;
     
     // Fast initial check for optimistic rendering
-    if (!requiredRoles || requiredRoles.length === 0 || userRoles.includes('system_admin')) {
+    if (!requiredRoles || requiredRoles.length === 0 || 
+        (Array.isArray(userRoles) && userRoles.includes('system_admin'))) {
       setFinalAccess(true);
       return;
     }

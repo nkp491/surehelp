@@ -49,7 +49,7 @@ export const cacheVerificationResult = (requiredRoles: string[], result: boolean
   queryClient.setQueryData([...ROLE_VERIFICATION_CACHE_KEY, cacheKey], result);
 };
 
-export const getVerificationFromCache = (requiredRoles: string[]) => {
+export const getVerificationFromCache = (requiredRoles: string[] | undefined) => {
   const cacheKey = getVerificationCacheKey(requiredRoles);
   return queryClient.getQueryData<boolean>([...ROLE_VERIFICATION_CACHE_KEY, cacheKey]);
 };

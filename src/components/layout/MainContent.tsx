@@ -1,20 +1,11 @@
 
 import { useLocation } from "react-router-dom";
-import Dashboard from "@/pages/Dashboard";
-import SubmittedForms from "@/pages/SubmittedForms";
-import ManagerDashboard from "@/pages/ManagerDashboard";
-import Profile from "@/pages/Profile";
-import FormContainer from "@/components/FormContainer";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
-import CommissionTracker from "@/pages/CommissionTracker";
-import RoleManagement from "@/pages/RoleManagement";
-import TeamPage from "@/pages/Team";
-import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import AuthGuard from "@/components/auth/AuthGuard";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import LoadingScreen from "@/components/ui/loading-screen";
 
 // Lazy load components to improve initial load performance
@@ -22,20 +13,35 @@ const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
 const LazySubmittedForms = lazy(() => import("@/pages/SubmittedForms"));
 const LazyManagerDashboard = lazy(() => import("@/pages/ManagerDashboard"));
 const LazyProfile = lazy(() => import("@/pages/Profile"));
-const LazyFormContainer = lazy(() => Promise.resolve({ default: FormContainer }));
+const LazyFormContainer = lazy(() => import("@/components/FormContainer"));
 const LazyCommissionTracker = lazy(() => import("@/pages/CommissionTracker"));
 const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
 const LazyTeamPage = lazy(() => import("@/pages/Team"));
-const LazyAdminActionsPage = lazy(() => Promise.resolve({ default: AdminActionsPage }));
+const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsPage"));
 
 const MainContent = () => {
   const location = useLocation();
+
+  // Debug navigation
+  useEffect(() => {
+    console.log('MainContent rendering for path:', location.pathname);
+  }, [location.pathname]);
 
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
 
+  useEffect(() => {
+    console.log('Current navigation item:', { 
+      path: location.pathname, 
+      requiredRoles,
+      hasRequiredRoles: !!requiredRoles 
+    });
+  }, [location.pathname, requiredRoles]);
+
   const renderContent = () => {
+    console.log('Rendering content for path:', location.pathname);
+    
     const Component = (() => {
       switch (location.pathname) {
         case '/metrics':
@@ -58,6 +64,7 @@ const MainContent = () => {
         case '/admin-actions':
           return <LazyAdminActionsPage />;
         default:
+          console.log('No matching route, defaulting to Dashboard');
           return <LazyDashboard />;
       }
     })();
@@ -66,7 +73,7 @@ const MainContent = () => {
     // Then wrap with role protection if the path requires specific roles
     return (
       <AuthGuard>
-        <Suspense fallback={<LoadingScreen />}>
+        <Suspense fallback={<LoadingScreen message="Loading page content..." />}>
           {requiredRoles ? (
             <RoleBasedRoute requiredRoles={requiredRoles}>
               {Component}
