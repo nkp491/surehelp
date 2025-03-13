@@ -13,7 +13,7 @@ import TeamPage from "@/pages/Team";
 import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
-import { AuthGuard } from "@/components/auth/AuthGuard";
+import AuthGuard from "@/components/auth/AuthGuard";
 
 const MainContent = () => {
   const location = useLocation();
