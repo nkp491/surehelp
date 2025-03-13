@@ -21,6 +21,10 @@ const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
 const LazyTeamPage = lazy(() => import("@/pages/Team"));
 const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsPage"));
 
+// Eagerly preload key components
+import("@/pages/Dashboard");
+import("@/components/FormContainer");
+
 // Mapping of paths to components
 const COMPONENT_MAP = {
   '/metrics': LazyDashboard,
@@ -35,37 +39,24 @@ const COMPONENT_MAP = {
   '/admin-actions': LazyAdminActionsPage,
 };
 
-// Start preloading common components immediately
-const preloadComponents = () => {
-  // Preload the most common components first
-  return Promise.all([
-    import("@/pages/Profile"),
-    import("@/pages/Dashboard"),
-    import("@/pages/SubmittedForms")
-  ]);
-};
-
-// Start preloading immediately when this module loads
-preloadComponents();
-
 const MainContent = () => {
   const location = useLocation();
   const { hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
-  const [isPageLoading, setIsPageLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
   
-  // Reset loading state on route change
+  // Reset loading state on route change and trigger loading state
   useEffect(() => {
     console.log('MainContent: Location changed to', location.pathname);
-    setIsPageLoading(true);
+    setIsLoading(true);
     
-    // Set a timeout to prevent infinite loading
+    // Short timeout to allow component to render loading state
     const timeoutId = setTimeout(() => {
-      setIsPageLoading(false);
-    }, 1000);
+      setIsLoading(false);
+    }, 200);
     
     return () => clearTimeout(timeoutId);
   }, [location.pathname]);
@@ -77,7 +68,6 @@ const MainContent = () => {
     
     if (!Component) {
       console.error(`No component found for path: ${location.pathname}`);
-      toast.error("Page not found");
       return (
         <div className="p-8 text-center">
           <h2 className="text-xl font-semibold mb-2">Page not found</h2>
@@ -87,13 +77,12 @@ const MainContent = () => {
     }
     
     // Show loading state during initial page load
-    if (isPageLoading && isLoadingRoles) {
+    if (isLoading && isLoadingRoles) {
       return <LoadingSkeleton />;
     }
     
     // System admins get direct access to all pages without role checks
     if (hasSystemAdminRole) {
-      console.log('User is system_admin, bypassing role checks');
       return (
         <Suspense fallback={<LoadingSkeleton />}>
           <Component />

@@ -22,6 +22,28 @@ export const RoleBasedRoute = ({
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
   useEffect(() => {
+    // Ensure we don't get stuck in loading state
+    const timeoutId = setTimeout(() => {
+      if (isCheckingAccess) {
+        console.log("RoleBasedRoute: Force ending access check due to timeout");
+        setIsCheckingAccess(false);
+        
+        // If we have system admin in localStorage, grant access temporarily
+        try {
+          const hasAdminAccess = localStorage.getItem('has-admin-access') === 'true';
+          if (hasAdminAccess) {
+            setAccessGranted(true);
+          }
+        } catch (e) {
+          console.error('Error checking localStorage:', e);
+        }
+      }
+    }, 1000);
+    
+    return () => clearTimeout(timeoutId);
+  }, [isCheckingAccess]);
+
+  useEffect(() => {
     const checkAccess = async () => {
       try {
         setIsCheckingAccess(true);
@@ -30,7 +52,6 @@ export const RoleBasedRoute = ({
         if (hasSystemAdminRole) {
           console.log("User is system_admin, granting access to protected route");
           setAccessGranted(true);
-          localStorage.setItem('has-admin-access', 'true');
           setIsCheckingAccess(false);
           return;
         }
@@ -43,13 +64,6 @@ export const RoleBasedRoute = ({
           
           console.log(`Access ${hasAccess ? 'granted' : 'denied'}`);
           setAccessGranted(hasAccess);
-          
-          // If this is an admin path, store the result for faster loading next time
-          const isAdminPath = window.location.pathname.includes('admin') || 
-                            window.location.pathname.includes('role-management');
-          if (isAdminPath) {
-            localStorage.setItem('has-admin-access', hasAccess ? 'true' : 'false');
-          }
           
           if (!hasAccess) {
             toast.error(`Access denied: You don't have the required permissions.`);

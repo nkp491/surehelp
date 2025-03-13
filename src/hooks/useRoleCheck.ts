@@ -14,47 +14,45 @@ import {
 export function useRoleCheck() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Role cache TTL increased for better performance
-  const CACHE_TTL = 15 * 60 * 1000; // 15 minutes - reduced for more frequent checks
+  // Role cache TTL
+  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
 
-  // Using React Query for efficient caching of roles with longer stale time
+  // Using React Query for efficient caching of roles
   const { data: userRolesData = [], isLoading: isLoadingRoles, refetch } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
-      const roles = await fetchUserRoles();
-      setIsInitialLoading(false);
-      return roles;
-    },
-    staleTime: CACHE_TTL, // Cache for 15 minutes
-    refetchOnWindowFocus: true, // Refresh when window gets focus
-    refetchOnMount: true,
-    retry: 2
-  });
-
-  // Force a roles refresh on navigation
-  useEffect(() => {
-    const handleNavigation = () => {
-      // Check if refetch is needed
-      if (userRolesData.length === 0) {
-        console.log('Navigation detected, refreshing roles if empty');
-        refetch();
+      try {
+        const roles = await fetchUserRoles();
+        setIsInitialLoading(false);
+        return roles;
+      } catch (error) {
+        console.error("Error fetching roles:", error);
+        setIsInitialLoading(false);
+        return [];
       }
-    };
-    
-    window.addEventListener('popstate', handleNavigation);
-    return () => window.removeEventListener('popstate', handleNavigation);
-  }, [refetch, userRolesData]);
+    },
+    staleTime: CACHE_TTL,
+    refetchOnWindowFocus: false, // Don't refresh on window focus to prevent flashing
+    refetchOnMount: true,
+    retry: 1,
+    networkMode: 'always'
+  });
 
   // Ensure userRoles is always an array
   const userRoles = Array.isArray(userRolesData) ? userRolesData : [];
 
   // Check if user has system_admin role for quick access decisions
   const hasSystemAdminRole = useMemo(() => {
-    if (!userRoles || !Array.isArray(userRoles) || userRoles.length === 0) {
-      // Check if we have a local flag for system admin (for faster UI rendering)
-      const localAdminFlag = localStorage.getItem('is-system-admin');
-      return localAdminFlag === 'true';
+    // Check if we have a local flag for system admin (for faster UI rendering)
+    const localAdminFlag = localStorage.getItem('is-system-admin');
+    if (localAdminFlag === 'true') {
+      return true;
     }
+    
+    if (!userRoles || !Array.isArray(userRoles) || userRoles.length === 0) {
+      return false;
+    }
+    
     const isAdmin = checkSystemAdminRole(userRoles);
     
     // Cache the admin status for faster subsequent checks
@@ -88,14 +86,6 @@ export function useRoleCheck() {
         console.log('Auth state change:', { event });
         invalidateRolesCache();
         
-        // Clear session storage too
-        try {
-          sessionStorage.removeItem('user-roles');
-          localStorage.removeItem('is-system-admin');
-        } catch (e) {
-          console.error('Error clearing storage:', e);
-        }
-        
         // Force refetch roles
         refetch();
       }
@@ -105,12 +95,6 @@ export function useRoleCheck() {
       subscription.unsubscribe();
     };
   }, [refetch]);
-
-  console.log('useRoleCheck returning:', { 
-    userRoles, 
-    isLoadingRoles: isLoadingRoles || isInitialLoading,
-    hasSystemAdminRole
-  });
 
   return { 
     userRoles, 
