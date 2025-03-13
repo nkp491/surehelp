@@ -57,15 +57,14 @@ export const useProfileData = () => {
         console.error("Error fetching user metadata:", userError);
       }
       
-      // Prepare the profile data, ensuring JSON fields are properly parsed
-      let sanitizedProfileData = { ...profileData };
-      sanitizedProfileData = sanitizeProfileData(sanitizedProfileData);
+      // Sanitize profile data to ensure proper JSON field parsing
+      const sanitizedProfileData = sanitizeProfileData(profileData);
       
-      // Merge profile data with user metadata
-      const mergedProfile = {
+      // Merge profile data with user metadata and roles
+      const mergedProfile: Profile = {
         ...sanitizedProfileData,
         roles: roles,
-      } as Profile;
+      };
       
       // If there's user metadata available, sync it with the profile
       if (user?.user_metadata) {
@@ -85,21 +84,25 @@ export const useProfileData = () => {
   const createDefaultProfile = async () => {
     const { data: userData } = await supabase.auth.getUser();
     if (userData.user) {
+      const defaultPrivacySettings = {
+        show_email: false,
+        show_phone: false,
+        show_photo: true
+      };
+      
+      const defaultNotificationPreferences = {
+        email_notifications: true,
+        phone_notifications: false
+      };
+      
       const newProfile = {
         id: userData.user.id,
         email: userData.user.email,
         first_name: userData.user.user_metadata.first_name || null,
         last_name: userData.user.user_metadata.last_name || null,
         phone: userData.user.user_metadata.phone || null,
-        privacy_settings: {
-          show_email: false,
-          show_phone: false,
-          show_photo: true
-        },
-        notification_preferences: {
-          email_notifications: true,
-          phone_notifications: false
-        }
+        privacy_settings: defaultPrivacySettings,
+        notification_preferences: defaultNotificationPreferences
       };
       
       const { data: insertedProfile, error: insertError } = await supabase
@@ -109,15 +112,18 @@ export const useProfileData = () => {
         .single();
         
       if (insertError) throw insertError;
-      return insertedProfile as Profile;
+      
+      // Properly cast and sanitize the inserted profile data
+      return sanitizeProfileData(insertedProfile) as Profile;
     }
     throw new Error("User not authenticated");
   };
 
   // Helper function to sanitize profile data
-  const sanitizeProfileData = (profileData: any) => {
+  const sanitizeProfileData = (profileData: any): Profile => {
     let sanitized = { ...profileData };
     
+    // Sanitize privacy_settings to ensure it's the correct type
     if (typeof profileData.privacy_settings === 'string') {
       try {
         sanitized.privacy_settings = JSON.parse(profileData.privacy_settings);
@@ -128,8 +134,15 @@ export const useProfileData = () => {
           show_photo: true
         };
       }
+    } else if (!profileData.privacy_settings || Array.isArray(profileData.privacy_settings)) {
+      sanitized.privacy_settings = {
+        show_email: false,
+        show_phone: false,
+        show_photo: true
+      };
     }
     
+    // Sanitize notification_preferences to ensure it's the correct type
     if (typeof profileData.notification_preferences === 'string') {
       try {
         sanitized.notification_preferences = JSON.parse(profileData.notification_preferences);
@@ -139,9 +152,14 @@ export const useProfileData = () => {
           phone_notifications: false
         };
       }
+    } else if (!profileData.notification_preferences || Array.isArray(profileData.notification_preferences)) {
+      sanitized.notification_preferences = {
+        email_notifications: true,
+        phone_notifications: false
+      };
     }
     
-    return sanitized;
+    return sanitized as Profile;
   };
 
   // Helper function to sync auth metadata to profile
