@@ -76,10 +76,13 @@ export const useProfileManagement = () => {
         return;
       }
 
-      // When updating the profile, type cast the role to ensure type compatibility
+      // Remove roles from updates object as it's not a column in the profiles table
+      const { roles, ...updatesWithoutRoles } = updates as any;
+
+      // When updating the profile, avoid sending properties that don't match columns
       const { error } = await supabase
         .from("profiles")
-        .update(updates as any)
+        .update(updatesWithoutRoles)
         .eq("id", session.user.id);
 
       if (error) throw error;

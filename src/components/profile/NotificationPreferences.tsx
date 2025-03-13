@@ -1,3 +1,4 @@
+
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -26,11 +27,15 @@ const NotificationPreferences = ({
     try {
       const newLanguage = language === 'en' ? 'es' : 'en';
       
-      // Update language in Supabase
+      // Get current user
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) throw new Error('User not authenticated');
+      
+      // Update language in Supabase profiles table
       const { error } = await supabase
         .from('profiles')
         .update({ language_preference: newLanguage })
-        .eq('id', (await supabase.auth.getUser()).data.user?.id);
+        .eq('id', userData.user.id);
 
       if (error) throw error;
 
