@@ -1,5 +1,8 @@
 
 import { Navigate, useLocation } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   isAuthenticated: boolean | null;
@@ -13,16 +16,46 @@ export const ProtectedRoute = ({
   redirectTo = "/auth" 
 }: ProtectedRouteProps) => {
   const location = useLocation();
+  const [isVerifying, setIsVerifying] = useState(true);
+  const [sessionValid, setSessionValid] = useState<boolean | null>(null);
   
-  console.log("ProtectedRoute state:", { isAuthenticated, path: location.pathname });
+  useEffect(() => {
+    const verifySession = async () => {
+      if (isAuthenticated) {
+        try {
+          // Verify the session is valid on the server
+          const { data, error } = await supabase.rpc('verify_session_valid');
+          
+          if (error) {
+            console.error("Session verification error:", error);
+            setSessionValid(false);
+          } else {
+            setSessionValid(!!data);
+          }
+        } catch (err) {
+          console.error("Session verification error:", err);
+          setSessionValid(false);
+        }
+      } else {
+        setSessionValid(false);
+      }
+      setIsVerifying(false);
+    };
+    
+    verifySession();
+  }, [isAuthenticated]);
   
-  if (isAuthenticated === null) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-    </div>;
+  // Show loading state while verifying
+  if (isVerifying || isAuthenticated === null) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+      </div>
+    );
   }
 
-  if (!isAuthenticated) {
+  // Redirect if not authenticated or session is invalid
+  if (!isAuthenticated || sessionValid === false) {
     const searchParams = new URLSearchParams();
     if (location.pathname !== "/auth") {
       searchParams.set("returnUrl", location.pathname);

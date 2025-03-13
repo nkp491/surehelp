@@ -13,6 +13,7 @@ import TeamPage from "@/pages/Team";
 import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 
 const MainContent = () => {
   const location = useLocation();
@@ -48,16 +49,19 @@ const MainContent = () => {
       }
     })();
 
-    // Wrap with role protection if the path requires specific roles
-    if (requiredRoles) {
-      return (
-        <RoleBasedRoute requiredRoles={requiredRoles}>
-          {Component}
-        </RoleBasedRoute>
-      );
-    }
-
-    return Component;
+    // First ensure user is authenticated
+    // Then wrap with role protection if the path requires specific roles
+    return (
+      <AuthGuard>
+        {requiredRoles ? (
+          <RoleBasedRoute requiredRoles={requiredRoles}>
+            {Component}
+          </RoleBasedRoute>
+        ) : (
+          Component
+        )}
+      </AuthGuard>
+    );
   };
 
   return (

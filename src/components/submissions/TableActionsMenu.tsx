@@ -1,11 +1,11 @@
 
-import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { FormSubmission } from "@/types/form";
 import { Button } from "@/components/ui/button";
-import { Download } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
+import { Download, Trash2 } from "lucide-react";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useSubmissionExport } from "./useSubmissionExport";
+import { useSubmissionDelete } from "./useSubmissionDelete";
 
 interface TableActionsMenuProps {
   submissions: FormSubmission[];
@@ -15,6 +15,7 @@ interface TableActionsMenuProps {
 const TableActionsMenu = ({ submissions, onExport }: TableActionsMenuProps) => {
   const { toast } = useToast();
   const { hasRequiredRole } = useRoleCheck();
+  const { handleDelete, deleteDialogOpen, setDeleteDialogOpen, submissionToDelete, confirmDelete } = useSubmissionDelete();
   
   const showAdvancedFiltering = hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']);
 
@@ -32,10 +33,15 @@ const TableActionsMenu = ({ submissions, onExport }: TableActionsMenuProps) => {
         </Button>
       ) : (
         <Button
-          onClick={() => {}}
-          className="flex items-center gap-2 opacity-60 cursor-not-allowed"
+          onClick={() => {
+            toast({
+              title: "Pro Feature",
+              description: "Please upgrade to Agent Pro or higher to export submissions.",
+              variant: "destructive",
+            });
+          }}
+          className="flex items-center gap-2"
           variant="outline"
-          disabled
         >
           <Download className="h-4 w-4" />
           Pro Feature

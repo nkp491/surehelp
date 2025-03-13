@@ -2,27 +2,43 @@
 import { useToast } from "@/components/ui/use-toast";
 import { FormSubmission } from "@/types/form";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useSubmissionExport = (submissions: FormSubmission[]) => {
   const { toast } = useToast();
   const { hasRequiredRole } = useRoleCheck();
 
-  const handleExport = () => {
-    // Restrict export functionality to agent_pro and above
-    if (!hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'])) {
-      toast({
-        title: "Upgrade Required",
-        description: "Exporting submissions requires Agent Pro or higher.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
+  const handleExport = async () => {
     try {
+      // First validate client-side that the user has the required role
+      if (!hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'])) {
+        toast({
+          title: "Access Denied",
+          description: "You need Agent Pro or higher role to export submissions.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
       if (!submissions.length) {
         toast({
           title: "Error",
           description: "No submissions to export",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Verify the role again on the server side through RPC function
+      const { data: hasPermission, error: permissionError } = await supabase.rpc(
+        'has_export_permission'
+      );
+
+      if (permissionError || !hasPermission) {
+        console.error("Permission error:", permissionError);
+        toast({
+          title: "Access Denied",
+          description: "Server verification failed. You don't have permission to export data.",
           variant: "destructive",
         });
         return;
@@ -54,6 +70,7 @@ export const useSubmissionExport = (submissions: FormSubmission[]) => {
         description: "Submissions exported successfully",
       });
     } catch (error) {
+      console.error("Export error:", error);
       toast({
         title: "Error",
         description: "Failed to export submissions",
