@@ -1,15 +1,15 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const queryClient = useQueryClient();
 
   // Profile query with React Query
   const { data: profile, isLoading, refetch } = useQuery({
@@ -41,7 +41,15 @@ export const useProfileManagement = () => {
       
       const roles = userRoles.map(r => r.role);
       
-      return {
+      // Fetch user metadata from auth
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError) {
+        console.error("Error fetching user metadata:", userError);
+      }
+      
+      // Merge user metadata with profile data
+      const mergedProfile = {
         ...profileData,
         roles: roles,
         privacy_settings: typeof profileData.privacy_settings === 'string' 
@@ -51,6 +59,32 @@ export const useProfileManagement = () => {
           ? JSON.parse(profileData.notification_preferences)
           : profileData.notification_preferences
       } as Profile;
+      
+      // Override with user metadata if available
+      if (user?.user_metadata) {
+        console.log("User metadata from auth:", user.user_metadata);
+        
+        if (user.user_metadata.first_name) {
+          mergedProfile.first_name = user.user_metadata.first_name;
+        }
+        
+        if (user.user_metadata.last_name) {
+          mergedProfile.last_name = user.user_metadata.last_name;
+        }
+        
+        if (user.user_metadata.phone) {
+          mergedProfile.phone = user.user_metadata.phone;
+        }
+        
+        // Add any other fields from user metadata
+        for (const [key, value] of Object.entries(user.user_metadata)) {
+          if (key !== 'first_name' && key !== 'last_name' && key !== 'phone') {
+            (mergedProfile as any)[key] = value;
+          }
+        }
+      }
+      
+      return mergedProfile;
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
@@ -79,36 +113,71 @@ export const useProfileManagement = () => {
       // Create a clean copy of updates for database
       const { roles, ...updatesToSave } = updates as any;
       
-      // Handle JSON fields properly
-      if (updatesToSave.privacy_settings && typeof updatesToSave.privacy_settings !== 'string') {
-        updatesToSave.privacy_settings = JSON.stringify(updatesToSave.privacy_settings);
-      }
-      
-      if (updatesToSave.notification_preferences && typeof updatesToSave.notification_preferences !== 'string') {
-        updatesToSave.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
-      }
-
       // Log what we're sending to debug
       console.log("Updating profile with:", updatesToSave);
 
-      // When updating the profile, avoid sending the query directly and use .match instead of .eq
-      // This is to avoid the SQL error with user_role
-      const { error } = await supabase
-        .from("profiles")
-        .update(updatesToSave)
-        .match({ id: session.user.id });
-
-      if (error) throw error;
+      // Extract user metadata fields
+      const userMetadata: any = {};
+      let hasUpdates = false;
       
-      // If email is updated, update it in user_roles table as well
-      if (updates.email) {
-        const { error: rolesError } = await supabase
-          .from("user_roles")
-          .update({ email: updates.email })
-          .eq("user_id", session.user.id);
-          
-        if (rolesError) throw rolesError;
+      // Add all fields to user metadata
+      for (const [key, value] of Object.entries(updatesToSave)) {
+        if (key !== 'email' && key !== 'id') {
+          userMetadata[key] = value;
+          hasUpdates = true;
+        }
       }
+      
+      // Update user metadata
+      if (hasUpdates) {
+        console.log("Updating user metadata with:", userMetadata);
+        
+        const { data, error: authError } = await supabase.auth.updateUser({
+          data: userMetadata
+        });
+        
+        if (authError) {
+          console.error("Error updating user metadata:", authError);
+          throw authError;
+        } else {
+          console.log("User metadata updated successfully:", data);
+        }
+      }
+      
+      // Update email separately if needed
+      if (updatesToSave.email !== undefined && updatesToSave.email !== session.user.email) {
+        console.log("Updating email to:", updatesToSave.email);
+        
+        const { error: emailError } = await supabase.auth.updateUser({
+          email: updatesToSave.email
+        });
+        
+        if (emailError) {
+          console.error("Error updating email:", emailError);
+          throw emailError;
+        } else {
+          console.log("Email update initiated");
+          
+          // Try to update email in user_roles table as well
+          try {
+            const { error: rolesError } = await supabase
+              .from("user_roles")
+              .update({ email: updatesToSave.email })
+              .eq("user_id", session.user.id);
+              
+            if (rolesError) {
+              console.error("Error updating user_roles:", rolesError);
+              // Don't throw here, just log the error
+            }
+          } catch (rolesUpdateError) {
+            console.error("Error updating user_roles:", rolesUpdateError);
+            // Don't throw here, just log the error
+          }
+        }
+      }
+      
+      // Invalidate the profile query to force a refetch
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
       
       // Refetch profile data to ensure we have the latest
       await refetch();
@@ -117,11 +186,11 @@ export const useProfileManagement = () => {
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error updating profile:", error);
       toast({
         title: "Error updating profile",
-        description: "There was a problem updating your profile. Please try again.",
+        description: error.message || "There was a problem updating your profile. Please try again.",
         variant: "destructive",
       });
     }

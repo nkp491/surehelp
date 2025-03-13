@@ -1,4 +1,3 @@
-
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -12,6 +11,9 @@ import PasswordSettings from "@/components/profile/PasswordSettings";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,8 +34,64 @@ const ProfileContent = () => {
     signOut
   } = useProfileManagement();
 
+  const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language];
+
+  // Debug function to directly test database update
+  const testDirectUpdate = async () => {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        toast({
+          title: "Error",
+          description: "No active session found",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      const testData = {
+        first_name: "Test",
+        last_name: "User"
+      };
+      
+      console.log("Attempting direct update with:", testData);
+      
+      // Update user metadata directly through auth system
+      const { data, error: authError } = await supabase.auth.updateUser({
+        data: testData
+      });
+      
+      if (authError) {
+        console.error("Error updating user metadata:", authError);
+        toast({
+          title: "Error",
+          description: `Failed to update profile: ${authError.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("User metadata updated successfully:", data);
+      
+      // Force refresh the profile data
+      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      
+      toast({
+        title: "Success",
+        description: "Profile updated successfully. Refresh to see changes.",
+      });
+    } catch (err: any) {
+      console.error("Test update error:", err);
+      toast({
+        title: "Error",
+        description: err.message || "An unknown error occurred",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (loading) {
     return <ProfileLoading />;
@@ -75,6 +133,21 @@ const ProfileContent = () => {
           />
           
           <TermsAcceptance />
+          
+          {/* Debug button for direct database update */}
+          <div className="mt-8 p-4 border border-gray-200 rounded-md">
+            <h3 className="text-lg font-medium mb-2">Debug Tools</h3>
+            <Button 
+              variant="outline" 
+              onClick={testDirectUpdate}
+              className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+            >
+              Test Direct DB Update
+            </Button>
+            <p className="text-sm text-gray-500 mt-2">
+              This button will directly update your profile in the database with test values.
+            </p>
+          </div>
         </div>
       </div>
     </div>

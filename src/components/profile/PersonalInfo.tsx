@@ -1,10 +1,10 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { useToast } from "@/hooks/use-toast";
 
 interface PersonalInfoProps {
   firstName?: string | null;
@@ -28,6 +28,8 @@ const PersonalInfo = ({
     email: email || '',
     phone: phone || ''
   });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { toast } = useToast();
 
   const { language } = useLanguage();
   const t = translations[language];
@@ -44,18 +46,48 @@ const PersonalInfo = ({
     }
   }, [firstName, lastName, email, phone]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(formData);
-    setIsEditing(false);
+    
+    // Prevent double submission
+    if (isSubmitting) return;
+    
+    try {
+      setIsSubmitting(true);
+      
+      // Log the data being submitted
+      console.log("Submitting personal info:", formData);
+      
+      // Call the update function
+      await onUpdate(formData);
+      
+      // Exit edit mode
+      setIsEditing(false);
+      
+      // Show success toast
+      toast({
+        title: "Success",
+        description: "Personal information updated successfully",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+      toast({
+        title: "Error",
+        description: "Failed to update personal information. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   const handleToggleEdit = () => {
     if (isEditing) {
       // If we're currently editing and toggling off, submit the form
-      onUpdate(formData);
+      handleSubmit(new Event('submit') as any);
+    } else {
+      setIsEditing(true);
     }
-    setIsEditing(!isEditing);
   };
 
   return (
@@ -65,10 +97,11 @@ const PersonalInfo = ({
         <Button
           variant="outline"
           size="sm"
-          onClick={handleToggleEdit}
+          onClick={isEditing ? handleSubmit : handleToggleEdit}
+          disabled={isSubmitting}
           className="px-4"
         >
-          {isEditing ? t.save : t.edit}
+          {isEditing ? (isSubmitting ? "Saving..." : t.save) : t.edit}
         </Button>
       </CardHeader>
       <CardContent>
@@ -135,7 +168,12 @@ const PersonalInfo = ({
           </div>
           {isEditing && (
             <div className="flex justify-end pt-2">
-              <Button type="submit">{t.save}</Button>
+              <Button 
+                type="submit" 
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Saving..." : t.save}
+              </Button>
             </div>
           )}
         </form>
