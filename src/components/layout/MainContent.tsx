@@ -14,6 +14,19 @@ import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import AuthGuard from "@/components/auth/AuthGuard";
+import { Suspense, lazy } from "react";
+import LoadingScreen from "@/components/ui/loading-screen";
+
+// Lazy load components to improve initial load performance
+const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
+const LazySubmittedForms = lazy(() => import("@/pages/SubmittedForms"));
+const LazyManagerDashboard = lazy(() => import("@/pages/ManagerDashboard"));
+const LazyProfile = lazy(() => import("@/pages/Profile"));
+const LazyFormContainer = lazy(() => Promise.resolve({ default: FormContainer }));
+const LazyCommissionTracker = lazy(() => import("@/pages/CommissionTracker"));
+const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
+const LazyTeamPage = lazy(() => import("@/pages/Team"));
+const LazyAdminActionsPage = lazy(() => Promise.resolve({ default: AdminActionsPage }));
 
 const MainContent = () => {
   const location = useLocation();
@@ -26,26 +39,26 @@ const MainContent = () => {
     const Component = (() => {
       switch (location.pathname) {
         case '/metrics':
-          return <Dashboard />;
+          return <LazyDashboard />;
         case '/submitted-forms':
-          return <SubmittedForms />;
+          return <LazySubmittedForms />;
         case '/manager-dashboard':
-          return <ManagerDashboard />;
+          return <LazyManagerDashboard />;
         case '/profile':
-          return <Profile />;
+          return <LazyProfile />;
         case '/assessment':
-          return <FormContainer />;
+          return <LazyFormContainer />;
         case '/commission-tracker':
-          return <CommissionTracker />;
+          return <LazyCommissionTracker />;
         case '/role-management':
-          return <RoleManagement />;
+          return <LazyRoleManagement />;
         case '/team':
-          return <TeamPage />;
+          return <LazyTeamPage />;
         case '/admin':
         case '/admin-actions':
-          return <AdminActionsPage />;
+          return <LazyAdminActionsPage />;
         default:
-          return <Dashboard />;
+          return <LazyDashboard />;
       }
     })();
 
@@ -53,13 +66,15 @@ const MainContent = () => {
     // Then wrap with role protection if the path requires specific roles
     return (
       <AuthGuard>
-        {requiredRoles ? (
-          <RoleBasedRoute requiredRoles={requiredRoles}>
-            {Component}
-          </RoleBasedRoute>
-        ) : (
-          Component
-        )}
+        <Suspense fallback={<LoadingScreen />}>
+          {requiredRoles ? (
+            <RoleBasedRoute requiredRoles={requiredRoles}>
+              {Component}
+            </RoleBasedRoute>
+          ) : (
+            Component
+          )}
+        </Suspense>
       </AuthGuard>
     );
   };

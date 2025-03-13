@@ -1,4 +1,3 @@
-
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MetricCount } from '@/types/metrics';
@@ -10,23 +9,28 @@ export const useMetricsLoad = () => {
   const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { hasRequiredRole } = useRoleCheck();
+  const { hasRequiredRole, userRoles } = useRoleCheck();
 
   // Determine history access level based on user role
-  const hasFullHistoryAccess = hasRequiredRole([
-    'agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'
-  ]);
+  const hasFullHistoryAccess = userRoles.includes('system_admin') || 
+    hasRequiredRole([
+      'agent_pro', 'manager_pro', 'manager_pro_gold', 
+      'manager_pro_platinum', 'beta_user'
+    ]);
 
   const loadHistory = useCallback(async (retryCount = 0) => {
     try {
       setIsLoading(true);
-      const { data: user } = await supabase.auth.getUser();
-      if (!user.user) {
+      
+      const sessionResult = await supabase.auth.getSession();
+      const user = sessionResult.data.session?.user;
+      
+      if (!user) {
         console.log('[MetricsLoad] No user found, returning empty history');
         return [];
       }
 
-      console.log('[MetricsLoad] Loading history for user:', user.user.id);
+      console.log('[MetricsLoad] Loading history for user:', user.id);
       
       // Add a small delay on retry attempts
       if (retryCount > 0) {
@@ -41,7 +45,7 @@ export const useMetricsLoad = () => {
       const { data, error } = await supabase
         .from('daily_metrics')
         .select('*')
-        .eq('user_id', user.user.id)
+        .eq('user_id', user.id)
         .gte('date', historyLookbackDate)
         .order('date', { ascending: false });
 
@@ -95,7 +99,7 @@ export const useMetricsLoad = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast, hasFullHistoryAccess]);
+  }, [toast, hasFullHistoryAccess, userRoles]);
 
   const loadMoreHistory = useCallback(async () => {
     // Only allow loading more history for users with full access

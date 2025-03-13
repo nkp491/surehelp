@@ -14,6 +14,9 @@ serve(async (req) => {
   }
 
   try {
+    console.log("Verify-user-roles function called");
+    const startTime = Date.now();
+    
     // Create a Supabase client with the Auth context of the logged in user
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
@@ -35,8 +38,10 @@ serve(async (req) => {
 
     // Parse the body to get required roles
     const { requiredRoles } = await req.json()
+    console.log(`Verifying roles for user ${session.user.id}:`, { requiredRoles });
     
     if (!requiredRoles || !Array.isArray(requiredRoles) || requiredRoles.length === 0) {
+      console.log("No required roles specified, granting access");
       return new Response(
         JSON.stringify({ hasRequiredRole: true }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -75,6 +80,7 @@ serve(async (req) => {
     console.log(`User ${session.user.id} roles: ${roles.join(', ')}`)
     console.log(`Required roles: ${requiredRoles.join(', ')}`)
     console.log(`Has required role: ${hasRequiredRole}`)
+    console.log(`Verification completed in ${Date.now() - startTime}ms`);
 
     return new Response(
       JSON.stringify({ hasRequiredRole }),

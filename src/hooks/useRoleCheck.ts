@@ -1,24 +1,36 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { useQuery } from "@tanstack/react-query";
+import { 
+  getRolesFromStorage, 
+  setRolesInCache, 
+  invalidateRolesCache,
+  getRolesFromCache
+} from "@/lib/auth-cache";
 
 export function useRoleCheck() {
-  const [userRoles, setUserRoles] = useState<string[]>([]);
-  const [isLoadingRoles, setIsLoadingRoles] = useState(true);
   const { toast } = useToast();
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserRoles = async () => {
+  // Using React Query for efficient caching of roles
+  const { data: userRoles = [], isLoading: isLoadingRoles } = useQuery({
+    queryKey: ["user-roles"],
+    queryFn: async () => {
+      const cachedRoles = getRolesFromCache();
+      if (cachedRoles.length > 0) return cachedRoles;
+
+      const storageRoles = getRolesFromStorage();
+      if (storageRoles.length > 0) {
+        setRolesInCache(storageRoles);
+        return storageRoles;
+      }
+
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          setUserRoles([]);
-          setIsLoadingRoles(false);
-          return;
-        }
+        if (!user) return [];
 
-        // Fetch roles from user_roles table
         const { data: userRoles, error } = await supabase
           .from('user_roles')
           .select('role')
@@ -31,39 +43,29 @@ export function useRoleCheck() {
             description: "Failed to fetch user roles. Some features may be unavailable.",
             variant: "destructive",
           });
-          setUserRoles([]);
+          return [];
         } else {
           const roles = userRoles?.map(r => r.role) || [];
           console.log('Fetched user roles:', roles);
-          setUserRoles(roles);
+          
+          // Store the roles in cache
+          setRolesInCache(roles);
+          return roles;
         }
-        setIsLoadingRoles(false);
       } catch (error) {
         console.error('Error fetching user roles:', error);
-        setUserRoles([]);
-        setIsLoadingRoles(false);
+        return [];
+      } finally {
+        setIsInitialLoading(false);
       }
-    };
+    },
+    staleTime: 5 * 60 * 1000, // Cache for 5 minutes
+    refetchOnWindowFocus: false,
+    refetchOnMount: true
+  });
 
-    fetchUserRoles();
-
-    // Set up a subscription to auth state changes
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user) {
-        fetchUserRoles();
-      } else {
-        setUserRoles([]);
-        setIsLoadingRoles(false);
-      }
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [toast]);
-
-  // Check if user has at least one of the required roles
-  const hasRequiredRole = (requiredRoles?: string[]) => {
+  // Check if user has at least one of the required roles - with fast client-side check
+  const hasRequiredRole = useCallback((requiredRoles?: string[]) => {
     if (!requiredRoles || requiredRoles.length === 0) return true;
     if (userRoles.length === 0) return false;
     
@@ -77,10 +79,10 @@ export function useRoleCheck() {
     const hasRole = userRoles.some(role => requiredRoles.includes(role));
     console.log('Role check result:', { userRoles, requiredRoles, hasRole });
     return hasRole;
-  };
+  }, [userRoles]);
 
   // Get the highest tier role the user has
-  const getHighestRole = () => {
+  const getHighestRole = useCallback(() => {
     const roleHierarchy = [
       'agent',
       'agent_pro',
@@ -101,10 +103,10 @@ export function useRoleCheck() {
     });
     
     return highestRoleIndex >= 0 ? roleHierarchy[highestRoleIndex] : null;
-  };
+  }, [userRoles]);
 
   // Check if user can be upgraded to a higher tier role
-  const canUpgradeTo = (role: string) => {
+  const canUpgradeTo = useCallback((role: string) => {
     const roleHierarchy = [
       'agent',
       'agent_pro',
@@ -117,11 +119,25 @@ export function useRoleCheck() {
     const targetRoleIndex = roleHierarchy.indexOf(role);
     
     return currentRoleIndex < targetRoleIndex;
-  };
+  }, [getHighestRole]);
+
+  // Handle auth state changes to refresh roles
+  useEffect(() => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
+        // Invalidate roles cache on auth state change
+        invalidateRolesCache();
+      }
+    });
+
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
 
   return { 
     userRoles, 
-    isLoadingRoles, 
+    isLoadingRoles: isLoadingRoles || isInitialLoading, 
     hasRequiredRole, 
     getHighestRole, 
     canUpgradeTo 

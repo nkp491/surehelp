@@ -1,8 +1,9 @@
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { invalidateRolesCache } from "@/lib/auth-cache";
 
 export const useAuthState = () => {
   const navigate = useNavigate();
@@ -10,15 +11,17 @@ export const useAuthState = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
-  const clearAuthData = () => {
+  const clearAuthData = useCallback(() => {
+    invalidateRolesCache();
+    
     Object.keys(localStorage).forEach(key => {
       if (key.startsWith('sb-')) {
         localStorage.removeItem(key);
       }
     });
-  };
+  }, []);
 
-  const handleAuthError = async () => {
+  const handleAuthError = useCallback(async () => {
     clearAuthData();
     await supabase.auth.signOut();
     toast({
@@ -28,13 +31,21 @@ export const useAuthState = () => {
     });
     setIsAuthenticated(false);
     navigate("/auth", { replace: true });
-  };
+  }, [clearAuthData, navigate, toast]);
 
   useEffect(() => {
     let mounted = true;
 
     const checkAuth = async () => {
       try {
+        // Try to get session from local storage first for faster initial load
+        const localSession = localStorage.getItem('sb-auth-token');
+        if (localSession) {
+          // Optimistic update to improve perceived performance
+          setIsAuthenticated(true);
+        }
+        
+        // Verify with supabase
         const { data: { session } } = await supabase.auth.getSession();
         
         if (!session) {
@@ -80,7 +91,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, [navigate, toast, clearAuthData, handleAuthError]);
 
   return { isLoading, isAuthenticated };
 };
