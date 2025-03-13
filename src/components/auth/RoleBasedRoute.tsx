@@ -30,6 +30,11 @@ export function RoleBasedRoute({
   const [stableContent, setStableContent] = useState<ReactNode | null>(null);
   const { timeoutOccurred } = useAuthContext();
   
+  // Skip role check completely if user has system_admin role
+  const hasSystemAdminRole = useMemo(() => {
+    return Array.isArray(userRoles) && userRoles.includes('system_admin');
+  }, [userRoles]);
+
   // Cache key for verification results
   const cacheKey = useMemo(() => {
     return `${location.pathname}:${requiredRoles?.join('|') || 'none'}`;
@@ -51,7 +56,7 @@ export function RoleBasedRoute({
         // Default to granting access temporarily - will be verified in background
         setFinalAccess(true);
       }
-    }, 600); // Reduced from previous 800ms
+    }, 400); // Reduced from previous 600ms
     
     return () => clearTimeout(timer);
   }, [finalAccess]);
@@ -65,8 +70,8 @@ export function RoleBasedRoute({
     }
     
     // Fast path: System admin always gets access
-    const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
-    if (userRolesArray.includes('system_admin')) {
+    if (hasSystemAdminRole) {
+      console.log('User has system_admin role - granting access');
       setFinalAccess(true);
       return;
     }
@@ -125,17 +130,21 @@ export function RoleBasedRoute({
     } finally {
       setIsVerifying(false);
     }
-  }, [hasRequiredRole, requiredRoles, userRoles, cacheKey]);
+  }, [hasRequiredRole, requiredRoles, userRoles, cacheKey, hasSystemAdminRole]);
 
   // Trigger verification process
   useEffect(() => {
     if (isLoadingRoles) return;
     
     // Fast initial check
-    const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
+    if (hasSystemAdminRole) {
+      console.log('System admin detected - immediate access granted');
+      setFinalAccess(true);
+      return;
+    }
     
     // Clear cases that don't need verification
-    if (!requiredRoles || requiredRoles.length === 0 || userRolesArray.includes('system_admin')) {
+    if (!requiredRoles || requiredRoles.length === 0) {
       setFinalAccess(true);
       return;
     }
@@ -144,7 +153,7 @@ export function RoleBasedRoute({
     if (finalAccess === null && !isVerifying) {
       verifyAccess();
     }
-  }, [isLoadingRoles, userRoles, requiredRoles, verifyAccess, finalAccess, isVerifying]);
+  }, [isLoadingRoles, userRoles, requiredRoles, verifyAccess, finalAccess, isVerifying, hasSystemAdminRole]);
 
   // Always render stable content once it's set, even during verification changes
   if (stableContent) {

@@ -121,19 +121,30 @@ export function useRoleCheck() {
 
   // Memoize role check function to avoid unnecessary recalculations
   const hasRequiredRole = useCallback((requiredRoles?: string[]) => {
+    // Log role check to help with debugging
+    console.log('Checking roles:', { userRoles, requiredRoles });
+    
     if (!requiredRoles || requiredRoles.length === 0) return true;
     
     // Ensure userRoles is an array
     const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
-    if (userRolesArray.length === 0) return false;
+    
+    // Special case: empty user roles array
+    if (userRolesArray.length === 0) {
+      console.log('User has no roles, denying access');
+      return false;
+    }
     
     // Check for system_admin first as it supersedes all other role checks
     if (userRolesArray.includes('system_admin')) {
+      console.log('User has system_admin role, granting access');
       return true;
     }
     
     // Check if user has any of the required roles
-    return userRolesArray.some(role => requiredRoles.includes(role));
+    const hasRole = userRolesArray.some(role => requiredRoles.includes(role));
+    console.log('Role check result:', hasRole);
+    return hasRole;
   }, [userRoles]);
 
   // Get the highest tier role the user has
@@ -198,6 +209,8 @@ export function useRoleCheck() {
       subscription.unsubscribe();
     };
   }, []);
+
+  console.log('useRoleCheck returning:', { userRoles, isLoadingRoles: isLoadingRoles || isInitialLoading });
 
   return { 
     userRoles, 

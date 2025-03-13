@@ -47,15 +47,17 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           setAllowRender(true);
         }
       }
-    }, 800); // Increased to 800ms for slightly more stability
+    }, 500); // Adjusted from 800ms
     
     // If authentication check is complete
     if (!isLoading) {
       if (isAuthenticated === false) {
+        console.log('AuthGuard: User is not authenticated, navigating to auth page');
         // Invalidate role cache when logging out
         invalidateRolesCache();
         navigate("/auth", { replace: true });
       } else {
+        console.log('AuthGuard: User is authenticated, allowing render');
         // User is authenticated, allow rendering
         setAllowRender(true);
       }
@@ -78,6 +80,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   // Always render content with authContext if allowRender is true
   // This ensures we don't flash content and then remove it
   if (allowRender || (timeoutOccurred && isAuthenticated !== false)) {
+    console.log('AuthGuard: Rendering children with AuthContext');
     return (
       <AuthContext.Provider 
         value={{ 

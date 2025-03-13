@@ -1,3 +1,4 @@
+
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -34,22 +35,16 @@ const COMPONENT_MAP = {
 
 // Start preloading common components immediately
 const preloadComponents = () => {
-  // First preload the profile page since it's frequently accessed
-  const preloadProfile = import("@/pages/Profile");
-  
-  // Then preload other common pages
-  const preloads = [
+  // Preload the most common components first
+  return Promise.all([
+    import("@/pages/Profile"),
     import("@/pages/Dashboard"),
-    import("@/pages/SubmittedForms"),
-    preloadProfile, // Include the already started preload
-    import("@/components/FormContainer")
-  ];
-  
-  return Promise.all(preloads);
+    import("@/pages/SubmittedForms")
+  ]);
 };
 
 // Start preloading immediately when this module loads
-const preloadPromise = preloadComponents();
+preloadComponents();
 
 const MainContent = () => {
   const location = useLocation();
@@ -60,11 +55,9 @@ const MainContent = () => {
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
 
-  // Get the component for the current route or fallback to Dashboard
-  const Component = COMPONENT_MAP[location.pathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
-
-  // Keep the path stable to prevent component unmounting during navigation
+  // Update stable pathname when location changes
   useEffect(() => {
+    console.log('MainContent: Location changed to', location.pathname);
     // Only update the stable pathname after a short delay
     // This prevents content flashing during navigation
     const timer = setTimeout(() => {
@@ -73,18 +66,13 @@ const MainContent = () => {
     
     return () => clearTimeout(timer);
   }, [location.pathname]);
-  
-  // Wait for preload to complete
-  useEffect(() => {
-    preloadPromise.then(() => {
-      setIsPreloaded(true);
-    });
-  }, []);
 
   // Content rendering with stable component reference
   const renderContent = () => {
     // Get the component for the stable pathname
     const StableComponent = COMPONENT_MAP[stablePathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
+    
+    console.log('MainContent: Rendering', stablePathname, 'with roles', requiredRoles);
     
     return (
       <AuthGuard>
