@@ -1,8 +1,8 @@
 
 import { queryClient } from "@/lib/react-query";
 
-const ROLES_CACHE_KEY = "user-roles";
-const ROLE_VERIFICATION_CACHE_KEY = "role-verification";
+const ROLES_CACHE_KEY = ["user-roles"];
+const ROLE_VERIFICATION_CACHE_KEY = ["role-verification"];
 
 // Cache roles for 5 minutes by default
 const ROLES_CACHE_TIME = 5 * 60 * 1000;
@@ -16,7 +16,7 @@ export const setRolesInCache = (roles: string[]) => {
   
   // Store in localStorage as fallback
   try {
-    localStorage.setItem(ROLES_CACHE_KEY, JSON.stringify(roles));
+    localStorage.setItem(ROLES_CACHE_KEY[0], JSON.stringify(roles));
   } catch (error) {
     console.error("Failed to store roles in localStorage:", error);
   }
@@ -24,7 +24,7 @@ export const setRolesInCache = (roles: string[]) => {
 
 export const getRolesFromStorage = (): string[] => {
   try {
-    const storedRoles = localStorage.getItem(ROLES_CACHE_KEY);
+    const storedRoles = localStorage.getItem(ROLES_CACHE_KEY[0]);
     return storedRoles ? JSON.parse(storedRoles) : [];
   } catch (error) {
     console.error("Failed to retrieve roles from localStorage:", error);
@@ -33,11 +33,11 @@ export const getRolesFromStorage = (): string[] => {
 };
 
 export const invalidateRolesCache = () => {
-  queryClient.invalidateQueries({ queryKey: [ROLES_CACHE_KEY] });
-  queryClient.invalidateQueries({ queryKey: [ROLE_VERIFICATION_CACHE_KEY] });
+  queryClient.invalidateQueries({ queryKey: ROLES_CACHE_KEY });
+  queryClient.invalidateQueries({ queryKey: ROLE_VERIFICATION_CACHE_KEY });
   
   try {
-    localStorage.removeItem(ROLES_CACHE_KEY);
+    localStorage.removeItem(ROLES_CACHE_KEY[0]);
   } catch (error) {
     console.error("Failed to remove roles from localStorage:", error);
   }
@@ -46,12 +46,12 @@ export const invalidateRolesCache = () => {
 // Cache verification results for specific role requirements
 export const cacheVerificationResult = (requiredRoles: string[], result: boolean) => {
   const cacheKey = getVerificationCacheKey(requiredRoles);
-  queryClient.setQueryData([ROLE_VERIFICATION_CACHE_KEY, cacheKey], result);
+  queryClient.setQueryData([...ROLE_VERIFICATION_CACHE_KEY, cacheKey], result);
 };
 
 export const getVerificationFromCache = (requiredRoles: string[]) => {
   const cacheKey = getVerificationCacheKey(requiredRoles);
-  return queryClient.getQueryData<boolean>([ROLE_VERIFICATION_CACHE_KEY, cacheKey]);
+  return queryClient.getQueryData<boolean>([...ROLE_VERIFICATION_CACHE_KEY, cacheKey]);
 };
 
 // Create a stable cache key from role requirements

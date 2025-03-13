@@ -15,7 +15,7 @@ export function useRoleCheck() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Using React Query for efficient caching of roles
-  const { data: userRoles = [], isLoading: isLoadingRoles } = useQuery({
+  const { data: userRolesData = [], isLoading: isLoadingRoles } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
       const cachedRoles = getRolesFromCache();
@@ -63,6 +63,9 @@ export function useRoleCheck() {
     refetchOnWindowFocus: false,
     refetchOnMount: true
   });
+
+  // Ensure userRoles is always an array
+  const userRoles = Array.isArray(userRolesData) ? userRolesData : [];
 
   // Check if user has at least one of the required roles - with fast client-side check
   const hasRequiredRole = useCallback((requiredRoles?: string[]) => {

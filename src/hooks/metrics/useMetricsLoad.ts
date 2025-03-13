@@ -12,7 +12,8 @@ export const useMetricsLoad = () => {
   const { hasRequiredRole, userRoles } = useRoleCheck();
 
   // Determine history access level based on user role
-  const hasFullHistoryAccess = userRoles.includes('system_admin') || 
+  const hasFullHistoryAccess = 
+    userRoles.includes('system_admin') || 
     hasRequiredRole([
       'agent_pro', 'manager_pro', 'manager_pro_gold', 
       'manager_pro_platinum', 'beta_user'
@@ -151,22 +152,6 @@ export const useMetricsLoad = () => {
     }
   }, [history, toast, hasFullHistoryAccess]);
 
-  const addOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
-    setHistory(prev => {
-      const newEntry = { date, metrics };
-      const existingIndex = prev.findIndex(entry => entry.date === date);
-      
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = newEntry;
-        return updated;
-      } else {
-        const updated = [newEntry, ...prev];
-        return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
-      }
-    });
-  }, []);
-
   // Load initial history and set up real-time subscription
   useEffect(() => {
     console.log('[MetricsLoad] Initial load starting...');
@@ -201,7 +186,21 @@ export const useMetricsLoad = () => {
     isLoading,
     loadHistory,
     loadMoreHistory,
-    addOptimisticEntry,
+    addOptimisticEntry: useCallback((date: string, metrics: MetricCount) => {
+      setHistory(prev => {
+        const newEntry = { date, metrics };
+        const existingIndex = prev.findIndex(entry => entry.date === date);
+        
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = newEntry;
+          return updated;
+        } else {
+          const updated = [newEntry, ...prev];
+          return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
+        }
+      });
+    }, []),
     hasFullHistoryAccess
   };
 };
