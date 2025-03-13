@@ -19,7 +19,7 @@ const LazyFormContainer = lazy(() => import("@/components/FormContainer"));
 const LazyCommissionTracker = lazy(() => import("@/pages/CommissionTracker"));
 const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
 const LazyTeamPage = lazy(() => import("@/pages/Team"));
-const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsPage"));
+const LazyAdminActionsPage = lazy(() => import("@/pages/AdminActions"));
 
 // Eagerly preload key components
 import("@/pages/Dashboard");
@@ -41,8 +41,9 @@ const COMPONENT_MAP = {
 
 const MainContent = () => {
   const location = useLocation();
-  const { hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
+  const { hasSystemAdminRole, isLoadingRoles, refetchRoles } = useRoleCheck();
   const [isLoading, setIsLoading] = useState(true);
+  const [componentKey, setComponentKey] = useState(Date.now()); // Force remount when needed
   
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
@@ -60,6 +61,21 @@ const MainContent = () => {
     
     return () => clearTimeout(timeoutId);
   }, [location.pathname]);
+
+  // Force a re-check of roles for admin routes
+  useEffect(() => {
+    const isAdminRoute = location.pathname === '/admin' || 
+                         location.pathname === '/admin-actions' || 
+                         location.pathname === '/role-management';
+    
+    if (isAdminRoute) {
+      console.log("Admin route detected, verifying roles");
+      refetchRoles();
+      
+      // Force remount of component if we're on an admin route
+      setComponentKey(Date.now());
+    }
+  }, [location.pathname, refetchRoles]);
 
   // Content rendering with proper loading states
   const renderContent = () => {
@@ -81,11 +97,44 @@ const MainContent = () => {
       return <LoadingSkeleton />;
     }
     
+    // Check if the current route is an admin route
+    const isAdminRoute = location.pathname === '/admin' || 
+                         location.pathname === '/admin-actions' || 
+                         location.pathname === '/role-management';
+    
+    // For admin routes, we need to be extra careful
+    if (isAdminRoute) {
+      // If localStorage indicates admin but hasSystemAdminRole hasn't loaded yet
+      const localStorageAdmin = localStorage.getItem('is-system-admin') === 'true';
+      
+      if (localStorageAdmin || hasSystemAdminRole) {
+        return (
+          <Suspense fallback={<LoadingSkeleton />}>
+            <Component key={componentKey} />
+          </Suspense>
+        );
+      }
+      
+      // Still checking admin status
+      if (isLoadingRoles) {
+        return <LoadingSkeleton />;
+      }
+      
+      // Not an admin, redirect
+      toast.error("You don't have permission to access this page");
+      return (
+        <div className="p-8 text-center">
+          <h2 className="text-xl font-semibold mb-2">Access Denied</h2>
+          <p className="text-muted-foreground">You don't have permission to access this page.</p>
+        </div>
+      );
+    }
+    
     // System admins get direct access to all pages without role checks
     if (hasSystemAdminRole) {
       return (
         <Suspense fallback={<LoadingSkeleton />}>
-          <Component />
+          <Component key={componentKey} />
         </Suspense>
       );
     }
@@ -95,10 +144,10 @@ const MainContent = () => {
       <Suspense fallback={<LoadingSkeleton />}>
         {requiredRoles ? (
           <RoleBasedRoute requiredRoles={requiredRoles}>
-            <Component />
+            <Component key={componentKey} />
           </RoleBasedRoute>
         ) : (
-          <Component />
+          <Component key={componentKey} />
         )}
       </Suspense>
     );

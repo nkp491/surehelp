@@ -21,14 +21,28 @@ type SidebarNavigationProps = {
 export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hasRequiredRole, userRoles, hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
+  const { hasRequiredRole, userRoles, hasSystemAdminRole, isLoadingRoles, refetchRoles } = useRoleCheck();
   const [renderedItems, setRenderedItems] = useState<NavigationItem[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [activePathName, setActivePathName] = useState(location.pathname);
   
-  // Pre-process navigation items when userRoles are available
+  // Force a role check if needed
+  useEffect(() => {
+    const checkAdmin = async () => {
+      // If we're not seeing enough menu items, force a refetch
+      if (renderedItems.length <= 3 && localStorage.getItem('is-system-admin') === 'true') {
+        console.log("Force refetching roles due to limited menu items for admin");
+        await refetchRoles();
+      }
+    };
+    
+    checkAdmin();
+  }, [renderedItems.length, refetchRoles]);
+  
+  // Pre-process navigation items when roles data changes
   useEffect(() => {
     console.log("Navigation rendering with roles:", userRoles);
+    console.log("Has system admin:", hasSystemAdminRole);
     
     // Always show all items for system_admin
     if (hasSystemAdminRole) {
@@ -37,13 +51,25 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       return;
     }
     
-    // If roles are still loading, show default items
+    // If roles are still loading, check localStorage for admin status
     if (isLoadingRoles) {
+      try {
+        const isAdmin = localStorage.getItem('is-system-admin') === 'true';
+        if (isAdmin) {
+          console.log("Using admin status from localStorage during loading");
+          setRenderedItems(navigationItems);
+          return;
+        }
+      } catch (e) {
+        console.error('Error checking localStorage:', e);
+      }
+      
+      // Show basic items during loading
       const basicItems = navigationItems.filter(item => 
         !item.requiredRoles || 
         item.requiredRoles.includes('agent')
       );
-      setRenderedItems(basicItems.length > 0 ? basicItems : navigationItems);
+      setRenderedItems(basicItems.length > 0 ? basicItems : navigationItems.slice(0, 3));
       return;
     }
     

@@ -15,15 +15,25 @@ export function useRoleCheck() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Role cache TTL
-  const CACHE_TTL = 10 * 60 * 1000; // 10 minutes
+  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes (reduced from 10)
 
   // Using React Query for efficient caching of roles
   const { data: userRolesData = [], isLoading: isLoadingRoles, refetch } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
       try {
+        // Force clear any system admin flags when fetching
+        localStorage.removeItem('is-system-admin');
         const roles = await fetchUserRoles();
         setIsInitialLoading(false);
+        
+        // Cache the admin status immediately if detected
+        if (Array.isArray(roles) && roles.includes('system_admin')) {
+          console.log("System admin detected during fetch");
+          localStorage.setItem('is-system-admin', 'true');
+          localStorage.setItem('has-admin-access', 'true');
+        }
+        
         return roles;
       } catch (error) {
         console.error("Error fetching roles:", error);
@@ -32,9 +42,9 @@ export function useRoleCheck() {
       }
     },
     staleTime: CACHE_TTL,
-    refetchOnWindowFocus: false, // Don't refresh on window focus to prevent flashing
+    refetchOnWindowFocus: true, // Enable refetch on window focus
     refetchOnMount: true,
-    retry: 1,
+    retry: 2, // Increase retries
     networkMode: 'always'
   });
 
@@ -43,30 +53,71 @@ export function useRoleCheck() {
 
   // Check if user has system_admin role for quick access decisions
   const hasSystemAdminRole = useMemo(() => {
-    // Check if we have a local flag for system admin (for faster UI rendering)
-    const localAdminFlag = localStorage.getItem('is-system-admin');
-    if (localAdminFlag === 'true') {
+    console.log("Checking system admin status with roles:", userRoles);
+    
+    // First check if we have it in the current roles array
+    if (Array.isArray(userRoles) && userRoles.includes('system_admin')) {
+      console.log("System admin found in current roles array");
+      // Cache this for faster subsequent checks
+      try {
+        localStorage.setItem('is-system-admin', 'true');
+        localStorage.setItem('has-admin-access', 'true');
+      } catch (e) {
+        console.error('Error setting admin flag:', e);
+      }
       return true;
     }
     
-    if (!userRoles || !Array.isArray(userRoles) || userRoles.length === 0) {
-      return false;
+    // Then check if we have a local flag for system admin (for faster UI rendering)
+    try {
+      const localAdminFlag = localStorage.getItem('is-system-admin');
+      if (localAdminFlag === 'true') {
+        console.log("System admin found in localStorage");
+        return true;
+      }
+    } catch (e) {
+      console.error('Error checking localStorage:', e);
     }
     
+    // If roles are still loading and we're not sure, use a fallback check
+    if (isLoadingRoles && isInitialLoading) {
+      try {
+        // Use backup admin access as fallback during loading
+        const hasBackupAdminAccess = localStorage.getItem('has-admin-access') === 'true';
+        if (hasBackupAdminAccess) {
+          console.log("Using backup admin access during loading");
+          return true;
+        }
+      } catch (e) {
+        console.error('Error checking backup admin access:', e);
+      }
+    }
+    
+    // Do a full check on the roles we have
     const isAdmin = checkSystemAdminRole(userRoles);
     
-    // Cache the admin status for faster subsequent checks
+    // Cache the admin status if positive
     if (isAdmin) {
-      localStorage.setItem('is-system-admin', 'true');
+      try {
+        localStorage.setItem('is-system-admin', 'true');
+        localStorage.setItem('has-admin-access', 'true');
+      } catch (e) {
+        console.error('Error setting admin flag:', e);
+      }
     }
     
     return isAdmin;
-  }, [userRoles]);
+  }, [userRoles, isLoadingRoles, isInitialLoading]);
 
   // Memoize role check function to avoid unnecessary recalculations
   const hasRequiredRole = useCallback((requiredRoles?: string[]) => {
+    // If user is system admin, they have access to everything
+    if (hasSystemAdminRole) {
+      return true;
+    }
+    
     return checkRequiredRole(userRoles, requiredRoles);
-  }, [userRoles]);
+  }, [userRoles, hasSystemAdminRole]);
 
   // Get the highest tier role the user has
   const getHighestRole = useCallback(() => {

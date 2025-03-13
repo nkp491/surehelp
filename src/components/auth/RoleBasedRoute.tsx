@@ -16,11 +16,12 @@ export const RoleBasedRoute = ({
   requiredRoles,
   fallbackPath = "/metrics",
 }: RoleBasedRouteProps) => {
-  const { hasRequiredRole, isLoadingRoles, hasSystemAdminRole, userRoles } = useRoleCheck();
+  const { hasRequiredRole, isLoadingRoles, hasSystemAdminRole, userRoles, refetchRoles } = useRoleCheck();
   const navigate = useNavigate();
   const [accessGranted, setAccessGranted] = useState<boolean | null>(null);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
+  // Emergency timeout to prevent infinite loading
   useEffect(() => {
     // Ensure we don't get stuck in loading state
     const timeoutId = setTimeout(() => {
@@ -30,9 +31,16 @@ export const RoleBasedRoute = ({
         
         // If we have system admin in localStorage, grant access temporarily
         try {
-          const hasAdminAccess = localStorage.getItem('has-admin-access') === 'true';
+          const hasAdminAccess = localStorage.getItem('is-system-admin') === 'true';
           if (hasAdminAccess) {
+            console.log("Granting access based on localStorage admin flag");
             setAccessGranted(true);
+          } else {
+            // If still not sure, but we have roles, do a final check
+            if (Array.isArray(userRoles) && userRoles.length > 0) {
+              const hasAccess = hasRequiredRole(requiredRoles);
+              setAccessGranted(hasAccess);
+            }
           }
         } catch (e) {
           console.error('Error checking localStorage:', e);
@@ -41,12 +49,36 @@ export const RoleBasedRoute = ({
     }, 1000);
     
     return () => clearTimeout(timeoutId);
-  }, [isCheckingAccess]);
+  }, [isCheckingAccess, hasRequiredRole, requiredRoles, userRoles]);
 
+  // Special check for admin routes
+  useEffect(() => {
+    // If we're checking an admin route and having issues, force refetch
+    const isAdminRoute = requiredRoles.includes('system_admin');
+    if (isAdminRoute && accessGranted === false && localStorage.getItem('is-system-admin') === 'true') {
+      console.log("Mismatched admin status, force refetching roles");
+      refetchRoles();
+    }
+  }, [accessGranted, requiredRoles, refetchRoles]);
+
+  // Main access check logic
   useEffect(() => {
     const checkAccess = async () => {
       try {
         setIsCheckingAccess(true);
+        
+        // First check localStorage for quick admin check
+        try {
+          const isAdmin = localStorage.getItem('is-system-admin') === 'true';
+          if (isAdmin) {
+            console.log("Admin access granted from localStorage");
+            setAccessGranted(true);
+            setIsCheckingAccess(false);
+            return;
+          }
+        } catch (e) {
+          console.error('Error checking localStorage:', e);
+        }
         
         // System admins always have access to all routes
         if (hasSystemAdminRole) {
