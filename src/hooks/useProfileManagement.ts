@@ -91,11 +91,12 @@ export const useProfileManagement = () => {
       // Log what we're sending to debug
       console.log("Updating profile with:", updatesToSave);
 
-      // When updating the profile, avoid sending properties that don't match columns
+      // When updating the profile, avoid sending the query directly and use .match instead of .eq
+      // This is to avoid the SQL error with user_role
       const { error } = await supabase
         .from("profiles")
         .update(updatesToSave)
-        .eq("id", session.user.id);
+        .match({ id: session.user.id });
 
       if (error) throw error;
       

@@ -34,12 +34,14 @@ const PersonalInfo = ({
 
   // Update form data when props change
   useEffect(() => {
-    setFormData({
-      first_name: firstName || '',
-      last_name: lastName || '',
-      email: email || '',
-      phone: phone || ''
-    });
+    if (firstName !== undefined || lastName !== undefined || email !== undefined || phone !== undefined) {
+      setFormData({
+        first_name: firstName || '',
+        last_name: lastName || '',
+        email: email || '',
+        phone: phone || ''
+      });
+    }
   }, [firstName, lastName, email, phone]);
 
   const handleSubmit = (e: React.FormEvent) => {
