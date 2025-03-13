@@ -12,7 +12,7 @@ import PasswordSettings from "@/components/profile/PasswordSettings";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import type { Profile as ProfileType } from "@/types/profile";
+import { Profile } from "@/types/profile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -41,7 +41,7 @@ const ProfileContent = () => {
   }
 
   // Function to update just the role
-  const handleRoleUpdate = async (newRole: ProfileType["role"]) => {
+  const handleRoleUpdate = async (newRole: Profile["role"]) => {
     await updateProfile({ role: newRole });
   };
 
