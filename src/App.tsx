@@ -11,6 +11,10 @@ import AuthGuard from './components/auth/AuthGuard';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
 import { LanguageProvider } from './contexts/LanguageContext';
+import Home from './pages/marketing/Home';
+import About from './pages/marketing/About';
+import Pricing from './pages/marketing/Pricing';
+import TermsOfUse from './pages/marketing/TermsOfUse';
 
 function App() {
   return (
@@ -18,13 +22,19 @@ function App() {
       <LanguageProvider>
         <Router>
           <Routes>
+            {/* Marketing pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/terms" element={<TermsOfUse />} />
+            
             {/* Authentication routes */}
             <Route path="/auth" element={<Auth />} />
             <Route path="/auth/reset-password" element={<ResetPassword />} />
             <Route path="/auth/callback" element={<CallbackHandler />} />
             
             {/* Protected routes with sidebar navigation */}
-            <Route path="/" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
+            <Route path="/dashboard" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
             <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
             <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
             <Route path="/metrics" element={<AuthGuard><MainContent /></AuthGuard>} />

@@ -1,15 +1,19 @@
-
 import { Button } from "@/components/ui/button";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const NavBar = () => {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const scrollToContact = () => {
-    const contactSection = document.querySelector('#contact-section');
-    if (contactSection) {
-      contactSection.scrollIntoView({ behavior: 'smooth' });
+    if (location.pathname === '/') {
+      // If we're on the home page, scroll to the contact section
+      const contactSection = document.querySelector('#contact-section');
+      if (contactSection) {
+        contactSection.scrollIntoView({ behavior: 'smooth' });
+      }
     } else {
+      // Otherwise navigate to home and then scroll
       navigate('/#contact-section');
     }
   };
