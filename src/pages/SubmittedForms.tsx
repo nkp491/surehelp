@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { FormSubmission } from "@/types/form";
 import SubmissionsTable from "@/components/SubmissionsTable";
@@ -5,11 +6,14 @@ import FormContainer from "@/components/FormContainer";
 import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { FeatureRestriction } from "@/components/submissions/FeatureRestriction";
 
 const SubmittedForms = () => {
   const [submissions, setSubmissions] = useState<FormSubmission[]>([]);
   const [editingSubmission, setEditingSubmission] = useState<FormSubmission | null>(null);
   const { toast } = useToast();
+  const { hasRequiredRole } = useRoleCheck();
 
   useEffect(() => {
     loadSubmissions();
@@ -78,6 +82,20 @@ const SubmittedForms = () => {
     }
   };
 
+  // Get the maximum number of submissions based on user role
+  const getSubmissionLimit = () => {
+    if (hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'])) {
+      return Infinity; // Unlimited for higher tiers
+    }
+    return 10; // Basic limit for regular agents
+  };
+
+  const submissionLimit = getSubmissionLimit();
+  const isLimitExceeded = submissions.length > submissionLimit;
+  const displayedSubmissions = isLimitExceeded 
+    ? submissions.slice(0, submissionLimit) 
+    : submissions;
+
   return (
     <div className="space-y-6 py-6 sm:py-8 md:py-10">
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
@@ -100,11 +118,34 @@ const SubmittedForms = () => {
             )}
 
             <div className="bg-white p-6 rounded-lg shadow-sm">
+              {isLimitExceeded && (
+                <FeatureRestriction
+                  feature="Full Client History"
+                  requiredRole="agent_pro"
+                  description="Upgrade to Agent Pro to access your complete client history. Basic agents are limited to viewing their 10 most recent submissions."
+                >
+                  <></>
+                </FeatureRestriction>
+              )}
+
               <SubmissionsTable 
-                submissions={submissions}
+                submissions={displayedSubmissions}
                 onEdit={handleEdit}
               />
             </div>
+
+            {/* Advanced analytics feature locked behind agent_pro role */}
+            {!hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']) && (
+              <div className="mt-8">
+                <FeatureRestriction
+                  feature="Client Analytics"
+                  requiredRole="agent_pro"
+                  description="Unlock detailed client analytics and insights by upgrading to Agent Pro. Analyze conversion rates, client demographics, and more."
+                >
+                  <></>
+                </FeatureRestriction>
+              </div>
+            )}
           </div>
         </Card>
       </div>

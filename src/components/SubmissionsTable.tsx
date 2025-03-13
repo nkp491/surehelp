@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { FormSubmission } from "@/types/form";
@@ -10,6 +11,8 @@ import { useSubmissionsTable } from "@/hooks/useSubmissionsTable";
 import { Download } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { UpgradePrompt } from "@/components/common/UpgradePrompt";
 import { 
   Pagination,
   PaginationContent,
@@ -29,6 +32,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
   const { toast } = useToast();
+  const { hasRequiredRole } = useRoleCheck();
 
   const {
     searchTerm,
@@ -43,6 +47,16 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   } = useSubmissionsTable(submissions);
 
   const handleDelete = (submission: FormSubmission) => {
+    // Only allow deletion for agent_pro and above
+    if (!hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'])) {
+      toast({
+        title: "Upgrade Required",
+        description: "Deleting submissions requires Agent Pro or higher.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setSubmissionToDelete(submission);
     setDeleteDialogOpen(true);
   };
@@ -77,6 +91,16 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
   };
 
   const handleExport = () => {
+    // Restrict export functionality to agent_pro and above
+    if (!hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'])) {
+      toast({
+        title: "Upgrade Required",
+        description: "Exporting submissions requires Agent Pro or higher.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     try {
       if (!submissions.length) {
         toast({
@@ -127,6 +151,9 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     declined: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined") || [])
   };
 
+  // If user doesn't have the required role for advanced features
+  const showAdvancedFiltering = hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']);
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between bg-white p-4 rounded-lg shadow-sm text-[#2A6F97]">
@@ -135,16 +162,30 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
             <SearchBar searchTerm={searchTerm} onSearchChange={setSearchTerm} />
           </div>
           <div className="flex items-center gap-4">
-            <FilterBar filters={filters} onFilterChange={setFilters} />
-            <Button
-              onClick={handleExport}
-              className="flex items-center gap-2"
-              variant="outline"
-              disabled={!submissions.length}
-            >
-              <Download className="h-4 w-4" />
-              Export CSV
-            </Button>
+            {showAdvancedFiltering ? (
+              <>
+                <FilterBar filters={filters} onFilterChange={setFilters} />
+                <Button
+                  onClick={handleExport}
+                  className="flex items-center gap-2"
+                  variant="outline"
+                  disabled={!submissions.length}
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV
+                </Button>
+              </>
+            ) : (
+              <Button
+                onClick={() => {}}
+                className="flex items-center gap-2 opacity-60 cursor-not-allowed"
+                variant="outline"
+                disabled
+              >
+                <Download className="h-4 w-4" />
+                Pro Feature
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -203,6 +244,17 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
       />
+
+      {/* Show upgrade prompt when not having advanced features */}
+      {!showAdvancedFiltering && (
+        <div className="mt-6">
+          <UpgradePrompt
+            title="Enhanced Client Management"
+            description="Upgrade to Agent Pro to unlock advanced filtering, CSV exports, and more powerful client management tools."
+            requiredRole="agent_pro"
+          />
+        </div>
+      )}
     </div>
   );
 };
