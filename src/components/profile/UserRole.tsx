@@ -77,7 +77,16 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
           "Up to 5 agent accounts"
         ];
       case "beta_user":
-        return ["Early access to new features", "Feedback opportunities"];
+        return [
+          "Early access to new features", 
+          "Feedback opportunities",
+          "Full manager dashboard access",
+          "Team performance analytics",
+          "Commission calculator",
+          "Performance analytics",
+          "Priority support",
+          "Role management access"
+        ];
       default:
         return ["Basic assessment form access", "Personal metrics tracking"];
     }

@@ -44,19 +44,19 @@ const navigationItems = [
     title: "Commission Tracker",
     path: "/commission-tracker",
     icon: DollarSign,
-    requiredRoles: ["agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum"],
+    requiredRoles: ["agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {
     title: "Team",
     path: "/manager-dashboard",
     icon: Users2,
-    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum"],
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {
     title: "Role Management",
     path: "/role-management",
     icon: Shield,
-    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum"],
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
 ];
 
