@@ -32,18 +32,27 @@ export const useTeamMetrics = (teamId?: string) => {
       // First get all team members
       const { data: members, error: membersError } = await supabase
         .from('team_members')
-        .select(`
-          user_id,
-          profiles:user_id (
-            first_name,
-            last_name,
-            email,
-            profile_image_url
-          )
-        `)
+        .select('user_id')
         .eq('team_id', teamId);
 
       if (membersError) throw membersError;
+
+      // Get the list of user IDs to fetch their profiles
+      const userIds = members.map(member => member.user_id);
+      
+      // Fetch the profiles for these users
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email, profile_image_url')
+        .in('id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Create a map of user IDs to their profile information
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile;
+        return acc;
+      }, {} as Record<string, any>);
 
       const today = new Date();
       const monthStart = format(startOfMonth(today), 'yyyy-MM-dd');
@@ -84,12 +93,14 @@ export const useTeamMetrics = (teamId?: string) => {
           summary.average_ap = metrics.length > 0 ? 
             Math.round(summary.average_ap / metrics.length) : 0;
 
+          const profile = profileMap[member.user_id] || {};
+
           return {
             user_id: member.user_id,
-            first_name: member.profiles?.first_name,
-            last_name: member.profiles?.last_name,
-            email: member.profiles?.email,
-            profile_image_url: member.profiles?.profile_image_url,
+            first_name: profile.first_name,
+            last_name: profile.last_name,
+            email: profile.email,
+            profile_image_url: profile.profile_image_url,
             metrics: summary
           } as TeamMemberMetrics;
         })

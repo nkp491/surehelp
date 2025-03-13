@@ -16,29 +16,40 @@ export const useTeamBulletins = (teamId?: string) => {
     queryFn: async () => {
       if (!teamId) return [];
 
-      const { data, error } = await supabase
+      // First, fetch the bulletins
+      const { data: bulletinsData, error: bulletinsError } = await supabase
         .from('team_bulletins')
-        .select(`
-          *,
-          profiles:created_by (
-            first_name,
-            last_name,
-            profile_image_url
-          )
-        `)
+        .select('*')
         .eq('team_id', teamId)
         .order('pinned', { ascending: false })
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (bulletinsError) throw bulletinsError;
 
-      // Flatten the structure
-      return data.map((bulletin) => ({
+      // Get the list of creator IDs to fetch their profiles
+      const creatorIds = bulletinsData.map(bulletin => bulletin.created_by);
+      
+      // Fetch the profiles for these creators
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, profile_image_url')
+        .in('id', creatorIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Create a map of user IDs to their profile information
+      const profileMap = profiles.reduce((acc, profile) => {
+        acc[profile.id] = profile;
+        return acc;
+      }, {} as Record<string, any>);
+
+      // Merge the bulletins with their creator's profile information
+      return bulletinsData.map((bulletin) => ({
         ...bulletin,
-        author_name: bulletin.profiles ? 
-          `${bulletin.profiles.first_name || ''} ${bulletin.profiles.last_name || ''}`.trim() : 
+        author_name: profileMap[bulletin.created_by] ? 
+          `${profileMap[bulletin.created_by].first_name || ''} ${profileMap[bulletin.created_by].last_name || ''}`.trim() : 
           'Unknown',
-        author_image: bulletin.profiles?.profile_image_url
+        author_image: profileMap[bulletin.created_by]?.profile_image_url
       })) as TeamBulletin[];
     },
     enabled: !!teamId,

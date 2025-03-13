@@ -29,28 +29,38 @@ export const useTeamManagement = () => {
 
   // Get team members with their profile information
   const getTeamMembers = async (teamId: string) => {
-    const { data, error } = await supabase
+    // First, fetch the team members
+    const { data: members, error: membersError } = await supabase
       .from('team_members')
-      .select(`
-        *,
-        profiles:user_id (
-          first_name,
-          last_name,
-          email,
-          profile_image_url
-        )
-      `)
+      .select('*')
       .eq('team_id', teamId);
 
-    if (error) throw error;
+    if (membersError) throw membersError;
 
-    // Flatten the structure to make it easier to work with
-    return data.map((member) => ({
+    // Get the list of user IDs to fetch their profiles
+    const userIds = members.map(member => member.user_id);
+    
+    // Fetch the profiles for these users
+    const { data: profiles, error: profilesError } = await supabase
+      .from('profiles')
+      .select('id, first_name, last_name, email, profile_image_url')
+      .in('id', userIds);
+    
+    if (profilesError) throw profilesError;
+
+    // Create a map of user IDs to their profile information
+    const profileMap = profiles.reduce((acc, profile) => {
+      acc[profile.id] = profile;
+      return acc;
+    }, {} as Record<string, any>);
+
+    // Merge the team members with their profile information
+    return members.map((member) => ({
       ...member,
-      first_name: member.profiles?.first_name,
-      last_name: member.profiles?.last_name,
-      email: member.profiles?.email,
-      profile_image_url: member.profiles?.profile_image_url,
+      first_name: profileMap[member.user_id]?.first_name,
+      last_name: profileMap[member.user_id]?.last_name,
+      email: profileMap[member.user_id]?.email,
+      profile_image_url: profileMap[member.user_id]?.profile_image_url,
     })) as TeamMember[];
   };
 
