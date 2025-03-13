@@ -10,7 +10,7 @@ import {
   removeRoleFromUser, 
   getUserRoles,
   bulkRoleOperation 
-} from "@/utils/roleAssignment";
+} from "@/utils/roles";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle, Search, UserCheck, UserPlus, UserMinus, Users } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
