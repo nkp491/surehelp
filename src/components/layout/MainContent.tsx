@@ -8,6 +8,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import { Suspense, lazy, useEffect, useState } from "react";
 import LoadingSkeleton from "@/components/ui/loading-skeleton";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { toast } from "sonner";
 
 // Lazily load all components with a small delay to improve perceived performance
 const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
@@ -50,7 +51,7 @@ preloadComponents();
 const MainContent = () => {
   const location = useLocation();
   const [stablePathname, setStablePathname] = useState(location.pathname);
-  const { hasSystemAdminRole } = useRoleCheck();
+  const { hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
   
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
@@ -65,17 +66,29 @@ const MainContent = () => {
   // Content rendering with stable component reference
   const renderContent = () => {
     // Get the component for the stable pathname
-    const StableComponent = COMPONENT_MAP[stablePathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
+    const StableComponent = COMPONENT_MAP[stablePathname as keyof typeof COMPONENT_MAP];
+    
+    if (!StableComponent) {
+      console.error(`No component found for path: ${stablePathname}`);
+      toast.error("Page not found");
+      return <div className="p-8">Page not found</div>;
+    }
     
     console.log('MainContent: Rendering', stablePathname, 'with roles', requiredRoles);
     
     if (hasSystemAdminRole) {
       // System admins get direct access to all pages without role checks
+      console.log('User is system_admin, bypassing role checks');
       return (
         <Suspense fallback={<LoadingSkeleton />}>
           <StableComponent />
         </Suspense>
       );
+    }
+    
+    // If roles are still loading, show a simple loading state to prevent flicker
+    if (isLoadingRoles) {
+      return <LoadingSkeleton />;
     }
     
     return (
