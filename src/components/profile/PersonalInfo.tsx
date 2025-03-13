@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +12,7 @@ interface PersonalInfoProps {
   lastName?: string | null;
   email?: string | null;
   phone?: string | null;
-  onUpdate: (data: any) => void;
+  onUpdate: (data: any) => Promise<void>;
 }
 
 const PersonalInfo = ({

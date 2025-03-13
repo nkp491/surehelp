@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -29,7 +30,43 @@ export const useProfileManagement = () => {
         .eq("id", session.user.id)
         .single();
 
-      if (profileError) throw profileError;
+      if (profileError) {
+        console.error("Error fetching profile data:", profileError);
+        
+        // If no profile found, create a basic one
+        if (profileError.code === 'PGRST116') {
+          const { data: userData } = await supabase.auth.getUser();
+          if (userData.user) {
+            const newProfile = {
+              id: userData.user.id,
+              email: userData.user.email,
+              first_name: userData.user.user_metadata.first_name || null,
+              last_name: userData.user.user_metadata.last_name || null,
+              phone: userData.user.user_metadata.phone || null,
+              privacy_settings: {
+                show_email: false,
+                show_phone: false,
+                show_photo: true
+              },
+              notification_preferences: {
+                email_notifications: true,
+                phone_notifications: false
+              }
+            };
+            
+            const { data: insertedProfile, error: insertError } = await supabase
+              .from("profiles")
+              .insert(newProfile)
+              .select()
+              .single();
+              
+            if (insertError) throw insertError;
+            return insertedProfile as Profile;
+          }
+        }
+        
+        throw profileError;
+      }
       
       // Fetch user roles
       const { data: userRoles, error: rolesError } = await supabase
@@ -48,39 +85,85 @@ export const useProfileManagement = () => {
         console.error("Error fetching user metadata:", userError);
       }
       
-      // Merge user metadata with profile data
+      // Prepare the profile data, ensuring JSON fields are properly parsed
+      let sanitizedProfileData = { ...profileData };
+      if (typeof profileData.privacy_settings === 'string') {
+        try {
+          sanitizedProfileData.privacy_settings = JSON.parse(profileData.privacy_settings);
+        } catch (e) {
+          sanitizedProfileData.privacy_settings = {
+            show_email: false,
+            show_phone: false,
+            show_photo: true
+          };
+        }
+      }
+      
+      if (typeof profileData.notification_preferences === 'string') {
+        try {
+          sanitizedProfileData.notification_preferences = JSON.parse(profileData.notification_preferences);
+        } catch (e) {
+          sanitizedProfileData.notification_preferences = {
+            email_notifications: true,
+            phone_notifications: false
+          };
+        }
+      }
+      
+      // Merge profile data with user metadata
       const mergedProfile = {
-        ...profileData,
+        ...sanitizedProfileData,
         roles: roles,
-        privacy_settings: typeof profileData.privacy_settings === 'string' 
-          ? JSON.parse(profileData.privacy_settings)
-          : profileData.privacy_settings,
-        notification_preferences: typeof profileData.notification_preferences === 'string'
-          ? JSON.parse(profileData.notification_preferences)
-          : profileData.notification_preferences
       } as Profile;
       
-      // Override with user metadata if available
+      // If there's user metadata available, sync it with the profile
       if (user?.user_metadata) {
-        console.log("User metadata from auth:", user.user_metadata);
+        const syncNeeded = (
+          (user.user_metadata.first_name && user.user_metadata.first_name !== profileData.first_name) ||
+          (user.user_metadata.last_name && user.user_metadata.last_name !== profileData.last_name) || 
+          (user.user_metadata.phone && user.user_metadata.phone !== profileData.phone)
+        );
         
-        if (user.user_metadata.first_name) {
-          mergedProfile.first_name = user.user_metadata.first_name;
-        }
-        
-        if (user.user_metadata.last_name) {
-          mergedProfile.last_name = user.user_metadata.last_name;
-        }
-        
-        if (user.user_metadata.phone) {
-          mergedProfile.phone = user.user_metadata.phone;
-        }
-        
-        // Add any other fields from user metadata
-        for (const [key, value] of Object.entries(user.user_metadata)) {
-          if (key !== 'first_name' && key !== 'last_name' && key !== 'phone') {
-            (mergedProfile as any)[key] = value;
+        // Sync auth metadata to profile table if necessary
+        if (syncNeeded) {
+          const updates: any = {};
+          
+          if (user.user_metadata.first_name && user.user_metadata.first_name !== profileData.first_name) {
+            updates.first_name = user.user_metadata.first_name;
+            mergedProfile.first_name = user.user_metadata.first_name;
           }
+          
+          if (user.user_metadata.last_name && user.user_metadata.last_name !== profileData.last_name) {
+            updates.last_name = user.user_metadata.last_name;
+            mergedProfile.last_name = user.user_metadata.last_name;
+          }
+          
+          if (user.user_metadata.phone && user.user_metadata.phone !== profileData.phone) {
+            updates.phone = user.user_metadata.phone;
+            mergedProfile.phone = user.user_metadata.phone;
+          }
+          
+          if (Object.keys(updates).length > 0) {
+            console.log("Syncing auth metadata to profile:", updates);
+            await supabase
+              .from("profiles")
+              .update(updates)
+              .eq("id", session.user.id);
+          }
+        }
+      } else if (profileData.first_name || profileData.last_name || profileData.phone) {
+        // Sync profile data to auth metadata if necessary
+        const metadataUpdates: any = {};
+        
+        if (profileData.first_name) metadataUpdates.first_name = profileData.first_name;
+        if (profileData.last_name) metadataUpdates.last_name = profileData.last_name;
+        if (profileData.phone) metadataUpdates.phone = profileData.phone;
+        
+        if (Object.keys(metadataUpdates).length > 0) {
+          console.log("Syncing profile data to auth metadata:", metadataUpdates);
+          await supabase.auth.updateUser({
+            data: metadataUpdates
+          });
         }
       }
       
@@ -95,11 +178,14 @@ export const useProfileManagement = () => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         navigate("/auth");
+      } else if (event === "USER_UPDATED") {
+        // Refresh profile data when user is updated
+        refetch();
       }
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate]);
+  }, [navigate, refetch]);
 
   async function updateProfile(updates: Partial<Profile>) {
     try {
@@ -116,20 +202,28 @@ export const useProfileManagement = () => {
       // Log what we're sending to debug
       console.log("Updating profile with:", updatesToSave);
 
-      // Extract user metadata fields
+      // Define user metadata fields to update
       const userMetadata: any = {};
-      let hasUpdates = false;
+      let hasMetadataUpdates = false;
       
-      // Add all fields to user metadata
-      for (const [key, value] of Object.entries(updatesToSave)) {
-        if (key !== 'email' && key !== 'id') {
-          userMetadata[key] = value;
-          hasUpdates = true;
-        }
+      // Extract fields that should be saved in user metadata
+      if (updatesToSave.first_name !== undefined) {
+        userMetadata.first_name = updatesToSave.first_name;
+        hasMetadataUpdates = true;
       }
       
-      // Update user metadata
-      if (hasUpdates) {
+      if (updatesToSave.last_name !== undefined) {
+        userMetadata.last_name = updatesToSave.last_name;
+        hasMetadataUpdates = true;
+      }
+      
+      if (updatesToSave.phone !== undefined) {
+        userMetadata.phone = updatesToSave.phone;
+        hasMetadataUpdates = true;
+      }
+      
+      // Update user metadata first
+      if (hasMetadataUpdates) {
         console.log("Updating user metadata with:", userMetadata);
         
         const { data, error: authError } = await supabase.auth.updateUser({
@@ -176,6 +270,17 @@ export const useProfileManagement = () => {
         }
       }
       
+      // Update profile in database
+      const { error: profileError } = await supabase
+        .from("profiles")
+        .update(updatesToSave)
+        .eq("id", session.user.id);
+        
+      if (profileError) {
+        console.error("Error updating profile in database:", profileError);
+        throw profileError;
+      }
+      
       // Invalidate the profile query to force a refetch
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       
@@ -193,6 +298,7 @@ export const useProfileManagement = () => {
         description: error.message || "There was a problem updating your profile. Please try again.",
         variant: "destructive",
       });
+      throw error;
     }
   }
 

@@ -1,4 +1,5 @@
 
+import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +13,7 @@ interface NotificationPreferencesProps {
     email_notifications: boolean;
     phone_notifications: boolean;
   };
-  onUpdate: (preferences: any) => void;
+  onUpdate: (preferences: any) => Promise<void>;
 }
 
 const NotificationPreferences = ({
@@ -22,9 +23,13 @@ const NotificationPreferences = ({
   const { language, toggleLanguage } = useLanguage();
   const t = translations[language];
   const { toast } = useToast();
+  const [isUpdatingLanguage, setIsUpdatingLanguage] = useState(false);
+  const [isUpdatingEmail, setIsUpdatingEmail] = useState(false);
+  const [isUpdatingPhone, setIsUpdatingPhone] = useState(false);
 
   const handleLanguageToggle = async () => {
     try {
+      setIsUpdatingLanguage(true);
       const newLanguage = language === 'en' ? 'es' : 'en';
       
       // Get current user
@@ -53,6 +58,58 @@ const NotificationPreferences = ({
         description: "Failed to update language preference. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsUpdatingLanguage(false);
+    }
+  };
+
+  const handleEmailNotificationsToggle = async (checked: boolean) => {
+    try {
+      setIsUpdatingEmail(true);
+      await onUpdate({
+        notification_preferences: {
+          ...preferences,
+          email_notifications: checked
+        }
+      });
+      toast({
+        title: "Preferences Updated",
+        description: "Email notification preferences saved.",
+      });
+    } catch (error) {
+      console.error('Error updating email notifications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update email notification preferences.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingEmail(false);
+    }
+  };
+
+  const handlePhoneNotificationsToggle = async (checked: boolean) => {
+    try {
+      setIsUpdatingPhone(true);
+      await onUpdate({
+        notification_preferences: {
+          ...preferences,
+          phone_notifications: checked
+        }
+      });
+      toast({
+        title: "Preferences Updated",
+        description: "Phone notification preferences saved.",
+      });
+    } catch (error) {
+      console.error('Error updating phone notifications:', error);
+      toast({
+        title: "Error",
+        description: "Failed to update phone notification preferences.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsUpdatingPhone(false);
     }
   };
 
@@ -71,8 +128,12 @@ const NotificationPreferences = ({
               id="language-toggle"
               checked={language === 'es'}
               onCheckedChange={handleLanguageToggle}
+              disabled={isUpdatingLanguage}
             />
           </div>
+          {isUpdatingLanguage && (
+            <p className="text-sm text-gray-500">Updating language preference...</p>
+          )}
         </CardContent>
       </Card>
 
@@ -88,16 +149,14 @@ const NotificationPreferences = ({
             <Switch
               id="email-notifications"
               checked={preferences.email_notifications}
-              onCheckedChange={(checked) =>
-                onUpdate({
-                  notification_preferences: {
-                    ...preferences,
-                    email_notifications: checked
-                  }
-                })
-              }
+              onCheckedChange={handleEmailNotificationsToggle}
+              disabled={isUpdatingEmail}
             />
           </div>
+          {isUpdatingEmail && (
+            <p className="text-sm text-gray-500">Updating email preferences...</p>
+          )}
+          
           <div className="flex items-center justify-between">
             <Label htmlFor="phone-notifications">
               {t.phoneNotifications}
@@ -105,16 +164,13 @@ const NotificationPreferences = ({
             <Switch
               id="phone-notifications"
               checked={preferences.phone_notifications}
-              onCheckedChange={(checked) =>
-                onUpdate({
-                  notification_preferences: {
-                    ...preferences,
-                    phone_notifications: checked
-                  }
-                })
-              }
+              onCheckedChange={handlePhoneNotificationsToggle}
+              disabled={isUpdatingPhone}
             />
           </div>
+          {isUpdatingPhone && (
+            <p className="text-sm text-gray-500">Updating phone preferences...</p>
+          )}
         </CardContent>
       </Card>
     </div>
