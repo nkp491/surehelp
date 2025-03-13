@@ -62,14 +62,15 @@ export const useRoleManagement = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch available roles (hardcoded for now, could be from a roles table in the future)
+  // Fetch available roles (updated to include system_admin)
   const availableRoles = [
     "agent",
     "agent_pro",
     "manager_pro",
     "manager_pro_gold",
     "manager_pro_platinum",
-    "beta_user"
+    "beta_user",
+    "system_admin"
   ];
 
   // Assign a role to a user

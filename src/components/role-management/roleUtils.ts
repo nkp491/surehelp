@@ -8,6 +8,7 @@ export const formatRoleName = (role: string) => {
   if (role === "manager_pro_platinum") return "Manager Pro Platinum";
   if (role === "agent_pro") return "Agent Pro";
   if (role === "manager_pro") return "Manager Pro";
+  if (role === "system_admin") return "System Admin";
   return role.charAt(0).toUpperCase() + role.slice(1);
 };
 
@@ -21,6 +22,7 @@ export const getBadgeVariant = (role: string) => {
     case "agent_pro": return "outline";
     case "manager_pro": return "default";
     case "beta_user": return "destructive";
+    case "system_admin": return "outline";
     default: return "secondary";
   }
 };
