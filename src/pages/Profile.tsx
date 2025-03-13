@@ -1,3 +1,4 @@
+
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -37,6 +38,9 @@ const ProfileContent = () => {
   const { toast } = useToast();
   const { language } = useLanguage();
   const t = translations[language];
+
+  // Check if the user has the beta_user role
+  const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
 
   // Debug function to directly test database update
   const testDirectUpdate = async () => {
@@ -134,20 +138,22 @@ const ProfileContent = () => {
           
           <TermsAcceptance />
           
-          {/* Debug button for direct database update */}
-          <div className="mt-8 p-4 border border-gray-200 rounded-md">
-            <h3 className="text-lg font-medium mb-2">Debug Tools</h3>
-            <Button 
-              variant="outline" 
-              onClick={testDirectUpdate}
-              className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
-            >
-              Test Direct DB Update
-            </Button>
-            <p className="text-sm text-gray-500 mt-2">
-              This button will directly update your profile in the database with test values.
-            </p>
-          </div>
+          {/* Debug button for direct database update - only for beta users */}
+          {hasBetaAccess && (
+            <div className="mt-8 p-4 border border-gray-200 rounded-md">
+              <h3 className="text-lg font-medium mb-2">Debug Tools</h3>
+              <Button 
+                variant="outline" 
+                onClick={testDirectUpdate}
+                className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+              >
+                Test Direct DB Update
+              </Button>
+              <p className="text-sm text-gray-500 mt-2">
+                This button will directly update your profile in the database with test values.
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>
