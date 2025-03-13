@@ -9,16 +9,17 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 type SidebarNavigationProps = {
   navigationItems: NavigationItem[];
-  hasRequiredRole: (requiredRoles?: string[]) => boolean;
 };
 
-export function SidebarNavigation({ navigationItems, hasRequiredRole }: SidebarNavigationProps) {
+export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   const navigate = useNavigate();
   const location = useLocation();
-
+  const { hasRequiredRole } = useRoleCheck();
+  
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>

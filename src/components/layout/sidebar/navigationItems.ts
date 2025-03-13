@@ -13,16 +13,19 @@ export const navigationItems: NavigationItem[] = [
     title: "Client Assessment Form",
     path: "/assessment",
     icon: ClipboardList,
+    requiredRoles: ["agent", "agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {
     title: "Client Book of Business",
     path: "/submitted-forms",
     icon: BookOpen,
+    requiredRoles: ["agent", "agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {
     title: "KPI Insights",
     path: "/metrics",
     icon: LayoutDashboard,
+    requiredRoles: ["agent", "agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {
     title: "Commission Tracker",

@@ -11,7 +11,7 @@ import { SidebarNavigation } from "./sidebar/SidebarNavigation";
 import { SidebarProfile } from "./sidebar/SidebarProfile";
 
 export function AppSidebar() {
-  const { profileData, hasRequiredRole } = useSidebarProfile();
+  const { profileData } = useSidebarProfile();
   
   return (
     <Sidebar>
@@ -25,8 +25,7 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarNavigation 
-          navigationItems={navigationItems} 
-          hasRequiredRole={hasRequiredRole} 
+          navigationItems={navigationItems}
         />
       </SidebarContent>
       <SidebarProfile profileData={profileData} />

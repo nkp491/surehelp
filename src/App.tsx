@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Profile from './pages/Profile';
 import Assessment from './pages/Assessment';
 import Auth from './pages/Auth';
@@ -22,7 +22,7 @@ function App() {
           <Route path="/auth/callback" element={<CallbackHandler />} />
           
           {/* Protected routes with sidebar navigation */}
-          <Route path="/" element={<AuthGuard><MainContent /></AuthGuard>} />
+          <Route path="/" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
           <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/metrics" element={<AuthGuard><MainContent /></AuthGuard>} />

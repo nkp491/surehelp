@@ -11,34 +11,53 @@ import CommissionTracker from "@/pages/CommissionTracker";
 import RoleManagement from "@/pages/RoleManagement";
 import TeamPage from "@/pages/Team";
 import AdminActionsPage from "@/components/admin/AdminActionsPage";
+import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
+import { navigationItems } from "./sidebar/navigationItems";
 
 const MainContent = () => {
   const location = useLocation();
 
+  // Find the current navigation item to get the required roles
+  const currentNavItem = navigationItems.find(item => item.path === location.pathname);
+  const requiredRoles = currentNavItem?.requiredRoles;
+
   const renderContent = () => {
-    switch (location.pathname) {
-      case '/metrics':
-        return <Dashboard />;
-      case '/submitted-forms':
-        return <SubmittedForms />;
-      case '/manager-dashboard':
-        return <ManagerDashboard />;
-      case '/profile':
-        return <Profile />;
-      case '/assessment':
-        return <FormContainer />;
-      case '/commission-tracker':
-        return <CommissionTracker />;
-      case '/role-management':
-        return <RoleManagement />;
-      case '/team':
-        return <TeamPage />;
-      case '/admin':
-      case '/admin-actions':
-        return <AdminActionsPage />;
-      default:
-        return <Dashboard />;
+    const Component = (() => {
+      switch (location.pathname) {
+        case '/metrics':
+          return <Dashboard />;
+        case '/submitted-forms':
+          return <SubmittedForms />;
+        case '/manager-dashboard':
+          return <ManagerDashboard />;
+        case '/profile':
+          return <Profile />;
+        case '/assessment':
+          return <FormContainer />;
+        case '/commission-tracker':
+          return <CommissionTracker />;
+        case '/role-management':
+          return <RoleManagement />;
+        case '/team':
+          return <TeamPage />;
+        case '/admin':
+        case '/admin-actions':
+          return <AdminActionsPage />;
+        default:
+          return <Dashboard />;
+      }
+    })();
+
+    // Wrap with role protection if the path requires specific roles
+    if (requiredRoles) {
+      return (
+        <RoleBasedRoute requiredRoles={requiredRoles}>
+          {Component}
+        </RoleBasedRoute>
+      );
     }
+
+    return Component;
   };
 
   return (
