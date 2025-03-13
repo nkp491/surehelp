@@ -18,8 +18,9 @@ export function useRoleCheck() {
   const { data: userRolesData = [], isLoading: isLoadingRoles } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
+      console.log('Fetching user roles...');
       const cachedRoles = getRolesFromCache();
-      if (cachedRoles && Array.isArray(cachedRoles) && cachedRoles.length > 0) {
+      if (Array.isArray(cachedRoles) && cachedRoles.length > 0) {
         console.log('Using cached roles:', cachedRoles);
         return cachedRoles;
       }
@@ -77,17 +78,20 @@ export function useRoleCheck() {
   // Check if user has at least one of the required roles - with fast client-side check
   const hasRequiredRole = useCallback((requiredRoles?: string[]) => {
     if (!requiredRoles || requiredRoles.length === 0) return true;
-    if (userRoles.length === 0) return false;
+    
+    // Ensure userRoles is an array
+    const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
+    if (userRolesArray.length === 0) return false;
     
     // Check for system_admin first as it supersedes all other role checks
-    if (userRoles.includes('system_admin')) {
+    if (userRolesArray.includes('system_admin')) {
       console.log('User is system_admin, access granted');
       return true;
     }
     
     // Check if user has any of the required roles
-    const hasRole = userRoles.some(role => requiredRoles.includes(role));
-    console.log('Role check result:', { userRoles, requiredRoles, hasRole });
+    const hasRole = userRolesArray.some(role => requiredRoles.includes(role));
+    console.log('Role check result:', { userRoles: userRolesArray, requiredRoles, hasRole });
     return hasRole;
   }, [userRoles]);
 
@@ -105,7 +109,10 @@ export function useRoleCheck() {
     
     let highestRoleIndex = -1;
     
-    userRoles.forEach(role => {
+    // Ensure userRoles is an array
+    const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
+    
+    userRolesArray.forEach(role => {
       const index = roleHierarchy.indexOf(role);
       if (index > highestRoleIndex) {
         highestRoleIndex = index;
@@ -134,6 +141,7 @@ export function useRoleCheck() {
   // Handle auth state changes to refresh roles
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state change in useRoleCheck:', event);
       if (event === 'SIGNED_IN' || event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
         // Invalidate roles cache on auth state change
         invalidateRolesCache();
@@ -144,6 +152,12 @@ export function useRoleCheck() {
       subscription.unsubscribe();
     };
   }, []);
+
+  console.log('useRoleCheck hook state:', { 
+    userRoles, 
+    isLoadingRoles: isLoadingRoles || isInitialLoading,
+    hasRequiredRole: hasRequiredRole(['agent']) // test with a sample role
+  });
 
   return { 
     userRoles, 

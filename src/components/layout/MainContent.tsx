@@ -5,7 +5,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import AuthGuard from "@/components/auth/AuthGuard";
-import { Suspense, lazy, useEffect } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import LoadingScreen from "@/components/ui/loading-screen";
 
 // Lazy load components to improve initial load performance
@@ -21,6 +21,19 @@ const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsP
 
 const MainContent = () => {
   const location = useLocation();
+  const [isNavigating, setIsNavigating] = useState(false);
+
+  // Reset navigation state on location change
+  useEffect(() => {
+    setIsNavigating(true);
+    
+    // Short timeout to prevent flickering but allow for state updates
+    const timer = setTimeout(() => {
+      setIsNavigating(false);
+    }, 100);
+    
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
 
   // Debug navigation
   useEffect(() => {

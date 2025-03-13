@@ -25,17 +25,41 @@ export function RoleBasedRoute({
   const [isVerifying, setIsVerifying] = useState(false);
   const [serverVerified, setServerVerified] = useState(false);
   const [finalAccess, setFinalAccess] = useState<boolean | null>(null);
+  const [loadTimeout, setLoadTimeout] = useState(false);
+  
+  // Add a safety timeout to prevent infinite loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (isVerifying || finalAccess === null) {
+        console.log('RoleBasedRoute: Force completion after timeout');
+        setLoadTimeout(true);
+        
+        // Use client-side role check as fallback
+        if (finalAccess === null) {
+          const clientCheck = hasRequiredRole(requiredRoles);
+          console.log('Using client-side check as fallback:', clientCheck);
+          setFinalAccess(clientCheck);
+        }
+      }
+    }, 3000); // 3 second safety timeout
+    
+    return () => clearTimeout(timer);
+  }, [isVerifying, finalAccess, hasRequiredRole, requiredRoles]);
   
   // Optimize verification process with caching and early returns
   const verifyAccess = useCallback(async () => {
+    console.log('Verifying access for roles:', requiredRoles);
+    
     // Skip verification if no roles are required
     if (!requiredRoles || requiredRoles.length === 0) {
+      console.log('No roles required, granting access');
       setFinalAccess(true);
       return;
     }
     
     // Fast path: System admin always gets access
-    if (Array.isArray(userRoles) && userRoles.includes('system_admin')) {
+    const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
+    if (userRolesArray.includes('system_admin')) {
       console.log('User is system_admin, access granted immediately');
       setFinalAccess(true);
       return;
@@ -43,8 +67,8 @@ export function RoleBasedRoute({
 
     // Fast path: Client-side verification passes
     const clientVerified = hasRequiredRole(requiredRoles);
+    console.log('Client-side role verification result:', clientVerified);
     if (clientVerified) {
-      console.log('Client-side role verification passed');
       setFinalAccess(true);
       return;
     }
@@ -88,24 +112,37 @@ export function RoleBasedRoute({
 
   // Trigger verification process when dependencies change
   useEffect(() => {
+    console.log('RoleBasedRoute: Checking roles', { 
+      isLoadingRoles, 
+      userRoles, 
+      requiredRoles, 
+      finalAccess 
+    });
+    
     // Skip if still loading roles
-    if (isLoadingRoles) return;
+    if (isLoadingRoles) {
+      console.log('Still loading roles, waiting...');
+      return;
+    }
     
     // Fast initial check for optimistic rendering
-    if (!requiredRoles || requiredRoles.length === 0 || 
-        (Array.isArray(userRoles) && userRoles.includes('system_admin'))) {
+    const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
+    if (!requiredRoles || requiredRoles.length === 0 || userRolesArray.includes('system_admin')) {
+      console.log('Fast path: No roles required or user is admin');
       setFinalAccess(true);
       return;
     }
     
     // Only verify if we don't have a final access decision
-    if (finalAccess === null) {
+    if (finalAccess === null && !isVerifying) {
+      console.log('Starting verification process');
       verifyAccess();
     }
-  }, [isLoadingRoles, userRoles, requiredRoles, verifyAccess, finalAccess]);
+  }, [isLoadingRoles, userRoles, requiredRoles, verifyAccess, finalAccess, isVerifying]);
 
-  // Show loading state only during initial load
-  if (isLoadingRoles || (finalAccess === null && isVerifying)) {
+  // Show loading state only during initial load and only for a limited time
+  if ((isLoadingRoles || (finalAccess === null && isVerifying)) && !loadTimeout) {
+    console.log('Showing loading state', { isLoadingRoles, finalAccess, isVerifying });
     return (
       <div className="container mx-auto py-4 px-4 flex justify-center items-center min-h-[200px]">
         <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -113,8 +150,16 @@ export function RoleBasedRoute({
     );
   }
 
+  // If timeout occurred or verification failed, use client-side check as fallback
+  if (loadTimeout && finalAccess === null) {
+    console.log('Timeout occurred, using client-side check');
+    const clientCheck = hasRequiredRole(requiredRoles);
+    setFinalAccess(clientCheck);
+  }
+
   // Show access denied screen if verification fails
   if (finalAccess === false) {
+    console.log('Access denied, redirecting to', fallbackPath);
     return (
       <div className="container mx-auto py-6 px-4">
         <Alert variant="destructive" className="mb-6">
@@ -136,6 +181,6 @@ export function RoleBasedRoute({
     );
   }
 
-  // Render children if access is granted
+  // Render children if access is granted or we're using fallback after timeout
   return <>{children}</>;
 }
