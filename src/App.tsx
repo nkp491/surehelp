@@ -7,19 +7,31 @@ import Auth from './pages/Auth';
 import AdminActions from './pages/AdminActions';
 import CallbackHandler from './pages/CallbackHandler';
 import ResetPassword from './pages/auth/reset-password';
+import MainContent from './components/layout/MainContent';
+import AuthGuard from './components/auth/AuthGuard';
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Assessment />} />
-        <Route path="/assessment" element={<Assessment />} />
-        <Route path="/profile" element={<Profile />} />
-        <Route path="/admin" element={<AdminActions />} />
-        <Route path="/admin-actions" element={<AdminActions />} />
+        {/* Authentication routes */}
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/auth/callback" element={<CallbackHandler />} />
+        
+        {/* Admin specific routes */}
+        <Route path="/admin" element={<AuthGuard><AdminActions /></AuthGuard>} />
+        <Route path="/admin-actions" element={<AuthGuard><AdminActions /></AuthGuard>} />
+        
+        {/* Protected routes with sidebar navigation */}
+        <Route path="/" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/metrics" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/submitted-forms" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/manager-dashboard" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
+        <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
       </Routes>
     </Router>
   );
