@@ -5,17 +5,16 @@ import { hasSystemAdminRole } from "./hasRole";
 
 /**
  * Performs bulk role operations (assign or remove) for multiple users
- * 
- * @param userIds - Array of user UUIDs
- * @param role - The role to assign or remove
- * @param action - Whether to "assign" or "remove" the role
- * @returns Promise resolving to a success message or error with details
  */
-export const bulkRoleOperation = async (
-  userIds: string[], 
-  role: string, 
-  action: "assign" | "remove"
-): Promise<{ 
+export const bulkRoleOperation = async ({
+  userIds,
+  role,
+  action
+}: {
+  userIds: string[];
+  role: string;
+  action: "assign" | "remove";
+}): Promise<{ 
   success: boolean; 
   message: string; 
   results?: { userId: string; success: boolean; message: string }[]
