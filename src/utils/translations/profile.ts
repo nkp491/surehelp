@@ -28,6 +28,8 @@ export const profileTranslations = {
     passwordResetEmailDescription: "Check your email for password reset instructions",
     passwordResetError: "Failed to send password reset email. Please try again.",
     error: "Error",
+    edit: "Edit",
+    save: "Save",
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -57,5 +59,7 @@ export const profileTranslations = {
     passwordResetEmailDescription: "Revisa tu correo para las instrucciones de restablecimiento",
     passwordResetError: "Error al enviar el correo de restablecimiento. Por favor intenta de nuevo.",
     error: "Error",
+    edit: "Editar",
+    save: "Guardar",
   }
 };

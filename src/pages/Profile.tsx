@@ -1,3 +1,4 @@
+
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -11,6 +12,7 @@ import PasswordSettings from "@/components/profile/PasswordSettings";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Profile } from "@/types/profile";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -38,6 +40,14 @@ const ProfileContent = () => {
     return <ProfileLoading />;
   }
 
+  // Function to update just the role
+  const handleRoleUpdate = async (newRole: Profile["role"]) => {
+    await updateProfile({ role: newRole });
+  };
+
+  // Check if user is admin or has permission to edit roles
+  const canEditRole = profile?.role === "system_admin";
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <ProfileHeader onSignOut={signOut} />
@@ -59,7 +69,11 @@ const ProfileContent = () => {
         />
 
         <div className="flex flex-col gap-6">
-          <UserRole role={profile?.role} />
+          <UserRole 
+            role={profile?.role} 
+            canEditRole={canEditRole}
+            onUpdateRole={handleRoleUpdate}
+          />
 
           <PasswordSettings />
 

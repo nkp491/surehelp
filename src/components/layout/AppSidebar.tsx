@@ -1,6 +1,6 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Users2, UserCircle, DollarSign, BookOpen } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Users2, UserCircle, DollarSign, BookOpen, Shield } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -52,12 +52,23 @@ const navigationItems = [
   },
 ];
 
+// Admin-specific navigation items
+const adminNavigationItems = [
+  ...navigationItems,
+  {
+    title: "Admin Dashboard",
+    path: "/admin",
+    icon: Shield,
+  },
+];
+
 export function AppSidebar() {
   const navigate = useNavigate();
   const location = useLocation();
   const [profileData, setProfileData] = useState<{
     first_name?: string | null;
     profile_image_url?: string | null;
+    role?: string | null;
   }>({});
 
   useEffect(() => {
@@ -89,7 +100,7 @@ export function AppSidebar() {
       if (user) {
         const { data: profile } = await supabase
           .from('profiles')
-          .select('first_name, profile_image_url')
+          .select('first_name, profile_image_url, role')
           .eq('id', user.id)
           .single();
 
@@ -110,6 +121,9 @@ export function AppSidebar() {
       console.error('Error signing out:', error);
     }
   };
+
+  // Determine which navigation items to show based on role
+  const navItems = profileData.role === 'system_admin' ? adminNavigationItems : navigationItems;
   
   return (
     <Sidebar>
@@ -123,10 +137,12 @@ export function AppSidebar() {
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>
+          <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">
+            {profileData.role === 'system_admin' ? 'Admin Dashboard' : 'Agent Hub'}
+          </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
+              {navItems.map((item) => (
                 <SidebarMenuItem key={item.path}>
                   <SidebarMenuButton
                     onClick={() => navigate(item.path)}
