@@ -4,8 +4,8 @@ import { queryClient } from "@/lib/react-query";
 const ROLES_CACHE_KEY = ["user-roles"];
 const ROLE_VERIFICATION_CACHE_KEY = ["role-verification"];
 
-// Increase cache time for better performance
-const ROLES_CACHE_TIME = 30 * 60 * 1000; // 30 minutes
+// Reduce cache time to prevent stale data
+const ROLES_CACHE_TIME = 5 * 60 * 1000; // 5 minutes
 
 export const getRolesFromCache = () => {
   return queryClient.getQueryData<string[]>(ROLES_CACHE_KEY) || [];
@@ -17,8 +17,6 @@ export const setRolesInCache = (roles: string[]) => {
   // Store in localStorage as fallback
   try {
     localStorage.setItem(ROLES_CACHE_KEY[0], JSON.stringify(roles));
-    
-    // Add timestamp for cache invalidation
     localStorage.setItem(`${ROLES_CACHE_KEY[0]}_timestamp`, Date.now().toString());
   } catch (error) {
     console.error("Failed to store roles in localStorage:", error);
@@ -36,7 +34,6 @@ export const getRolesFromStorage = (): string[] => {
       if (Date.now() - cacheTime < ROLES_CACHE_TIME) {
         return JSON.parse(storedRoles);
       } else {
-        console.log('Roles cache expired, will fetch fresh data');
         // Clear expired cache
         localStorage.removeItem(ROLES_CACHE_KEY[0]);
         localStorage.removeItem(`${ROLES_CACHE_KEY[0]}_timestamp`);
@@ -54,11 +51,11 @@ export const invalidateRolesCache = () => {
   queryClient.invalidateQueries({ queryKey: ROLE_VERIFICATION_CACHE_KEY });
   
   try {
-    // Clear all role-related items from storage
+    // Clear all role-related items from storage with error handling
     localStorage.removeItem(ROLES_CACHE_KEY[0]);
     localStorage.removeItem(`${ROLES_CACHE_KEY[0]}_timestamp`);
     
-    // Also clear verification cache
+    // Clear any verification items without error if they don't exist
     const keysToRemove: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
@@ -68,20 +65,17 @@ export const invalidateRolesCache = () => {
     }
     
     keysToRemove.forEach(key => localStorage.removeItem(key));
-    
-    // Clear session storage as well
     sessionStorage.removeItem('user-roles');
   } catch (error) {
     console.error("Failed to remove roles from storage:", error);
   }
 };
 
-// Cache verification results for specific role requirements
+// Simplified caching of verification results
 export const cacheVerificationResult = (requiredRoles: string[], result: boolean) => {
   const cacheKey = getVerificationCacheKey(requiredRoles);
   queryClient.setQueryData([...ROLE_VERIFICATION_CACHE_KEY, cacheKey], result);
   
-  // Also store in localStorage with timestamp
   try {
     localStorage.setItem(`role-verification:${cacheKey}`, result.toString());
     localStorage.setItem(`role-verification:${cacheKey}_timestamp`, Date.now().toString());
@@ -91,6 +85,8 @@ export const cacheVerificationResult = (requiredRoles: string[], result: boolean
 };
 
 export const getVerificationFromCache = (requiredRoles: string[] | undefined) => {
+  if (!requiredRoles) return undefined;
+  
   const cacheKey = getVerificationCacheKey(requiredRoles);
   
   // First check React Query cache
@@ -99,7 +95,7 @@ export const getVerificationFromCache = (requiredRoles: string[] | undefined) =>
     return cachedResult;
   }
   
-  // Then check localStorage
+  // Then check localStorage with error handling
   try {
     const storedResult = localStorage.getItem(`role-verification:${cacheKey}`);
     const timestamp = localStorage.getItem(`role-verification:${cacheKey}_timestamp`);

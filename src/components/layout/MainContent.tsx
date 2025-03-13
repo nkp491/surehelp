@@ -5,17 +5,31 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import AuthGuard from "@/components/auth/AuthGuard";
-import { Suspense, lazy, useEffect, useState, useTransition } from "react";
+import { Suspense, lazy, useEffect, useState } from "react";
 import LoadingSkeleton from "@/components/ui/loading-skeleton";
 
-// Preload common pages on app startup
-const LazyDashboard = lazy(() => {
-  // Start loading Dashboard immediately
-  const preload = import("@/pages/Dashboard");
-  return preload;
-});
+// Preload all common pages on app startup
+const preloadComponents = () => {
+  const preloads = [
+    import("@/pages/Dashboard"),
+    import("@/pages/SubmittedForms"),
+    import("@/pages/ManagerDashboard"),
+    import("@/pages/Profile"),
+    import("@/components/FormContainer"),
+    import("@/pages/CommissionTracker"),
+    import("@/pages/RoleManagement"),
+    import("@/pages/Team"),
+    import("@/components/admin/AdminActionsPage")
+  ];
+  
+  return Promise.all(preloads);
+};
 
-// Lazy load components with dynamic imports for code splitting
+// Start preloading immediately
+const preloadPromise = preloadComponents();
+
+// Lazy load components with lower suspense thresholds
+const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
 const LazySubmittedForms = lazy(() => import("@/pages/SubmittedForms"));
 const LazyManagerDashboard = lazy(() => import("@/pages/ManagerDashboard"));
 const LazyProfile = lazy(() => import("@/pages/Profile"));
@@ -25,87 +39,48 @@ const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
 const LazyTeamPage = lazy(() => import("@/pages/Team"));
 const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsPage"));
 
-// Prefetch all routes - this will trigger webpack to create separate chunks
-// but begin downloading when idle
-const prefetchRoutes = () => {
-  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
-    // @ts-ignore - requestIdleCallback is not in the TS types
-    window.requestIdleCallback(() => {
-      // Prefetch all routes during idle time
-      import("@/pages/SubmittedForms");
-      import("@/pages/ManagerDashboard");
-      import("@/pages/Profile");
-      import("@/components/FormContainer");
-      import("@/pages/CommissionTracker");
-      import("@/pages/RoleManagement");
-      import("@/pages/Team");
-      import("@/components/admin/AdminActionsPage");
-    });
-  }
+// Mapping of paths to components for better performance
+const COMPONENT_MAP = {
+  '/metrics': LazyDashboard,
+  '/submitted-forms': LazySubmittedForms,
+  '/manager-dashboard': LazyManagerDashboard,
+  '/profile': LazyProfile,
+  '/assessment': LazyFormContainer,
+  '/commission-tracker': LazyCommissionTracker,
+  '/role-management': LazyRoleManagement,
+  '/team': LazyTeamPage,
+  '/admin': LazyAdminActionsPage,
+  '/admin-actions': LazyAdminActionsPage,
 };
 
 const MainContent = () => {
   const location = useLocation();
-  const [isPending, startTransition] = useTransition();
-  const [currentPath, setCurrentPath] = useState(location.pathname);
-  
-  // Prefetch all routes on initial load
+  const [isPreloaded, setIsPreloaded] = useState(false);
+
+  // Wait for preload to complete
   useEffect(() => {
-    prefetchRoutes();
+    preloadPromise.then(() => {
+      setIsPreloaded(true);
+    });
   }, []);
-
-  // Use React 18 transitions for smoother page changes
-  useEffect(() => {
-    if (location.pathname !== currentPath) {
-      startTransition(() => {
-        setCurrentPath(location.pathname);
-      });
-    }
-  }, [location.pathname, currentPath]);
-
+  
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
 
-  const renderContent = () => {
-    // Use memoized component reference for better performance
-    const Component = (() => {
-      switch (location.pathname) {
-        case '/metrics':
-          return <LazyDashboard />;
-        case '/submitted-forms':
-          return <LazySubmittedForms />;
-        case '/manager-dashboard':
-          return <LazyManagerDashboard />;
-        case '/profile':
-          return <LazyProfile />;
-        case '/assessment':
-          return <LazyFormContainer />;
-        case '/commission-tracker':
-          return <LazyCommissionTracker />;
-        case '/role-management':
-          return <LazyRoleManagement />;
-        case '/team':
-          return <LazyTeamPage />;
-        case '/admin':
-        case '/admin-actions':
-          return <LazyAdminActionsPage />;
-        default:
-          return <LazyDashboard />;
-      }
-    })();
+  const Component = COMPONENT_MAP[location.pathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
 
-    // First ensure user is authenticated
-    // Then wrap with role protection if the path requires specific roles
+  // Simplified content rendering with immediate fallback
+  const renderContent = () => {
     return (
       <AuthGuard>
         <Suspense fallback={<LoadingSkeleton />}>
           {requiredRoles ? (
             <RoleBasedRoute requiredRoles={requiredRoles}>
-              {Component}
+              <Component />
             </RoleBasedRoute>
           ) : (
-            Component
+            <Component />
           )}
         </Suspense>
       </AuthGuard>

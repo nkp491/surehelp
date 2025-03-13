@@ -33,14 +33,14 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
   
   useEffect(() => {
-    // Add a shorter safety timeout to prevent long loading screens
+    // Much shorter safety timeout to prevent long loading screens
     const timeoutId = setTimeout(() => {
-      if (isInitialCheck && (isLoading || isAuthenticated === null)) {
-        console.log('AuthGuard: Forcing initial check completion after short timeout');
+      if (isInitialCheck && isLoading) {
+        console.log('AuthGuard: Forcing initial check completion after very short timeout');
         setIsInitialCheck(false);
         setTimeoutOccurred(true);
       }
-    }, 800); // Reduced from 2000ms to 800ms for faster rendering
+    }, 500); // Reduced to 500ms for faster rendering
     
     if (!isLoading) {
       if (isAuthenticated === false) {
@@ -54,18 +54,20 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     return () => clearTimeout(timeoutId);
   }, [isLoading, isAuthenticated, navigate, toast, isInitialCheck]);
 
-  // Show loading only on initial check, not on subsequent renders
+  // Show loading only on initial check and only briefly
   if (isLoading && isInitialCheck && !timeoutOccurred) {
-    return <LoadingScreen message="Verifying authentication..." />;
+    return <LoadingScreen message="Loading..." />;
   }
   
-  // Optimistic rendering - assume authenticated after timeout
-  if (timeoutOccurred && isAuthenticated === null) {
-    console.log('AuthGuard: Using optimistic rendering after timeout');
-  }
-  
+  // Allow rendering even if authentication is still being verified
+  // This prevents the "stuck" loading state
+  const shouldAllowRender = 
+    isAuthenticated || 
+    (timeoutOccurred && isAuthenticated !== false) || 
+    (!isLoading && isAuthenticated !== false);
+
   // Don't render anything if definitely not authenticated
-  if (!isAuthenticated && !isLoading) {
+  if (isAuthenticated === false && !isLoading) {
     return null;
   }
 
@@ -73,7 +75,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   return (
     <AuthContext.Provider 
       value={{ 
-        isAuthenticated: isAuthenticated || (timeoutOccurred && isAuthenticated === null), 
+        isAuthenticated: !!shouldAllowRender, 
         isLoading: isLoading && !timeoutOccurred,
         timeoutOccurred
       }}
