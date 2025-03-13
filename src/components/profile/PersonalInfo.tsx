@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { useToast } from "@/hooks/use-toast";
+import { CheckCircle } from "lucide-react";
 
 interface PersonalInfoProps {
   firstName?: string | null;
@@ -30,6 +31,7 @@ const PersonalInfo = ({
     phone: phone || ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [updateSuccess, setUpdateSuccess] = useState(false);
   const { toast } = useToast();
 
   const { language } = useLanguage();
@@ -46,6 +48,21 @@ const PersonalInfo = ({
       });
     }
   }, [firstName, lastName, email, phone]);
+
+  // Clear success message after 3 seconds
+  useEffect(() => {
+    let timer: number;
+    if (updateSuccess) {
+      timer = window.setTimeout(() => {
+        setUpdateSuccess(false);
+      }, 3000);
+    }
+    return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
+    };
+  }, [updateSuccess]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,16 +87,20 @@ const PersonalInfo = ({
       // Exit edit mode
       setIsEditing(false);
       
+      // Show success state
+      setUpdateSuccess(true);
+      
       // Show success toast
       toast({
-        title: "Success",
-        description: "Personal information updated successfully",
+        title: t.updateSuccess || "Success",
+        description: t.personalInfoUpdated || "Personal information updated successfully",
+        variant: "default",
       });
     } catch (error) {
       console.error("Error submitting form:", error);
       toast({
-        title: "Error",
-        description: "Failed to update personal information. Please try again.",
+        title: t.error || "Error",
+        description: t.updateFailed || "Failed to update personal information. Please try again.",
         variant: "destructive",
       });
       // Still exit edit mode even if there's an error
@@ -95,6 +116,8 @@ const PersonalInfo = ({
       handleSubmit(new Event('submit') as any);
     } else {
       setIsEditing(true);
+      // Clear success state when entering edit mode
+      setUpdateSuccess(false);
     }
   };
 
@@ -102,15 +125,23 @@ const PersonalInfo = ({
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-xl font-semibold text-foreground">{t.personalInfo}</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={isEditing ? handleSubmit : handleToggleEdit}
-          disabled={isSubmitting}
-          className="px-4"
-        >
-          {isEditing ? (isSubmitting ? "Saving..." : t.save) : t.edit}
-        </Button>
+        <div className="flex items-center space-x-2">
+          {updateSuccess && !isEditing && (
+            <div className="flex items-center text-green-600 text-sm mr-2">
+              <CheckCircle className="h-4 w-4 mr-1" />
+              <span>{t.savedSuccessfully || "Saved"}</span>
+            </div>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={isEditing ? handleSubmit : handleToggleEdit}
+            disabled={isSubmitting}
+            className="px-4"
+          >
+            {isEditing ? (isSubmitting ? t.saving || "Saving..." : t.save) : t.edit}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -180,7 +211,7 @@ const PersonalInfo = ({
                 type="submit" 
                 disabled={isSubmitting}
               >
-                {isSubmitting ? "Saving..." : t.save}
+                {isSubmitting ? t.saving || "Saving..." : t.save}
               </Button>
             </div>
           )}
