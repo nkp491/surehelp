@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { 
   getRolesFromStorage, 
   setRolesInCache, 
@@ -11,7 +12,7 @@ import {
 } from "@/lib/auth-cache";
 
 export function useRoleCheck() {
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
   // Role cache TTL increased for better performance
@@ -84,11 +85,7 @@ export function useRoleCheck() {
           
         if (error) {
           console.error('Error fetching user roles:', error);
-          toast({
-            title: "Error",
-            description: "Failed to fetch user roles. Some features may be unavailable.",
-            variant: "destructive",
-          });
+          toast.error("Error loading user permissions");
           return [];
         } else {
           const roles = userRoles?.map(r => r.role) || [];
@@ -98,6 +95,8 @@ export function useRoleCheck() {
           setRolesInCache(roles);
           try {
             sessionStorage.setItem('user-roles', JSON.stringify(roles));
+            // Also store in localStorage as fallback
+            localStorage.setItem('user-roles-backup', JSON.stringify(roles));
           } catch (e) {
             console.error('Error saving to session storage:', e);
           }
@@ -105,6 +104,18 @@ export function useRoleCheck() {
         }
       } catch (error) {
         console.error('Error fetching user roles:', error);
+        toast.error("Failed to load permissions");
+        
+        // Try fallback from localStorage 
+        try {
+          const backupRoles = localStorage.getItem('user-roles-backup');
+          if (backupRoles) {
+            return JSON.parse(backupRoles);
+          }
+        } catch (e) {
+          console.error('Error reading backup roles:', e);
+        }
+        
         return [];
       } finally {
         setIsInitialLoading(false);
@@ -118,6 +129,14 @@ export function useRoleCheck() {
 
   // Ensure userRoles is always an array
   const userRoles = Array.isArray(userRolesData) ? userRolesData : [];
+
+  // Check if user has system_admin role for quick access decisions
+  const hasSystemAdminRole = useMemo(() => {
+    if (!userRoles || !Array.isArray(userRoles) || userRoles.length === 0) {
+      return false;
+    }
+    return userRoles.includes('system_admin');
+  }, [userRoles]);
 
   // Memoize role check function to avoid unnecessary recalculations
   const hasRequiredRole = useCallback((requiredRoles?: string[]) => {
@@ -210,12 +229,17 @@ export function useRoleCheck() {
     };
   }, []);
 
-  console.log('useRoleCheck returning:', { userRoles, isLoadingRoles: isLoadingRoles || isInitialLoading });
+  console.log('useRoleCheck returning:', { 
+    userRoles, 
+    isLoadingRoles: isLoadingRoles || isInitialLoading,
+    hasSystemAdminRole
+  });
 
   return { 
     userRoles, 
     isLoadingRoles: isLoadingRoles || isInitialLoading, 
     hasRequiredRole, 
+    hasSystemAdminRole,
     getHighestRole, 
     canUpgradeTo 
   };

@@ -11,6 +11,7 @@ import {
 } from "@/lib/auth-cache";
 import { useAuthContext } from "@/components/auth/AuthGuard";
 import LoadingSkeleton from "@/components/ui/loading-skeleton";
+import { toast } from "sonner";
 
 interface RoleBasedRouteProps {
   children: ReactNode;
@@ -30,9 +31,10 @@ export function RoleBasedRoute({
   const [stableContent, setStableContent] = useState<ReactNode | null>(null);
   const { timeoutOccurred } = useAuthContext();
   
-  // Skip role check completely if user has system_admin role
+  // Immediately grant access to system_admin users
   const hasSystemAdminRole = useMemo(() => {
-    return Array.isArray(userRoles) && userRoles.includes('system_admin');
+    if (!userRoles || !Array.isArray(userRoles)) return false;
+    return userRoles.includes('system_admin');
   }, [userRoles]);
 
   // Cache key for verification results
@@ -53,15 +55,20 @@ export function RoleBasedRoute({
       if (finalAccess === null) {
         console.log('RoleBasedRoute: Force completion after timeout');
         
-        // Default to granting access temporarily - will be verified in background
-        setFinalAccess(true);
+        // Grant access if system_admin or temporarily otherwise
+        if (hasSystemAdminRole) {
+          setFinalAccess(true);
+        } else {
+          // Default to granting access temporarily - will be verified in background
+          setFinalAccess(true);
+        }
       }
-    }, 400); // Reduced from previous 600ms
+    }, 300); // Reduced from 400ms for faster response
     
     return () => clearTimeout(timer);
-  }, [finalAccess]);
+  }, [finalAccess, hasSystemAdminRole]);
   
-  // Simplified verification with optimization
+  // Optimized verification process
   const verifyAccess = useCallback(async () => {
     // Skip verification if no roles are required
     if (!requiredRoles || requiredRoles.length === 0) {
@@ -107,6 +114,7 @@ export function RoleBasedRoute({
       
       if (error) {
         console.error('Error verifying roles:', error);
+        toast.error("Error verifying access permissions");
         // Don't change access state on error to avoid disruption
       } else {
         const hasAccess = data?.hasRequiredRole || false;
@@ -126,17 +134,18 @@ export function RoleBasedRoute({
       }
     } catch (err) {
       console.error('Failed to verify roles with server:', err);
+      toast.error("Failed to verify permissions");
       // Don't change access state on error
     } finally {
       setIsVerifying(false);
     }
-  }, [hasRequiredRole, requiredRoles, userRoles, cacheKey, hasSystemAdminRole]);
+  }, [hasRequiredRole, requiredRoles, cacheKey, hasSystemAdminRole]);
 
   // Trigger verification process
   useEffect(() => {
     if (isLoadingRoles) return;
     
-    // Fast initial check
+    // Fast initial check for system admins
     if (hasSystemAdminRole) {
       console.log('System admin detected - immediate access granted');
       setFinalAccess(true);
@@ -160,8 +169,8 @@ export function RoleBasedRoute({
     return <>{stableContent}</>;
   }
 
-  // Allow rendering during timeout or while loading
-  if (timeoutOccurred || finalAccess === true) {
+  // Allow rendering during timeout, for system_admin, or if access is granted
+  if (timeoutOccurred || hasSystemAdminRole || finalAccess === true) {
     return <>{children}</>;
   }
 

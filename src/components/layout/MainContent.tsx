@@ -7,6 +7,7 @@ import { navigationItems } from "./sidebar/navigationItems";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { Suspense, lazy, useEffect, useState } from "react";
 import LoadingSkeleton from "@/components/ui/loading-skeleton";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 // Lazily load all components with a small delay to improve perceived performance
 const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
@@ -48,8 +49,8 @@ preloadComponents();
 
 const MainContent = () => {
   const location = useLocation();
-  const [isPreloaded, setIsPreloaded] = useState(false);
   const [stablePathname, setStablePathname] = useState(location.pathname);
+  const { hasSystemAdminRole } = useRoleCheck();
   
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
@@ -58,13 +59,7 @@ const MainContent = () => {
   // Update stable pathname when location changes
   useEffect(() => {
     console.log('MainContent: Location changed to', location.pathname);
-    // Only update the stable pathname after a short delay
-    // This prevents content flashing during navigation
-    const timer = setTimeout(() => {
-      setStablePathname(location.pathname);
-    }, 50);
-    
-    return () => clearTimeout(timer);
+    setStablePathname(location.pathname);
   }, [location.pathname]);
 
   // Content rendering with stable component reference
@@ -74,18 +69,25 @@ const MainContent = () => {
     
     console.log('MainContent: Rendering', stablePathname, 'with roles', requiredRoles);
     
-    return (
-      <AuthGuard>
+    if (hasSystemAdminRole) {
+      // System admins get direct access to all pages without role checks
+      return (
         <Suspense fallback={<LoadingSkeleton />}>
-          {requiredRoles ? (
-            <RoleBasedRoute requiredRoles={requiredRoles}>
-              <StableComponent />
-            </RoleBasedRoute>
-          ) : (
-            <StableComponent />
-          )}
+          <StableComponent />
         </Suspense>
-      </AuthGuard>
+      );
+    }
+    
+    return (
+      <Suspense fallback={<LoadingSkeleton />}>
+        {requiredRoles ? (
+          <RoleBasedRoute requiredRoles={requiredRoles}>
+            <StableComponent />
+          </RoleBasedRoute>
+        ) : (
+          <StableComponent />
+        )}
+      </Suspense>
     );
   };
 
@@ -95,7 +97,9 @@ const MainContent = () => {
         <AppSidebar />
         <SidebarInset className="flex-1">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            {renderContent()}
+            <AuthGuard>
+              {renderContent()}
+            </AuthGuard>
           </div>
         </SidebarInset>
       </div>

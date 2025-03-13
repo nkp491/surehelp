@@ -5,6 +5,7 @@ import LoadingScreen from "@/components/ui/loading-screen";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
 import { invalidateRolesCache } from "@/lib/auth-cache";
+import { toast } from "sonner";
 
 // Create a context to share auth state across components
 type AuthContextType = {
@@ -28,7 +29,7 @@ interface AuthGuardProps {
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const { isLoading, isAuthenticated } = useAuthState();
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
   const [allowRender, setAllowRender] = useState(false);
@@ -42,12 +43,23 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         setIsInitialCheck(false);
         setTimeoutOccurred(true);
         
+        // If we at least have a token in localStorage, allow rendering
+        try {
+          const hasToken = localStorage.getItem('sb-auth-token');
+          if (hasToken) {
+            console.log('AuthGuard: Found token in localStorage, allowing render');
+            setAllowRender(true);
+          }
+        } catch (e) {
+          console.error('AuthGuard: Error checking localStorage', e);
+        }
+        
         // Only allow rendering if we're definitely not unauthenticated
         if (isAuthenticated !== false) {
           setAllowRender(true);
         }
       }
-    }, 500); // Adjusted from 800ms
+    }, 400); // Reduced from 500ms for faster UI response
     
     // If authentication check is complete
     if (!isLoading) {
@@ -55,6 +67,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         console.log('AuthGuard: User is not authenticated, navigating to auth page');
         // Invalidate role cache when logging out
         invalidateRolesCache();
+        toast.error("Authentication required");
         navigate("/auth", { replace: true });
       } else {
         console.log('AuthGuard: User is authenticated, allowing render');
@@ -65,7 +78,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     }
     
     return () => clearTimeout(timeoutId);
-  }, [isLoading, isAuthenticated, navigate, toast, isInitialCheck]);
+  }, [isLoading, isAuthenticated, navigate, uiToast, isInitialCheck]);
 
   // Show loading only on initial check and only briefly
   if (isLoading && isInitialCheck && !timeoutOccurred) {
