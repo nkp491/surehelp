@@ -393,7 +393,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: {
+        Args: {
+          user_id: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       user_role:
@@ -403,6 +408,7 @@ export type Database = {
         | "manager_pro_gold"
         | "manager_pro_platinum"
         | "agent_pro"
+        | "system_admin"
     }
     CompositeTypes: {
       [_ in never]: never
