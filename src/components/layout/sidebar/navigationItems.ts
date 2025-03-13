@@ -46,6 +46,6 @@ export const navigationItems: NavigationItem[] = [
     title: "Role Management",
     path: "/role-management",
     icon: Shield,
-    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user", "system_admin"],
   },
 ];
