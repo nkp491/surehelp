@@ -27,28 +27,36 @@ export function RoleBasedRoute({
   const { hasRequiredRole, isLoadingRoles, userRoles } = useRoleCheck();
   const [isVerifying, setIsVerifying] = useState(false);
   const [finalAccess, setFinalAccess] = useState<boolean | null>(null);
+  const [stableContent, setStableContent] = useState<ReactNode | null>(null);
   const { timeoutOccurred } = useAuthContext();
-  
-  // Much faster timeout for role verification
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (finalAccess === null) {
-        console.log('RoleBasedRoute: Force completion after very short timeout');
-        
-        // Always grant access temporarily - will be verified in background
-        setFinalAccess(true);
-      }
-    }, 400); // Extremely short timeout to prevent "stuck" pages
-    
-    return () => clearTimeout(timer);
-  }, [finalAccess]);
   
   // Cache key for verification results
   const cacheKey = useMemo(() => {
     return `${location.pathname}:${requiredRoles?.join('|') || 'none'}`;
   }, [location.pathname, requiredRoles]);
+
+  // Once we render the children, store them to prevent disappearing
+  useEffect(() => {
+    if (finalAccess === true) {
+      setStableContent(children);
+    }
+  }, [finalAccess, children]);
+
+  // Fast safety timeout for role verification
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      if (finalAccess === null) {
+        console.log('RoleBasedRoute: Force completion after timeout');
+        
+        // Default to granting access temporarily - will be verified in background
+        setFinalAccess(true);
+      }
+    }, 600); // Reduced from previous 800ms
+    
+    return () => clearTimeout(timer);
+  }, [finalAccess]);
   
-  // Simplified verification with optimistic rendering
+  // Simplified verification with optimization
   const verifyAccess = useCallback(async () => {
     // Skip verification if no roles are required
     if (!requiredRoles || requiredRoles.length === 0) {
@@ -71,14 +79,18 @@ export function RoleBasedRoute({
     }
     
     // Check cache for previous verification result
-    const cachedVerification = localStorage.getItem(`role-verify:${cacheKey}`);
-    if (cachedVerification !== null) {
-      console.log('Using cached route verification result:', cachedVerification);
-      setFinalAccess(cachedVerification === 'true');
-      return;
+    try {
+      const cachedVerification = localStorage.getItem(`role-verify:${cacheKey}`);
+      if (cachedVerification !== null) {
+        console.log('Using cached route verification result:', cachedVerification);
+        setFinalAccess(cachedVerification === 'true');
+        return;
+      }
+    } catch (error) {
+      console.error('Error accessing localStorage:', error);
     }
     
-    // Default to granting access while verification happens in background
+    // Default to granting access temporarily
     setFinalAccess(true);
     
     // Verify in background without blocking rendering
@@ -90,24 +102,26 @@ export function RoleBasedRoute({
       
       if (error) {
         console.error('Error verifying roles:', error);
-        // Only update if user doesn't have access
-        if (!data?.hasRequiredRole) {
-          setFinalAccess(false);
-        }
+        // Don't change access state on error to avoid disruption
       } else {
         const hasAccess = data?.hasRequiredRole || false;
-        // Cache the verification result
-        localStorage.setItem(`role-verify:${cacheKey}`, hasAccess.toString());
-        cacheVerificationResult(requiredRoles, hasAccess);
         
-        // Only redirect if verification fails
+        // Cache the verification result
+        try {
+          localStorage.setItem(`role-verify:${cacheKey}`, hasAccess.toString());
+          cacheVerificationResult(requiredRoles, hasAccess);
+        } catch (error) {
+          console.error('Error writing to localStorage:', error);
+        }
+        
+        // Only update if verification explicitly denies access
         if (!hasAccess) {
           setFinalAccess(false);
         }
       }
     } catch (err) {
       console.error('Failed to verify roles with server:', err);
-      // Don't block the UI - verification will happen next time
+      // Don't change access state on error
     } finally {
       setIsVerifying(false);
     }
@@ -119,6 +133,8 @@ export function RoleBasedRoute({
     
     // Fast initial check
     const userRolesArray = Array.isArray(userRoles) ? userRoles : [];
+    
+    // Clear cases that don't need verification
     if (!requiredRoles || requiredRoles.length === 0 || userRolesArray.includes('system_admin')) {
       setFinalAccess(true);
       return;
@@ -130,13 +146,18 @@ export function RoleBasedRoute({
     }
   }, [isLoadingRoles, userRoles, requiredRoles, verifyAccess, finalAccess, isVerifying]);
 
-  // Always render content during timeout or while loading
-  if (timeoutOccurred || finalAccess === null) {
+  // Always render stable content once it's set, even during verification changes
+  if (stableContent) {
+    return <>{stableContent}</>;
+  }
+
+  // Allow rendering during timeout or while loading
+  if (timeoutOccurred || finalAccess === true) {
     return <>{children}</>;
   }
 
-  // Show a loading skeleton, but only for a very brief period
-  if (isLoadingRoles && !timeoutOccurred) {
+  // Show a loading skeleton during verification
+  if ((isLoadingRoles || finalAccess === null) && !timeoutOccurred) {
     return <LoadingSkeleton />;
   }
 
@@ -163,6 +184,6 @@ export function RoleBasedRoute({
     );
   }
 
-  // Render children if access is granted
-  return <>{children}</>;
+  // Fallback loading state
+  return <LoadingSkeleton />;
 }

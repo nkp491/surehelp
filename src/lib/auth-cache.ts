@@ -47,27 +47,44 @@ export const getRolesFromStorage = (): string[] => {
 };
 
 export const invalidateRolesCache = () => {
-  queryClient.invalidateQueries({ queryKey: ROLES_CACHE_KEY });
-  queryClient.invalidateQueries({ queryKey: ROLE_VERIFICATION_CACHE_KEY });
-  
   try {
-    // Clear all role-related items from storage with error handling
-    localStorage.removeItem(ROLES_CACHE_KEY[0]);
-    localStorage.removeItem(`${ROLES_CACHE_KEY[0]}_timestamp`);
+    queryClient.invalidateQueries({ queryKey: ROLES_CACHE_KEY });
+    queryClient.invalidateQueries({ queryKey: ROLE_VERIFICATION_CACHE_KEY });
     
-    // Clear any verification items without error if they don't exist
-    const keysToRemove: string[] = [];
-    for (let i = 0; i < localStorage.length; i++) {
-      const key = localStorage.key(i);
-      if (key && (key.startsWith('role-verify:') || key.startsWith('role-verification:'))) {
-        keysToRemove.push(key);
-      }
+    // Clear session storage too
+    try {
+      sessionStorage.removeItem('user-roles');
+    } catch (e) {
+      console.error('Error clearing session storage:', e);
     }
     
-    keysToRemove.forEach(key => localStorage.removeItem(key));
-    sessionStorage.removeItem('user-roles');
+    // Clear all role-related items from storage with error handling
+    const keysToRemove: string[] = [];
+    try {
+      localStorage.removeItem(ROLES_CACHE_KEY[0]);
+      localStorage.removeItem(`${ROLES_CACHE_KEY[0]}_timestamp`);
+      
+      // Find all keys related to roles
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        if (key && (key.startsWith('role-verify:') || key.startsWith('role-verification:'))) {
+          keysToRemove.push(key);
+        }
+      }
+    } catch (error) {
+      console.error("Error accessing localStorage:", error);
+    }
+    
+    // Remove each key individually with error handling
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.error(`Failed to remove ${key} from localStorage:`, error);
+      }
+    });
   } catch (error) {
-    console.error("Failed to remove roles from storage:", error);
+    console.error("Failed to invalidate roles cache:", error);
   }
 };
 

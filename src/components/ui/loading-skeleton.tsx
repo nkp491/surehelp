@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 
 const LoadingSkeleton = () => {
   return (
-    <div className="w-full space-y-6 py-4">
+    <div className="w-full space-y-6 py-6 animate-in fade-in duration-300">
       <div className="space-y-2">
         <Skeleton className="h-10 w-3/4" />
         <Skeleton className="h-4 w-1/2" />
@@ -17,6 +17,14 @@ const LoadingSkeleton = () => {
             <Skeleton className="h-4 w-1/2" />
           </div>
         ))}
+      </div>
+      
+      <div className="space-y-4 mt-8">
+        <Skeleton className="h-8 w-full max-w-md" />
+        <div className="space-y-2">
+          <Skeleton className="h-24 w-full rounded-md" />
+          <Skeleton className="h-24 w-full rounded-md" />
+        </div>
       </div>
     </div>
   );

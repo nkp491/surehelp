@@ -31,22 +31,33 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const { toast } = useToast();
   const [isInitialCheck, setIsInitialCheck] = useState(true);
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
+  const [allowRender, setAllowRender] = useState(false);
   
+  // Use useEffect for the initial authentication check
   useEffect(() => {
-    // Much shorter safety timeout to prevent long loading screens
+    // This is a safety timeout to prevent infinite loading
     const timeoutId = setTimeout(() => {
       if (isInitialCheck && isLoading) {
-        console.log('AuthGuard: Forcing initial check completion after very short timeout');
+        console.log('AuthGuard: Forcing initial check completion after timeout');
         setIsInitialCheck(false);
         setTimeoutOccurred(true);
+        
+        // Only allow rendering if we're definitely not unauthenticated
+        if (isAuthenticated !== false) {
+          setAllowRender(true);
+        }
       }
-    }, 500); // Reduced to 500ms for faster rendering
+    }, 800); // Increased to 800ms for slightly more stability
     
+    // If authentication check is complete
     if (!isLoading) {
       if (isAuthenticated === false) {
         // Invalidate role cache when logging out
         invalidateRolesCache();
         navigate("/auth", { replace: true });
+      } else {
+        // User is authenticated, allow rendering
+        setAllowRender(true);
       }
       setIsInitialCheck(false);
     }
@@ -56,33 +67,32 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
 
   // Show loading only on initial check and only briefly
   if (isLoading && isInitialCheck && !timeoutOccurred) {
-    return <LoadingScreen message="Loading..." />;
+    return <LoadingScreen message="Loading authentication..." />;
   }
   
-  // Allow rendering even if authentication is still being verified
-  // This prevents the "stuck" loading state
-  const shouldAllowRender = 
-    isAuthenticated || 
-    (timeoutOccurred && isAuthenticated !== false) || 
-    (!isLoading && isAuthenticated !== false);
-
   // Don't render anything if definitely not authenticated
   if (isAuthenticated === false && !isLoading) {
     return null;
   }
 
-  // Provide auth context to all children
-  return (
-    <AuthContext.Provider 
-      value={{ 
-        isAuthenticated: !!shouldAllowRender, 
-        isLoading: isLoading && !timeoutOccurred,
-        timeoutOccurred
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  );
+  // Always render content with authContext if allowRender is true
+  // This ensures we don't flash content and then remove it
+  if (allowRender || (timeoutOccurred && isAuthenticated !== false)) {
+    return (
+      <AuthContext.Provider 
+        value={{ 
+          isAuthenticated: isAuthenticated === true, 
+          isLoading: isLoading && !timeoutOccurred,
+          timeoutOccurred
+        }}
+      >
+        {children}
+      </AuthContext.Provider>
+    );
+  }
+  
+  // Show a loading screen during any other state
+  return <LoadingScreen message="Verifying access..." />;
 };
 
 export default AuthGuard;

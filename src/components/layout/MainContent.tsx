@@ -1,4 +1,3 @@
-
 import { useLocation } from "react-router-dom";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
@@ -8,27 +7,7 @@ import AuthGuard from "@/components/auth/AuthGuard";
 import { Suspense, lazy, useEffect, useState } from "react";
 import LoadingSkeleton from "@/components/ui/loading-skeleton";
 
-// Preload all common pages on app startup
-const preloadComponents = () => {
-  const preloads = [
-    import("@/pages/Dashboard"),
-    import("@/pages/SubmittedForms"),
-    import("@/pages/ManagerDashboard"),
-    import("@/pages/Profile"),
-    import("@/components/FormContainer"),
-    import("@/pages/CommissionTracker"),
-    import("@/pages/RoleManagement"),
-    import("@/pages/Team"),
-    import("@/components/admin/AdminActionsPage")
-  ];
-  
-  return Promise.all(preloads);
-};
-
-// Start preloading immediately
-const preloadPromise = preloadComponents();
-
-// Lazy load components with lower suspense thresholds
+// Lazily load all components with a small delay to improve perceived performance
 const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
 const LazySubmittedForms = lazy(() => import("@/pages/SubmittedForms"));
 const LazyManagerDashboard = lazy(() => import("@/pages/ManagerDashboard"));
@@ -39,7 +18,7 @@ const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
 const LazyTeamPage = lazy(() => import("@/pages/Team"));
 const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsPage"));
 
-// Mapping of paths to components for better performance
+// Mapping of paths to components
 const COMPONENT_MAP = {
   '/metrics': LazyDashboard,
   '/submitted-forms': LazySubmittedForms,
@@ -53,34 +32,69 @@ const COMPONENT_MAP = {
   '/admin-actions': LazyAdminActionsPage,
 };
 
+// Start preloading common components immediately
+const preloadComponents = () => {
+  // First preload the profile page since it's frequently accessed
+  const preloadProfile = import("@/pages/Profile");
+  
+  // Then preload other common pages
+  const preloads = [
+    import("@/pages/Dashboard"),
+    import("@/pages/SubmittedForms"),
+    preloadProfile, // Include the already started preload
+    import("@/components/FormContainer")
+  ];
+  
+  return Promise.all(preloads);
+};
+
+// Start preloading immediately when this module loads
+const preloadPromise = preloadComponents();
+
 const MainContent = () => {
   const location = useLocation();
   const [isPreloaded, setIsPreloaded] = useState(false);
+  const [stablePathname, setStablePathname] = useState(location.pathname);
+  
+  // Find the current navigation item to get the required roles
+  const currentNavItem = navigationItems.find(item => item.path === location.pathname);
+  const requiredRoles = currentNavItem?.requiredRoles;
 
+  // Get the component for the current route or fallback to Dashboard
+  const Component = COMPONENT_MAP[location.pathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
+
+  // Keep the path stable to prevent component unmounting during navigation
+  useEffect(() => {
+    // Only update the stable pathname after a short delay
+    // This prevents content flashing during navigation
+    const timer = setTimeout(() => {
+      setStablePathname(location.pathname);
+    }, 50);
+    
+    return () => clearTimeout(timer);
+  }, [location.pathname]);
+  
   // Wait for preload to complete
   useEffect(() => {
     preloadPromise.then(() => {
       setIsPreloaded(true);
     });
   }, []);
-  
-  // Find the current navigation item to get the required roles
-  const currentNavItem = navigationItems.find(item => item.path === location.pathname);
-  const requiredRoles = currentNavItem?.requiredRoles;
 
-  const Component = COMPONENT_MAP[location.pathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
-
-  // Simplified content rendering with immediate fallback
+  // Content rendering with stable component reference
   const renderContent = () => {
+    // Get the component for the stable pathname
+    const StableComponent = COMPONENT_MAP[stablePathname as keyof typeof COMPONENT_MAP] || LazyDashboard;
+    
     return (
       <AuthGuard>
         <Suspense fallback={<LoadingSkeleton />}>
           {requiredRoles ? (
             <RoleBasedRoute requiredRoles={requiredRoles}>
-              <Component />
+              <StableComponent />
             </RoleBasedRoute>
           ) : (
-            <Component />
+            <StableComponent />
           )}
         </Suspense>
       </AuthGuard>
