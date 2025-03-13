@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -32,21 +32,21 @@ const PersonalInfo = ({
   const { language } = useLanguage();
   const t = translations[language];
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    onUpdate(formData);
-    setIsEditing(false);
-  };
-
   // Update form data when props change
-  useState(() => {
+  useEffect(() => {
     setFormData({
       first_name: firstName || '',
       last_name: lastName || '',
       email: email || '',
       phone: phone || ''
     });
-  });
+  }, [firstName, lastName, email, phone]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    onUpdate(formData);
+    setIsEditing(false);
+  };
 
   const handleToggleEdit = () => {
     if (isEditing) {

@@ -76,13 +76,16 @@ export const useProfileManagement = () => {
         return;
       }
 
-      // Remove roles from updates object as it's not a column in the profiles table
-      const { roles, ...updatesWithoutRoles } = updates as any;
+      // Remove roles and other non-column properties from updates object
+      const { roles, ...updatesToSave } = updates as any;
+
+      // Log what we're sending to debug
+      console.log("Updating profile with:", updatesToSave);
 
       // When updating the profile, avoid sending properties that don't match columns
       const { error } = await supabase
         .from("profiles")
-        .update(updatesWithoutRoles)
+        .update(updatesToSave)
         .eq("id", session.user.id);
 
       if (error) throw error;
@@ -98,7 +101,7 @@ export const useProfileManagement = () => {
       }
       
       // Refetch profile data to ensure we have the latest
-      refetch();
+      await refetch();
       
       toast({
         title: "Profile updated",
