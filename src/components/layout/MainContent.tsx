@@ -9,6 +9,7 @@ import { Suspense, lazy, useEffect, useState } from "react";
 import LoadingSkeleton from "@/components/ui/loading-skeleton";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { toast } from "sonner";
+import { NoAccessScreen } from "@/components/auth/NoAccessScreen";
 
 // Lazily load all components
 const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
@@ -41,9 +42,12 @@ const COMPONENT_MAP = {
 
 const MainContent = () => {
   const location = useLocation();
-  const { hasSystemAdminRole, isLoadingRoles, refetchRoles } = useRoleCheck();
+  const { hasSystemAdminRole, isLoadingRoles, refetchRoles, userRoles } = useRoleCheck();
   const [isLoading, setIsLoading] = useState(true);
   const [componentKey, setComponentKey] = useState(Date.now()); // Force remount when needed
+  
+  // Check if user has any roles at all
+  const hasAnyRoles = Array.isArray(userRoles) && userRoles.length > 0;
   
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
@@ -79,6 +83,16 @@ const MainContent = () => {
 
   // Content rendering with proper loading states
   const renderContent = () => {
+    // Show loading skeleton during initial loading
+    if (isLoading && isLoadingRoles) {
+      return <LoadingSkeleton />;
+    }
+    
+    // If user has no roles at all and we're done loading roles, show no access screen
+    if (!isLoadingRoles && !hasAnyRoles && userRoles !== undefined) {
+      return <NoAccessScreen />;
+    }
+    
     // Get the component for the current path
     const Component = COMPONENT_MAP[location.pathname as keyof typeof COMPONENT_MAP];
     
@@ -90,11 +104,6 @@ const MainContent = () => {
           <p className="text-muted-foreground">The page you're looking for doesn't exist or has been moved.</p>
         </div>
       );
-    }
-    
-    // Show loading state during initial page load
-    if (isLoading && isLoadingRoles) {
-      return <LoadingSkeleton />;
     }
     
     // Check if the current route is an admin route

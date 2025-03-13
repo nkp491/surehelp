@@ -12,7 +12,7 @@ import {
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
+import { Loader2, AlertCircle } from "lucide-react";
 
 type SidebarNavigationProps = {
   navigationItems: NavigationItem[];
@@ -126,16 +126,34 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       setIsNavigating(false);
     }
   };
+
+  // Navigate back to home page
+  const handleGotoHome = () => {
+    navigate('/');
+  };
   
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {renderedItems.length === 0 ? (
+          {isLoadingRoles ? (
             <div className="px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Loading navigation...</span>
+            </div>
+          ) : renderedItems.length === 0 ? (
+            <div className="p-4 space-y-3">
+              <div className="px-4 py-3 text-sm text-muted-foreground flex items-center gap-2 border rounded-md bg-slate-50">
+                <AlertCircle className="h-4 w-4 text-amber-500" />
+                <span>No navigation items available</span>
+              </div>
+              <button 
+                onClick={handleGotoHome}
+                className="w-full px-4 py-2 text-sm text-blue-600 hover:text-blue-800 flex items-center justify-center gap-2 border rounded-md hover:bg-slate-50 transition-colors"
+              >
+                Go to Homepage
+              </button>
             </div>
           ) : (
             renderedItems.map((item) => (
@@ -154,6 +172,18 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
                 </SidebarMenuButton>
               </SidebarMenuItem>
             ))
+          )}
+          
+          {!isLoadingRoles && Array.isArray(userRoles) && userRoles.length === 0 && (
+            <div className="px-4 py-3 mt-3 text-xs text-muted-foreground border-t">
+              <p>Your account has no assigned roles.</p>
+              <button 
+                onClick={handleGotoHome}
+                className="text-blue-600 hover:text-blue-800 hover:underline mt-2"
+              >
+                Return to Homepage
+              </button>
+            </div>
           )}
         </SidebarMenu>
       </SidebarGroupContent>
