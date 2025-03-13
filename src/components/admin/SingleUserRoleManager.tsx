@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -10,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { assignRoleToUser, removeRoleFromUser, getUserRoles } from "@/utils/roles";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { UserRolesDisplay } from "./UserRolesDisplay";
+import { formatRoleName, getBadgeVariant } from "@/components/role-management/roleUtils";
 
 export function SingleUserRoleManager() {
   const [userId, setUserId] = useState("c65f14e1-81d4-46f3-9183-22e935936d0e");
@@ -304,7 +304,6 @@ export function SingleUserRoleManager() {
   );
 }
 
-// Helper function for formatting role names
 export const formatRoleName = (role: string) => {
   if (role === "beta_user") return "Beta User";
   if (role === "manager_pro_gold") return "Manager Pro Gold";
@@ -315,7 +314,6 @@ export const formatRoleName = (role: string) => {
   return role.charAt(0).toUpperCase() + role.slice(1);
 };
 
-// Helper function for badge variants
 export const getBadgeVariant = (role: string) => {
   switch (role) {
     case "manager_pro_platinum": return "outline";

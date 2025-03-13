@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -62,7 +61,7 @@ export const useRoleManagement = () => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Fetch available roles (updated to include system_admin)
+  // Fetch available roles
   const availableRoles = [
     "agent",
     "agent_pro",
@@ -105,11 +104,11 @@ export const useRoleManagement = () => {
 
       return { success: true, message: "Role assigned successfully" };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
       toast({
         title: "Success",
-        description: "Role assigned successfully",
+        description: data.message || "Role assigned successfully",
       });
       setIsAssigningRole(false);
     },
@@ -137,11 +136,11 @@ export const useRoleManagement = () => {
 
       return { success: true, message: "Role removed successfully" };
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
       toast({
         title: "Success",
-        description: "Role removed successfully",
+        description: data.message || "Role removed successfully",
       });
     },
     onError: (error) => {

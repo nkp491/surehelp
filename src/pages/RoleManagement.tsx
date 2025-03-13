@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { AccessControl } from "@/components/role-management/AccessControl";
 import { RoleManagementContent } from "@/components/role-management/RoleManagementContent";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function RoleManagement() {
   const { 
@@ -33,6 +34,8 @@ export default function RoleManagement() {
           removeRole={removeRole}
           isAssigningRole={isAssigningRole}
         />
+
+        <Toaster />
       </div>
     </AccessControl>
   );

@@ -1,5 +1,4 @@
 
-import { useState, useEffect } from "react";
 import { hasSystemAdminRole } from "@/utils/roles";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -7,6 +6,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SingleUserRoleManager } from "./SingleUserRoleManager";
 import { BulkUserRoleManager } from "./BulkUserRoleManager";
 import { AccessControl } from "@/components/role-management/AccessControl";
+import { Toaster } from "@/components/ui/toaster";
 
 export default function AdminActionsPage() {
   return (
@@ -28,6 +28,8 @@ export default function AdminActionsPage() {
             <BulkUserRoleManager />
           </TabsContent>
         </Tabs>
+
+        <Toaster />
       </div>
     </AccessControl>
   );
