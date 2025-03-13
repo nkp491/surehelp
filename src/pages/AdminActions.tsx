@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { assignRoleToUser } from "@/utils/roleAssignment";
 import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 
 export default function AdminActions() {
   const [userId, setUserId] = useState("c65f14e1-81d4-46f3-9183-22e935936d0e");
@@ -23,6 +24,15 @@ export default function AdminActions() {
   ];
 
   const handleAssignRole = async () => {
+    if (!userId.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a valid user ID",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setIsLoading(true);
     try {
       const result = await assignRoleToUser(userId, role);
@@ -73,6 +83,9 @@ export default function AdminActions() {
               onChange={(e) => setUserId(e.target.value)}
               placeholder="Enter user ID"
             />
+            <p className="text-xs text-muted-foreground mt-1">
+              The user must exist in the profiles table for the role assignment to work
+            </p>
           </div>
           
           <div>
@@ -98,7 +111,14 @@ export default function AdminActions() {
             disabled={isLoading || !userId.trim() || !role}
             className="w-full"
           >
-            {isLoading ? "Assigning..." : "Assign Role"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Assigning...
+              </>
+            ) : (
+              "Assign Role"
+            )}
           </Button>
         </CardContent>
       </Card>
