@@ -16,6 +16,7 @@ function App() {
         <Route path="/assessment" element={<Assessment />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/admin" element={<AdminActions />} />
+        <Route path="/admin-actions" element={<AdminActions />} />
         <Route path="/auth" element={<Auth />} />
         <Route path="/auth/reset-password" element={<ResetPassword />} />
         <Route path="/auth/callback" element={<CallbackHandler />} />
