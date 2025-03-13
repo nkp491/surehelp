@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -19,31 +20,16 @@ export const useAuthStateManager = () => {
       }
 
       if (!session) {
-        await supabase.auth.signOut();
         setIsAuthenticated(false);
         setIsLoading(false);
         return;
       }
 
-      const { error: refreshError } = await supabase.auth.refreshSession();
-      if (refreshError) {
-        console.error("Refresh error:", refreshError);
-        await supabase.auth.signOut();
-        setIsAuthenticated(false);
-        toast({
-          title: "Session Expired",
-          description: "Please sign in again",
-          variant: "destructive",
-        });
-        setIsLoading(false);
-        return;
-      }
-
+      // We have a valid session
       setIsAuthenticated(true);
       setIsLoading(false);
     } catch (error) {
       console.error("Auth error:", error);
-      await supabase.auth.signOut();
       setIsAuthenticated(false);
       setIsLoading(false);
       toast({

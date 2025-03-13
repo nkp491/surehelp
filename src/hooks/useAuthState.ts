@@ -46,22 +46,7 @@ export const useAuthState = () => {
           return;
         }
 
-        // Only try to refresh if we have a session
-        if (session) {
-          try {
-            const { error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError) {
-              console.error("Session refresh error:", refreshError);
-              await handleAuthError();
-              return;
-            }
-          } catch (refreshError) {
-            console.error("Session refresh error:", refreshError);
-            await handleAuthError();
-            return;
-          }
-        }
-
+        // Session exists, so user is authenticated
         if (mounted) {
           setIsAuthenticated(true);
           setIsLoading(false);

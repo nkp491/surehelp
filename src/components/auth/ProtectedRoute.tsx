@@ -1,7 +1,6 @@
 
 import { Navigate, useLocation } from "react-router-dom";
-import { useEffect, useState } from "react";
-import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
@@ -16,34 +15,7 @@ export const ProtectedRoute = ({
   redirectTo = "/auth" 
 }: ProtectedRouteProps) => {
   const location = useLocation();
-  const [isVerifying, setIsVerifying] = useState(true);
-  const [sessionValid, setSessionValid] = useState<boolean | null>(null);
-  
-  useEffect(() => {
-    const verifySession = async () => {
-      if (isAuthenticated) {
-        try {
-          // Verify the session is valid on the server
-          const { data, error } = await supabase.functions.invoke('verify-session');
-          
-          if (error) {
-            console.error("Session verification error:", error);
-            setSessionValid(false);
-          } else {
-            setSessionValid(!!data);
-          }
-        } catch (err) {
-          console.error("Session verification error:", err);
-          setSessionValid(false);
-        }
-      } else {
-        setSessionValid(false);
-      }
-      setIsVerifying(false);
-    };
-    
-    verifySession();
-  }, [isAuthenticated]);
+  const [isVerifying, setIsVerifying] = useState(false);
   
   // Show loading state while verifying
   if (isVerifying || isAuthenticated === null) {
@@ -54,8 +26,8 @@ export const ProtectedRoute = ({
     );
   }
 
-  // Redirect if not authenticated or session is invalid
-  if (!isAuthenticated || sessionValid === false) {
+  // Redirect if not authenticated
+  if (!isAuthenticated) {
     const searchParams = new URLSearchParams();
     if (location.pathname !== "/auth") {
       searchParams.set("returnUrl", location.pathname);
