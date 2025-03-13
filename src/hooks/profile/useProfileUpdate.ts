@@ -180,18 +180,28 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
         } else {
           console.log("Email update initiated");
           
-          // Try to update email in user_roles table as well
+          // Try to update email in user_roles table as well - Updated to avoid SQL error
           try {
-            const { error: rolesError } = await supabase
+            // Only attempt to update if user_roles table exists
+            // This approach avoids the SQL error with "user_role ~~ unknown"
+            const { data: userRoles, error: checkError } = await supabase
               .from("user_roles")
-              .update({ email: updatesToSave.email })
-              .eq("user_id", session.user.id);
+              .select("id")
+              .eq("user_id", session.user.id)
+              .limit(1);
               
-            if (rolesError) {
-              console.error("Error updating user_roles:", rolesError);
+            if (!checkError && userRoles && userRoles.length > 0) {
+              const { error: rolesError } = await supabase
+                .from("user_roles")
+                .update({ email: updatesToSave.email })
+                .eq("user_id", session.user.id);
+                
+              if (rolesError) {
+                console.error("Error updating user_roles:", rolesError);
+              }
             }
           } catch (rolesUpdateError) {
-            console.error("Error updating user_roles:", rolesUpdateError);
+            console.error("Error checking/updating user_roles:", rolesUpdateError);
           }
         }
       }
@@ -223,12 +233,11 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       
       console.log("Final profile update data with explicit fields:", profileUpdate);
       
-      // Update profile in database with explicit fields
+      // Update profile in database with explicit fields - simplified query to avoid SQL errors
       const { data: updateResult, error: profileError } = await supabase
         .from("profiles")
         .update(profileUpdate)
-        .eq("id", session.user.id)
-        .select();
+        .eq("id", session.user.id);
         
       if (profileError) {
         console.error("Error updating profile in database:", profileError);

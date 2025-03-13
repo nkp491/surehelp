@@ -82,6 +82,8 @@ const PersonalInfo = ({
         description: "Failed to update personal information. Please try again.",
         variant: "destructive",
       });
+      // Still exit edit mode even if there's an error
+      setIsEditing(false);
     } finally {
       setIsSubmitting(false);
     }
