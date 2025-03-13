@@ -1,3 +1,4 @@
+
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -59,7 +60,7 @@ const ProfileContent = () => {
         />
 
         <div className="flex flex-col gap-6">
-          <UserRole role={profile?.role} />
+          <UserRole role={profile?.role} roles={profile?.roles} />
 
           <PasswordSettings />
 

@@ -8,18 +8,22 @@ import { Info } from "lucide-react";
 
 interface UserRoleProps {
   role: "agent" | "manager_pro" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;
+  roles?: string[];
 }
 
-const UserRole = ({ role }: UserRoleProps) => {
+const UserRole = ({ role, roles = [] }: UserRoleProps) => {
   const { language } = useLanguage();
   const t = translations[language];
 
+  // Default to the single role if no multiple roles provided
+  const userRoles = roles?.length ? roles : role ? [role] : ["agent"];
+
   // Function to determine badge variant based on role
-  const getBadgeVariant = (role: string | null) => {
+  const getBadgeVariant = (role: string) => {
     switch(role) {
-      case "manager_pro_platinum": return "outline"; // Same variant as gold but with different styling
+      case "manager_pro_platinum": return "outline";
       case "manager_pro_gold": return "outline"; 
-      case "agent_pro": return "outline"; // Custom styling for agent pro
+      case "agent_pro": return "outline";
       case "manager_pro": return "default";
       case "beta_user": return "destructive";
       default: return "secondary";
@@ -27,9 +31,7 @@ const UserRole = ({ role }: UserRoleProps) => {
   };
 
   // Format the role display text with proper capitalization
-  const getRoleDisplay = (role: string | null) => {
-    if (!role) return "Agent";
-    
+  const getRoleDisplay = (role: string) => {
     // Special cases for multi-word roles
     if (role === "beta_user") return "Beta User";
     if (role === "manager_pro_gold") return "Manager Pro Gold";
@@ -42,7 +44,7 @@ const UserRole = ({ role }: UserRoleProps) => {
   };
 
   // Get premium features based on role
-  const getPremiumFeatures = (role: string | null): string[] => {
+  const getPremiumFeatures = (role: string): string[] => {
     switch(role) {
       case "manager_pro_platinum":
         return [
@@ -81,20 +83,33 @@ const UserRole = ({ role }: UserRoleProps) => {
     }
   };
 
-  const features = getPremiumFeatures(role);
+  // Get combined features for all roles
+  const getAllFeatures = () => {
+    const featuresSet = new Set<string>();
+    
+    userRoles.forEach((role) => {
+      getPremiumFeatures(role).forEach((feature) => {
+        featuresSet.add(feature);
+      });
+    });
+    
+    return Array.from(featuresSet);
+  };
+
+  const features = getAllFeatures();
 
   return (
     <Card className="shadow-sm">
       <CardHeader>
         <CardTitle className="text-xl font-semibold text-foreground flex items-center gap-2">
-          {t.userRole}
+          {t.userRoles || "User Roles"}
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <Info className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-xs">Your role determines what features you can access</p>
+                <p className="text-xs">Your roles determine what features you can access</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -102,21 +117,24 @@ const UserRole = ({ role }: UserRoleProps) => {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <div className="flex items-center">
-            <Badge 
-              variant={getBadgeVariant(role)} 
-              className={`text-sm ${
-                role === "manager_pro_gold" 
-                  ? "border-yellow-500 text-yellow-700 bg-yellow-50" 
-                  : role === "manager_pro_platinum" 
-                    ? "border-purple-500 text-purple-700 bg-purple-50" 
-                    : role === "agent_pro"
-                      ? "border-blue-500 text-blue-700 bg-blue-50"
-                      : ""
-              }`}
-            >
-              {getRoleDisplay(role)}
-            </Badge>
+          <div className="flex flex-wrap gap-2">
+            {userRoles.map((userRole, index) => (
+              <Badge 
+                key={index}
+                variant={getBadgeVariant(userRole)} 
+                className={`text-sm ${
+                  userRole === "manager_pro_gold" 
+                    ? "border-yellow-500 text-yellow-700 bg-yellow-50" 
+                    : userRole === "manager_pro_platinum" 
+                      ? "border-purple-500 text-purple-700 bg-purple-50" 
+                      : userRole === "agent_pro"
+                        ? "border-blue-500 text-blue-700 bg-blue-50"
+                        : ""
+                }`}
+              >
+                {getRoleDisplay(userRole)}
+              </Badge>
+            ))}
           </div>
           
           <div className="pt-2">

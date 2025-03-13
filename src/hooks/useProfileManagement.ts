@@ -22,22 +22,34 @@ export const useProfileManagement = () => {
         return null;
       }
 
-      const { data, error } = await supabase
+      // Fetch basic profile data
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
         .single();
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+      
+      // Fetch user roles
+      const { data: userRoles, error: rolesError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", session.user.id);
+        
+      if (rolesError) throw rolesError;
+      
+      const roles = userRoles.map(r => r.role);
       
       return {
-        ...data,
-        privacy_settings: typeof data.privacy_settings === 'string' 
-          ? JSON.parse(data.privacy_settings)
-          : data.privacy_settings,
-        notification_preferences: typeof data.notification_preferences === 'string'
-          ? JSON.parse(data.notification_preferences)
-          : data.notification_preferences
+        ...profileData,
+        roles: roles,
+        privacy_settings: typeof profileData.privacy_settings === 'string' 
+          ? JSON.parse(profileData.privacy_settings)
+          : profileData.privacy_settings,
+        notification_preferences: typeof profileData.notification_preferences === 'string'
+          ? JSON.parse(profileData.notification_preferences)
+          : profileData.notification_preferences
       } as Profile;
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes

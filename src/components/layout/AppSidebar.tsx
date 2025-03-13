@@ -44,11 +44,13 @@ const navigationItems = [
     title: "Commission Tracker",
     path: "/commission-tracker",
     icon: DollarSign,
+    requiredRoles: ["agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum"],
   },
   {
     title: "Team",
     path: "/manager-dashboard",
     icon: Users2,
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum"],
   },
 ];
 
@@ -58,6 +60,7 @@ export function AppSidebar() {
   const [profileData, setProfileData] = useState<{
     first_name?: string | null;
     profile_image_url?: string | null;
+    roles?: string[];
   }>({});
 
   useEffect(() => {
@@ -92,14 +95,32 @@ export function AppSidebar() {
           .select('first_name, profile_image_url')
           .eq('id', user.id)
           .single();
+          
+        // Fetch user roles
+        const { data: userRoles } = await supabase
+          .from('user_roles')
+          .select('role')
+          .eq('user_id', user.id);
+          
+        const roles = userRoles?.map(r => r.role) || [];
 
         if (profile) {
-          setProfileData(profile);
+          setProfileData({
+            ...profile,
+            roles: roles
+          });
         }
       }
     } catch (error) {
       console.error('Error fetching profile:', error);
     }
+  };
+
+  const hasRequiredRole = (requiredRoles?: string[]) => {
+    if (!requiredRoles || requiredRoles.length === 0) return true;
+    if (!profileData.roles || profileData.roles.length === 0) return false;
+    
+    return profileData.roles.some(role => requiredRoles.includes(role));
   };
 
   const handleSignOut = async () => {
@@ -126,17 +147,22 @@ export function AppSidebar() {
           <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {navigationItems.map((item) => (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    onClick={() => navigate(item.path)}
-                    data-active={location.pathname === item.path}
-                  >
-                    <item.icon className="w-5 h-5" />
-                    <span>{item.title}</span>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              {navigationItems.map((item) => {
+                // Only show items if user has required role
+                if (!hasRequiredRole(item.requiredRoles)) return null;
+                
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      onClick={() => navigate(item.path)}
+                      data-active={location.pathname === item.path}
+                    >
+                      <item.icon className="w-5 h-5" />
+                      <span>{item.title}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>

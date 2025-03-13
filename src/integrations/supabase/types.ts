@@ -388,6 +388,27 @@ export type Database = {
         }
         Relationships: []
       }
+      user_roles: {
+        Row: {
+          assigned_at: string
+          id: string
+          role: string
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string
+          id?: string
+          role: string
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string
+          id?: string
+          role?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -398,6 +419,19 @@ export type Database = {
           user_id: string
         }
         Returns: string
+      }
+      get_user_roles: {
+        Args: {
+          check_user_id: string
+        }
+        Returns: string[]
+      }
+      has_role: {
+        Args: {
+          check_user_id: string
+          check_role: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
