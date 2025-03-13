@@ -1,13 +1,21 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { MetricCount } from '@/types/metrics';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO, subMonths } from 'date-fns';
+import { useRoleCheck } from '@/hooks/useRoleCheck';
 
 export const useMetricsLoad = () => {
   const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { hasRequiredRole } = useRoleCheck();
+
+  // Determine history access level based on user role
+  const hasFullHistoryAccess = hasRequiredRole([
+    'agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'
+  ]);
 
   const loadHistory = useCallback(async (retryCount = 0) => {
     try {
@@ -25,14 +33,16 @@ export const useMetricsLoad = () => {
         await new Promise(resolve => setTimeout(resolve, 500));
       }
 
-      // Get data from the last 3 months by default
-      const threeMonthsAgo = format(subMonths(new Date(), 3), 'yyyy-MM-dd');
+      // Get data from the last 3 months for pro users, 7 days for basic users
+      const historyLookbackDate = hasFullHistoryAccess
+        ? format(subMonths(new Date(), 3), 'yyyy-MM-dd')
+        : format(subMonths(new Date(), 1), 'yyyy-MM-dd');
 
       const { data, error } = await supabase
         .from('daily_metrics')
         .select('*')
         .eq('user_id', user.user.id)
-        .gte('date', threeMonthsAgo)
+        .gte('date', historyLookbackDate)
         .order('date', { ascending: false });
 
       if (error) {
@@ -42,9 +52,10 @@ export const useMetricsLoad = () => {
 
       console.log('[MetricsLoad] Raw data from database:', {
         count: data?.length,
-        dateRange: `${threeMonthsAgo} to now`,
+        dateRange: `${historyLookbackDate} to now`,
         firstEntry: data?.[0],
-        lastEntry: data?.[data.length - 1]
+        lastEntry: data?.[data.length - 1],
+        hasFullAccess: hasFullHistoryAccess
       });
 
       const formattedHistory = data.map(entry => {
@@ -84,9 +95,15 @@ export const useMetricsLoad = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [toast]);
+  }, [toast, hasFullHistoryAccess]);
 
   const loadMoreHistory = useCallback(async () => {
+    // Only allow loading more history for users with full access
+    if (!hasFullHistoryAccess) {
+      console.log('[MetricsLoad] User does not have permission to load more history');
+      return;
+    }
+    
     try {
       setIsLoading(true);
       const { data: user } = await supabase.auth.getUser();
@@ -128,7 +145,7 @@ export const useMetricsLoad = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [history, toast]);
+  }, [history, toast, hasFullHistoryAccess]);
 
   const addOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
     setHistory(prev => {
@@ -180,6 +197,7 @@ export const useMetricsLoad = () => {
     isLoading,
     loadHistory,
     loadMoreHistory,
-    addOptimisticEntry
+    addOptimisticEntry,
+    hasFullHistoryAccess
   };
 };

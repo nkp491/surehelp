@@ -19,6 +19,7 @@ export function RoleBasedRoute({
 }: RoleBasedRouteProps) {
   const { hasRequiredRole, isLoadingRoles, userRoles } = useRoleCheck();
   const [isVerifying, setIsVerifying] = useState(true);
+  const [serverVerified, setServerVerified] = useState(false);
   
   useEffect(() => {
     // Skip server verification if no roles are required
@@ -35,11 +36,32 @@ export function RoleBasedRoute({
         return;
       }
       
-      // Only perform server verification if client-side check fails or for extra security
+      // Only perform server verification if client-side check fails
       if (hasRequiredRole(requiredRoles)) {
         setIsVerifying(false);
       } else {
-        setIsVerifying(false);
+        // Verify role with server for extra security
+        const verifyWithServer = async () => {
+          try {
+            const { data, error } = await supabase.functions.invoke('verify-user-roles', {
+              body: { requiredRoles }
+            });
+            
+            if (error) {
+              console.error('Error verifying roles:', error);
+              setServerVerified(false);
+            } else {
+              setServerVerified(data.hasRequiredRole || false);
+            }
+            setIsVerifying(false);
+          } catch (err) {
+            console.error('Failed to verify roles with server:', err);
+            setServerVerified(false);
+            setIsVerifying(false);
+          }
+        };
+        
+        verifyWithServer();
       }
     }
   }, [isLoadingRoles, hasRequiredRole, requiredRoles, userRoles]);
@@ -54,10 +76,10 @@ export function RoleBasedRoute({
     );
   }
 
-  // Access is granted when client-side check passes
+  // Access is granted when client-side check passes or server verification passed
   // For routes without required roles, we skip verification
   const hasAccess = (!requiredRoles || requiredRoles.length === 0) || 
-                    hasRequiredRole(requiredRoles);
+                    hasRequiredRole(requiredRoles) || serverVerified;
 
   if (!hasAccess) {
     return (
