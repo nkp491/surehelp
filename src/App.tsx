@@ -11,7 +11,6 @@ import MainContent from './components/layout/MainContent';
 import AuthGuard from './components/auth/AuthGuard';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
-import Team from './pages/Team';
 
 function App() {
   return (
@@ -36,7 +35,7 @@ function App() {
           <Route path="/manager-dashboard" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
-          <Route path="/team" element={<AuthGuard><Team /></AuthGuard>} />
+          <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
         </Routes>
       </Router>
     </QueryClientProvider>
