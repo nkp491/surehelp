@@ -12,7 +12,7 @@ export const useProfileManagement = () => {
   const { profile, isLoading, refetch, invalidateProfile } = useProfileData();
   
   // Profile update functionality
-  const { updateProfile } = useProfileUpdate(refetch, invalidateProfile);
+  const { updateProfile, forceProfileSync, isSyncing } = useProfileUpdate(refetch, invalidateProfile);
   
   // Avatar upload functionality
   const { uploading, uploadAvatar } = useProfileAvatar(updateProfile);
@@ -26,6 +26,8 @@ export const useProfileManagement = () => {
     uploading,
     updateProfile,
     uploadAvatar,
-    signOut
+    signOut,
+    forceProfileSync,
+    isSyncing
   };
 };

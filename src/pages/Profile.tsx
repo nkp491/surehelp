@@ -15,6 +15,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { RefreshCw } from "lucide-react";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,7 +33,9 @@ const ProfileContent = () => {
     uploading,
     updateProfile,
     uploadAvatar,
-    signOut
+    signOut,
+    forceProfileSync,
+    isSyncing
   } = useProfileManagement();
 
   const { toast } = useToast();
@@ -42,8 +45,47 @@ const ProfileContent = () => {
   // Check if the user has the beta_user role
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
 
-  // Direct function to force sync between auth.users and profiles
-  const forceSyncProfiles = async () => {
+  // Handler for force sync operation
+  const handleForceSync = async () => {
+    if (!profile?.id) {
+      toast({
+        title: "Error",
+        description: "No active user profile found",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    try {
+      const syncResult = await forceProfileSync(profile.id);
+      
+      if (syncResult) {
+        toast({
+          title: "Success",
+          description: "Profile data synchronized successfully with auth metadata.",
+        });
+        
+        // Force refresh the profile data
+        queryClient.invalidateQueries({ queryKey: ['profile'] });
+      } else {
+        toast({
+          title: "Warning",
+          description: "Synchronization may not have completed successfully. Please check logs.",
+          variant: "destructive",
+        });
+      }
+    } catch (err: any) {
+      console.error("Profile sync error:", err);
+      toast({
+        title: "Error",
+        description: err.message || "An unknown error occurred during synchronization",
+        variant: "destructive",
+      });
+    }
+  };
+
+  // Direct function to log the current state for debugging
+  const logCurrentState = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -69,54 +111,35 @@ const ProfileContent = () => {
         return;
       }
       
-      console.log("Current auth user metadata:", user?.user_metadata);
-      
-      if (!user?.user_metadata) {
-        toast({
-          title: "Error",
-          description: "No user metadata found",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      // Create update payload from user metadata
-      const profileUpdate = {
-        first_name: user.user_metadata.first_name || null,
-        last_name: user.user_metadata.last_name || null,
-        phone: user.user_metadata.phone || null
-      };
-      
-      console.log("Forcing profile sync with:", profileUpdate);
-      
-      // Directly update the profiles table
-      const { data: updateResult, error: updateError } = await supabase
+      // Get current profile data
+      const { data: profileData, error: profileError } = await supabase
         .from("profiles")
-        .update(profileUpdate)
+        .select("*")
         .eq("id", session.user.id)
-        .select();
+        .single();
         
-      if (updateError) {
-        console.error("Error syncing profile:", updateError);
+      if (profileError) {
+        console.error("Error fetching profile data:", profileError);
         toast({
-          title: "Error",
-          description: `Failed to sync profile: ${updateError.message}`,
+          title: "Error", 
+          description: `Failed to fetch profile data: ${profileError.message}`,
           variant: "destructive",
         });
         return;
       }
       
-      console.log("Profile sync result:", updateResult);
-      
-      // Force refresh the profile data
-      queryClient.invalidateQueries({ queryKey: ['profile'] });
+      console.log("==== DEBUG INFO ====");
+      console.log("Auth user metadata:", user?.user_metadata);
+      console.log("Profiles table data:", profileData);
+      console.log("Current profile state:", profile);
+      console.log("===================");
       
       toast({
-        title: "Success",
-        description: "Profile synced successfully. Refresh to see changes.",
+        title: "Debug Info",
+        description: "Check console for current state information.",
       });
     } catch (err: any) {
-      console.error("Profile sync error:", err);
+      console.error("Debug error:", err);
       toast({
         title: "Error",
         description: err.message || "An unknown error occurred",
@@ -173,14 +196,24 @@ const ProfileContent = () => {
               <div className="flex flex-wrap gap-3">
                 <Button 
                   variant="outline" 
-                  onClick={forceSyncProfiles}
-                  className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+                  onClick={handleForceSync}
+                  disabled={isSyncing}
+                  className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800 flex items-center"
                 >
-                  Force Sync Profiles Table
+                  {isSyncing && <RefreshCw className="mr-2 h-4 w-4 animate-spin" />}
+                  Force Sync Profile Data
+                </Button>
+                
+                <Button 
+                  variant="outline" 
+                  onClick={logCurrentState}
+                  className="bg-blue-100 hover:bg-blue-200 text-blue-800"
+                >
+                  Log Current State
                 </Button>
               </div>
               <p className="text-sm text-gray-500 mt-2">
-                These tools help debug profile synchronization issues between auth.users and the profiles table.
+                These tools help debug profile synchronization issues between auth.users metadata and the profiles table.
               </p>
             </div>
           )}
