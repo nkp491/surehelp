@@ -42,8 +42,8 @@ const ProfileContent = () => {
   // Check if the user has the beta_user role
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
 
-  // Debug function to directly test database update
-  const testDirectUpdate = async () => {
+  // Direct function to force sync between auth.users and profiles
+  const forceSyncProfiles = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
       
@@ -56,39 +56,67 @@ const ProfileContent = () => {
         return;
       }
       
-      const testData = {
-        first_name: "Test",
-        last_name: "User"
-      };
+      // Get user metadata from auth
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
       
-      console.log("Attempting direct update with:", testData);
-      
-      // Update user metadata directly through auth system
-      const { data, error: authError } = await supabase.auth.updateUser({
-        data: testData
-      });
-      
-      if (authError) {
-        console.error("Error updating user metadata:", authError);
+      if (userError) {
+        console.error("Error fetching user metadata:", userError);
         toast({
           title: "Error",
-          description: `Failed to update profile: ${authError.message}`,
+          description: `Failed to fetch user data: ${userError.message}`,
           variant: "destructive",
         });
         return;
       }
       
-      console.log("User metadata updated successfully:", data);
+      console.log("Current auth user metadata:", user?.user_metadata);
+      
+      if (!user?.user_metadata) {
+        toast({
+          title: "Error",
+          description: "No user metadata found",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      // Create update payload from user metadata
+      const profileUpdate = {
+        first_name: user.user_metadata.first_name || null,
+        last_name: user.user_metadata.last_name || null,
+        phone: user.user_metadata.phone || null
+      };
+      
+      console.log("Forcing profile sync with:", profileUpdate);
+      
+      // Directly update the profiles table
+      const { data: updateResult, error: updateError } = await supabase
+        .from("profiles")
+        .update(profileUpdate)
+        .eq("id", session.user.id)
+        .select();
+        
+      if (updateError) {
+        console.error("Error syncing profile:", updateError);
+        toast({
+          title: "Error",
+          description: `Failed to sync profile: ${updateError.message}`,
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      console.log("Profile sync result:", updateResult);
       
       // Force refresh the profile data
       queryClient.invalidateQueries({ queryKey: ['profile'] });
       
       toast({
         title: "Success",
-        description: "Profile updated successfully. Refresh to see changes.",
+        description: "Profile synced successfully. Refresh to see changes.",
       });
     } catch (err: any) {
-      console.error("Test update error:", err);
+      console.error("Profile sync error:", err);
       toast({
         title: "Error",
         description: err.message || "An unknown error occurred",
@@ -138,19 +166,21 @@ const ProfileContent = () => {
           
           <TermsAcceptance />
           
-          {/* Debug button for direct database update - only for beta users */}
+          {/* Debug tools for beta users */}
           {hasBetaAccess && (
             <div className="mt-8 p-4 border border-gray-200 rounded-md">
               <h3 className="text-lg font-medium mb-2">Debug Tools</h3>
-              <Button 
-                variant="outline" 
-                onClick={testDirectUpdate}
-                className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
-              >
-                Test Direct DB Update
-              </Button>
+              <div className="flex flex-wrap gap-3">
+                <Button 
+                  variant="outline" 
+                  onClick={forceSyncProfiles}
+                  className="bg-yellow-100 hover:bg-yellow-200 text-yellow-800"
+                >
+                  Force Sync Profiles Table
+                </Button>
+              </div>
               <p className="text-sm text-gray-500 mt-2">
-                This button will directly update your profile in the database with test values.
+                These tools help debug profile synchronization issues between auth.users and the profiles table.
               </p>
             </div>
           )}

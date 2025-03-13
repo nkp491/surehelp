@@ -86,25 +86,21 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
               
             if (rolesError) {
               console.error("Error updating user_roles:", rolesError);
-              // Don't throw here, just log the error
             }
           } catch (rolesUpdateError) {
             console.error("Error updating user_roles:", rolesUpdateError);
-            // Don't throw here, just log the error
           }
         }
       }
       
       // Update profiles table - Ensure correct JSON serialization for JSON fields
       if (updatesToSave.privacy_settings) {
-        // Make sure privacy_settings is stored as a proper JSON object
         if (typeof updatesToSave.privacy_settings !== 'string') {
           updatesToSave.privacy_settings = updatesToSave.privacy_settings;
         }
       }
       
       if (updatesToSave.notification_preferences) {
-        // Make sure notification_preferences is stored as a proper JSON object
         if (typeof updatesToSave.notification_preferences !== 'string') {
           updatesToSave.notification_preferences = updatesToSave.notification_preferences;
         }
@@ -112,10 +108,22 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       
       console.log("Updating profiles table with:", updatesToSave);
       
+      // IMPORTANT: Always update the profile in the database, even if the fields are coming from user metadata
+      // This ensures the profiles table stays in sync with auth user metadata
+      const profileUpdate = {
+        ...updatesToSave,
+        // Explicitly include the metadata fields again to ensure they're updated in profiles table too
+        first_name: userMetadata.first_name || updatesToSave.first_name,
+        last_name: userMetadata.last_name || updatesToSave.last_name,
+        phone: userMetadata.phone || updatesToSave.phone
+      };
+      
+      console.log("Final profile update data:", profileUpdate);
+      
       // Update profile in database
       const { data: updateResult, error: profileError } = await supabase
         .from("profiles")
-        .update(updatesToSave)
+        .update(profileUpdate)
         .eq("id", session.user.id)
         .select();
         
