@@ -21,7 +21,7 @@ export const RoleBasedRoute = ({
   const [accessGranted, setAccessGranted] = useState<boolean | null>(null);
   const [isCheckingAccess, setIsCheckingAccess] = useState(true);
 
-  // Emergency timeout to prevent infinite loading
+  // Emergency timeout to prevent infinite loading - reduced to 500ms from 1000ms
   useEffect(() => {
     // Ensure we don't get stuck in loading state
     const timeoutId = setTimeout(() => {
@@ -35,18 +35,34 @@ export const RoleBasedRoute = ({
           if (hasAdminAccess) {
             console.log("Granting access based on localStorage admin flag");
             setAccessGranted(true);
-          } else {
-            // If still not sure, but we have roles, do a final check
-            if (Array.isArray(userRoles) && userRoles.length > 0) {
-              const hasAccess = hasRequiredRole(requiredRoles);
-              setAccessGranted(hasAccess);
+            return;
+          }
+          
+          // Check sessionStorage for cached role check
+          const cachedResult = sessionStorage.getItem(`role-check:${requiredRoles.sort().join(',')}`);
+          if (cachedResult) {
+            const hasAccess = cachedResult === 'true';
+            console.log(`Using cached role check: ${hasAccess}`);
+            setAccessGranted(hasAccess);
+            return;
+          }
+          
+          // If still not sure, but we have roles, do a final check
+          if (Array.isArray(userRoles) && userRoles.length > 0) {
+            const hasAccess = hasRequiredRole(requiredRoles);
+            setAccessGranted(hasAccess);
+            // Cache the result in sessionStorage
+            try {
+              sessionStorage.setItem(`role-check:${requiredRoles.sort().join(',')}`, hasAccess.toString());
+            } catch (e) {
+              console.error('Error caching role check:', e);
             }
           }
         } catch (e) {
           console.error('Error checking localStorage:', e);
         }
       }
-    }, 1000);
+    }, 500);
     
     return () => clearTimeout(timeoutId);
   }, [isCheckingAccess, hasRequiredRole, requiredRoles, userRoles]);
@@ -61,13 +77,32 @@ export const RoleBasedRoute = ({
     }
   }, [accessGranted, requiredRoles, refetchRoles]);
 
-  // Main access check logic
+  // Main access check logic - optimized for faster checks
   useEffect(() => {
     const checkAccess = async () => {
       try {
         setIsCheckingAccess(true);
         
-        // First check localStorage for quick admin check
+        // First check for cached results in sessionStorage for extremely fast response
+        try {
+          const cachedResult = sessionStorage.getItem(`role-check:${requiredRoles.sort().join(',')}`);
+          if (cachedResult) {
+            const hasAccess = cachedResult === 'true';
+            console.log(`Using cached role check: ${hasAccess}`);
+            setAccessGranted(hasAccess);
+            setIsCheckingAccess(false);
+            
+            // If no access, redirect
+            if (!hasAccess) {
+              navigate(fallbackPath, { replace: true });
+            }
+            return;
+          }
+        } catch (e) {
+          console.error('Error checking sessionStorage:', e);
+        }
+        
+        // Next check localStorage for quick admin check
         try {
           const isAdmin = localStorage.getItem('is-system-admin') === 'true';
           if (isAdmin) {
@@ -97,6 +132,13 @@ export const RoleBasedRoute = ({
           console.log(`Access ${hasAccess ? 'granted' : 'denied'}`);
           setAccessGranted(hasAccess);
           
+          // Cache the result in sessionStorage
+          try {
+            sessionStorage.setItem(`role-check:${requiredRoles.sort().join(',')}`, hasAccess.toString());
+          } catch (e) {
+            console.error('Error caching role check:', e);
+          }
+          
           if (!hasAccess) {
             toast.error(`Access denied: You don't have the required permissions.`);
             navigate(fallbackPath, { replace: true });
@@ -124,11 +166,12 @@ export const RoleBasedRoute = ({
     navigate
   ]);
 
-  // Show loading skeleton while checking access
-  if (isCheckingAccess || (isLoadingRoles && accessGranted === null)) {
+  // Show loading skeleton only briefly while checking access
+  // Using a more optimistic approach - show content sooner
+  if (isCheckingAccess && isLoadingRoles && accessGranted === null) {
     return <LoadingSkeleton />;
   }
 
-  // Return children when access is granted
-  return accessGranted ? <>{children}</> : null;
+  // Return children when access is granted or still checking but we have roles
+  return (accessGranted || (accessGranted === null && !isLoadingRoles)) ? <>{children}</> : null;
 };

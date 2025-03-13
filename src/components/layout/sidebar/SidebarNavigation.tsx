@@ -10,7 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Loader2, AlertCircle } from "lucide-react";
 
@@ -25,29 +25,51 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   const [renderedItems, setRenderedItems] = useState<NavigationItem[]>([]);
   const [isNavigating, setIsNavigating] = useState(false);
   const [activePathName, setActivePathName] = useState(location.pathname);
+  const [isInitialRender, setIsInitialRender] = useState(true);
+  
+  // Fast-path initial navigation items
+  useEffect(() => {
+    // On mount, check sessionStorage for cached navigation items
+    try {
+      const cachedNavItems = sessionStorage.getItem('nav-items');
+      if (cachedNavItems) {
+        const parsedItems = JSON.parse(cachedNavItems);
+        console.log("Using cached navigation items from sessionStorage");
+        setRenderedItems(parsedItems);
+        setIsInitialRender(false);
+      }
+    } catch (e) {
+      console.error('Error checking sessionStorage for navigation items:', e);
+    }
+  }, []);
   
   // Force a role check if needed
   useEffect(() => {
     const checkAdmin = async () => {
       // If we're not seeing enough menu items, force a refetch
-      if (renderedItems.length <= 3 && localStorage.getItem('is-system-admin') === 'true') {
+      if (!isInitialRender && renderedItems.length <= 3 && localStorage.getItem('is-system-admin') === 'true') {
         console.log("Force refetching roles due to limited menu items for admin");
         await refetchRoles();
       }
     };
     
     checkAdmin();
-  }, [renderedItems.length, refetchRoles]);
+  }, [renderedItems.length, refetchRoles, isInitialRender]);
   
-  // Pre-process navigation items when roles data changes
-  useEffect(() => {
-    console.log("Navigation rendering with roles:", userRoles);
-    console.log("Has system admin:", hasSystemAdminRole);
-    
+  // Filter navigation items based on user roles
+  const filterNavigationItems = useCallback(() => {
     // Always show all items for system_admin
     if (hasSystemAdminRole) {
       console.log("User is system_admin, showing all navigation items");
       setRenderedItems(navigationItems);
+      
+      // Cache in sessionStorage for faster future access
+      try {
+        sessionStorage.setItem('nav-items', JSON.stringify(navigationItems));
+      } catch (e) {
+        console.error('Error caching navigation items:', e);
+      }
+      
       return;
     }
     
@@ -58,6 +80,15 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
         if (isAdmin) {
           console.log("Using admin status from localStorage during loading");
           setRenderedItems(navigationItems);
+          return;
+        }
+        
+        // Check for cached navigation items during loading
+        const cachedNavItems = sessionStorage.getItem('nav-items');
+        if (cachedNavItems && !isInitialRender) {
+          const parsedItems = JSON.parse(cachedNavItems);
+          console.log("Using cached navigation items during loading");
+          setRenderedItems(parsedItems);
           return;
         }
       } catch (e) {
@@ -90,6 +121,13 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
         setRenderedItems(defaultItems.length ? defaultItems : navigationItems.slice(0, 3));
       } else {
         setRenderedItems(filtered);
+        
+        // Cache filtered items for faster future access
+        try {
+          sessionStorage.setItem('nav-items', JSON.stringify(filtered));
+        } catch (e) {
+          console.error('Error caching navigation items:', e);
+        }
       }
     } else {
       // No roles yet, but authenticated - show basic items
@@ -99,7 +137,14 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       );
       setRenderedItems(basicItems.length > 0 ? basicItems : navigationItems.slice(0, 3));
     }
-  }, [navigationItems, userRoles, hasRequiredRole, hasSystemAdminRole, isLoadingRoles]);
+    
+    setIsInitialRender(false);
+  }, [navigationItems, userRoles, hasRequiredRole, hasSystemAdminRole, isLoadingRoles, isInitialRender]);
+  
+  // Process navigation items when roles data changes
+  useEffect(() => {
+    filterNavigationItems();
+  }, [filterNavigationItems]);
   
   // Update active path when location changes
   useEffect(() => {
@@ -137,7 +182,7 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
-          {isLoadingRoles ? (
+          {isLoadingRoles && isInitialRender ? (
             <div className="px-4 py-2 text-sm text-muted-foreground flex items-center gap-2">
               <Loader2 className="h-4 w-4 animate-spin" />
               <span>Loading navigation...</span>

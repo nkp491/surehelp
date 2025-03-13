@@ -14,15 +14,45 @@ import {
 export function useRoleCheck() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
 
-  // Role cache TTL
-  const CACHE_TTL = 5 * 60 * 1000; // 5 minutes (reduced from 10)
+  // Role cache TTL - reduced for better responsiveness
+  const CACHE_TTL = 3 * 60 * 1000; // 3 minutes (reduced from 5)
 
-  // Using React Query for efficient caching of roles
+  // Using React Query for efficient caching of roles with optimized settings
   const { data: userRolesData = [], isLoading: isLoadingRoles, refetch } = useQuery({
     queryKey: ["user-roles"],
     queryFn: async () => {
       try {
-        // Force clear any system admin flags when fetching
+        // Check session storage first for fastest access
+        try {
+          const sessionRoles = sessionStorage.getItem('user-roles');
+          if (sessionRoles) {
+            const roles = JSON.parse(sessionRoles);
+            console.log("Using session storage roles:", roles);
+            setIsInitialLoading(false);
+            
+            // Verify admin role
+            if (Array.isArray(roles) && roles.includes('system_admin')) {
+              localStorage.setItem('is-system-admin', 'true');
+              localStorage.setItem('has-admin-access', 'true');
+            }
+            
+            // Still fetch in background to update cache
+            fetchUserRoles().then(freshRoles => {
+              // Update session storage if roles have changed
+              if (JSON.stringify(freshRoles) !== JSON.stringify(roles)) {
+                sessionStorage.setItem('user-roles', JSON.stringify(freshRoles));
+              }
+            }).catch(error => {
+              console.error("Background role refresh error:", error);
+            });
+            
+            return roles;
+          }
+        } catch (e) {
+          console.error('Error checking session storage:', e);
+        }
+        
+        // Force clear any system admin flags when fetching fresh
         localStorage.removeItem('is-system-admin');
         const roles = await fetchUserRoles();
         setIsInitialLoading(false);
@@ -34,6 +64,13 @@ export function useRoleCheck() {
           localStorage.setItem('has-admin-access', 'true');
         }
         
+        // Store in session storage for extremely fast future access
+        try {
+          sessionStorage.setItem('user-roles', JSON.stringify(roles));
+        } catch (e) {
+          console.error('Error saving to session storage:', e);
+        }
+        
         return roles;
       } catch (error) {
         console.error("Error fetching roles:", error);
@@ -42,18 +79,29 @@ export function useRoleCheck() {
       }
     },
     staleTime: CACHE_TTL,
-    refetchOnWindowFocus: true, // Enable refetch on window focus
+    refetchOnWindowFocus: false, // Changed to false to reduce unnecessary refetches
     refetchOnMount: true,
-    retry: 2, // Increase retries
+    retry: 1, // Reduced retries
     networkMode: 'always'
   });
 
   // Ensure userRoles is always an array
   const userRoles = Array.isArray(userRolesData) ? userRolesData : [];
 
-  // Check if user has system_admin role for quick access decisions
+  // Optimized system admin role check
   const hasSystemAdminRole = useMemo(() => {
-    console.log("Checking system admin status with roles:", userRoles);
+    // Fast path: check session storage for fastest response
+    try {
+      const sessionRoles = sessionStorage.getItem('user-roles');
+      if (sessionRoles) {
+        const roles = JSON.parse(sessionRoles);
+        if (Array.isArray(roles) && roles.includes('system_admin')) {
+          return true;
+        }
+      }
+    } catch (e) {
+      console.error('Error checking session roles:', e);
+    }
     
     // First check if we have it in the current roles array
     if (Array.isArray(userRoles) && userRoles.includes('system_admin')) {
@@ -62,6 +110,7 @@ export function useRoleCheck() {
       try {
         localStorage.setItem('is-system-admin', 'true');
         localStorage.setItem('has-admin-access', 'true');
+        sessionStorage.setItem('is-admin', 'true');
       } catch (e) {
         console.error('Error setting admin flag:', e);
       }
@@ -75,8 +124,15 @@ export function useRoleCheck() {
         console.log("System admin found in localStorage");
         return true;
       }
+      
+      // Also check sessionStorage which is even faster
+      const sessionAdminFlag = sessionStorage.getItem('is-admin');
+      if (sessionAdminFlag === 'true') {
+        console.log("System admin found in sessionStorage");
+        return true;
+      }
     } catch (e) {
-      console.error('Error checking localStorage:', e);
+      console.error('Error checking storage:', e);
     }
     
     // If roles are still loading and we're not sure, use a fallback check
@@ -101,6 +157,7 @@ export function useRoleCheck() {
       try {
         localStorage.setItem('is-system-admin', 'true');
         localStorage.setItem('has-admin-access', 'true');
+        sessionStorage.setItem('is-admin', 'true');
       } catch (e) {
         console.error('Error setting admin flag:', e);
       }
@@ -109,14 +166,48 @@ export function useRoleCheck() {
     return isAdmin;
   }, [userRoles, isLoadingRoles, isInitialLoading]);
 
-  // Memoize role check function to avoid unnecessary recalculations
+  // Optimized role check function with caching
   const hasRequiredRole = useCallback((requiredRoles?: string[]) => {
-    // If user is system admin, they have access to everything
-    if (hasSystemAdminRole) {
+    // If no roles required, grant access
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
     
-    return checkRequiredRole(userRoles, requiredRoles);
+    // Check for cached result in sessionStorage first
+    try {
+      const cacheKey = `role-check:${requiredRoles.sort().join(',')}`;
+      const cachedResult = sessionStorage.getItem(cacheKey);
+      if (cachedResult) {
+        return cachedResult === 'true';
+      }
+    } catch (e) {
+      console.error('Error checking cached role check:', e);
+    }
+    
+    // If user is system admin, they have access to everything
+    if (hasSystemAdminRole) {
+      // Cache positive result
+      try {
+        const cacheKey = `role-check:${requiredRoles.sort().join(',')}`;
+        sessionStorage.setItem(cacheKey, 'true');
+      } catch (e) {
+        console.error('Error caching role check:', e);
+      }
+      return true;
+    }
+    
+    // Do full role check
+    const result = checkRequiredRole(userRoles, requiredRoles);
+    
+    // Cache the result
+    try {
+      const cacheKey = `role-check:${requiredRoles.sort().join(',')}`;
+      sessionStorage.setItem(cacheKey, result.toString());
+    } catch (e) {
+      console.error('Error caching role check:', e);
+    }
+    
+    return result;
   }, [userRoles, hasSystemAdminRole]);
 
   // Get the highest tier role the user has
@@ -136,6 +227,22 @@ export function useRoleCheck() {
         // Invalidate roles cache on auth state change
         console.log('Auth state change:', { event });
         invalidateRolesCache();
+        
+        // Clear session storage too
+        try {
+          sessionStorage.removeItem('user-roles');
+          sessionStorage.removeItem('is-admin');
+          
+          // Clear all role check caches
+          for (let i = 0; i < sessionStorage.length; i++) {
+            const key = sessionStorage.key(i);
+            if (key && key.startsWith('role-check:')) {
+              sessionStorage.removeItem(key);
+            }
+          }
+        } catch (e) {
+          console.error('Error clearing session storage:', e);
+        }
         
         // Force refetch roles
         refetch();

@@ -34,24 +34,53 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [timeoutOccurred, setTimeoutOccurred] = useState(false);
   const [allowRender, setAllowRender] = useState(false);
   
+  // Fast path for repeat visits - check session storage first
+  useEffect(() => {
+    try {
+      const isAuth = sessionStorage.getItem('is-authenticated');
+      if (isAuth === 'true' && isInitialCheck) {
+        console.log('Quick auth check: Using sessionStorage auth state');
+        setAllowRender(true);
+      }
+    } catch (e) {
+      console.error('Error reading session storage:', e);
+    }
+  }, [isInitialCheck]);
+  
   // Use useEffect for the initial authentication check
   useEffect(() => {
-    // This is a safety timeout to prevent infinite loading
+    // This is a safety timeout to prevent infinite loading - reduced to 300ms
     const timeoutId = setTimeout(() => {
       if (isInitialCheck && isLoading) {
-        console.log('AuthGuard: Forcing initial check completion after timeout');
+        console.log('AuthGuard: Force ending initial check after timeout');
         setIsInitialCheck(false);
         setTimeoutOccurred(true);
         
-        // If we at least have a token in localStorage, allow rendering
+        // If we at least have a token in localStorage or sessionStorage, allow rendering
         try {
+          // Check sessionStorage first (faster)
+          const sessionAuth = sessionStorage.getItem('is-authenticated');
+          if (sessionAuth === 'true') {
+            console.log('AuthGuard: Found auth token in sessionStorage, allowing render');
+            setAllowRender(true);
+            return;
+          }
+          
+          // Fall back to localStorage
           const hasToken = localStorage.getItem('sb-auth-token');
           if (hasToken) {
             console.log('AuthGuard: Found token in localStorage, allowing render');
             setAllowRender(true);
+            
+            // Save to sessionStorage for faster future checks
+            try {
+              sessionStorage.setItem('is-authenticated', 'true');
+            } catch (e) {
+              console.error('Error saving to sessionStorage:', e);
+            }
           }
         } catch (e) {
-          console.error('AuthGuard: Error checking localStorage', e);
+          console.error('AuthGuard: Error checking storage', e);
         }
         
         // Only allow rendering if we're definitely not unauthenticated
@@ -59,7 +88,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           setAllowRender(true);
         }
       }
-    }, 400); // Reduced from 500ms for faster UI response
+    }, 300); // Reduced from 400ms for faster UI response
     
     // If authentication check is complete
     if (!isLoading) {
@@ -67,12 +96,27 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         console.log('AuthGuard: User is not authenticated, navigating to auth page');
         // Invalidate role cache when logging out
         invalidateRolesCache();
+        
+        // Clear sessionStorage auth flag
+        try {
+          sessionStorage.removeItem('is-authenticated');
+        } catch (e) {
+          console.error('Error clearing sessionStorage:', e);
+        }
+        
         toast.error("Authentication required");
         navigate("/auth", { replace: true });
       } else {
         console.log('AuthGuard: User is authenticated, allowing render');
         // User is authenticated, allow rendering
         setAllowRender(true);
+        
+        // Save authentication state to sessionStorage for faster future checks
+        try {
+          sessionStorage.setItem('is-authenticated', 'true');
+        } catch (e) {
+          console.error('Error saving to sessionStorage:', e);
+        }
       }
       setIsInitialCheck(false);
     }
@@ -81,7 +125,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   }, [isLoading, isAuthenticated, navigate, uiToast, isInitialCheck]);
 
   // Show loading only on initial check and only briefly
-  if (isLoading && isInitialCheck && !timeoutOccurred) {
+  if (isLoading && isInitialCheck && !timeoutOccurred && !allowRender) {
     return <LoadingScreen message="Loading authentication..." />;
   }
   

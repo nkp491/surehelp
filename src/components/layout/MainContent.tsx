@@ -43,7 +43,7 @@ const COMPONENT_MAP = {
 const MainContent = () => {
   const location = useLocation();
   const { hasSystemAdminRole, isLoadingRoles, refetchRoles, userRoles } = useRoleCheck();
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Changed default to false to avoid unnecessary loading states
   const [componentKey, setComponentKey] = useState(Date.now()); // Force remount when needed
   
   // Check if user has any roles at all
@@ -53,15 +53,26 @@ const MainContent = () => {
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
   
-  // Reset loading state on route change and trigger loading state
+  // Reset loading state on route change and trigger loading state only for significant changes
   useEffect(() => {
     console.log('MainContent: Location changed to', location.pathname);
-    setIsLoading(true);
     
-    // Short timeout to allow component to render loading state
+    // Only show loading state for significant route changes
+    const isAdminRoute = location.pathname === '/admin' || 
+                         location.pathname === '/admin-actions' || 
+                         location.pathname === '/role-management';
+    
+    if (isAdminRoute) {
+      setIsLoading(true);
+    } else {
+      // For non-admin routes, use a shorter loading time or no loading at all
+      setIsLoading(false);
+    }
+    
+    // Short timeout to allow component to render loading state when needed
     const timeoutId = setTimeout(() => {
       setIsLoading(false);
-    }, 200);
+    }, 100); // Reduced from 200ms for faster UI response
     
     return () => clearTimeout(timeoutId);
   }, [location.pathname]);
@@ -83,8 +94,8 @@ const MainContent = () => {
 
   // Content rendering with proper loading states
   const renderContent = () => {
-    // Show loading skeleton during initial loading
-    if (isLoading && isLoadingRoles) {
+    // Show loading skeleton only when necessary
+    if ((isLoading && isLoadingRoles) || (isLoadingRoles && !hasAnyRoles && userRoles === undefined)) {
       return <LoadingSkeleton />;
     }
     
