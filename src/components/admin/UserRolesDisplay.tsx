@@ -1,6 +1,6 @@
 
 import { Badge } from "@/components/ui/badge";
-import { formatRoleName, getBadgeVariant } from "./SingleUserRoleManager";
+import { formatRoleName, getBadgeVariant } from "@/components/role-management/roleUtils";
 import { PasswordResetButton } from "./PasswordResetButton";
 
 interface UserRolesDisplayProps {
