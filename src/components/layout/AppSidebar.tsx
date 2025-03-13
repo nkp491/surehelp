@@ -1,6 +1,6 @@
 
 import { useNavigate, useLocation } from "react-router-dom";
-import { LayoutDashboard, ClipboardList, Users2, UserCircle, DollarSign, BookOpen } from "lucide-react";
+import { LayoutDashboard, ClipboardList, Users2, UserCircle, DollarSign, BookOpen, Shield } from "lucide-react";
 import {
   Sidebar,
   SidebarContent,
@@ -50,6 +50,12 @@ const navigationItems = [
     title: "Team",
     path: "/manager-dashboard",
     icon: Users2,
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum"],
+  },
+  {
+    title: "Role Management",
+    path: "/role-management",
+    icon: Shield,
     requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum"],
   },
 ];

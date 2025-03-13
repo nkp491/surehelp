@@ -1,4 +1,3 @@
-
 export const profileTranslations = {
   en: {
     profileSettings: "Profile Settings",
@@ -29,6 +28,14 @@ export const profileTranslations = {
     passwordResetEmailDescription: "Check your email for password reset instructions",
     passwordResetError: "Failed to send password reset email. Please try again.",
     error: "Error",
+    roleManagement: "Role Management",
+    assignRole: "Assign Role",
+    removeRole: "Remove Role",
+    selectRole: "Select role",
+    userRoleManagement: "User Role Management",
+    rolesAndPermissions: "Roles & Permissions",
+    searchUsers: "Search users",
+    noUsersFound: "No users found",
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -59,5 +66,13 @@ export const profileTranslations = {
     passwordResetEmailDescription: "Revisa tu correo para las instrucciones de restablecimiento",
     passwordResetError: "Error al enviar el correo de restablecimiento. Por favor intenta de nuevo.",
     error: "Error",
+    roleManagement: "Gestión de Roles",
+    assignRole: "Asignar Rol",
+    removeRole: "Eliminar Rol",
+    selectRole: "Seleccionar rol",
+    userRoleManagement: "Gestión de Roles de Usuario",
+    rolesAndPermissions: "Roles y Permisos",
+    searchUsers: "Buscar usuarios",
+    noUsersFound: "No se encontraron usuarios",
   }
 };

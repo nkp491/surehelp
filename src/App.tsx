@@ -1,4 +1,3 @@
-
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
@@ -13,6 +12,7 @@ import Products from "@/pages/marketing/Products";
 import About from "@/pages/marketing/About";
 import TermsOfUse from "@/pages/marketing/TermsOfUse";
 import AuthGuard from "@/components/auth/AuthGuard";
+import RoleManagement from "@/pages/RoleManagement";
 
 function App() {
   return (
@@ -37,6 +37,7 @@ function App() {
             <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
             <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
             <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/role-management" element={<RoleManagement />} />
             
             {/* Redirect any other routes to home */}
             <Route path="*" element={<Navigate to="/" replace />} />
