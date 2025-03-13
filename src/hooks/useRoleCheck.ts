@@ -34,6 +34,7 @@ export function useRoleCheck() {
           setUserRoles([]);
         } else {
           const roles = userRoles?.map(r => r.role) || [];
+          console.log('Fetched user roles:', roles);
           setUserRoles(roles);
         }
         setIsLoadingRoles(false);
@@ -67,9 +68,15 @@ export function useRoleCheck() {
     if (userRoles.length === 0) return false;
     
     // Check for system_admin first as it supersedes all other role checks
-    if (userRoles.includes('system_admin')) return true;
+    if (userRoles.includes('system_admin')) {
+      console.log('User is system_admin, access granted');
+      return true;
+    }
     
-    return userRoles.some(role => requiredRoles.includes(role));
+    // Check if user has any of the required roles
+    const hasRole = userRoles.some(role => requiredRoles.includes(role));
+    console.log('Role check result:', { userRoles, requiredRoles, hasRole });
+    return hasRole;
   };
 
   // Get the highest tier role the user has

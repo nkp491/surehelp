@@ -57,8 +57,19 @@ serve(async (req) => {
       )
     }
 
-    // Check if the user has any of the required roles
+    // Extract roles from the result
     const roles = userRoles.map(r => r.role)
+    
+    // Always grant access to system_admin regardless of required roles
+    if (roles.includes('system_admin')) {
+      console.log(`User ${session.user.id} is system_admin, access granted`)
+      return new Response(
+        JSON.stringify({ hasRequiredRole: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
+    // Check if the user has any of the required roles
     const hasRequiredRole = requiredRoles.some(role => roles.includes(role))
 
     console.log(`User ${session.user.id} roles: ${roles.join(', ')}`)

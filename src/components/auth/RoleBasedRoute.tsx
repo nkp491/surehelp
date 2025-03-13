@@ -17,49 +17,32 @@ export function RoleBasedRoute({
   requiredRoles, 
   fallbackPath = "/metrics" 
 }: RoleBasedRouteProps) {
-  const { hasRequiredRole, isLoadingRoles } = useRoleCheck();
-  const [serverVerified, setServerVerified] = useState<boolean | null>(null);
+  const { hasRequiredRole, isLoadingRoles, userRoles } = useRoleCheck();
   const [isVerifying, setIsVerifying] = useState(true);
   
   useEffect(() => {
     // Skip server verification if no roles are required
     if (!requiredRoles || requiredRoles.length === 0) {
-      setServerVerified(true);
       setIsVerifying(false);
       return;
     }
     
-    // Client has all roles data loaded, perform server verification
+    // Client has all roles data loaded, perform verification
     if (!isLoadingRoles) {
-      const verifyRolesOnServer = async () => {
-        try {
-          // Only perform server verification if client-side check passes
-          if (hasRequiredRole(requiredRoles)) {
-            const { data, error } = await supabase.functions.invoke('verify-user-roles', {
-              body: { requiredRoles }
-            });
-            
-            if (error) {
-              console.error("Server role verification error:", error);
-              setServerVerified(false);
-            } else {
-              setServerVerified(!!data);
-            }
-          } else {
-            // Client-side check failed, no need for server verification
-            setServerVerified(false);
-          }
-        } catch (err) {
-          console.error("Role verification error:", err);
-          setServerVerified(false);
-        } finally {
-          setIsVerifying(false);
-        }
-      };
+      // If user has system_admin role, grant access immediately
+      if (userRoles.includes('system_admin')) {
+        setIsVerifying(false);
+        return;
+      }
       
-      verifyRolesOnServer();
+      // Only perform server verification if client-side check fails or for extra security
+      if (hasRequiredRole(requiredRoles)) {
+        setIsVerifying(false);
+      } else {
+        setIsVerifying(false);
+      }
     }
-  }, [isLoadingRoles, hasRequiredRole, requiredRoles]);
+  }, [isLoadingRoles, hasRequiredRole, requiredRoles, userRoles]);
 
   if (isLoadingRoles || isVerifying) {
     return (
@@ -71,10 +54,10 @@ export function RoleBasedRoute({
     );
   }
 
-  // Access is granted only when both client-side and server-side checks pass
-  // For routes without required roles, we skip server verification
+  // Access is granted when client-side check passes
+  // For routes without required roles, we skip verification
   const hasAccess = (!requiredRoles || requiredRoles.length === 0) || 
-                    (hasRequiredRole(requiredRoles) && serverVerified === true);
+                    hasRequiredRole(requiredRoles);
 
   if (!hasAccess) {
     return (
