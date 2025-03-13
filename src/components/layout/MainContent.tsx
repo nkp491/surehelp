@@ -8,6 +8,7 @@ import FormContainer from "@/components/FormContainer";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import CommissionTracker from "@/pages/CommissionTracker";
+import RoleManagement from "@/pages/RoleManagement";
 
 const MainContent = () => {
   const location = useLocation();
@@ -26,6 +27,8 @@ const MainContent = () => {
         return <FormContainer />;
       case '/commission-tracker':
         return <CommissionTracker />;
+      case '/role-management':
+        return <RoleManagement />;
       default:
         return <Dashboard />;
     }
