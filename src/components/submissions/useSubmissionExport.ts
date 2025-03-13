@@ -29,9 +29,9 @@ export const useSubmissionExport = (submissions: FormSubmission[]) => {
         return;
       }
 
-      // Verify the role again on the server side through RPC function
-      const { data: hasPermission, error: permissionError } = await supabase.rpc(
-        'has_export_permission'
+      // Verify the role again on the server side through edge function
+      const { data: hasPermission, error: permissionError } = await supabase.functions.invoke(
+        'verify-export-permission'
       );
 
       if (permissionError || !hasPermission) {

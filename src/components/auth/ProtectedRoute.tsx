@@ -24,7 +24,7 @@ export const ProtectedRoute = ({
       if (isAuthenticated) {
         try {
           // Verify the session is valid on the server
-          const { data, error } = await supabase.rpc('verify_session_valid');
+          const { data, error } = await supabase.functions.invoke('verify-session');
           
           if (error) {
             console.error("Session verification error:", error);

@@ -35,10 +35,9 @@ export function RoleBasedRoute({
         try {
           // Only perform server verification if client-side check passes
           if (hasRequiredRole(requiredRoles)) {
-            const { data, error } = await supabase.rpc(
-              'verify_user_roles',
-              { required_roles: requiredRoles }
-            );
+            const { data, error } = await supabase.functions.invoke('verify-user-roles', {
+              body: { requiredRoles }
+            });
             
             if (error) {
               console.error("Server role verification error:", error);

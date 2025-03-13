@@ -33,9 +33,9 @@ export const useSubmissionDelete = () => {
     setIsDeleting(true);
     
     try {
-      // Server-side role verification through RPC
-      const { data: hasPermission, error: permissionError } = await supabase.rpc(
-        'has_delete_permission'
+      // Server-side role verification through edge function
+      const { data: hasPermission, error: permissionError } = await supabase.functions.invoke(
+        'verify-delete-permission'
       );
 
       if (permissionError || !hasPermission) {

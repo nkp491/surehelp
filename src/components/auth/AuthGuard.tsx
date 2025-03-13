@@ -27,7 +27,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
       if (isAuthenticated) {
         try {
           // Verify the session token is valid on the server
-          const { data: sessionValid, error } = await supabase.rpc('verify_session_valid');
+          const { data: sessionValid, error } = await supabase.functions.invoke('verify-session');
           
           if (error || !sessionValid) {
             console.error("Session validation error:", error);
