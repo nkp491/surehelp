@@ -24,7 +24,9 @@ export function SingleUserRoleManager() {
     lastName: string | null;
   } | null>(null);
   const { toast } = useToast();
-  const { availableRoles } = useRoleManagement();
+  const { availableRoles, users } = useRoleManagement();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showUserSearch, setShowUserSearch] = useState(false);
 
   const handleRoleAction = async () => {
     if (!userId.trim()) {
@@ -120,6 +122,32 @@ export function SingleUserRoleManager() {
     }
   };
 
+  const filteredUsers = users?.filter(user => {
+    if (!searchQuery.trim()) return false;
+    
+    const query = searchQuery.toLowerCase();
+    const fullName = `${user.first_name || ''} ${user.last_name || ''}`.toLowerCase();
+    const email = (user.email || '').toLowerCase();
+    
+    return fullName.includes(query) || email.includes(query);
+  });
+
+  const selectUser = (user: { id: string; first_name: string | null; last_name: string | null; email: string | null }) => {
+    setUserId(user.id);
+    setShowUserSearch(false);
+    setUserInfo({
+      email: user.email,
+      firstName: user.first_name,
+      lastName: user.last_name
+    });
+    // Also load the roles for this user
+    getUserRoles(user.id).then(result => {
+      if (result.success) {
+        setUserRoles(result.roles || []);
+      }
+    });
+  };
+
   return (
     <Card className="max-w-2xl mx-auto">
       <CardHeader>
@@ -134,12 +162,58 @@ export function SingleUserRoleManager() {
           <label className="block text-sm font-medium mb-1" htmlFor="userId">
             User ID
           </label>
-          <Input
-            id="userId"
-            value={userId}
-            onChange={(e) => setUserId(e.target.value)}
-            placeholder="Enter user ID"
-          />
+          <div className="flex gap-2 mb-2">
+            <Input
+              id="userId"
+              value={userId}
+              onChange={(e) => setUserId(e.target.value)}
+              placeholder="Enter user ID"
+            />
+            <Button 
+              variant="outline" 
+              onClick={() => setShowUserSearch(!showUserSearch)}
+              type="button"
+            >
+              <Search className="h-4 w-4" />
+            </Button>
+          </div>
+          
+          {showUserSearch && (
+            <div className="mt-2 mb-4">
+              <Input
+                placeholder="Search users by name or email"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="mb-2"
+              />
+              
+              <div className="bg-muted/50 rounded-md max-h-64 overflow-y-auto">
+                {filteredUsers && filteredUsers.length > 0 ? (
+                  <div className="divide-y">
+                    {filteredUsers.map(user => (
+                      <button
+                        key={user.id}
+                        onClick={() => selectUser(user)}
+                        className="w-full text-left p-2 hover:bg-accent hover:text-accent-foreground transition-colors"
+                      >
+                        <div className="font-medium">
+                          {user.first_name} {user.last_name}
+                          {!user.first_name && !user.last_name && 'Unknown User'}
+                        </div>
+                        <div className="text-sm text-muted-foreground">{user.email}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{user.id}</div>
+                      </button>
+                    ))}
+                  </div>
+                ) : searchQuery ? (
+                  <p className="p-3 text-sm text-muted-foreground">No users found</p>
+                ) : (
+                  <p className="p-3 text-sm text-muted-foreground">Start typing to search users</p>
+                )}
+              </div>
+            </div>
+          )}
+          
           <p className="text-xs text-muted-foreground mt-1">
             The user must exist in the profiles table for the role management to work
           </p>

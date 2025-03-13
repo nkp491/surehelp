@@ -2,77 +2,62 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, UserPlus, UserMinus, Users } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { bulkRoleOperation } from "@/utils/roles";
+import { Loader2, Users } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { useUserSearch } from "@/hooks/useUserSearch";
+import { Input } from "@/components/ui/input";
 import { UserCheckboxList } from "./UserCheckboxList";
-import { formatRoleName } from "./SingleUserRoleManager";
+import { bulkRoleOperation } from "@/utils/roles";
 
 export function BulkUserRoleManager() {
-  const [isBulkLoading, setIsBulkLoading] = useState(false);
-  const [bulkAction, setBulkAction] = useState<"assign" | "remove">("assign");
-  const [bulkRole, setBulkRole] = useState("manager_pro_platinum");
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
-  const [selectAll, setSelectAll] = useState(false);
-  
+  const [role, setRole] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [action, setAction] = useState<"assign" | "remove">("assign");
   const { toast } = useToast();
   const { users, isLoadingUsers, availableRoles } = useRoleManagement();
-
-  // Toggle "Select All" users
-  const handleSelectAll = () => {
-    setSelectAll(!selectAll);
-    if (!selectAll) {
-      setSelectedUserIds(users?.map(user => user.id) || []);
-    } else {
-      setSelectedUserIds([]);
-    }
-  };
-
-  // Toggle individual user selection
-  const toggleUserSelection = (userId: string) => {
-    setSelectedUserIds(prev => {
-      if (prev.includes(userId)) {
-        return prev.filter(id => id !== userId);
-      } else {
-        return [...prev, userId];
-      }
-    });
-  };
+  const { searchQuery, setSearchQuery, filterUsers } = useUserSearch();
   
-  // Handle bulk role operations
-  const handleBulkRoleOperation = async () => {
-    if (selectedUserIds.length === 0) {
+  const filteredUsers = filterUsers(users);
+
+  const toggleUserSelection = (userId: string) => {
+    setSelectedUserIds(prev => 
+      prev.includes(userId) 
+        ? prev.filter(id => id !== userId) 
+        : [...prev, userId]
+    );
+  };
+
+  const handleBulkRoleAction = async () => {
+    if (selectedUserIds.length === 0 || !role) {
       toast({
         title: "Error",
-        description: "Please select at least one user",
+        description: "Please select users and a role for the operation",
         variant: "destructive",
       });
       return;
     }
 
-    setIsBulkLoading(true);
+    setIsLoading(true);
     try {
-      const result = await bulkRoleOperation(selectedUserIds, bulkRole, bulkAction);
+      const result = await bulkRoleOperation({
+        userIds: selectedUserIds,
+        role,
+        action
+      });
       
       if (result.success) {
         toast({
-          title: "Bulk Operation Completed",
+          title: "Success",
           description: result.message,
         });
-        
-        // Optionally show detailed results in console
-        console.log("Bulk operation results:", result.results);
-        
-        // Reset selection after operation
+        // Reset selection after successful operation
         setSelectedUserIds([]);
-        setSelectAll(false);
       } else {
         toast({
-          title: "Bulk Operation Failed",
+          title: "Error",
           description: result.message,
           variant: "destructive",
         });
@@ -84,55 +69,80 @@ export function BulkUserRoleManager() {
         variant: "destructive",
       });
     } finally {
-      setIsBulkLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <Card className="mx-auto">
+    <Card>
       <CardHeader>
-        <CardTitle>Bulk Role Management</CardTitle>
+        <CardTitle>Bulk User Role Management</CardTitle>
         <CardDescription>
-          Assign or remove roles for multiple users at once
+          Assign or remove roles from multiple users at once
         </CardDescription>
       </CardHeader>
       
-      <CardContent>
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 mb-4">
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Action</label>
-              <Select value={bulkAction} onValueChange={(value: "assign" | "remove") => setBulkAction(value)}>
-                <SelectTrigger>
+      <CardContent className="space-y-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">
+            Search Users
+          </label>
+          <Input
+            placeholder="Search by name or email"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="mb-4"
+          />
+          
+          <div className="flex items-center justify-between mb-2">
+            <h3 className="font-medium">Users ({filteredUsers?.length || 0})</h3>
+            <span className="text-sm text-muted-foreground">
+              {selectedUserIds.length} selected
+            </span>
+          </div>
+          
+          <UserCheckboxList
+            users={filteredUsers}
+            isLoadingUsers={isLoadingUsers}
+            selectedUserIds={selectedUserIds}
+            toggleUserSelection={toggleUserSelection}
+          />
+        </div>
+        
+        <div className="border-t pt-4 mt-4">
+          <h3 className="font-medium mb-3">
+            <Users className="h-4 w-4 inline mr-1" />
+            Bulk Action for Selected Users
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="bulk-action">
+                Action
+              </label>
+              <Select value={action} onValueChange={(value: "assign" | "remove") => setAction(value)}>
+                <SelectTrigger id="bulk-action">
                   <SelectValue placeholder="Select action" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="assign">
-                    <div className="flex items-center">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Assign Role
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="remove">
-                    <div className="flex items-center">
-                      <UserMinus className="mr-2 h-4 w-4" />
-                      Remove Role
-                    </div>
-                  </SelectItem>
+                  <SelectItem value="assign">Assign Role</SelectItem>
+                  <SelectItem value="remove">Remove Role</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             
-            <div className="flex-1">
-              <label className="block text-sm font-medium mb-1">Role</label>
-              <Select value={bulkRole} onValueChange={setBulkRole}>
-                <SelectTrigger>
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="bulk-role">
+                Role
+              </label>
+              <Select value={role} onValueChange={setRole}>
+                <SelectTrigger id="bulk-role">
                   <SelectValue placeholder="Select role" />
                 </SelectTrigger>
                 <SelectContent>
                   {availableRoles.map((r) => (
                     <SelectItem key={r} value={r}>
-                      {formatRoleName(r)}
+                      {r.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -140,63 +150,23 @@ export function BulkUserRoleManager() {
             </div>
           </div>
           
-          <div>
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="font-medium flex items-center">
-                <Users className="h-5 w-5 mr-2" />
-                Select Users
-              </h3>
-              <div className="flex items-center space-x-2">
-                <Checkbox 
-                  id="selectAll" 
-                  checked={selectAll} 
-                  onCheckedChange={handleSelectAll} 
-                />
-                <label htmlFor="selectAll" className="text-sm cursor-pointer">
-                  Select All
-                </label>
-              </div>
-            </div>
-            
-            <UserCheckboxList 
-              users={users} 
-              isLoadingUsers={isLoadingUsers}
-              selectedUserIds={selectedUserIds}
-              toggleUserSelection={toggleUserSelection}
-            />
-          </div>
-          
-          <div className="mt-6 flex justify-end">
-            <div className="text-sm text-muted-foreground mr-auto">
-              {selectedUserIds.length} user{selectedUserIds.length !== 1 ? 's' : ''} selected
-            </div>
-            <Button 
-              onClick={handleBulkRoleOperation}
-              disabled={isBulkLoading || selectedUserIds.length === 0 || !bulkRole}
-              variant={bulkAction === "remove" ? "destructive" : "default"}
-            >
-              {isBulkLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  {bulkAction === "assign" ? (
-                    <>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Assign Role to Selected Users
-                    </>
-                  ) : (
-                    <>
-                      <UserMinus className="mr-2 h-4 w-4" />
-                      Remove Role from Selected Users
-                    </>
-                  )}
-                </>
-              )}
-            </Button>
-          </div>
+          <Button 
+            onClick={handleBulkRoleAction}
+            disabled={isLoading || selectedUserIds.length === 0 || !role}
+            className="w-full"
+            variant={action === "remove" ? "destructive" : "default"}
+          >
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {action === "assign" ? "Assigning..." : "Removing..."}
+              </>
+            ) : (
+              <>
+                {action === "assign" ? "Assign Role to" : "Remove Role from"} {selectedUserIds.length} Users
+              </>
+            )}
+          </Button>
         </div>
       </CardContent>
     </Card>
