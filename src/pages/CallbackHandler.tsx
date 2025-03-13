@@ -2,7 +2,7 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { LoadingScreen } from '@/components/ui/loading-screen';
+import LoadingScreen from '@/components/ui/loading-screen';
 
 /**
  * This component handles OAuth callback redirects
