@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { assignRoleToUser, hasSystemAdminRole } from "@/utils/roleAssignment";
+import { assignRoleToUser, hasSystemAdminRole, removeRoleFromUser } from "@/utils/roleAssignment";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, AlertTriangle } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -15,6 +15,7 @@ export default function AdminActions() {
   const [isLoading, setIsLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
   const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
+  const [action, setAction] = useState<"assign" | "remove">("assign");
   const { toast } = useToast();
 
   const availableRoles = [
@@ -37,7 +38,7 @@ export default function AdminActions() {
     checkAdminRole();
   }, []);
 
-  const handleAssignRole = async () => {
+  const handleRoleAction = async () => {
     if (!userId.trim()) {
       toast({
         title: "Error",
@@ -49,7 +50,13 @@ export default function AdminActions() {
 
     setIsLoading(true);
     try {
-      const result = await assignRoleToUser(userId, role);
+      let result;
+      
+      if (action === "assign") {
+        result = await assignRoleToUser(userId, role);
+      } else {
+        result = await removeRoleFromUser(userId, role);
+      }
       
       if (result.success) {
         toast({
@@ -93,9 +100,9 @@ export default function AdminActions() {
       ) : (
         <Card className="max-w-2xl mx-auto">
           <CardHeader>
-            <CardTitle>Assign Role to User</CardTitle>
+            <CardTitle>Manage User Roles</CardTitle>
             <CardDescription>
-              Apply a role to a specific user using their ID
+              Assign or remove roles for specific users using their ID
             </CardDescription>
           </CardHeader>
           
@@ -111,8 +118,23 @@ export default function AdminActions() {
                 placeholder="Enter user ID"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                The user must exist in the profiles table for the role assignment to work
+                The user must exist in the profiles table for the role management to work
               </p>
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium mb-1" htmlFor="action">
+                Action
+              </label>
+              <Select value={action} onValueChange={(value: "assign" | "remove") => setAction(value)}>
+                <SelectTrigger id="action">
+                  <SelectValue placeholder="Select action" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="assign">Assign Role</SelectItem>
+                  <SelectItem value="remove">Remove Role</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             
             <div>
@@ -134,17 +156,18 @@ export default function AdminActions() {
             </div>
             
             <Button 
-              onClick={handleAssignRole}
+              onClick={handleRoleAction}
               disabled={isLoading || !userId.trim() || !role}
               className="w-full"
+              variant={action === "remove" ? "destructive" : "default"}
             >
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Assigning...
+                  {action === "assign" ? "Assigning..." : "Removing..."}
                 </>
               ) : (
-                "Assign Role"
+                action === "assign" ? "Assign Role" : "Remove Role"
               )}
             </Button>
           </CardContent>
