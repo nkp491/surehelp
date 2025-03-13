@@ -34,6 +34,7 @@ const MainContent = () => {
       case '/team':
         return <TeamPage />;
       case '/admin':
+      case '/admin-actions':
         return <AdminActionsPage />;
       default:
         return <Dashboard />;

@@ -4,7 +4,6 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Profile from './pages/Profile';
 import Assessment from './pages/Assessment';
 import Auth from './pages/Auth';
-import AdminActions from './pages/AdminActions';
 import CallbackHandler from './pages/CallbackHandler';
 import ResetPassword from './pages/auth/reset-password';
 import MainContent from './components/layout/MainContent';
@@ -22,10 +21,6 @@ function App() {
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<CallbackHandler />} />
           
-          {/* Admin specific routes */}
-          <Route path="/admin" element={<AuthGuard><AdminActions /></AuthGuard>} />
-          <Route path="/admin-actions" element={<AuthGuard><AdminActions /></AuthGuard>} />
-          
           {/* Protected routes with sidebar navigation */}
           <Route path="/" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
@@ -36,6 +31,8 @@ function App() {
           <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
+          <Route path="/admin" element={<AuthGuard><MainContent /></AuthGuard>} />
+          <Route path="/admin-actions" element={<AuthGuard><MainContent /></AuthGuard>} />
         </Routes>
       </Router>
     </QueryClientProvider>
