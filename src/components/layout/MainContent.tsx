@@ -5,11 +5,17 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import AuthGuard from "@/components/auth/AuthGuard";
-import { Suspense, lazy, useEffect, useState } from "react";
-import LoadingScreen from "@/components/ui/loading-screen";
+import { Suspense, lazy, useEffect, useState, useTransition } from "react";
+import LoadingSkeleton from "@/components/ui/loading-skeleton";
 
-// Lazy load components to improve initial load performance
-const LazyDashboard = lazy(() => import("@/pages/Dashboard"));
+// Preload common pages on app startup
+const LazyDashboard = lazy(() => {
+  // Start loading Dashboard immediately
+  const preload = import("@/pages/Dashboard");
+  return preload;
+});
+
+// Lazy load components with dynamic imports for code splitting
 const LazySubmittedForms = lazy(() => import("@/pages/SubmittedForms"));
 const LazyManagerDashboard = lazy(() => import("@/pages/ManagerDashboard"));
 const LazyProfile = lazy(() => import("@/pages/Profile"));
@@ -19,42 +25,50 @@ const LazyRoleManagement = lazy(() => import("@/pages/RoleManagement"));
 const LazyTeamPage = lazy(() => import("@/pages/Team"));
 const LazyAdminActionsPage = lazy(() => import("@/components/admin/AdminActionsPage"));
 
+// Prefetch all routes - this will trigger webpack to create separate chunks
+// but begin downloading when idle
+const prefetchRoutes = () => {
+  if (typeof window !== 'undefined' && 'requestIdleCallback' in window) {
+    // @ts-ignore - requestIdleCallback is not in the TS types
+    window.requestIdleCallback(() => {
+      // Prefetch all routes during idle time
+      import("@/pages/SubmittedForms");
+      import("@/pages/ManagerDashboard");
+      import("@/pages/Profile");
+      import("@/components/FormContainer");
+      import("@/pages/CommissionTracker");
+      import("@/pages/RoleManagement");
+      import("@/pages/Team");
+      import("@/components/admin/AdminActionsPage");
+    });
+  }
+};
+
 const MainContent = () => {
   const location = useLocation();
-  const [isNavigating, setIsNavigating] = useState(false);
-
-  // Reset navigation state on location change
+  const [isPending, startTransition] = useTransition();
+  const [currentPath, setCurrentPath] = useState(location.pathname);
+  
+  // Prefetch all routes on initial load
   useEffect(() => {
-    setIsNavigating(true);
-    
-    // Short timeout to prevent flickering but allow for state updates
-    const timer = setTimeout(() => {
-      setIsNavigating(false);
-    }, 100);
-    
-    return () => clearTimeout(timer);
-  }, [location.pathname]);
+    prefetchRoutes();
+  }, []);
 
-  // Debug navigation
+  // Use React 18 transitions for smoother page changes
   useEffect(() => {
-    console.log('MainContent rendering for path:', location.pathname);
-  }, [location.pathname]);
+    if (location.pathname !== currentPath) {
+      startTransition(() => {
+        setCurrentPath(location.pathname);
+      });
+    }
+  }, [location.pathname, currentPath]);
 
   // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
 
-  useEffect(() => {
-    console.log('Current navigation item:', { 
-      path: location.pathname, 
-      requiredRoles,
-      hasRequiredRoles: !!requiredRoles 
-    });
-  }, [location.pathname, requiredRoles]);
-
   const renderContent = () => {
-    console.log('Rendering content for path:', location.pathname);
-    
+    // Use memoized component reference for better performance
     const Component = (() => {
       switch (location.pathname) {
         case '/metrics':
@@ -77,7 +91,6 @@ const MainContent = () => {
         case '/admin-actions':
           return <LazyAdminActionsPage />;
         default:
-          console.log('No matching route, defaulting to Dashboard');
           return <LazyDashboard />;
       }
     })();
@@ -86,7 +99,7 @@ const MainContent = () => {
     // Then wrap with role protection if the path requires specific roles
     return (
       <AuthGuard>
-        <Suspense fallback={<LoadingScreen message="Loading page content..." />}>
+        <Suspense fallback={<LoadingSkeleton />}>
           {requiredRoles ? (
             <RoleBasedRoute requiredRoles={requiredRoles}>
               {Component}
