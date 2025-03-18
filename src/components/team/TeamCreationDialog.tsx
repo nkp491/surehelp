@@ -31,6 +31,7 @@ export function TeamCreationDialog({
   const { createTeam, updateTeam, isLoading } = useTeamManagement();
   const [teamName, setTeamName] = useState(initialName);
   const { toast } = useToast();
+  const [internalLoading, setInternalLoading] = useState(false);
   
   const isEditMode = !!teamId;
   const dialogTitle = isEditMode ? "Edit Team" : "Create Team";
@@ -44,6 +45,7 @@ export function TeamCreationDialog({
     if (!teamName.trim()) return;
     
     try {
+      setInternalLoading(true);
       console.log("Submitting team form:", { teamName, isEditMode, teamId });
       
       if (isEditMode && teamId) {
@@ -75,15 +77,20 @@ export function TeamCreationDialog({
         variant: "destructive",
       });
       // Dialog stays open if there's an error
+    } finally {
+      setInternalLoading(false);
     }
   };
 
   const closeDialog = () => {
-    if (!isLoading) {
+    if (!isLoading && !internalLoading) {
       setTeamName(initialName);
       onOpenChange(false);
     }
   };
+
+  const isSubmitDisabled = isLoading || internalLoading || !teamName.trim();
+  const showLoading = isLoading || internalLoading;
 
   return (
     <Dialog open={open} onOpenChange={closeDialog}>
@@ -105,7 +112,7 @@ export function TeamCreationDialog({
                 placeholder="Enter team name"
                 autoFocus
                 required
-                disabled={isLoading}
+                disabled={showLoading}
               />
             </div>
           </div>
@@ -114,12 +121,12 @@ export function TeamCreationDialog({
               type="button"
               variant="outline"
               onClick={closeDialog}
-              disabled={isLoading}
+              disabled={showLoading}
             >
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading || !teamName.trim()}>
-              {isLoading ? (
+            <Button type="submit" disabled={isSubmitDisabled}>
+              {showLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   {isEditMode ? "Updating..." : "Creating..."}

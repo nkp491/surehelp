@@ -34,21 +34,19 @@ export const useTeams = () => {
 
         console.log("Auth successful, user ID:", user.id);
 
-        // Get teams that the user is a member of through team_members
+        // Get teams directly with a simpler query to avoid recursion
         const { data, error } = await supabase
-          .from('team_members')
-          .select('team_id, teams:team_id(id, name)')
-          .eq('user_id', user.id);
-
+          .from('teams')
+          .select('*')
+          .order('name');
+        
         if (error) {
-          console.error("Database error when fetching team members:", error);
+          console.error("Database error when fetching teams:", error);
           throw error;
         }
         
-        // Extract teams from the result
-        const teams = data.map(item => item.teams) as Team[];
-        console.log("Teams fetched:", teams);
-        return teams;
+        console.log("Teams fetched:", data);
+        return data as Team[];
       } catch (error: any) {
         console.error("Error in fetchTeams:", error);
         throw error;
@@ -93,31 +91,13 @@ export const useTeams = () => {
         
         console.log("Team created:", teamData);
 
-        // Add the creator as a team manager
-        const { data: userRoles, error: rolesError } = await supabase
-          .from('user_roles')
-          .select('role')
-          .eq('user_id', user.id);
-          
-        if (rolesError) {
-          console.error("Error fetching user roles:", rolesError);
-          throw rolesError;
-        }
-
-        // Find the highest manager role the user has
-        const managerRoles = userRoles
-          ?.filter(ur => ur.role.startsWith('manager_pro'))
-          .map(ur => ur.role) || ['manager_pro'];
-        
-        const highestRole = managerRoles.length > 0 ? managerRoles[0] : 'manager_pro';
-        console.log("Adding user as team member with role:", highestRole);
-
+        // Add the creator as a team member with explicit values to avoid recursion
         const { error: memberError } = await supabase
           .from('team_members')
           .insert([{
             team_id: teamData.id,
             user_id: user.id,
-            role: highestRole
+            role: 'manager_pro'
           }]);
 
         if (memberError) {
@@ -137,10 +117,6 @@ export const useTeams = () => {
     onSuccess: () => {
       console.log("Team creation successful, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-      toast({
-        title: "Team created",
-        description: "Your new team has been created successfully.",
-      });
     },
     onError: (error: any) => {
       console.error('Error creating team:', error);
@@ -176,10 +152,6 @@ export const useTeams = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-      toast({
-        title: "Team updated",
-        description: "The team has been updated successfully.",
-      });
     },
     onError: (error: any) => {
       console.error('Error updating team:', error);
