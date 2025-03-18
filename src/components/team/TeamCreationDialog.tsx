@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 interface TeamCreationDialogProps {
   open: boolean;
@@ -29,6 +30,7 @@ export function TeamCreationDialog({
 }: TeamCreationDialogProps) {
   const { createTeam, updateTeam, isLoading } = useTeamManagement();
   const [teamName, setTeamName] = useState(initialName);
+  const { toast } = useToast();
   
   const isEditMode = !!teamId;
   const dialogTitle = isEditMode ? "Edit Team" : "Create Team";
@@ -42,6 +44,8 @@ export function TeamCreationDialog({
     if (!teamName.trim()) return;
     
     try {
+      console.log("Submitting team form:", { teamName, isEditMode, teamId });
+      
       if (isEditMode && teamId) {
         await updateTeam.mutateAsync({ teamId, name: teamName });
       } else {
@@ -50,8 +54,15 @@ export function TeamCreationDialog({
       
       setTeamName("");
       onOpenChange(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error in team operation:", error);
+      
+      // Show a toast with the error message
+      toast({
+        title: "Error creating team",
+        description: error.message || "There was a problem creating the team. Please try again.",
+        variant: "destructive",
+      });
       // Dialog stays open if there's an error
     }
   };
