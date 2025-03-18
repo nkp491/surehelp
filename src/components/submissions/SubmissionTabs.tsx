@@ -2,6 +2,7 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormSubmission } from "@/types/form";
 import SubmissionsList from "./SubmissionsList";
+import { Badge } from "@/components/ui/badge";
 
 interface SubmissionTabsProps {
   submissions: {
@@ -29,12 +30,21 @@ export function SubmissionTabs({
       <TabsList className="grid grid-cols-3 mb-4">
         <TabsTrigger value="protected" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
           Protected
+          <Badge variant="outline" className="ml-2 bg-green-100 text-green-800 border-green-200">
+            {submissions.protected.length}
+          </Badge>
         </TabsTrigger>
         <TabsTrigger value="follow-up" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
           Follow-Up
+          <Badge variant="outline" className="ml-2 bg-amber-100 text-amber-800 border-amber-200">
+            {submissions.followUp.length}
+          </Badge>
         </TabsTrigger>
         <TabsTrigger value="declined" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
           Declined
+          <Badge variant="outline" className="ml-2 bg-red-100 text-red-800 border-red-200">
+            {submissions.declined.length}
+          </Badge>
         </TabsTrigger>
       </TabsList>
       
