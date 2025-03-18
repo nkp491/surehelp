@@ -45,7 +45,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         return [
           "Full manager dashboard access",
           "Team performance analytics",
-          "Unlimited agent accounts",
+          "Up to 1,000 agent accounts",
           "Premium email support",
           "White-label reporting",
           "Custom API integrations"

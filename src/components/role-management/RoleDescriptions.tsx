@@ -77,7 +77,7 @@ export function RoleDescriptions() {
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>Everything in Manager Pro Gold role</li>
-            <li>Unlimited agent accounts</li>
+            <li>Up to 1,000 agent accounts</li>
             <li>Custom API integrations</li>
             <li>Dedicated account manager</li>
           </ul>
