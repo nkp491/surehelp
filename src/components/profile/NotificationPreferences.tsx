@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
@@ -29,16 +30,19 @@ const NotificationPreferences = ({
     try {
       setIsUpdatingLanguage(true);
       await toggleLanguage();
-      
       toast({
-        title: "Language Updated",
-        description: "Your language preference has been saved.",
+        title: language === 'en' ? "Language Updated" : "Idioma Actualizado",
+        description: language === 'en' 
+          ? "Your language preference has been saved."
+          : "Tu preferencia de idioma ha sido guardada.",
       });
     } catch (error) {
       console.error('Error updating language preference:', error);
       toast({
         title: "Error",
-        description: "Failed to update language preference. Please try again.",
+        description: language === 'en'
+          ? "Failed to update language preference. Please try again."
+          : "Error al actualizar el idioma. Por favor, inténtalo de nuevo.",
         variant: "destructive",
       });
     } finally {
@@ -115,7 +119,9 @@ const NotificationPreferences = ({
             />
           </div>
           {isUpdatingLanguage && (
-            <p className="text-sm text-gray-500">Updating language preference...</p>
+            <p className="text-sm text-gray-500">
+              {language === 'en' ? 'Updating language preference...' : 'Actualizando preferencia de idioma...'}
+            </p>
           )}
         </CardContent>
       </Card>

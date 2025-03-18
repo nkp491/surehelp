@@ -19,16 +19,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     const loadLanguagePreference = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          const { data: profile, error } = await supabase
-            .from('profiles')
-            .select('language_preference')
-            .eq('id', user.id)
-            .single();
+        if (!user) return;
 
-          if (!error && profile?.language_preference) {
-            setLanguage(profile.language_preference as Language);
-          }
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('language_preference')
+          .eq('id', user.id)
+          .single();
+
+        if (profile?.language_preference) {
+          setLanguage(profile.language_preference as Language);
         }
       } catch (error) {
         console.error("Error loading language preference:", error);
@@ -40,22 +40,24 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
   const toggleLanguage = async () => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      const newLanguage = language === 'en' ? 'es' : 'en';
+      setLanguage(newLanguage); // Update state immediately for better UX
 
-      const newLanguage: Language = language === 'en' ? 'es' : 'en';
-      
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
       const { error } = await supabase
         .from('profiles')
         .update({ language_preference: newLanguage })
         .eq('id', user.id);
 
-      if (error) throw error;
-
-      setLanguage(newLanguage);
-      
+      if (error) {
+        console.error('Error updating language preference:', error);
+        setLanguage(language); // Revert on error
+      }
     } catch (error) {
-      console.error('Error updating language:', error);
+      console.error('Error in toggleLanguage:', error);
+      setLanguage(language); // Revert on error
     }
   };
 
