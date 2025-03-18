@@ -1,5 +1,5 @@
-
 import { useProfileManagement } from "@/hooks/useProfileManagement";
+import { Profile } from "@/types/profile";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
 import PersonalInfo from "@/components/profile/PersonalInfo";
@@ -53,6 +53,15 @@ const ProfileContent = () => {
     email_notifications: true,
     phone_notifications: false,
   };
+
+  // Sanitize privacy settings and notification preferences
+  const sanitizedPrivacySettings = typeof profile?.privacy_settings === 'object' && profile?.privacy_settings !== null
+    ? { ...defaultPrivacySettings, ...profile.privacy_settings }
+    : defaultPrivacySettings;
+
+  const sanitizedNotificationPreferences = typeof profile?.notification_preferences === 'object' && profile?.notification_preferences !== null
+    ? { ...defaultNotificationPreferences, ...profile.notification_preferences }
+    : defaultNotificationPreferences;
 
   // Check if the user has the beta_user role
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
@@ -190,12 +199,12 @@ const ProfileContent = () => {
           <PasswordSettings />
 
           <PrivacySettings
-            settings={profile?.privacy_settings || defaultPrivacySettings}
+            settings={sanitizedPrivacySettings}
             onUpdate={updateProfile}
           />
 
           <NotificationPreferences
-            preferences={profile?.notification_preferences || defaultNotificationPreferences}
+            preferences={sanitizedNotificationPreferences}
             onUpdate={updateProfile}
           />
           
