@@ -15,10 +15,8 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
   const { language } = useLanguage();
   const t = translations[language];
 
-  // Default to the single role if no multiple roles provided
   const userRoles = roles?.length ? roles : role ? [role] : ["agent"];
 
-  // Function to determine badge variant based on role
   const getBadgeVariant = (role: string) => {
     switch(role) {
       case "manager_pro_platinum": return "outline";
@@ -30,20 +28,16 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
     }
   };
 
-  // Format the role display text with proper capitalization
   const getRoleDisplay = (role: string) => {
-    // Special cases for multi-word roles
     if (role === "beta_user") return "Beta User";
     if (role === "manager_pro_gold") return "Manager Pro Gold";
     if (role === "manager_pro_platinum") return "Manager Pro Platinum";
     if (role === "agent_pro") return "Agent Pro";
     if (role === "manager_pro") return "Manager Pro";
     
-    // For other roles, just capitalize the first letter
     return role.charAt(0).toUpperCase() + role.slice(1);
   };
 
-  // Get premium features based on role
   const getPremiumFeatures = (role: string): string[] => {
     switch(role) {
       case "manager_pro_platinum":
@@ -74,7 +68,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         return [
           "Basic manager dashboard",
           "Team performance metrics",
-          "Up to 5 agent accounts"
+          "Up to 25 agent accounts"
         ];
       case "beta_user":
         return [
@@ -92,7 +86,6 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
     }
   };
 
-  // Get combined features for all roles
   const getAllFeatures = () => {
     const featuresSet = new Set<string>();
     
