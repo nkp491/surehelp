@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -25,11 +25,11 @@ export function BackdateDialog({
   const [isUpdating, setIsUpdating] = useState(false);
 
   // Reset the selected date when the submission changes
-  useState(() => {
+  useEffect(() => {
     if (submission) {
       setSelectedDate(parseISO(submission.timestamp));
     }
-  });
+  }, [submission]);
 
   const handleConfirm = async () => {
     if (submission && selectedDate) {

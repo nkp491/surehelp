@@ -16,7 +16,7 @@ export const useSubmissionBackdate = () => {
     setBackdateDialogOpen(true);
   };
 
-  const updateSubmissionDate = async (submission: FormSubmission, newDate: Date) => {
+  const updateSubmissionDate = async (submission: FormSubmission, newDate: Date): Promise<void> => {
     try {
       const originalTimestamp = submission.timestamp;
       const newTimestamp = newDate.toISOString();
@@ -33,12 +33,18 @@ export const useSubmissionBackdate = () => {
         auditEntry
       ];
 
-      // Update the submission in Supabase
+      // Need to prepare the submission data properly
+      // Since FormSubmission object matches what we store in Supabase but doesn't have a data property
       const { error } = await supabase
         .from('submissions')
         .update({
+          // Extract all properties except timestamp and outcome that will be stored directly
           data: JSON.stringify({
-            ...JSON.parse(typeof submission.data === 'string' ? submission.data : JSON.stringify(submission)),
+            ...Object.fromEntries(
+              Object.entries(submission).filter(([key]) => 
+                key !== 'timestamp' && key !== 'outcome'
+              )
+            ),
             auditTrail
           }),
           timestamp: newTimestamp
@@ -51,8 +57,6 @@ export const useSubmissionBackdate = () => {
         title: "Success",
         description: "Submission date updated successfully",
       });
-      
-      return true;
     } catch (error) {
       console.error("Error updating submission date:", error);
       toast({
@@ -60,7 +64,6 @@ export const useSubmissionBackdate = () => {
         description: "Failed to update submission date",
         variant: "destructive",
       });
-      return false;
     }
   };
 
