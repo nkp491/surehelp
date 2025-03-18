@@ -42,7 +42,6 @@ const ProfileContent = () => {
   const { language } = useLanguage();
   const t = translations[language];
 
-  // Ensure we have valid privacy settings
   const defaultPrivacySettings = {
     show_email: false,
     show_phone: false,
@@ -54,7 +53,6 @@ const ProfileContent = () => {
     phone_notifications: false,
   };
 
-  // Sanitize privacy settings and notification preferences
   const sanitizedPrivacySettings = typeof profile?.privacy_settings === 'object' && profile?.privacy_settings !== null
     ? { ...defaultPrivacySettings, ...profile.privacy_settings }
     : defaultPrivacySettings;
@@ -63,10 +61,8 @@ const ProfileContent = () => {
     ? { ...defaultNotificationPreferences, ...profile.notification_preferences }
     : defaultNotificationPreferences;
 
-  // Check if the user has the beta_user role
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
 
-  // Handler for force sync operation
   const handleForceSync = async () => {
     if (!profile?.id) {
       toast({
@@ -86,7 +82,6 @@ const ProfileContent = () => {
           description: "Profile data synchronized successfully with auth metadata.",
         });
         
-        // Force refresh the profile data
         queryClient.invalidateQueries({ queryKey: ['profile'] });
       } else {
         toast({
@@ -105,7 +100,6 @@ const ProfileContent = () => {
     }
   };
 
-  // Direct function to log the current state for debugging
   const logCurrentState = async () => {
     try {
       const { data: { session } } = await supabase.auth.getSession();
@@ -119,7 +113,6 @@ const ProfileContent = () => {
         return;
       }
       
-      // Get user metadata from auth
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError) {
@@ -132,7 +125,6 @@ const ProfileContent = () => {
         return;
       }
       
-      // Get current profile data
       const { data: profileData, error: profileError } = await supabase
         .from("profiles")
         .select("*")
@@ -210,7 +202,6 @@ const ProfileContent = () => {
           
           <TermsAcceptance />
           
-          {/* Debug tools for beta users */}
           {hasBetaAccess && (
             <div className="mt-8 p-4 border border-gray-200 rounded-md">
               <h3 className="text-lg font-medium mb-2">Debug Tools</h3>
@@ -247,9 +238,7 @@ const ProfileContent = () => {
 const Profile = () => {
   return (
     <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <ProfileContent />
-      </LanguageProvider>
+      <ProfileContent />
     </QueryClientProvider>
   );
 };
