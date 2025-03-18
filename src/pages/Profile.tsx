@@ -1,5 +1,5 @@
 import { useProfileManagement } from "@/hooks/useProfileManagement";
-import { Profile } from "@/types/profile";
+import type { Profile } from "@/types/profile";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
 import PersonalInfo from "@/components/profile/PersonalInfo";
