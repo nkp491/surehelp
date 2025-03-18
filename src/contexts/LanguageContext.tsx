@@ -65,23 +65,22 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       // Update the language state immediately for better UX
       setLanguage(newLanguage);
 
-      // Then update the database
+      // Then update the database - only update language_preference
       const { error } = await supabase
         .from('profiles')
-        .update({ language_preference: newLanguage })
+        .update({
+          language_preference: newLanguage
+        })
         .eq('id', user.id);
 
       if (error) {
-        // If database update fails, revert the language state
-        setLanguage(language);
         console.error('Error updating language preference:', error);
-        throw error;
+        // We won't revert the state anymore since the UI change should persist
+        // even if the database update fails
       }
     } catch (error) {
-      // If any error occurs, revert the language state
-      setLanguage(language);
       console.error('Error in toggleLanguage:', error);
-      throw error;
+      // We won't revert the state here either
     }
   };
 
