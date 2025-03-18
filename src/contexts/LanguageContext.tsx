@@ -21,11 +21,16 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('language_preference')
           .eq('id', user.id)
           .single();
+
+        if (error) {
+          console.error("Error fetching language preference:", error);
+          return;
+        }
 
         if (profile?.language_preference) {
           setLanguage(profile.language_preference as Language);
@@ -52,8 +57,12 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       const newLanguage = language === 'en' ? 'es' : 'en';
       
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.error('No user found');
+        return;
+      }
 
+      // Simplified update query - only update the language_preference column
       const { error } = await supabase
         .from('profiles')
         .update({ language_preference: newLanguage })
