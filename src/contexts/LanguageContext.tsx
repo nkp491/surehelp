@@ -53,30 +53,35 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleLanguage = async () => {
+    const newLanguage = language === 'en' ? 'es' : 'en';
+    
     try {
-      const newLanguage = language === 'en' ? 'es' : 'en';
-      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.error('No user found');
         return;
       }
 
-      // Simplified update query - only update the language_preference column
+      // Update the language state immediately for better UX
+      setLanguage(newLanguage);
+
+      // Then update the database
       const { error } = await supabase
         .from('profiles')
         .update({ language_preference: newLanguage })
         .eq('id', user.id);
 
       if (error) {
+        // If database update fails, revert the language state
+        setLanguage(language);
         console.error('Error updating language preference:', error);
-        return;
+        throw error;
       }
-
-      // Only update state after successful database update
-      setLanguage(newLanguage);
     } catch (error) {
+      // If any error occurs, revert the language state
+      setLanguage(language);
       console.error('Error in toggleLanguage:', error);
+      throw error;
     }
   };
 
