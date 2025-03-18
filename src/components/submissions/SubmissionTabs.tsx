@@ -27,13 +27,13 @@ export function SubmissionTabs({
   return (
     <Tabs defaultValue="protected" className="w-full">
       <TabsList className="grid grid-cols-3 mb-4">
-        <TabsTrigger value="protected" className="data-[state=active]:bg-blue-50">
+        <TabsTrigger value="protected" className="data-[state=active]:bg-green-500 data-[state=active]:text-white">
           Protected
         </TabsTrigger>
-        <TabsTrigger value="follow-up" className="data-[state=active]:bg-amber-50">
+        <TabsTrigger value="follow-up" className="data-[state=active]:bg-amber-500 data-[state=active]:text-white">
           Follow-Up
         </TabsTrigger>
-        <TabsTrigger value="declined" className="data-[state=active]:bg-red-50">
+        <TabsTrigger value="declined" className="data-[state=active]:bg-red-500 data-[state=active]:text-white">
           Declined
         </TabsTrigger>
       </TabsList>
