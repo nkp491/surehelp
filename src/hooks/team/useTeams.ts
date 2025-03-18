@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types/team";
+import { getErrorMessage } from "@/utils/authErrors";
 
 /**
  * Hook to fetch and manage teams
@@ -23,7 +24,7 @@ export const useTeams = () => {
         
         if (authError) {
           console.error("Auth error when fetching teams:", authError);
-          throw new Error(`Authentication error: ${authError.message}`);
+          throw new Error(`Authentication error: ${getErrorMessage(authError)}`);
         }
         
         if (!user) {
@@ -31,24 +32,29 @@ export const useTeams = () => {
           throw new Error('User not authenticated');
         }
 
+        console.log("Auth successful, user ID:", user.id);
+
+        // Get teams that the user is a member of through team_members
         const { data, error } = await supabase
-          .from('teams')
-          .select('*')
-          .order('name');
+          .from('team_members')
+          .select('team_id, teams:team_id(id, name)')
+          .eq('user_id', user.id);
 
         if (error) {
-          console.error("Database error when fetching teams:", error);
+          console.error("Database error when fetching team members:", error);
           throw error;
         }
         
-        console.log("Teams fetched:", data);
-        return data as Team[];
+        // Extract teams from the result
+        const teams = data.map(item => item.teams) as Team[];
+        console.log("Teams fetched:", teams);
+        return teams;
       } catch (error: any) {
         console.error("Error in fetchTeams:", error);
         throw error;
       }
     },
-    retry: false,
+    retry: 1,
   });
 
   // Create a new team
@@ -63,7 +69,7 @@ export const useTeams = () => {
         
         if (authError) {
           console.error("Auth error when creating team:", authError);
-          throw new Error(`Authentication error: ${authError.message}`);
+          throw new Error(`Authentication error: ${getErrorMessage(authError)}`);
         }
         
         if (!user) {
@@ -71,19 +77,21 @@ export const useTeams = () => {
           throw new Error('User not authenticated');
         }
 
+        console.log("User authenticated, proceeding with team creation");
+
         // Insert the new team
-        const { data, error } = await supabase
+        const { data: teamData, error: teamError } = await supabase
           .from('teams')
           .insert([{ name }])
           .select()
           .single();
 
-        if (error) {
-          console.error("Error inserting team:", error);
-          throw error;
+        if (teamError) {
+          console.error("Error inserting team:", teamError);
+          throw teamError;
         }
         
-        console.log("Team created:", data);
+        console.log("Team created:", teamData);
 
         // Add the creator as a team manager
         const { data: userRoles, error: rolesError } = await supabase
@@ -102,11 +110,12 @@ export const useTeams = () => {
           .map(ur => ur.role) || ['manager_pro'];
         
         const highestRole = managerRoles.length > 0 ? managerRoles[0] : 'manager_pro';
+        console.log("Adding user as team member with role:", highestRole);
 
         const { error: memberError } = await supabase
           .from('team_members')
           .insert([{
-            team_id: data.id,
+            team_id: teamData.id,
             user_id: user.id,
             role: highestRole
           }]);
@@ -116,7 +125,8 @@ export const useTeams = () => {
           throw memberError;
         }
 
-        return data;
+        console.log("Team member added successfully");
+        return teamData;
       } catch (error) {
         console.error("Error in createTeam mutation:", error);
         throw error;

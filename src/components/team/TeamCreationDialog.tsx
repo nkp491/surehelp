@@ -48,8 +48,19 @@ export function TeamCreationDialog({
       
       if (isEditMode && teamId) {
         await updateTeam.mutateAsync({ teamId, name: teamName });
+        toast({
+          title: "Team updated",
+          description: "Your team has been updated successfully.",
+        });
       } else {
-        await createTeam.mutateAsync(teamName);
+        console.log("Creating new team with name:", teamName);
+        const result = await createTeam.mutateAsync(teamName);
+        console.log("Team creation result:", result);
+        
+        toast({
+          title: "Team created",
+          description: "Your new team has been created successfully.",
+        });
       }
       
       setTeamName("");
@@ -57,23 +68,25 @@ export function TeamCreationDialog({
     } catch (error: any) {
       console.error("Error in team operation:", error);
       
-      // Show a toast with the error message
+      // Show a detailed toast with the error message
       toast({
-        title: "Error creating team",
-        description: error.message || "There was a problem creating the team. Please try again.",
+        title: isEditMode ? "Error updating team" : "Error creating team",
+        description: error.message || "There was a problem with the team operation. Please try again.",
         variant: "destructive",
       });
       // Dialog stays open if there's an error
     }
   };
 
+  const closeDialog = () => {
+    if (!isLoading) {
+      setTeamName(initialName);
+      onOpenChange(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => {
-      // Only allow closing if not loading
-      if (!isLoading || !isOpen) {
-        onOpenChange(isOpen);
-      }
-    }}>
+    <Dialog open={open} onOpenChange={closeDialog}>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -100,7 +113,7 @@ export function TeamCreationDialog({
             <Button
               type="button"
               variant="outline"
-              onClick={() => onOpenChange(false)}
+              onClick={closeDialog}
               disabled={isLoading}
             >
               Cancel
