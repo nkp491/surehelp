@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -28,6 +29,7 @@ const AddMetricsButton = ({
         selected={selectedDate}
         onSelect={handleDateSelect}
         maxDate={new Date()}
+        label="Select date"
       />
       <Button
         onClick={() => selectedDate && onAdd(selectedDate)}
