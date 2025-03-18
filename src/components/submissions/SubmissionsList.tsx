@@ -1,3 +1,4 @@
+
 import { Table, TableBody, TableRow, TableCell } from "@/components/ui/table";
 import { FormSubmission } from "@/types/form";
 import { jsPDF } from "jspdf";
@@ -13,6 +14,7 @@ interface SubmissionsListProps {
   onDelete: (submission: FormSubmission) => void;
   onViewProfile: (submission: FormSubmission) => void;
   onSort: (field: keyof FormSubmission) => void;
+  onBackdate?: (submission: FormSubmission) => void;
 }
 
 const SubmissionsList = ({ 
@@ -20,7 +22,8 @@ const SubmissionsList = ({
   onEdit, 
   onDelete, 
   onViewProfile, 
-  onSort 
+  onSort,
+  onBackdate
 }: SubmissionsListProps) => {
   const { toast } = useToast();
 
@@ -98,6 +101,7 @@ const SubmissionsList = ({
                     onDelete={onDelete}
                     onViewProfile={onViewProfile}
                     onExportPDF={handleExportPDF}
+                    onBackdate={onBackdate}
                   />
                 </TableCell>
               </TableRow>

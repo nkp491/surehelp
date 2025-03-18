@@ -1,3 +1,4 @@
+
 import * as React from "react";
 import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
@@ -22,12 +23,16 @@ interface DatePickerProps {
   selected: Date | null;
   onSelect: (date: Date | null) => void;
   maxDate?: Date;
+  minDate?: Date;
+  label?: string;
 }
 
 export function DatePicker({
   selected,
   onSelect,
   maxDate,
+  minDate,
+  label,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
@@ -58,7 +63,8 @@ export function DatePicker({
       // Check if it's a valid date and within the allowed range
       if (
         !isNaN(date.getTime()) && 
-        (!maxDate || date <= maxDate)
+        (!maxDate || date <= maxDate) &&
+        (!minDate || date >= minDate)
       ) {
         onSelect(date);
       }
@@ -91,57 +97,64 @@ export function DatePicker({
   };
 
   return (
-    <div className="relative">
-      <Input
-        type="text"
-        value={inputValue}
-        onChange={handleInputChange}
-        placeholder="MM/DD/YYYY"
-        className="pr-10"
-      />
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <Button
-            variant={"ghost"}
-            className={cn(
-              "absolute right-0 top-0 h-full px-2 hover:bg-transparent"
-            )}
-          >
-            <CalendarIcon className="h-4 w-4" />
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-3 border-b">
-            <Select
-              value={year.toString()}
-              onValueChange={handleYearChange}
+    <div className="space-y-2">
+      {label && <label className="text-sm font-medium">{label}</label>}
+      <div className="relative">
+        <Input
+          type="text"
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="MM/DD/YYYY"
+          className="pr-10"
+        />
+        <Popover open={open} onOpenChange={setOpen}>
+          <PopoverTrigger asChild>
+            <Button
+              variant={"ghost"}
+              className={cn(
+                "absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+              )}
             >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Calendar
-            mode="single"
-            selected={selected}
-            onSelect={(date) => {
-              onSelect(date);
-              setOpen(false);
-            }}
-            disabled={(date) => maxDate ? date > maxDate : false}
-            initialFocus
-            month={month}
-            onMonthChange={handleMonthChange}
-          />
-        </PopoverContent>
-      </Popover>
+              <CalendarIcon className="h-4 w-4" />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="start">
+            <div className="p-3 border-b">
+              <Select
+                value={year.toString()}
+                onValueChange={handleYearChange}
+              >
+                <SelectTrigger className="w-[120px]">
+                  <SelectValue placeholder="Select year" />
+                </SelectTrigger>
+                <SelectContent>
+                  {years.map((year) => (
+                    <SelectItem key={year} value={year.toString()}>
+                      {year}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Calendar
+              mode="single"
+              selected={selected}
+              onSelect={(date) => {
+                onSelect(date);
+                setOpen(false);
+              }}
+              disabled={(date) => 
+                (maxDate ? date > maxDate : false) || 
+                (minDate ? date < minDate : false)
+              }
+              initialFocus
+              month={month}
+              onMonthChange={handleMonthChange}
+              className="pointer-events-auto"
+            />
+          </PopoverContent>
+        </Popover>
+      </div>
     </div>
   );
 }

@@ -11,6 +11,8 @@ import { DeleteDialog } from "./submissions/DeleteDialog";
 import SubmissionsPagination from "./submissions/SubmissionsPagination";
 import { useSubmissionDelete } from "./submissions/useSubmissionDelete";
 import { useSubmissionExport } from "./submissions/useSubmissionExport";
+import { useSubmissionBackdate } from "@/hooks/useSubmissionBackdate";
+import { BackdateDialog } from "./submissions/BackdateDialog";
 
 interface SubmissionsTableProps {
   submissions: FormSubmission[];
@@ -40,6 +42,14 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     handleDelete, 
     confirmDelete 
   } = useSubmissionDelete();
+
+  const {
+    backdateDialogOpen,
+    setBackdateDialogOpen,
+    submissionToBackdate,
+    handleBackdate,
+    updateSubmissionDate
+  } = useSubmissionBackdate();
 
   const { handleExport } = useSubmissionExport(submissions);
 
@@ -71,6 +81,7 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
           onDelete={handleDelete}
           onViewProfile={setSelectedCustomer}
           onSort={handleSort}
+          onBackdate={handleBackdate}
         />
 
         <SubmissionsPagination
@@ -92,6 +103,13 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
         isOpen={deleteDialogOpen}
         onOpenChange={setDeleteDialogOpen}
         onConfirm={confirmDelete}
+      />
+
+      <BackdateDialog
+        isOpen={backdateDialogOpen}
+        onOpenChange={setBackdateDialogOpen}
+        submission={submissionToBackdate}
+        onConfirm={updateSubmissionDate}
       />
 
       {/* Show upgrade prompt when not having advanced features */}

@@ -1,3 +1,4 @@
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { FormSubmission } from "@/types/form";
 import SubmissionsList from "./SubmissionsList";
@@ -11,71 +12,64 @@ interface SubmissionTabsProps {
   onEdit: (submission: FormSubmission) => void;
   onDelete: (submission: FormSubmission) => void;
   onViewProfile: (submission: FormSubmission) => void;
-  onSort: (key: keyof FormSubmission) => void;
+  onSort: (field: keyof FormSubmission) => void;
+  onBackdate?: (submission: FormSubmission) => void;
 }
 
-export const SubmissionTabs = ({
+export function SubmissionTabs({
   submissions,
   onEdit,
   onDelete,
   onViewProfile,
-  onSort
-}: SubmissionTabsProps) => {
+  onSort,
+  onBackdate
+}: SubmissionTabsProps) {
   return (
     <Tabs defaultValue="protected" className="w-full">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">CLIENT SUBMISSIONS</h2>
-        <TabsList className="grid w-[400px] grid-cols-3">
-          <TabsTrigger 
-            value="protected" 
-            className="data-[state=active]:bg-green-500 data-[state=active]:text-white"
-          >
-            Protected ({submissions.protected.length})
-          </TabsTrigger>
-          <TabsTrigger 
-            value="follow-up" 
-            className="data-[state=active]:bg-yellow-500 data-[state=active]:text-white"
-          >
-            Follow-up ({submissions.followUp.length})
-          </TabsTrigger>
-          <TabsTrigger 
-            value="declined" 
-            className="data-[state=active]:bg-red-500 data-[state=active]:text-white"
-          >
-            Declined ({submissions.declined.length})
-          </TabsTrigger>
-        </TabsList>
-      </div>
-
+      <TabsList className="grid grid-cols-3 mb-4">
+        <TabsTrigger value="protected" className="data-[state=active]:bg-blue-50">
+          Protected
+        </TabsTrigger>
+        <TabsTrigger value="follow-up" className="data-[state=active]:bg-amber-50">
+          Follow-Up
+        </TabsTrigger>
+        <TabsTrigger value="declined" className="data-[state=active]:bg-red-50">
+          Declined
+        </TabsTrigger>
+      </TabsList>
+      
       <TabsContent value="protected">
-        <SubmissionsList 
+        <SubmissionsList
           submissions={submissions.protected}
           onEdit={onEdit}
           onDelete={onDelete}
           onViewProfile={onViewProfile}
           onSort={onSort}
+          onBackdate={onBackdate}
         />
       </TabsContent>
-
+      
       <TabsContent value="follow-up">
-        <SubmissionsList 
+        <SubmissionsList
           submissions={submissions.followUp}
           onEdit={onEdit}
           onDelete={onDelete}
           onViewProfile={onViewProfile}
           onSort={onSort}
+          onBackdate={onBackdate}
         />
       </TabsContent>
-
+      
       <TabsContent value="declined">
-        <SubmissionsList 
+        <SubmissionsList
           submissions={submissions.declined}
           onEdit={onEdit}
           onDelete={onDelete}
           onViewProfile={onViewProfile}
           onSort={onSort}
+          onBackdate={onBackdate}
         />
       </TabsContent>
     </Tabs>
   );
-};
+}
