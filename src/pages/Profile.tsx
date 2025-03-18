@@ -42,6 +42,18 @@ const ProfileContent = () => {
   const { language } = useLanguage();
   const t = translations[language];
 
+  // Ensure we have valid privacy settings
+  const defaultPrivacySettings = {
+    show_email: false,
+    show_phone: false,
+    show_photo: true,
+  };
+
+  const defaultNotificationPreferences = {
+    email_notifications: true,
+    phone_notifications: false,
+  };
+
   // Check if the user has the beta_user role
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
 
@@ -178,12 +190,12 @@ const ProfileContent = () => {
           <PasswordSettings />
 
           <PrivacySettings
-            settings={profile?.privacy_settings || { show_email: false, show_phone: false, show_photo: true }}
+            settings={profile?.privacy_settings || defaultPrivacySettings}
             onUpdate={updateProfile}
           />
 
           <NotificationPreferences
-            preferences={profile?.notification_preferences || { email_notifications: true, phone_notifications: false }}
+            preferences={profile?.notification_preferences || defaultNotificationPreferences}
             onUpdate={updateProfile}
           />
           
