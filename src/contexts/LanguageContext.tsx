@@ -13,13 +13,17 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
+  const [isLoading, setIsLoading] = useState(true);
 
   // Load user's language preference on mount
   useEffect(() => {
     const loadLanguagePreference = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
 
         const { data: profile, error } = await supabase
           .from('profiles')
@@ -29,14 +33,17 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
         if (error) {
           console.error("Error fetching language preference:", error);
+          setIsLoading(false);
           return;
         }
 
         if (profile?.language_preference) {
           setLanguage(profile.language_preference as Language);
         }
+        setIsLoading(false);
       } catch (error) {
         console.error("Error loading language preference:", error);
+        setIsLoading(false);
       }
     };
 
@@ -83,6 +90,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
       // We won't revert the state here either
     }
   };
+
+  // Don't render children until initial language preference is loaded
+  if (isLoading) {
+    return null; // Or a loading spinner if preferred
+  }
 
   return (
     <LanguageContext.Provider value={{ language, toggleLanguage }}>
