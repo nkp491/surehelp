@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -72,19 +73,21 @@ const DateRangePicker = ({
           </Button>
         </PopoverTrigger>
         <PopoverContent 
-          className="z-50 bg-white p-0" 
+          className="z-50 bg-white p-0 w-auto" 
           align="end"
           onPointerDownOutside={(e) => e.preventDefault()}
         >
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={date.from}
-            selected={date}
-            onSelect={handleDateSelect}
-            numberOfMonths={2}
-            className="rounded-md border shadow-sm"
-          />
+          <div className="flex flex-col md:flex-row bg-white">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={date.from}
+              selected={date}
+              onSelect={handleDateSelect}
+              numberOfMonths={2}
+              className="rounded-md border shadow-sm bg-white"
+            />
+          </div>
         </PopoverContent>
       </Popover>
       {date.from && date.to && (
