@@ -5,7 +5,6 @@ import ProfileLoading from "@/components/profile/ProfileLoading";
 import ProfileSections from "@/components/profile/ProfileSections";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { QueryClient, useQueryClient } from "@tanstack/react-query";
 
 const ProfileContent = () => {
   const {
@@ -19,7 +18,6 @@ const ProfileContent = () => {
     isSyncing
   } = useProfileManagement();
 
-  const queryClient = useQueryClient();
   const { language } = useLanguage();
   const t = translations[language];
 

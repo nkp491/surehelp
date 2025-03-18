@@ -3,10 +3,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useNavigate } from "react-router-dom";
+import { useProfileSanitization } from "./useProfileSanitization";
 
 export const useProfileFetch = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { sanitizeProfileData } = useProfileSanitization();
 
   const { data: profile, isLoading, refetch } = useQuery({
     queryKey: ['profile'],
@@ -47,10 +49,11 @@ export const useProfileFetch = () => {
         console.error("Error fetching user metadata:", userError);
       }
 
-      return {
+      // Sanitize profile data to ensure it matches our Profile type
+      return sanitizeProfileData({
         ...profileData,
         roles: roles,
-      };
+      });
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes

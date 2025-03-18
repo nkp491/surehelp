@@ -37,13 +37,19 @@ const ProfileSections = ({
     phone_notifications: false,
   };
 
-  const sanitizedPrivacySettings = typeof profile?.privacy_settings === 'object' && profile?.privacy_settings !== null
-    ? { ...defaultPrivacySettings, ...profile.privacy_settings }
-    : defaultPrivacySettings;
+  // Use type guard to ensure privacy_settings has the correct structure
+  const sanitizedPrivacySettings = profile?.privacy_settings && 
+    typeof profile.privacy_settings === 'object' && 
+    profile.privacy_settings !== null
+      ? { ...defaultPrivacySettings, ...profile.privacy_settings }
+      : defaultPrivacySettings;
 
-  const sanitizedNotificationPreferences = typeof profile?.notification_preferences === 'object' && profile?.notification_preferences !== null
-    ? { ...defaultNotificationPreferences, ...profile.notification_preferences }
-    : defaultNotificationPreferences;
+  // Use type guard to ensure notification_preferences has the correct structure
+  const sanitizedNotificationPreferences = profile?.notification_preferences && 
+    typeof profile.notification_preferences === 'object' && 
+    profile.notification_preferences !== null
+      ? { ...defaultNotificationPreferences, ...profile.notification_preferences }
+      : defaultNotificationPreferences;
 
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
 
