@@ -3,8 +3,12 @@ import { useState, useEffect } from "react";
 import { format, parseISO } from "date-fns";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { DatePicker } from "@/components/ui/date-picker";
+import { Calendar } from "@/components/ui/calendar";
 import { FormSubmission } from "@/types/form";
+import { Input } from "@/components/ui/input";
+import { CalendarIcon } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 interface BackdateDialogProps {
   isOpen: boolean;
@@ -23,6 +27,7 @@ export function BackdateDialog({
     submission ? parseISO(submission.timestamp) : null
   );
   const [isUpdating, setIsUpdating] = useState(false);
+  const [calendarOpen, setCalendarOpen] = useState(false);
 
   // Reset the selected date when the submission changes
   useEffect(() => {
@@ -45,6 +50,27 @@ export function BackdateDialog({
     }
   };
 
+  const handleManualDateInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const inputDate = e.target.value;
+    
+    // Only try to parse if we have a complete date format
+    if (inputDate.match(/^\d{2}\/\d{2}\/\d{4}$/)) {
+      const [month, day, year] = inputDate.split('/').map(Number);
+      
+      // JavaScript months are 0-indexed
+      const date = new Date(year, month - 1, day);
+      
+      // Validate the date is valid and not in the future
+      if (!isNaN(date.getTime()) && date <= new Date()) {
+        setSelectedDate(date);
+      }
+    }
+  };
+
+  const formatSelectedDate = () => {
+    return selectedDate ? format(selectedDate, "MM/dd/yyyy") : "";
+  };
+
   const originalDate = submission ? format(parseISO(submission.timestamp), "MMM dd, yyyy") : "";
   
   return (
@@ -64,12 +90,45 @@ export function BackdateDialog({
             </p>
           </div>
           
-          <DatePicker
-            selected={selectedDate}
-            onSelect={setSelectedDate}
-            maxDate={new Date()}
-            label="New Submission Date"
-          />
+          <div className="space-y-2">
+            <label className="text-sm font-medium">New Submission Date</label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  type="text"
+                  placeholder="MM/DD/YYYY"
+                  value={formatSelectedDate()}
+                  onChange={handleManualDateInput}
+                  className="pr-10"
+                />
+              </div>
+              
+              <Popover open={calendarOpen} onOpenChange={setCalendarOpen}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="px-3"
+                    aria-label="Pick a date"
+                  >
+                    <CalendarIcon className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="end">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate || undefined}
+                    onSelect={(date) => {
+                      setSelectedDate(date);
+                      setCalendarOpen(false);
+                    }}
+                    disabled={(date) => date > new Date()}
+                    initialFocus
+                    className={cn("p-3 pointer-events-auto")}
+                  />
+                </PopoverContent>
+              </Popover>
+            </div>
+          </div>
           
           <p className="text-sm text-amber-600">
             Note: Changing the submission date will affect reporting and analytics.
