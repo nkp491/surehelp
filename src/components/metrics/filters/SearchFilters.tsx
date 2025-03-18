@@ -1,8 +1,16 @@
+
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import DateRangePicker from "@/components/charts/DateRangePicker";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TimePeriod } from "@/types/metrics";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { CalendarIcon } from "lucide-react";
+import { format } from "date-fns";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 interface SearchFiltersProps {
   searchTerm: string;
@@ -21,10 +29,7 @@ const SearchFilters = ({
   timePeriod,
   onTimePeriodChange,
 }: SearchFiltersProps) => {
-  const handleDateRangeChange = (dates: { from: Date | undefined; to: Date | undefined }) => {
-    // For now, we'll just use the "from" date to maintain compatibility
-    onDateChange(dates.from);
-  };
+  const [open, setOpen] = useState(false);
 
   return (
     <div className="flex items-center space-x-4">
@@ -38,10 +43,33 @@ const SearchFilters = ({
         />
         <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
       </div>
+      
+      {/* Specific date picker for searching entries */}
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button variant="outline" className={cn("w-[240px] justify-start text-left font-normal", !selectedDate && "text-muted-foreground")}>
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {selectedDate ? format(selectedDate, "PPP") : "Search by date"}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={selectedDate}
+            onSelect={(date) => {
+              onDateChange(date);
+              setOpen(false);
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+      
+      {/* For time period selection - separate from date search */}
       <DateRangePicker
         timePeriod={timePeriod}
         onTimePeriodChange={onTimePeriodChange}
-        onDateRangeChange={handleDateRangeChange}
+        onDateRangeChange={() => {}}
       />
     </div>
   );

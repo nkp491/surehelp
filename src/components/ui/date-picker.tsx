@@ -25,6 +25,7 @@ interface DatePickerProps {
   maxDate?: Date;
   minDate?: Date;
   label?: string;
+  placeholder?: string;
 }
 
 export function DatePicker({
@@ -33,6 +34,7 @@ export function DatePicker({
   maxDate,
   minDate,
   label,
+  placeholder = "Select date",
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
@@ -55,6 +57,8 @@ export function DatePicker({
       setInputValue(format(selected, "MM/dd/yyyy"));
       setYear(selected.getFullYear());
       setMonth(selected);
+    } else {
+      setInputValue("");
     }
   }, [selected]);
 
@@ -132,7 +136,7 @@ export function DatePicker({
           type="text"
           value={inputValue}
           onChange={handleInputChange}
-          placeholder="MM/DD/YYYY"
+          placeholder={placeholder}
           className="pr-10"
         />
         <Popover open={open} onOpenChange={setOpen}>
@@ -182,7 +186,7 @@ export function DatePicker({
                     <SelectTrigger className="w-[90px] h-8">
                       <SelectValue placeholder="Year" />
                     </SelectTrigger>
-                    <SelectContent className="max-h-[200px]">
+                    <SelectContent className="max-h-[200px] overflow-y-auto">
                       {years.map((year) => (
                         <SelectItem key={year} value={year.toString()}>
                           {year}
