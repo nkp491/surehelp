@@ -33,14 +33,14 @@ const NotificationPreferences = ({
       const newLanguage = language === 'en' ? 'es' : 'en';
       
       // Get current user
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) throw new Error('User not authenticated');
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
       
-      // Update language in Supabase profiles table
+      // Update language in Supabase profiles table - removed the join with user_roles
       const { error } = await supabase
         .from('profiles')
         .update({ language_preference: newLanguage })
-        .eq('id', userData.user.id);
+        .eq('id', user.id);
 
       if (error) throw error;
 
