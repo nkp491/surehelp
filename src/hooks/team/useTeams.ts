@@ -26,6 +26,7 @@ export const useTeams = () => {
         .order('name');
 
       if (error) throw error;
+      console.log("Teams fetched:", data);
       return data as Team[];
     },
   });
@@ -34,6 +35,7 @@ export const useTeams = () => {
   const createTeam = useMutation({
     mutationFn: async (name: string) => {
       setIsLoading(true);
+      console.log("Creating team with name:", name);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -44,7 +46,12 @@ export const useTeams = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error inserting team:", error);
+        throw error;
+      }
+      
+      console.log("Team created:", data);
 
       // Add the creator as a team manager
       const { data: userRoles } = await supabase
@@ -67,11 +74,15 @@ export const useTeams = () => {
           role: highestRole
         }]);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("Error adding team member:", memberError);
+        throw memberError;
+      }
 
       return data;
     },
     onSuccess: () => {
+      console.log("Team creation successful, invalidating queries");
       queryClient.invalidateQueries({ queryKey: ['user-teams'] });
       toast({
         title: "Team created",

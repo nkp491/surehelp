@@ -41,18 +41,28 @@ export function TeamCreationDialog({
     e.preventDefault();
     if (!teamName.trim()) return;
     
-    if (isEditMode && teamId) {
-      await updateTeam.mutateAsync({ teamId, name: teamName });
-    } else {
-      await createTeam.mutateAsync(teamName);
+    try {
+      if (isEditMode && teamId) {
+        await updateTeam.mutateAsync({ teamId, name: teamName });
+      } else {
+        await createTeam.mutateAsync(teamName);
+      }
+      
+      setTeamName("");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error in team operation:", error);
+      // Dialog stays open if there's an error
     }
-    
-    setTeamName("");
-    onOpenChange(false);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(isOpen) => {
+      // Only allow closing if not loading
+      if (!isLoading || !isOpen) {
+        onOpenChange(isOpen);
+      }
+    }}>
       <DialogContent className="sm:max-w-[425px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
@@ -71,6 +81,7 @@ export function TeamCreationDialog({
                 placeholder="Enter team name"
                 autoFocus
                 required
+                disabled={isLoading}
               />
             </div>
           </div>
@@ -98,4 +109,4 @@ export function TeamCreationDialog({
       </DialogContent>
     </Dialog>
   );
-}
+};
