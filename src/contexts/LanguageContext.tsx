@@ -13,7 +13,6 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguage] = useState<Language>('en');
-  const [isInitialized, setIsInitialized] = useState(false);
 
   // Load user's language preference on mount
   useEffect(() => {
@@ -27,49 +26,38 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
             .eq('id', user.id)
             .single();
 
-          if (error) {
-            console.error("Error loading language preference:", error);
-            return;
-          }
-
-          if (profile?.language_preference) {
+          if (!error && profile?.language_preference) {
             setLanguage(profile.language_preference as Language);
           }
         }
       } catch (error) {
         console.error("Error loading language preference:", error);
-      } finally {
-        setIsInitialized(true);
       }
     };
 
     loadLanguagePreference();
   }, []);
 
-  const toggleLanguage = () => {
-    setLanguage((prev) => {
-      const newLanguage = prev === 'en' ? 'es' : 'en';
+  const toggleLanguage = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const newLanguage: Language = language === 'en' ? 'es' : 'en';
       
-      // Dispatch custom event to notify other components about language change
-      window.dispatchEvent(new CustomEvent('languageChange', { 
-        detail: { language: newLanguage } 
-      }));
+      const { error } = await supabase
+        .from('profiles')
+        .update({ language_preference: newLanguage })
+        .eq('id', user.id);
+
+      if (error) throw error;
+
+      setLanguage(newLanguage);
       
-      return newLanguage;
-    });
+    } catch (error) {
+      console.error('Error updating language:', error);
+    }
   };
-
-  // Listen for language change events
-  useEffect(() => {
-    const handleLanguageChange = (event: CustomEvent) => {
-      if (event.detail?.language) {
-        setLanguage(event.detail.language);
-      }
-    };
-
-    window.addEventListener('languageChange', handleLanguageChange as EventListener);
-    return () => window.removeEventListener('languageChange', handleLanguageChange as EventListener);
-  }, []);
 
   return (
     <LanguageContext.Provider value={{ language, toggleLanguage }}>

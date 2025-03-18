@@ -1,11 +1,9 @@
-
 import { useState } from "react";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 interface NotificationPreferencesProps {
@@ -30,23 +28,8 @@ const NotificationPreferences = ({
   const handleLanguageToggle = async () => {
     try {
       setIsUpdatingLanguage(true);
-      const newLanguage = language === 'en' ? 'es' : 'en';
+      await toggleLanguage();
       
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-      
-      // Update language in profiles table - simplified query
-      const { error } = await supabase
-        .from('profiles')
-        .update({ language_preference: newLanguage })
-        .eq('id', user.id);
-
-      if (error) throw error;
-
-      // Toggle language in context
-      toggleLanguage();
-
       toast({
         title: "Language Updated",
         description: "Your language preference has been saved.",
