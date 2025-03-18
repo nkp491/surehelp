@@ -6,7 +6,7 @@ type Language = 'en' | 'es';
 
 interface LanguageContextType {
   language: Language;
-  toggleLanguage: () => void;
+  toggleLanguage: () => Promise<void>;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -21,13 +21,13 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        const { data: profile } = await supabase
+        const { data: profile, error } = await supabase
           .from('profiles')
           .select('language_preference')
           .eq('id', user.id)
           .single();
 
-        if (profile?.language_preference) {
+        if (!error && profile?.language_preference) {
           setLanguage(profile.language_preference as Language);
         }
       } catch (error) {
@@ -41,11 +41,11 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   const toggleLanguage = async () => {
     try {
       const newLanguage = language === 'en' ? 'es' : 'en';
-      setLanguage(newLanguage); // Update state immediately for better UX
-
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
+      // Update database first
       const { error } = await supabase
         .from('profiles')
         .update({ language_preference: newLanguage })
@@ -53,11 +53,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
 
       if (error) {
         console.error('Error updating language preference:', error);
-        setLanguage(language); // Revert on error
+        return;
       }
+
+      // Only update state if database update was successful
+      setLanguage(newLanguage);
+      
     } catch (error) {
       console.error('Error in toggleLanguage:', error);
-      setLanguage(language); // Revert on error
     }
   };
 
