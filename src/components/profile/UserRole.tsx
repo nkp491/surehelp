@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -53,7 +54,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         return [
           "Full manager dashboard access",
           "Team performance analytics",
-          "Up to 20 agent accounts",
+          "Up to 500 agent accounts",
           "Premium email support",
           "White-label reporting"
         ];

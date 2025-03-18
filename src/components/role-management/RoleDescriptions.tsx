@@ -49,7 +49,7 @@ export function RoleDescriptions() {
             <li>Everything in Agent Pro role</li>
             <li>Basic manager dashboard</li>
             <li>Team performance metrics</li>
-            <li>Up to 5 agent accounts</li>
+            <li>Up to 25 agent accounts</li>
           </ul>
         </div>
         
@@ -63,7 +63,7 @@ export function RoleDescriptions() {
             <li>Everything in Manager Pro role</li>
             <li>Full manager dashboard</li>
             <li>Team performance analytics</li>
-            <li>Up to 20 agent accounts</li>
+            <li>Up to 500 agent accounts</li>
             <li>Premium email support</li>
             <li>White-label reporting</li>
           </ul>
