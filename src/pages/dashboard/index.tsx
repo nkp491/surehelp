@@ -1,75 +1,128 @@
+
 'use client';
 
+import { useState, useEffect } from 'react';
 import { Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { TeamSelector } from '@/components/team/TeamSelector';
+import { DashboardBulletinBoard } from '@/components/team/DashboardBulletinBoard';
+import { DashboardMembersList } from '@/components/team/DashboardMembersList';
+import { DashboardMetricsOverview } from '@/components/team/DashboardMetricsOverview';
+import { useTeamManagement } from '@/hooks/useTeamManagement';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 export default function ManagerDashboard() {
+  const { teams, isLoadingTeams, refreshTeams } = useTeamManagement();
+  const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+
+  // Select the first team by default when teams are loaded
+  useEffect(() => {
+    if (teams && teams.length > 0 && !selectedTeamId) {
+      console.log("Auto-selecting first team:", teams[0].id);
+      setSelectedTeamId(teams[0].id);
+    }
+  }, [teams, selectedTeamId]);
+
+  // Force refresh teams when component mounts
+  useEffect(() => {
+    refreshTeams().catch(err => {
+      console.error("Error refreshing teams on page load:", err);
+    });
+  }, [refreshTeams]);
+
   return (
     <div className="container mx-auto p-6">
-      <div className="grid grid-cols-12 gap-6">
-        {/* Left Column */}
-        <div className="col-span-3 space-y-6">
-          {/* Teams Section */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">TEAMS</h2>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="space-y-2">
-              {/* Placeholder for teams list */}
-              <p className="text-muted-foreground">List of teams.</p>
-            </div>
-          </Card>
-
-          {/* Team Bulletin Section */}
-          <Card className="p-4">
-            <h2 className="text-xl font-bold mb-4">TEAM BULLETIN</h2>
-            <div className="h-[300px]">
-              {/* Placeholder for team bulletin content */}
-            </div>
-          </Card>
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Team Dashboard</h1>
+          <p className="text-muted-foreground">
+            Manage your team, track performance, and communicate with your agents.
+          </p>
         </div>
-
-        {/* Middle Column - Agents */}
-        <div className="col-span-6">
-          <Card className="p-4 h-full">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">AGENTS</h2>
-              <Button variant="ghost" size="icon">
-                <Settings className="h-5 w-5" />
-              </Button>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {/* Placeholder for agent cards */}
-              <p className="text-muted-foreground col-span-3">
-                List of Agents showing individual ratio card stats in rows and columns
-              </p>
-            </div>
-          </Card>
-        </div>
-
-        {/* Right Column */}
-        <div className="col-span-3 space-y-6">
-          {/* 1:1 Notes Section */}
-          <Card className="p-4">
-            <h2 className="text-xl font-bold mb-4">1:1 NOTES</h2>
-            <div className="h-[200px]">
-              {/* Placeholder for 1:1 notes content */}
-            </div>
-          </Card>
-
-          {/* Success Calculator Section */}
-          <Card className="p-4">
-            <h2 className="text-xl font-bold mb-4">SUCCESS CALCULATOR</h2>
-            <div className="h-[300px]">
-              {/* Placeholder for success calculator content */}
-            </div>
-          </Card>
+        <div>
+          <TeamSelector 
+            selectedTeamId={selectedTeamId} 
+            onTeamSelect={setSelectedTeamId}
+          />
         </div>
       </div>
+
+      {isLoadingTeams ? (
+        <div className="border rounded-md p-8 text-center bg-muted/30">
+          <h2 className="text-xl font-semibold mb-2">Loading teams...</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Please wait while we load your teams.
+          </p>
+        </div>
+      ) : teams && teams.length === 0 ? (
+        <div className="border rounded-md p-8 text-center bg-muted/30">
+          <h2 className="text-xl font-semibold mb-2">No Teams Found</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-4">
+            You don't have any teams yet. Create a new team to get started with team management.
+          </p>
+          <Alert className="max-w-md mx-auto">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>
+              Create a team using the "New Team" button in the team selector above.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : !selectedTeamId ? (
+        <div className="border rounded-md p-8 text-center bg-muted/30">
+          <h2 className="text-xl font-semibold mb-2">Select or Create a Team</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-4">
+            Choose a team from the dropdown above or create a new team to get started with team management.
+          </p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Column */}
+          <div className="col-span-12 md:col-span-3 space-y-6">
+            {/* Team Members Section */}
+            <DashboardMembersList teamId={selectedTeamId} />
+            
+            {/* Team Bulletin Section */}
+            <DashboardBulletinBoard teamId={selectedTeamId} />
+          </div>
+
+          {/* Middle and Right Columns */}
+          <div className="col-span-12 md:col-span-9">
+            {/* Team Metrics Overview */}
+            <DashboardMetricsOverview teamId={selectedTeamId} />
+            
+            {/* Additional Dashboard Sections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {/* Success Calculator Section */}
+              <Card className="p-4">
+                <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
+                  SUCCESS CALCULATOR
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </h2>
+                <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="text-muted-foreground">Success calculator coming soon</p>
+                </div>
+              </Card>
+              
+              {/* 1:1 Notes Section */}
+              <Card className="p-4">
+                <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
+                  1:1 NOTES
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </h2>
+                <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="text-muted-foreground">One-on-one notes coming soon</p>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
-} 
+}
