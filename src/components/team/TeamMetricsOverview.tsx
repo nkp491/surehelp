@@ -5,6 +5,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Settings } from "lucide-react";
+import RatiosGrid from "@/components/metrics/RatiosGrid";
+import { MetricCount } from "@/types/metrics";
 import {
   LineChart,
   Line,
@@ -15,7 +19,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { format, parseISO, subDays } from "date-fns";
+import { format } from "date-fns";
 
 interface TeamMetricsOverviewProps {
   teamId?: string;
@@ -46,21 +50,41 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
     return null;
   };
 
+  // Calculate aggregated metrics for the team
+  const aggregatedMetrics: MetricCount | null = teamMetrics?.length ? {
+    leads: teamMetrics.reduce((sum, member) => sum + member.metrics.total_leads, 0),
+    calls: teamMetrics.reduce((sum, member) => sum + member.metrics.total_calls, 0),
+    contacts: teamMetrics.reduce((sum, member) => sum + member.metrics.total_contacts, 0),
+    scheduled: teamMetrics.reduce((sum, member) => sum + member.metrics.total_scheduled, 0),
+    sits: teamMetrics.reduce((sum, member) => sum + member.metrics.total_sits, 0),
+    sales: teamMetrics.reduce((sum, member) => sum + member.metrics.total_sales, 0),
+    ap: teamMetrics.reduce((sum, member) => sum + member.metrics.average_ap, 0),
+  } : null;
+
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Team Performance</CardTitle>
+        <Button variant="ghost" size="icon">
+          <Settings className="h-5 w-5" />
+        </Button>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="members">
           <TabsList className="mb-4">
             <TabsTrigger value="members">Member Stats</TabsTrigger>
             <TabsTrigger value="trends">Performance Trends</TabsTrigger>
+            <TabsTrigger value="ratios">Metric Ratios</TabsTrigger>
           </TabsList>
           
           <TabsContent value="members">
             {isLoadingTeamMetrics ? (
               <div className="space-y-4">
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
+                  {Array.from({ length: 6 }).map((_, idx) => (
+                    <Skeleton key={idx} className="h-16 w-full" />
+                  ))}
+                </div>
                 {Array.from({ length: 3 }).map((_, index) => (
                   <div key={index} className="flex items-center justify-between border p-3 rounded-md">
                     <div className="flex items-center space-x-3">
@@ -87,38 +111,38 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Leads</p>
-                    <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_leads, 0)}
+                    <p className="font-medium text-lg">
+                      {aggregatedMetrics?.leads || 0}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Calls</p>
-                    <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_calls, 0)}
+                    <p className="font-medium text-lg">
+                      {aggregatedMetrics?.calls || 0}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Contacts</p>
-                    <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_contacts, 0)}
+                    <p className="font-medium text-lg">
+                      {aggregatedMetrics?.contacts || 0}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Scheduled</p>
-                    <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_scheduled, 0)}
+                    <p className="font-medium text-lg">
+                      {aggregatedMetrics?.scheduled || 0}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Sits</p>
-                    <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_sits, 0)}
+                    <p className="font-medium text-lg">
+                      {aggregatedMetrics?.sits || 0}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Sales</p>
-                    <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_sales, 0)}
+                    <p className="font-medium text-lg">
+                      {aggregatedMetrics?.sales || 0}
                     </p>
                   </div>
                 </div>
@@ -229,6 +253,22 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
                     />
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="ratios">
+            {isLoadingTeamMetrics ? (
+              <div className="h-[300px] w-full flex items-center justify-center">
+                <Skeleton className="h-full w-full" />
+              </div>
+            ) : !aggregatedMetrics ? (
+              <div className="text-center p-6">
+                <p className="text-muted-foreground">No metrics available for ratio calculation</p>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <RatiosGrid />
               </div>
             )}
           </TabsContent>
