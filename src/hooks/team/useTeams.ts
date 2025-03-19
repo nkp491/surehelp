@@ -110,14 +110,11 @@ export const useTeams = () => {
         console.log("User authenticated, proceeding with team creation");
 
         // Use a transaction to ensure both team and team_member are created
-        // Specify both type parameters for the rpc method
-        const { data, error } = await supabase.rpc<{ id: string, name: string, created_at: string, updated_at: string }, any>(
-          'create_team_with_member', 
-          { 
-            team_name: name,
-            member_role: 'manager_pro' 
-          }
-        );
+        // Correct approach: specify the function name as the type parameter
+        const { data, error } = await supabase.rpc('create_team_with_member', { 
+          team_name: name,
+          member_role: 'manager_pro' 
+        });
 
         if (error) {
           console.error("Error creating team with RPC:", error);
@@ -125,7 +122,7 @@ export const useTeams = () => {
         }
         
         console.log("Team created with RPC:", data);
-        return data;
+        return data as { id: string; name: string; created_at: string; updated_at: string };
       } catch (error) {
         console.error("Error in createTeam mutation:", error);
         throw error;
