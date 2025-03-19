@@ -526,10 +526,20 @@ export type Database = {
         }
         Returns: string[]
       }
+      get_user_teams: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
       has_role: {
         Args: {
           check_user_id: string
           check_role: string
+        }
+        Returns: boolean
+      }
+      is_team_member: {
+        Args: {
+          team_id: string
         }
         Returns: boolean
       }
