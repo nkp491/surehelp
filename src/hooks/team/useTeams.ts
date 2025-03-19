@@ -110,8 +110,9 @@ export const useTeams = () => {
         console.log("User authenticated, proceeding with team creation");
 
         // Use a transaction to ensure both team and team_member are created
-        const { data, error } = await supabase.rpc(
-          'create_team_with_member' as any, 
+        // Use type assertion with a generic parameter for better type safety
+        const { data, error } = await supabase.rpc<any>(
+          'create_team_with_member', 
           { 
             team_name: name,
             member_role: 'manager_pro' 
