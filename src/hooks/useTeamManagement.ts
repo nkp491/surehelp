@@ -15,7 +15,8 @@ export const useTeamManagement = () => {
     updateTeam, 
     refreshTeams, 
     isLoading: isLoadingTeamOps,
-    lastRefreshError 
+    lastRefreshError,
+    isTeamMembersFetching
   } = useTeams();
   
   const { 
@@ -41,6 +42,7 @@ export const useTeamManagement = () => {
     // Teams
     teams,
     isLoadingTeams,
+    isTeamMembersFetching,
     createTeam,
     updateTeam,
     refreshTeams,

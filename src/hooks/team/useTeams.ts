@@ -14,6 +14,7 @@ export const useTeams = () => {
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
   const [lastRefreshError, setLastRefreshError] = useState<string | null>(null);
+  const [isTeamMembersFetching, setIsTeamMembersFetching] = useState(false);
 
   // Get teams the current user belongs to
   const fetchTeamsQuery = useQuery({
@@ -40,56 +41,43 @@ export const useTeams = () => {
 
         console.log("Auth successful, user ID:", user.id);
 
-        // Direct query to see team_members for debugging
-        console.log("Checking direct team membership for user:", user.id);
-        const { data: directMemberships, error: directError } = await supabase
-          .from('team_members')
-          .select('*')
-          .eq('user_id', user.id);
+        // Use RPC instead of direct query to avoid recursion issues
+        try {
+          setIsTeamMembersFetching(true);
+          // Get team IDs using our security definer function
+          const { data: teamIds, error: teamIdsError } = await supabase.rpc('get_user_teams');
           
-        if (directError) {
-          console.error("Error with direct query:", directError);
-        } else {
-          console.log("Direct team memberships found:", directMemberships?.length, directMemberships);
+          if (teamIdsError) {
+            console.error("Error fetching team IDs:", teamIdsError);
+            setLastRefreshError(`Database error: ${teamIdsError.message}`);
+            throw teamIdsError;
+          }
+          
+          console.log("Team IDs fetched:", teamIds);
+          
+          if (!teamIds || teamIds.length === 0) {
+            console.log("User doesn't belong to any teams");
+            return [];
+          }
+          
+          // Get the actual team data
+          const { data: teamsData, error: teamsError } = await supabase
+            .from('teams')
+            .select('*')
+            .in('id', teamIds)
+            .order('name');
+          
+          if (teamsError) {
+            console.error("Database error when fetching teams:", teamsError);
+            setLastRefreshError(`Database error: ${teamsError.message}`);
+            throw teamsError;
+          }
+          
+          console.log("Teams fetched:", teamsData);
+          return teamsData as Team[];
+        } finally {
+          setIsTeamMembersFetching(false);
         }
-
-        // First, get team IDs the user belongs to
-        const { data: teamMemberships, error: membershipError } = await supabase
-          .from('team_members')
-          .select('team_id, role')
-          .eq('user_id', user.id);
-
-        if (membershipError) {
-          console.error("Error fetching team memberships:", membershipError);
-          setLastRefreshError(`Database error: ${membershipError.message}`);
-          throw membershipError;
-        }
-
-        console.log("Team memberships fetched:", teamMemberships);
-
-        if (!teamMemberships || teamMemberships.length === 0) {
-          console.log("User doesn't belong to any teams");
-          return [];
-        }
-
-        const teamIds = teamMemberships.map(membership => membership.team_id);
-        console.log("User belongs to team IDs:", teamIds);
-
-        // Get the actual team data
-        const { data: teamsData, error: teamsError } = await supabase
-          .from('teams')
-          .select('*')
-          .in('id', teamIds)
-          .order('name');
-        
-        if (teamsError) {
-          console.error("Database error when fetching teams:", teamsError);
-          setLastRefreshError(`Database error: ${teamsError.message}`);
-          throw teamsError;
-        }
-        
-        console.log("Teams fetched:", teamsData);
-        return teamsData as Team[];
       } catch (error: any) {
         console.error("Error in fetchTeams:", error);
         setLastRefreshError(error.message || "Unknown error fetching teams");
@@ -123,22 +111,7 @@ export const useTeams = () => {
         setIsLoading(true);
         console.log("Creating team with name:", name);
         
-        // Verify authentication
-        const { data: { user }, error: authError } = await supabase.auth.getUser();
-        
-        if (authError) {
-          console.error("Auth error when creating team:", authError);
-          throw new Error(`Authentication error: ${getErrorMessage(authError)}`);
-        }
-        
-        if (!user) {
-          console.error("No authenticated user found");
-          throw new Error('User not authenticated');
-        }
-
-        console.log("User authenticated, proceeding with team creation, user ID:", user.id);
-
-        // Use a transaction to ensure both team and team_member are created
+        // Use the create_team_with_member RPC function to create a team and add the user
         const { data, error } = await supabase.rpc('create_team_with_member', { 
           team_name: name,
           member_role: 'manager_pro' 
@@ -218,6 +191,7 @@ export const useTeams = () => {
   return {
     teams: fetchTeamsQuery.data,
     isLoadingTeams: fetchTeamsQuery.isLoading || fetchTeamsQuery.isFetching,
+    isTeamMembersFetching,
     createTeam,
     updateTeam,
     refreshTeams,

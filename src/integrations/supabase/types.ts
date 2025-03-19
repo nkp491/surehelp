@@ -544,6 +544,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_team_manager: {
+        Args: {
+          check_team_id: string
+        }
+        Returns: boolean
+      }
       is_team_member: {
         Args: {
           team_id: string

@@ -9,11 +9,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, RefreshCw, AlertCircle } from "lucide-react";
+import { PlusCircle, RefreshCw, AlertCircle, Loader2 } from "lucide-react";
 import { TeamCreationDialog } from "./TeamCreationDialog";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { supabase } from "@/integrations/supabase/client";
 
 interface TeamSelectorProps {
   selectedTeamId: string | undefined;
@@ -21,11 +20,10 @@ interface TeamSelectorProps {
 }
 
 export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps) {
-  const { teams, isLoadingTeams, refreshTeams } = useTeamManagement();
+  const { teams, isLoadingTeams, refreshTeams, lastRefreshError, isTeamMembersFetching } = useTeamManagement();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [refreshError, setRefreshError] = useState<string | null>(null);
-  const [debugInfo, setDebugInfo] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Refresh teams when the component mounts
@@ -42,37 +40,6 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
       console.log("Manual refresh triggered");
       setIsRefreshing(true);
       setRefreshError(null);
-      setDebugInfo(null);
-      
-      // First, check if the user is authenticated
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      
-      if (authError || !user) {
-        console.error("Authentication error when refreshing teams:", authError || "No user found");
-        setRefreshError("Authentication error. Please sign in again.");
-        toast({
-          title: "Authentication error",
-          description: "Please sign out and sign in again to refresh your teams.",
-          variant: "destructive",
-        });
-        return;
-      }
-      
-      console.log("Authenticated user:", user.id);
-      
-      // Show the user's team memberships for debugging
-      const { data: teamMemberships, error: membershipError } = await supabase
-        .from('team_members')
-        .select('team_id, role')
-        .eq('user_id', user.id);
-        
-      if (membershipError) {
-        console.error("Error fetching team memberships:", membershipError);
-        setDebugInfo(`Error fetching team memberships: ${membershipError.message}`);
-      } else {
-        console.log("User's team memberships:", teamMemberships);
-        setDebugInfo(`User has ${teamMemberships?.length || 0} team memberships`);
-      }
       
       const result = await refreshTeams();
       console.log("Refresh result:", result);
@@ -140,11 +107,15 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
           variant="outline"
           size="icon"
           onClick={handleRefresh}
-          disabled={isRefreshing}
+          disabled={isRefreshing || isTeamMembersFetching}
           className="h-10 w-10"
           title="Refresh teams"
         >
-          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+          {isRefreshing || isTeamMembersFetching ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            <RefreshCw className="h-4 w-4" />
+          )}
         </Button>
         
         <Button
@@ -158,18 +129,10 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
         </Button>
       </div>
       
-      {refreshError && (
+      {(refreshError || lastRefreshError) && (
         <Alert variant="destructive" className="mt-2">
           <AlertCircle className="h-4 w-4 mr-2" />
-          <AlertDescription>{refreshError}</AlertDescription>
-        </Alert>
-      )}
-      
-      {debugInfo && (
-        <Alert variant="default" className="mt-2 bg-blue-50">
-          <AlertDescription className="text-xs">
-            Debug info: {debugInfo}
-          </AlertDescription>
+          <AlertDescription>{refreshError || lastRefreshError}</AlertDescription>
         </Alert>
       )}
       
