@@ -9,46 +9,13 @@ import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import RatiosGrid from "@/components/metrics/RatiosGrid";
 import { MetricCount } from "@/types/metrics";
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Legend,
-} from "recharts";
-import { format } from "date-fns";
 
 interface TeamMetricsOverviewProps {
   teamId?: string;
 }
 
 export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
-  const { teamMetrics, isLoadingTeamMetrics, teamTrends, isLoadingTeamTrends } = useTeamMetrics(teamId);
-
-  // Format date for x-axis
-  const formatXAxis = (dateStr: string) => {
-    return format(new Date(dateStr), "MMM d");
-  };
-
-  // Custom tooltip formatter
-  const CustomTooltip = ({ active, payload, label }: any) => {
-    if (active && payload && payload.length) {
-      return (
-        <div className="bg-background p-2 border rounded-md shadow-sm">
-          <p className="font-medium">{format(new Date(label), "MMMM d, yyyy")}</p>
-          {payload.map((entry: any, index: number) => (
-            <p key={index} className="text-sm" style={{ color: entry.color }}>
-              {`${entry.name}: ${entry.value}`}
-            </p>
-          ))}
-        </div>
-      );
-    }
-    return null;
-  };
+  const { teamMetrics, isLoadingTeamMetrics } = useTeamMetrics(teamId);
 
   // Calculate aggregated metrics for the team
   const aggregatedMetrics: MetricCount | null = teamMetrics?.length ? {
@@ -73,7 +40,6 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
         <Tabs defaultValue="members">
           <TabsList className="mb-4">
             <TabsTrigger value="members">Member Stats</TabsTrigger>
-            <TabsTrigger value="trends">Performance Trends</TabsTrigger>
             <TabsTrigger value="ratios">Metric Ratios</TabsTrigger>
           </TabsList>
           
@@ -205,58 +171,6 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
             )}
           </TabsContent>
           
-          <TabsContent value="trends">
-            {isLoadingTeamTrends ? (
-              <div className="h-[300px] w-full flex items-center justify-center">
-                <Skeleton className="h-full w-full" />
-              </div>
-            ) : !teamTrends || teamTrends.length === 0 ? (
-              <div className="text-center p-6">
-                <p className="text-muted-foreground">No trend data available</p>
-              </div>
-            ) : (
-              <div className="h-[300px] w-full">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart
-                    data={teamTrends}
-                    margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-                  >
-                    <CartesianGrid strokeDasharray="3 3" opacity={0.2} />
-                    <XAxis 
-                      dataKey="date" 
-                      tickFormatter={formatXAxis}
-                      tick={{ fontSize: 12 }}
-                    />
-                    <YAxis tick={{ fontSize: 12 }} />
-                    <Tooltip content={<CustomTooltip />} />
-                    <Legend />
-                    <Line
-                      type="monotone"
-                      dataKey="leads"
-                      stroke="#8884d8"
-                      activeDot={{ r: 6 }}
-                      name="Leads"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="sales"
-                      stroke="#82ca9d"
-                      activeDot={{ r: 6 }}
-                      name="Sales"
-                    />
-                    <Line
-                      type="monotone"
-                      dataKey="sits"
-                      stroke="#ffc658"
-                      activeDot={{ r: 6 }}
-                      name="Sits"
-                    />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            )}
-          </TabsContent>
-          
           <TabsContent value="ratios">
             {isLoadingTeamMetrics ? (
               <div className="h-[300px] w-full flex items-center justify-center">
@@ -268,7 +182,7 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
               </div>
             ) : (
               <div className="space-y-4">
-                <RatiosGrid />
+                <RatiosGrid teamId={teamId} />
               </div>
             )}
           </TabsContent>
