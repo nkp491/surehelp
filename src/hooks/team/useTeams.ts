@@ -34,19 +34,39 @@ export const useTeams = () => {
 
         console.log("Auth successful, user ID:", user.id);
 
-        // Get teams directly with a simpler query to avoid recursion
-        const { data, error } = await supabase
+        // First, get team IDs the user belongs to
+        const { data: teamMemberships, error: membershipError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id);
+
+        if (membershipError) {
+          console.error("Error fetching team memberships:", membershipError);
+          throw membershipError;
+        }
+
+        if (!teamMemberships || teamMemberships.length === 0) {
+          console.log("User doesn't belong to any teams");
+          return [];
+        }
+
+        const teamIds = teamMemberships.map(membership => membership.team_id);
+        console.log("User belongs to team IDs:", teamIds);
+
+        // Get the actual team data
+        const { data: teamsData, error: teamsError } = await supabase
           .from('teams')
           .select('*')
+          .in('id', teamIds)
           .order('name');
         
-        if (error) {
-          console.error("Database error when fetching teams:", error);
-          throw error;
+        if (teamsError) {
+          console.error("Database error when fetching teams:", teamsError);
+          throw teamsError;
         }
         
-        console.log("Teams fetched:", data);
-        return data as Team[];
+        console.log("Teams fetched:", teamsData);
+        return teamsData as Team[];
       } catch (error: any) {
         console.error("Error in fetchTeams:", error);
         throw error;
@@ -89,35 +109,18 @@ export const useTeams = () => {
 
         console.log("User authenticated, proceeding with team creation");
 
-        // Insert the new team
-        const { data: teamData, error: teamError } = await supabase
-          .from('teams')
-          .insert([{ name }])
-          .select()
-          .single();
+        // Use a transaction to ensure both team and team_member are created
+        const { data: teamData, error: teamError } = await supabase.rpc('create_team_with_member', { 
+          team_name: name,
+          member_role: 'manager_pro' 
+        });
 
         if (teamError) {
-          console.error("Error inserting team:", teamError);
+          console.error("Error creating team with RPC:", teamError);
           throw teamError;
         }
         
-        console.log("Team created:", teamData);
-
-        // Add the creator as a team member with explicit values to avoid recursion
-        const { error: memberError } = await supabase
-          .from('team_members')
-          .insert([{
-            team_id: teamData.id,
-            user_id: user.id,
-            role: 'manager_pro'
-          }]);
-
-        if (memberError) {
-          console.error("Error adding team member:", memberError);
-          throw memberError;
-        }
-
-        console.log("Team member added successfully");
+        console.log("Team created with RPC:", teamData);
         return teamData;
       } catch (error) {
         console.error("Error in createTeam mutation:", error);

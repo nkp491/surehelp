@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TeamCreationDialogProps {
   open: boolean;
@@ -28,10 +29,11 @@ export function TeamCreationDialog({
   teamId, 
   initialName = "" 
 }: TeamCreationDialogProps) {
-  const { createTeam, updateTeam, isLoading } = useTeamManagement();
+  const { createTeam, updateTeam, refreshTeams, isLoading } = useTeamManagement();
   const [teamName, setTeamName] = useState(initialName);
   const { toast } = useToast();
   const [internalLoading, setInternalLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   
   const isEditMode = !!teamId;
   const dialogTitle = isEditMode ? "Edit Team" : "Create Team";
@@ -43,6 +45,9 @@ export function TeamCreationDialog({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!teamName.trim()) return;
+    
+    // Reset error state
+    setError(null);
     
     try {
       setInternalLoading(true);
@@ -63,6 +68,9 @@ export function TeamCreationDialog({
           title: "Team created",
           description: "Your new team has been created successfully.",
         });
+        
+        // Make sure to refresh teams after creating a new one
+        await refreshTeams();
       }
       
       setTeamName("");
@@ -70,12 +78,17 @@ export function TeamCreationDialog({
     } catch (error: any) {
       console.error("Error in team operation:", error);
       
-      // Show a detailed toast with the error message
-      toast({
-        title: isEditMode ? "Error updating team" : "Error creating team",
-        description: error.message || "There was a problem with the team operation. Please try again.",
-        variant: "destructive",
-      });
+      // Set local error state for display in the dialog
+      setError(error.message || "There was a problem with the team operation. Please try again.");
+      
+      // Show toast only for non-RLS errors
+      if (!error.message?.includes("violates row-level security policy")) {
+        toast({
+          title: isEditMode ? "Error updating team" : "Error creating team",
+          description: error.message || "There was a problem with the team operation. Please try again.",
+          variant: "destructive",
+        });
+      }
       // Dialog stays open if there's an error
     } finally {
       setInternalLoading(false);
@@ -85,6 +98,7 @@ export function TeamCreationDialog({
   const closeDialog = () => {
     if (!isLoading && !internalLoading) {
       setTeamName(initialName);
+      setError(null);
       onOpenChange(false);
     }
   };
@@ -102,6 +116,13 @@ export function TeamCreationDialog({
               {dialogDescription}
             </DialogDescription>
           </DialogHeader>
+          
+          {error && (
+            <Alert variant="destructive" className="mt-4">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="team-name">Team Name</Label>
