@@ -45,6 +45,8 @@ export const useTeams = () => {
           throw membershipError;
         }
 
+        console.log("Team memberships fetched:", teamMemberships);
+
         if (!teamMemberships || teamMemberships.length === 0) {
           console.log("User doesn't belong to any teams");
           return [];
@@ -110,7 +112,6 @@ export const useTeams = () => {
         console.log("User authenticated, proceeding with team creation");
 
         // Use a transaction to ensure both team and team_member are created
-        // Correct approach: specify the function name as the type parameter
         const { data, error } = await supabase.rpc('create_team_with_member', { 
           team_name: name,
           member_role: 'manager_pro' 
@@ -130,9 +131,14 @@ export const useTeams = () => {
         setIsLoading(false);
       }
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       console.log("Team creation successful, invalidating queries");
-      queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      // Force an immediate refresh after creating a team
+      await refreshTeams();
+      toast({
+        title: "Team created",
+        description: "Your new team has been created successfully.",
+      });
     },
     onError: (error: any) => {
       console.error('Error creating team:', error);
