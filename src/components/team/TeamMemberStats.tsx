@@ -1,0 +1,160 @@
+
+import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import ProfileAvatar from "@/components/profile/ProfileAvatar";
+import { TeamMemberMetrics } from "@/hooks/useTeamMetrics";
+import { MetricCount } from "@/types/metrics";
+
+interface TeamMemberStatsProps {
+  isLoading: boolean;
+  teamMetrics?: TeamMemberMetrics[];
+  aggregatedMetrics: MetricCount | null;
+}
+
+export function TeamMemberStats({ isLoading, teamMetrics, aggregatedMetrics }: TeamMemberStatsProps) {
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
+          {Array.from({ length: 6 }).map((_, idx) => (
+            <Skeleton key={idx} className="h-16 w-full" />
+          ))}
+        </div>
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div key={index} className="flex items-center justify-between border p-3 rounded-md">
+            <div className="flex items-center space-x-3">
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div>
+                <Skeleton className="h-4 w-24 mb-1" />
+                <Skeleton className="h-3 w-16" />
+              </div>
+            </div>
+            <div className="flex space-x-2">
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-8 w-16" />
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (teamMetrics?.length === 0) {
+    return (
+      <div className="text-center p-6">
+        <p className="text-muted-foreground">No team metrics available</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <AggregatedMetricsGrid aggregatedMetrics={aggregatedMetrics} />
+      
+      {teamMetrics?.map((member) => (
+        <div key={member.user_id} className="border rounded-md p-3">
+          <div className="flex justify-between items-center mb-2">
+            <div className="flex items-center space-x-3">
+              <ProfileAvatar
+                imageUrl={member.profile_image_url}
+                firstName={member.first_name}
+                className="h-10 w-10"
+              />
+              <div>
+                <p className="font-medium">
+                  {member.first_name} {member.last_name}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {member.email}
+                </p>
+              </div>
+            </div>
+            
+            <div>
+              <Badge variant="outline" className="ml-2">
+                AP: ${(member.metrics.average_ap / 100).toFixed(2)}
+              </Badge>
+            </div>
+          </div>
+          
+          <MemberMetricsGrid metrics={member.metrics} />
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function AggregatedMetricsGrid({ aggregatedMetrics }: { aggregatedMetrics: MetricCount | null }) {
+  return (
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Leads</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.leads || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Calls</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.calls || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Contacts</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.contacts || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Scheduled</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.scheduled || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Sits</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.sits || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Sales</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.sales || 0}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function MemberMetricsGrid({ metrics }: { metrics: TeamMemberMetrics['metrics'] }) {
+  return (
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 text-center mt-3">
+      <div className="text-xs p-1 bg-muted/20 rounded">
+        <span className="block text-muted-foreground">Leads</span>
+        <span className="font-medium">{metrics.total_leads}</span>
+      </div>
+      <div className="text-xs p-1 bg-muted/20 rounded">
+        <span className="block text-muted-foreground">Calls</span>
+        <span className="font-medium">{metrics.total_calls}</span>
+      </div>
+      <div className="text-xs p-1 bg-muted/20 rounded">
+        <span className="block text-muted-foreground">Contacts</span>
+        <span className="font-medium">{metrics.total_contacts}</span>
+      </div>
+      <div className="text-xs p-1 bg-muted/20 rounded">
+        <span className="block text-muted-foreground">Scheduled</span>
+        <span className="font-medium">{metrics.total_scheduled}</span>
+      </div>
+      <div className="text-xs p-1 bg-muted/20 rounded">
+        <span className="block text-muted-foreground">Sits</span>
+        <span className="font-medium">{metrics.total_sits}</span>
+      </div>
+      <div className="text-xs p-1 bg-muted/20 rounded">
+        <span className="block text-muted-foreground">Sales</span>
+        <span className="font-medium">{metrics.total_sales}</span>
+      </div>
+    </div>
+  );
+}
