@@ -13,6 +13,7 @@ export const useTeams = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
+  const [lastRefreshError, setLastRefreshError] = useState<string | null>(null);
 
   // Get teams the current user belongs to
   const fetchTeamsQuery = useQuery({
@@ -20,28 +21,47 @@ export const useTeams = () => {
     queryFn: async () => {
       try {
         console.log("Fetching teams...");
+        setLastRefreshError(null);
+        
         const { data: { user }, error: authError } = await supabase.auth.getUser();
         
         if (authError) {
           console.error("Auth error when fetching teams:", authError);
-          throw new Error(`Authentication error: ${getErrorMessage(authError)}`);
+          const errorMessage = `Authentication error: ${getErrorMessage(authError)}`;
+          setLastRefreshError(errorMessage);
+          throw new Error(errorMessage);
         }
         
         if (!user) {
           console.error("No authenticated user found");
+          setLastRefreshError("User not authenticated");
           throw new Error('User not authenticated');
         }
 
         console.log("Auth successful, user ID:", user.id);
 
+        // Direct query to see team_members for debugging
+        console.log("Checking direct team membership for user:", user.id);
+        const { data: directMemberships, error: directError } = await supabase
+          .from('team_members')
+          .select('*')
+          .eq('user_id', user.id);
+          
+        if (directError) {
+          console.error("Error with direct query:", directError);
+        } else {
+          console.log("Direct team memberships found:", directMemberships?.length, directMemberships);
+        }
+
         // First, get team IDs the user belongs to
         const { data: teamMemberships, error: membershipError } = await supabase
           .from('team_members')
-          .select('team_id')
+          .select('team_id, role')
           .eq('user_id', user.id);
 
         if (membershipError) {
           console.error("Error fetching team memberships:", membershipError);
+          setLastRefreshError(`Database error: ${membershipError.message}`);
           throw membershipError;
         }
 
@@ -64,6 +84,7 @@ export const useTeams = () => {
         
         if (teamsError) {
           console.error("Database error when fetching teams:", teamsError);
+          setLastRefreshError(`Database error: ${teamsError.message}`);
           throw teamsError;
         }
         
@@ -71,6 +92,7 @@ export const useTeams = () => {
         return teamsData as Team[];
       } catch (error: any) {
         console.error("Error in fetchTeams:", error);
+        setLastRefreshError(error.message || "Unknown error fetching teams");
         throw error;
       }
     },
@@ -85,9 +107,11 @@ export const useTeams = () => {
       await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
       const result = await queryClient.refetchQueries({ queryKey: ['user-teams'] });
       console.log("Team refresh result:", result);
+      setLastRefreshError(null);
       return result;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error refreshing teams:", error);
+      setLastRefreshError(error.message || "Unknown error refreshing teams");
       throw error;
     }
   }, [queryClient]);
@@ -197,6 +221,7 @@ export const useTeams = () => {
     createTeam,
     updateTeam,
     refreshTeams,
-    isLoading
+    isLoading,
+    lastRefreshError
   };
 };

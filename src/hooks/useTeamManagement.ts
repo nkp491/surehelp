@@ -8,7 +8,16 @@ import { useTeamPermissions } from "./team/useTeamPermissions";
  */
 export const useTeamManagement = () => {
   // Get team management hooks
-  const { teams, isLoadingTeams, createTeam, updateTeam, refreshTeams, isLoading: isLoadingTeamOps } = useTeams();
+  const { 
+    teams, 
+    isLoadingTeams, 
+    createTeam, 
+    updateTeam, 
+    refreshTeams, 
+    isLoading: isLoadingTeamOps,
+    lastRefreshError 
+  } = useTeams();
+  
   const { 
     getTeamMembers, 
     fetchTeamMembers, 
@@ -17,6 +26,7 @@ export const useTeamManagement = () => {
     updateTeamMemberRole, 
     isLoading: isLoadingMemberOps 
   } = useTeamMembers();
+  
   const { isTeamManager } = useTeamPermissions();
 
   // Combined loading state
@@ -34,6 +44,7 @@ export const useTeamManagement = () => {
     createTeam,
     updateTeam,
     refreshTeams,
+    lastRefreshError,
     
     // Team members
     useTeamMembers: getTeamMembersQuery,

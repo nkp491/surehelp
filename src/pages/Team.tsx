@@ -6,11 +6,30 @@ import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
 import { TeamMetricsOverview } from "@/components/team/TeamMetricsOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Button } from "@/components/ui/button";
+import { RefreshCw, AlertCircle, Info } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export default function TeamPage() {
-  const { teams, isLoadingTeams } = useTeamManagement();
+  const { teams, isLoadingTeams, refreshTeams, lastRefreshError } = useTeamManagement();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+  const [authInfo, setAuthInfo] = useState<string | null>(null);
+  const [showDebugInfo, setShowDebugInfo] = useState(false);
+
+  // Check authentication status on mount
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data, error } = await supabase.auth.getUser();
+      if (error || !data.user) {
+        setAuthInfo(`Not authenticated: ${error?.message || "No user found"}`);
+      } else {
+        setAuthInfo(`Authenticated as ${data.user.email} (${data.user.id})`);
+      }
+    };
+
+    checkAuth();
+  }, []);
 
   // Select the first team by default when teams are loaded
   useEffect(() => {
@@ -20,11 +39,26 @@ export default function TeamPage() {
     }
   }, [teams, selectedTeamId]);
 
+  // Force refresh teams when component mounts
+  useEffect(() => {
+    refreshTeams().catch(err => {
+      console.error("Error refreshing teams on page load:", err);
+    });
+  }, [refreshTeams]);
+
+  const handleManualRefresh = () => {
+    refreshTeams().catch(err => {
+      console.error("Manual refresh error:", err);
+    });
+  };
+
   console.log("Team page rendering:", { 
     teamsCount: teams?.length, 
     teamsData: teams,
     selectedTeamId,
-    isLoadingTeams
+    isLoadingTeams,
+    authInfo,
+    lastRefreshError
   });
 
   return (
@@ -36,11 +70,49 @@ export default function TeamPage() {
             Manage your team, track performance, and communicate with your agents.
           </p>
         </div>
-        <TeamSelector 
-          selectedTeamId={selectedTeamId} 
-          onTeamSelect={setSelectedTeamId}
-        />
+        <div className="flex flex-col gap-2">
+          <TeamSelector 
+            selectedTeamId={selectedTeamId} 
+            onTeamSelect={setSelectedTeamId}
+          />
+          
+          <div className="text-right">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowDebugInfo(!showDebugInfo)}
+              className="text-xs text-muted-foreground"
+            >
+              <Info className="h-3 w-3 mr-1" />
+              {showDebugInfo ? "Hide" : "Show"} Debug Info
+            </Button>
+          </div>
+        </div>
       </div>
+
+      {showDebugInfo && (
+        <Alert className="bg-blue-50 mb-4">
+          <Info className="h-4 w-4" />
+          <AlertTitle>Debug Information</AlertTitle>
+          <AlertDescription>
+            <div className="text-xs">
+              <p>Auth: {authInfo}</p>
+              {lastRefreshError && <p className="text-red-500">Last error: {lastRefreshError}</p>}
+              <p>Teams loaded: {teams?.length || 0}</p>
+              <p>Selected team: {selectedTeamId || "none"}</p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleManualRefresh}
+                className="mt-2"
+              >
+                <RefreshCw className="h-3 w-3 mr-1" />
+                Force Refresh
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
 
       {isLoadingTeams ? (
         <div className="border rounded-md p-8 text-center bg-muted/30">
@@ -56,6 +128,7 @@ export default function TeamPage() {
             You don't have any teams yet. Create a new team to get started with team management.
           </p>
           <Alert className="max-w-md mx-auto">
+            <AlertCircle className="h-4 w-4" />
             <AlertDescription>
               If you've created teams before and can't see them, try refreshing using the refresh button 
               or signing out and back in.
