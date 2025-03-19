@@ -26,16 +26,24 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
 
   // Refresh teams when the component mounts
   useEffect(() => {
-    refreshTeams();
+    console.log("TeamSelector mounted, refreshing teams");
+    refreshTeams().catch(err => {
+      console.error("Failed to refresh teams on mount:", err);
+    });
   }, [refreshTeams]);
 
   const handleRefresh = async () => {
     try {
+      console.log("Manual refresh triggered");
       setIsRefreshing(true);
-      await refreshTeams();
+      const result = await refreshTeams();
+      console.log("Refresh result:", result);
+      
       toast({
-        title: "Teams refreshed",
-        description: "Your team list has been updated.",
+        title: teams && teams.length > 0 ? "Teams refreshed" : "No teams found",
+        description: teams && teams.length > 0 
+          ? "Your team list has been updated." 
+          : "You don't have any teams yet. Try creating one!",
       });
     } catch (error) {
       console.error("Failed to refresh teams:", error);
@@ -48,6 +56,12 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
       setIsRefreshing(false);
     }
   };
+
+  console.log("TeamSelector rendering with:", { 
+    teamsCount: teams?.length, 
+    isLoadingTeams, 
+    selectedTeamId 
+  });
 
   return (
     <div className="flex items-center gap-2">

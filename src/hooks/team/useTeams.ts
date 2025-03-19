@@ -75,6 +75,7 @@ export const useTeams = () => {
       }
     },
     retry: 1,
+    staleTime: 30000, // Consider data fresh for 30 seconds
   });
 
   // Function to manually refresh teams
@@ -82,7 +83,9 @@ export const useTeams = () => {
     try {
       console.log("Manually refreshing teams");
       await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-      return await queryClient.refetchQueries({ queryKey: ['user-teams'] });
+      const result = await queryClient.refetchQueries({ queryKey: ['user-teams'] });
+      console.log("Team refresh result:", result);
+      return result;
     } catch (error) {
       console.error("Error refreshing teams:", error);
       throw error;
@@ -109,7 +112,7 @@ export const useTeams = () => {
           throw new Error('User not authenticated');
         }
 
-        console.log("User authenticated, proceeding with team creation");
+        console.log("User authenticated, proceeding with team creation, user ID:", user.id);
 
         // Use a transaction to ensure both team and team_member are created
         const { data, error } = await supabase.rpc('create_team_with_member', { 
@@ -122,7 +125,7 @@ export const useTeams = () => {
           throw error;
         }
         
-        console.log("Team created with RPC:", data);
+        console.log("Team created with RPC, result:", data);
         return data as { id: string; name: string; created_at: string; updated_at: string };
       } catch (error) {
         console.error("Error in createTeam mutation:", error);
@@ -131,14 +134,21 @@ export const useTeams = () => {
         setIsLoading(false);
       }
     },
-    onSuccess: async () => {
-      console.log("Team creation successful, invalidating queries");
+    onSuccess: async (data) => {
+      console.log("Team creation successful, team data:", data);
+      
       // Force an immediate refresh after creating a team
-      await refreshTeams();
-      toast({
-        title: "Team created",
-        description: "Your new team has been created successfully.",
-      });
+      try {
+        await refreshTeams();
+        console.log("Teams refreshed after creation");
+        
+        toast({
+          title: "Team created",
+          description: "Your new team has been created successfully.",
+        });
+      } catch (refreshError) {
+        console.error("Error refreshing teams after creation:", refreshError);
+      }
     },
     onError: (error: any) => {
       console.error('Error creating team:', error);

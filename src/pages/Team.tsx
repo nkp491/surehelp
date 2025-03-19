@@ -1,13 +1,28 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { TeamSelector } from "@/components/team/TeamSelector";
 import { TeamMembersList } from "@/components/team/TeamMembersList";
 import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
 import { TeamMetricsOverview } from "@/components/team/TeamMetricsOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTeamManagement } from "@/hooks/useTeamManagement";
 
 export default function TeamPage() {
+  const { teams } = useTeamManagement();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+
+  // Select the first team by default when teams are loaded
+  useEffect(() => {
+    if (teams && teams.length > 0 && !selectedTeamId) {
+      console.log("Auto-selecting first team:", teams[0].id);
+      setSelectedTeamId(teams[0].id);
+    }
+  }, [teams, selectedTeamId]);
+
+  console.log("Team page rendering:", { 
+    teamsCount: teams?.length, 
+    selectedTeamId 
+  });
 
   return (
     <div className="container max-w-7xl mx-auto py-6 space-y-6">

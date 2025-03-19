@@ -64,13 +64,13 @@ export function TeamCreationDialog({
         const result = await createTeam.mutateAsync(teamName);
         console.log("Team creation result:", result);
         
+        // Refresh immediately after creating
+        await refreshTeams();
+        
         toast({
           title: "Team created",
-          description: "Your new team has been created successfully.",
+          description: `Your new team "${teamName}" has been created successfully.`,
         });
-        
-        // Make sure to refresh teams after creating a new one
-        await refreshTeams();
       }
       
       setTeamName("");
