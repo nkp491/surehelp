@@ -110,18 +110,21 @@ export const useTeams = () => {
         console.log("User authenticated, proceeding with team creation");
 
         // Use a transaction to ensure both team and team_member are created
-        const { data: teamData, error: teamError } = await supabase.rpc('create_team_with_member', { 
-          team_name: name,
-          member_role: 'manager_pro' 
-        });
+        const { data, error } = await supabase.rpc(
+          'create_team_with_member' as any, 
+          { 
+            team_name: name,
+            member_role: 'manager_pro' 
+          }
+        );
 
-        if (teamError) {
-          console.error("Error creating team with RPC:", teamError);
-          throw teamError;
+        if (error) {
+          console.error("Error creating team with RPC:", error);
+          throw error;
         }
         
-        console.log("Team created with RPC:", teamData);
-        return teamData;
+        console.log("Team created with RPC:", data);
+        return data;
       } catch (error) {
         console.error("Error in createTeam mutation:", error);
         throw error;

@@ -514,6 +514,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_team_with_member: {
+        Args: {
+          team_name: string
+          member_role?: string
+        }
+        Returns: Json
+      }
       get_user_role: {
         Args: {
           user_id: string
