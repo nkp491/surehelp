@@ -138,17 +138,13 @@ export const useTeams = () => {
       console.log("Team creation successful, team data:", data);
       
       // Force an immediate refresh after creating a team
-      try {
-        await refreshTeams();
-        console.log("Teams refreshed after creation");
-        
-        toast({
-          title: "Team created",
-          description: "Your new team has been created successfully.",
-        });
-      } catch (refreshError) {
-        console.error("Error refreshing teams after creation:", refreshError);
-      }
+      await refreshTeams();
+      console.log("Teams refreshed after creation");
+      
+      toast({
+        title: "Team created",
+        description: "Your new team has been created successfully.",
+      });
     },
     onError: (error: any) => {
       console.error('Error creating team:', error);

@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription } from "@/components/ui/alert";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TeamCreationDialogProps {
   open: boolean;
@@ -52,6 +53,13 @@ export function TeamCreationDialog({
     try {
       setInternalLoading(true);
       console.log("Submitting team form:", { teamName, isEditMode, teamId });
+      
+      // Check if user is authenticated first
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
+      if (authError || !user) {
+        console.error("Authentication error:", authError || "No user found");
+        throw new Error("You must be logged in to create a team. Please sign in.");
+      }
       
       if (isEditMode && teamId) {
         await updateTeam.mutateAsync({ teamId, name: teamName });

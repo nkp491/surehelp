@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle, RefreshCw } from "lucide-react";
 import { TeamCreationDialog } from "./TeamCreationDialog";
 import { useToast } from "@/hooks/use-toast";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 interface TeamSelectorProps {
   selectedTeamId: string | undefined;
@@ -22,6 +23,7 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
   const { teams, isLoadingTeams, refreshTeams } = useTeamManagement();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [refreshError, setRefreshError] = useState<string | null>(null);
   const { toast } = useToast();
 
   // Refresh teams when the component mounts
@@ -29,6 +31,7 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
     console.log("TeamSelector mounted, refreshing teams");
     refreshTeams().catch(err => {
       console.error("Failed to refresh teams on mount:", err);
+      setRefreshError("Failed to load teams. Please try refreshing.");
     });
   }, [refreshTeams]);
 
@@ -36,17 +39,24 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
     try {
       console.log("Manual refresh triggered");
       setIsRefreshing(true);
+      setRefreshError(null);
       const result = await refreshTeams();
       console.log("Refresh result:", result);
       
-      toast({
-        title: teams && teams.length > 0 ? "Teams refreshed" : "No teams found",
-        description: teams && teams.length > 0 
-          ? "Your team list has been updated." 
-          : "You don't have any teams yet. Try creating one!",
-      });
+      if (teams && teams.length > 0) {
+        toast({
+          title: "Teams refreshed",
+          description: "Your team list has been updated.",
+        });
+      } else {
+        toast({
+          title: "No teams found",
+          description: "You don't have any teams yet. Try creating one!",
+        });
+      }
     } catch (error) {
       console.error("Failed to refresh teams:", error);
+      setRefreshError("Failed to load teams. Please try again.");
       toast({
         title: "Refresh failed",
         description: "Could not refresh teams. Please try again.",
@@ -60,56 +70,65 @@ export function TeamSelector({ selectedTeamId, onTeamSelect }: TeamSelectorProps
   console.log("TeamSelector rendering with:", { 
     teamsCount: teams?.length, 
     isLoadingTeams, 
-    selectedTeamId 
+    selectedTeamId,
+    teamsData: teams
   });
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex-1">
-        <Select
-          value={selectedTeamId}
-          onValueChange={onTeamSelect}
-          disabled={isLoadingTeams || !teams?.length}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={isLoadingTeams ? "Loading teams..." : "Select a team"} />
-          </SelectTrigger>
-          <SelectContent>
-            {teams?.length ? (
-              teams.map((team) => (
-                <SelectItem key={team.id} value={team.id}>
-                  {team.name}
+    <div className="flex flex-col gap-2">
+      <div className="flex items-center gap-2">
+        <div className="flex-1">
+          <Select
+            value={selectedTeamId}
+            onValueChange={onTeamSelect}
+            disabled={isLoadingTeams || !teams?.length}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={isLoadingTeams ? "Loading teams..." : "Select a team"} />
+            </SelectTrigger>
+            <SelectContent>
+              {teams?.length ? (
+                teams.map((team) => (
+                  <SelectItem key={team.id} value={team.id}>
+                    {team.name}
+                  </SelectItem>
+                ))
+              ) : (
+                <SelectItem value="no-teams" disabled>
+                  No teams available
                 </SelectItem>
-              ))
-            ) : (
-              <SelectItem value="no-teams" disabled>
-                No teams available
-              </SelectItem>
-            )}
-          </SelectContent>
-        </Select>
+              )}
+            </SelectContent>
+          </Select>
+        </div>
+        
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleRefresh}
+          disabled={isRefreshing}
+          className="h-10 w-10"
+          title="Refresh teams"
+        >
+          <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+        </Button>
+        
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowCreateDialog(true)}
+          className="flex items-center gap-1"
+        >
+          <PlusCircle className="h-4 w-4" />
+          <span className="hidden sm:inline">New Team</span>
+        </Button>
       </div>
       
-      <Button
-        variant="outline"
-        size="icon"
-        onClick={handleRefresh}
-        disabled={isRefreshing}
-        className="h-10 w-10"
-        title="Refresh teams"
-      >
-        <RefreshCw className={`h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
-      </Button>
-      
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={() => setShowCreateDialog(true)}
-        className="flex items-center gap-1"
-      >
-        <PlusCircle className="h-4 w-4" />
-        <span className="hidden sm:inline">New Team</span>
-      </Button>
+      {refreshError && (
+        <Alert variant="destructive" className="mt-2">
+          <AlertDescription>{refreshError}</AlertDescription>
+        </Alert>
+      )}
       
       <TeamCreationDialog
         open={showCreateDialog}

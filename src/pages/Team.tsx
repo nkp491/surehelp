@@ -6,9 +6,10 @@ import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
 import { TeamMetricsOverview } from "@/components/team/TeamMetricsOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export default function TeamPage() {
-  const { teams } = useTeamManagement();
+  const { teams, isLoadingTeams } = useTeamManagement();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
 
   // Select the first team by default when teams are loaded
@@ -21,7 +22,9 @@ export default function TeamPage() {
 
   console.log("Team page rendering:", { 
     teamsCount: teams?.length, 
-    selectedTeamId 
+    teamsData: teams,
+    selectedTeamId,
+    isLoadingTeams
   });
 
   return (
@@ -39,7 +42,27 @@ export default function TeamPage() {
         />
       </div>
 
-      {!selectedTeamId ? (
+      {isLoadingTeams ? (
+        <div className="border rounded-md p-8 text-center bg-muted/30">
+          <h2 className="text-xl font-semibold mb-2">Loading teams...</h2>
+          <p className="text-muted-foreground max-w-md mx-auto">
+            Please wait while we load your teams.
+          </p>
+        </div>
+      ) : teams && teams.length === 0 ? (
+        <div className="border rounded-md p-8 text-center bg-muted/30">
+          <h2 className="text-xl font-semibold mb-2">No Teams Found</h2>
+          <p className="text-muted-foreground max-w-md mx-auto mb-4">
+            You don't have any teams yet. Create a new team to get started with team management.
+          </p>
+          <Alert className="max-w-md mx-auto">
+            <AlertDescription>
+              If you've created teams before and can't see them, try refreshing using the refresh button 
+              or signing out and back in.
+            </AlertDescription>
+          </Alert>
+        </div>
+      ) : !selectedTeamId ? (
         <div className="border rounded-md p-8 text-center bg-muted/30">
           <h2 className="text-xl font-semibold mb-2">Select or Create a Team</h2>
           <p className="text-muted-foreground max-w-md mx-auto mb-4">
