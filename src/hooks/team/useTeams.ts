@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,7 +15,7 @@ export const useTeams = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   // Get teams the current user belongs to
-  const fetchTeams = useQuery({
+  const fetchTeamsQuery = useQuery({
     queryKey: ['user-teams'],
     queryFn: async () => {
       try {
@@ -54,6 +54,18 @@ export const useTeams = () => {
     },
     retry: 1,
   });
+
+  // Function to manually refresh teams
+  const refreshTeams = useCallback(async () => {
+    try {
+      console.log("Manually refreshing teams");
+      await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      return await queryClient.refetchQueries({ queryKey: ['user-teams'] });
+    } catch (error) {
+      console.error("Error refreshing teams:", error);
+      throw error;
+    }
+  }, [queryClient]);
 
   // Create a new team
   const createTeam = useMutation({
@@ -164,10 +176,11 @@ export const useTeams = () => {
   });
 
   return {
-    teams: fetchTeams.data,
-    isLoadingTeams: fetchTeams.isLoading,
+    teams: fetchTeamsQuery.data,
+    isLoadingTeams: fetchTeamsQuery.isLoading || fetchTeamsQuery.isFetching,
     createTeam,
     updateTeam,
+    refreshTeams,
     isLoading
   };
 };
