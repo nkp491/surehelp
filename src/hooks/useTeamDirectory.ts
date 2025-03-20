@@ -34,10 +34,7 @@ export const useTeamDirectory = () => {
 
       // Map and sanitize the database profiles to our Profile type
       const mappedProfiles: Profile[] = profileData.map(profile => 
-        sanitizeProfileData({
-          ...profile,
-          roles: [profile.role].filter(Boolean) // Convert single role to array for compatibility
-        })
+        sanitizeProfileData(profile)
       );
 
       // Extract unique departments
@@ -122,10 +119,7 @@ export const useTeamDirectory = () => {
       }
 
       // Sanitize and return the profile
-      return sanitizeProfileData({
-        ...data,
-        roles: [data.role].filter(Boolean)
-      });
+      return sanitizeProfileData(data);
     } catch (error: any) {
       console.error('Error fetching member details:', error);
       toast({
@@ -143,6 +137,7 @@ export const useTeamDirectory = () => {
         phone: null,
         profile_image_url: null,
         role: null,
+        roles: [],
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
         last_sign_in: null,
@@ -189,11 +184,9 @@ export const useTeamDirectory = () => {
       }
 
       // Map and sanitize direct reports to Profile type
-      const directReports: Profile[] = reportingData ? 
-        reportingData.map(profile => sanitizeProfileData({
-          ...profile,
-          roles: [profile.role].filter(Boolean) 
-        })) : [];
+      const directReports: Profile[] = (reportingData || []).map(profile => 
+        sanitizeProfileData(profile)
+      );
 
       return {
         manager: manager || member, // If no manager found, use the profile itself
