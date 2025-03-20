@@ -1,54 +1,54 @@
 
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
-import Profile from './pages/Profile';
-import Assessment from './pages/Assessment';
-import Auth from './pages/Auth';
-import CallbackHandler from './pages/CallbackHandler';
-import ResetPassword from './pages/auth/reset-password';
-import MainContent from './components/layout/MainContent';
-import AuthGuard from './components/auth/AuthGuard';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { queryClient } from './lib/react-query';
-import { LanguageProvider } from './contexts/LanguageContext';
-import Home from './pages/marketing/Home';
-import About from './pages/marketing/About';
-import Pricing from './pages/marketing/Pricing';
-import TermsOfUse from './pages/marketing/TermsOfUse';
+import { Route, Routes } from "react-router-dom";
+import { useEffect } from "react";
+import { Toaster } from "@/components/ui/toaster";
+import { MainContent } from "@/components/layout/MainContent";
+import { AppSidebar } from "@/components/layout/AppSidebar";
+import Assessment from "@/pages/Assessment";
+import SubmittedForms from "@/pages/SubmittedForms";
+import Dashboard from "@/pages/Dashboard";
+import Auth from "@/pages/Auth";
+import Profile from "@/pages/Profile";
+import AdminActions from "@/pages/AdminActions";
+import CommissionTracker from "@/pages/CommissionTracker";
+import RoleManagement from "@/pages/RoleManagement";
+import Team from "@/pages/Team";
+import ManagerDashboard from "@/pages/ManagerDashboard";
+import CallbackHandler from "@/pages/CallbackHandler";
+import OneOnOneManagement from "@/pages/OneOnOneManagement";
+import "./App.css";
 
 function App() {
+  // Set the document title
+  useEffect(() => {
+    document.title = "Agent Hub";
+  }, []);
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <LanguageProvider>
-        <Router>
-          <Routes>
-            {/* Marketing pages */}
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/terms" element={<TermsOfUse />} />
-            
-            {/* Authentication routes */}
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/auth/reset-password" element={<ResetPassword />} />
-            <Route path="/auth/callback" element={<CallbackHandler />} />
-            
-            {/* Protected routes with sidebar navigation */}
-            <Route path="/dashboard" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
-            <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/metrics" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/submitted-forms" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/manager-dashboard" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/admin" element={<AuthGuard><MainContent /></AuthGuard>} />
-            <Route path="/admin-actions" element={<AuthGuard><MainContent /></AuthGuard>} />
-          </Routes>
-        </Router>
-      </LanguageProvider>
-    </QueryClientProvider>
+    <div className="flex h-screen bg-background">
+      <AppSidebar />
+      <main className="flex-1 overflow-auto">
+        <Routes>
+          <Route path="/" element={<MainContent />}>
+            <Route index element={<Dashboard />} />
+            <Route path="assessment" element={<Assessment />} />
+            <Route path="submitted-forms" element={<SubmittedForms />} />
+            <Route path="metrics" element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="admin" element={<AdminActions />} />
+            <Route path="commission-tracker" element={<CommissionTracker />} />
+            <Route path="role-management" element={<RoleManagement />} />
+            <Route path="team" element={<Team />} />
+            <Route path="one-on-one" element={<OneOnOneManagement />} />
+            <Route path="manager-dashboard" element={<ManagerDashboard />} />
+            <Route path="*" element={<Dashboard />} />
+          </Route>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/callback" element={<CallbackHandler />} />
+        </Routes>
+        <Toaster />
+      </main>
+    </div>
   );
 }
 

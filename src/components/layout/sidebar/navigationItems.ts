@@ -1,5 +1,5 @@
 
-import { LucideIcon, ClipboardList, LayoutDashboard, Users2, Shield, DollarSign, BookOpen, UserCog, Settings } from "lucide-react";
+import { LucideIcon, ClipboardList, LayoutDashboard, Users2, Shield, DollarSign, BookOpen, UserCog, Settings, UserPlus } from "lucide-react";
 
 export type NavigationItem = {
   title: string;
@@ -37,6 +37,12 @@ export const navigationItems: NavigationItem[] = [
     title: "Team",
     path: "/team",
     icon: Users2,
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
+  },
+  {
+    title: "One-on-One Management",
+    path: "/one-on-one",
+    icon: UserPlus,
     requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {

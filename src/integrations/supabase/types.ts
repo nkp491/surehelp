@@ -9,6 +9,50 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      action_items: {
+        Row: {
+          assigned_to: string
+          completed_at: string | null
+          created_at: string | null
+          created_by: string
+          description: string
+          due_date: string | null
+          id: string
+          meeting_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by: string
+          description: string
+          due_date?: string | null
+          id?: string
+          meeting_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          meeting_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       bulletin_read_receipts: {
         Row: {
           bulletin_id: string | null
@@ -307,6 +351,82 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_followups: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          meeting_id: string
+          message: string | null
+          reminder_at: string
+          reminder_sent: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          meeting_id: string
+          message?: string | null
+          reminder_at: string
+          reminder_sent?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          meeting_id?: string
+          message?: string | null
+          reminder_at?: string
+          reminder_sent?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_followups_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_notes: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          created_by: string
+          id: string
+          meeting_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          created_by: string
+          id?: string
+          meeting_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          meeting_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_notes_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes_history: {
         Row: {
           created_at: string
@@ -338,6 +458,56 @@ export type Database = {
             columns: ["submission_id"]
             isOneToOne: false
             referencedRelation: "submissions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      one_on_one_meetings: {
+        Row: {
+          attendee_id: string
+          created_at: string | null
+          created_by: string
+          duration_minutes: number
+          id: string
+          location: string | null
+          scheduled_at: string
+          status: string
+          team_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          attendee_id: string
+          created_at?: string | null
+          created_by: string
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          scheduled_at: string
+          status?: string
+          team_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          attendee_id?: string
+          created_at?: string | null
+          created_by?: string
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          scheduled_at?: string
+          status?: string
+          team_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_meetings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
             referencedColumns: ["id"]
           },
         ]
