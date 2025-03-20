@@ -47,6 +47,7 @@ export const useAuthState = () => {
 
     const checkAuth = async () => {
       try {
+        console.log("Checking auth status...");
         // Try to get session from local storage first for faster initial load
         let checkedLocalStorage = false;
         
@@ -55,6 +56,7 @@ export const useAuthState = () => {
           if (localSession) {
             // Optimistic update to improve perceived performance
             if (mounted && !initialCheckDone.current) {
+              console.log("Found auth token in localStorage, setting authenticated");
               setIsAuthenticated(true);
             }
             checkedLocalStorage = true;
@@ -65,6 +67,7 @@ export const useAuthState = () => {
         
         // Verify with supabase
         const { data: { session } } = await supabase.auth.getSession();
+        console.log("Supabase session check result:", !!session);
         
         if (!session) {
           if (mounted) {
@@ -119,6 +122,7 @@ export const useAuthState = () => {
         // Save a token in localStorage for faster checks
         try {
           localStorage.setItem('sb-auth-token', 'exists');
+          sessionStorage.setItem('is-authenticated', 'true');
         } catch (error) {
           console.error("Error saving to localStorage:", error);
         }

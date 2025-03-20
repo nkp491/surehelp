@@ -16,7 +16,7 @@ import Team from "@/pages/Team";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import AuthCallback from "@/pages/auth/callback";
 import OneOnOneManagement from "@/pages/OneOnOneManagement";
-import { SidebarProvider } from "@/components/ui/sidebar/sidebar-provider";
+import { SidebarProvider } from "@/components/ui/sidebar";
 import AuthGuard from "@/components/auth/AuthGuard";
 import "./App.css";
 
@@ -35,30 +35,28 @@ function App() {
           path="/*"
           element={
             <AuthGuard>
-              <SidebarProvider>
-                <div className="flex h-screen bg-background">
+              <div className="flex h-screen bg-background">
+                <SidebarProvider>
                   <AppSidebar />
                   <main className="flex-1 overflow-auto">
                     <Routes>
-                      <Route path="/" element={<MainContent />}>
-                        <Route index element={<Dashboard />} />
-                        <Route path="assessment" element={<Assessment />} />
-                        <Route path="submitted-forms" element={<SubmittedForms />} />
-                        <Route path="metrics" element={<Dashboard />} />
-                        <Route path="profile" element={<Profile />} />
-                        <Route path="admin" element={<AdminActions />} />
-                        <Route path="commission-tracker" element={<CommissionTracker />} />
-                        <Route path="role-management" element={<RoleManagement />} />
-                        <Route path="team" element={<Team />} />
-                        <Route path="one-on-one" element={<OneOnOneManagement />} />
-                        <Route path="manager-dashboard" element={<ManagerDashboard />} />
-                        <Route path="*" element={<Dashboard />} />
-                      </Route>
+                      <Route path="/" element={<Dashboard />} />
+                      <Route path="/assessment" element={<Assessment />} />
+                      <Route path="/submitted-forms" element={<SubmittedForms />} />
+                      <Route path="/metrics" element={<Dashboard />} />
+                      <Route path="/profile" element={<Profile />} />
+                      <Route path="/admin" element={<AdminActions />} />
+                      <Route path="/commission-tracker" element={<CommissionTracker />} />
+                      <Route path="/role-management" element={<RoleManagement />} />
+                      <Route path="/team" element={<Team />} />
+                      <Route path="/one-on-one" element={<OneOnOneManagement />} />
+                      <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+                      <Route path="*" element={<Dashboard />} />
                     </Routes>
                     <Toaster />
                   </main>
-                </div>
-              </SidebarProvider>
+                </SidebarProvider>
+              </div>
             </AuthGuard>
           }
         />

@@ -20,7 +20,7 @@ const AuthCallback = () => {
         }
         
         if (data.session) {
-          console.log("Session found in callback handler, redirecting to assessment");
+          console.log("Session found in callback handler, redirecting to dashboard");
           
           // Save authentication state to storage for faster checks
           try {
@@ -30,8 +30,8 @@ const AuthCallback = () => {
             console.error("Error saving auth state to storage:", e);
           }
           
-          // Redirect to assessment page
-          navigate('/assessment', { replace: true });
+          // Redirect to dashboard
+          navigate('/', { replace: true });
         } else {
           console.log("No session found in callback, redirecting to auth");
           navigate('/auth');
