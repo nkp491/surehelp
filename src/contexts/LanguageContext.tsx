@@ -1,31 +1,62 @@
 
-import React, { createContext, useContext } from 'react';
-import { useLanguagePreference } from '@/hooks/useLanguagePreference';
-import { useLanguageToggle } from '@/hooks/useLanguageToggle';
-import type { LanguageContextType } from '@/types/language';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+
+type Language = 'en' | 'es';
+
+interface LanguageContextType {
+  language: Language;
+  setLanguage: (lang: Language) => void;
+  translate: (key: string) => string;
+}
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
-export function LanguageProvider({ children }: { children: React.ReactNode }) {
-  const { language, setLanguage, isLoading } = useLanguagePreference();
-  const { toggleLanguage } = useLanguageToggle(language, setLanguage);
-
-  // Don't render children until initial language preference is loaded
-  if (isLoading) {
-    return null; // Or a loading spinner if preferred
-  }
-
-  return (
-    <LanguageContext.Provider value={{ language, toggleLanguage }}>
-      {children}
-    </LanguageContext.Provider>
-  );
-}
-
-export function useLanguage() {
+export const useLanguage = (): LanguageContextType => {
   const context = useContext(LanguageContext);
-  if (context === undefined) {
+  if (!context) {
     throw new Error('useLanguage must be used within a LanguageProvider');
   }
   return context;
+};
+
+interface LanguageProviderProps {
+  children: ReactNode;
 }
+
+export const LanguageProvider: React.FC<LanguageProviderProps> = ({ children }) => {
+  const [language, setLanguage] = useState<Language>('en');
+
+  useEffect(() => {
+    try {
+      // Try to get saved language preference
+      const savedLanguage = localStorage.getItem('language') as Language;
+      if (savedLanguage && (savedLanguage === 'en' || savedLanguage === 'es')) {
+        setLanguage(savedLanguage);
+      }
+    } catch (error) {
+      console.error('Error accessing localStorage:', error);
+    }
+  }, []);
+
+  const saveLanguage = (lang: Language) => {
+    try {
+      localStorage.setItem('language', lang);
+      setLanguage(lang);
+    } catch (error) {
+      console.error('Error saving language preference:', error);
+      setLanguage(lang); // Still update state even if storage fails
+    }
+  };
+
+  // Simple translation function - can be expanded later
+  const translate = (key: string): string => {
+    // For now, just return the key as we don't have translation data
+    return key;
+  };
+
+  return (
+    <LanguageContext.Provider value={{ language, setLanguage: saveLanguage, translate }}>
+      {children}
+    </LanguageContext.Provider>
+  );
+};

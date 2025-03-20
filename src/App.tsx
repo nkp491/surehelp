@@ -18,6 +18,7 @@ import AuthCallback from "@/pages/auth/callback";
 import OneOnOneManagement from "@/pages/OneOnOneManagement";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import AuthGuard from "@/components/auth/AuthGuard";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import "./App.css";
 
 function App() {
@@ -28,39 +29,41 @@ function App() {
 
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/auth" element={<Auth />} />
-        <Route path="/auth/callback" element={<AuthCallback />} />
-        <Route
-          path="/*"
-          element={
-            <AuthGuard>
-              <div className="flex h-screen bg-background">
-                <SidebarProvider>
-                  <AppSidebar />
-                  <main className="flex-1 overflow-auto">
-                    <Routes>
-                      <Route path="/" element={<Dashboard />} />
-                      <Route path="/assessment" element={<Assessment />} />
-                      <Route path="/submitted-forms" element={<SubmittedForms />} />
-                      <Route path="/metrics" element={<Dashboard />} />
-                      <Route path="/profile" element={<Profile />} />
-                      <Route path="/admin" element={<AdminActions />} />
-                      <Route path="/commission-tracker" element={<CommissionTracker />} />
-                      <Route path="/role-management" element={<RoleManagement />} />
-                      <Route path="/team" element={<Team />} />
-                      <Route path="/one-on-one" element={<OneOnOneManagement />} />
-                      <Route path="/manager-dashboard" element={<ManagerDashboard />} />
-                      <Route path="*" element={<Dashboard />} />
-                    </Routes>
-                    <Toaster />
-                  </main>
-                </SidebarProvider>
-              </div>
-            </AuthGuard>
-          }
-        />
-      </Routes>
+      <LanguageProvider>
+        <Routes>
+          <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/callback" element={<AuthCallback />} />
+          <Route
+            path="/*"
+            element={
+              <AuthGuard>
+                <div className="flex h-screen bg-background">
+                  <SidebarProvider>
+                    <AppSidebar />
+                    <main className="flex-1 overflow-auto">
+                      <Routes>
+                        <Route path="/" element={<Dashboard />} />
+                        <Route path="/assessment" element={<Assessment />} />
+                        <Route path="/submitted-forms" element={<SubmittedForms />} />
+                        <Route path="/metrics" element={<Dashboard />} />
+                        <Route path="/profile" element={<Profile />} />
+                        <Route path="/admin" element={<AdminActions />} />
+                        <Route path="/commission-tracker" element={<CommissionTracker />} />
+                        <Route path="/role-management" element={<RoleManagement />} />
+                        <Route path="/team" element={<Team />} />
+                        <Route path="/one-on-one" element={<OneOnOneManagement />} />
+                        <Route path="/manager-dashboard" element={<ManagerDashboard />} />
+                        <Route path="*" element={<Dashboard />} />
+                      </Routes>
+                      <Toaster />
+                    </main>
+                  </SidebarProvider>
+                </div>
+              </AuthGuard>
+            }
+          />
+        </Routes>
+      </LanguageProvider>
     </BrowserRouter>
   );
 }

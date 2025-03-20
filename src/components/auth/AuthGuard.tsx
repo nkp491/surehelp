@@ -35,7 +35,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   const [allowRender, setAllowRender] = useState(false);
   
   console.log("AuthGuard: Auth state", { isLoading, isAuthenticated, isInitialCheck, timeoutOccurred, allowRender });
-  
+
   // Fast path for repeat visits - check session storage first
   useEffect(() => {
     try {
@@ -49,9 +49,8 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
     }
   }, [isInitialCheck]);
   
-  // Use useEffect for the initial authentication check
+  // Safety timeout - reduced to 100ms for faster UI response
   useEffect(() => {
-    // This is a safety timeout to prevent infinite loading - reduced to 200ms
     const timeoutId = setTimeout(() => {
       if (isInitialCheck && isLoading) {
         console.log('AuthGuard: Force ending initial check after timeout');
@@ -90,7 +89,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
           setAllowRender(true);
         }
       }
-    }, 200); // Reduced for faster UI response
+    }, 100);
     
     // If authentication check is complete
     if (!isLoading) {
@@ -137,7 +136,6 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   }
 
   // Always render content with authContext if allowRender is true
-  // This ensures we don't flash content and then remove it
   if (allowRender || (timeoutOccurred && isAuthenticated !== false)) {
     console.log('AuthGuard: Rendering children with AuthContext');
     return (

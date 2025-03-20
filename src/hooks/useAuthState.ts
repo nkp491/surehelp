@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { invalidateRolesCache } from "@/lib/auth-cache";
+import { toast } from "sonner";
 
 export const useAuthState = () => {
   const navigate = useNavigate();
-  const { toast } = useToast();
+  const { toast: uiToast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
   const initialCheckDone = useRef(false);
@@ -21,6 +22,10 @@ export const useAuthState = () => {
           localStorage.removeItem(key);
         }
       });
+      
+      // Also clear session storage
+      sessionStorage.removeItem('is-authenticated');
+      sessionStorage.removeItem('nav-items');
     } catch (error) {
       console.error("Failed to clear auth data:", error);
     }
@@ -30,17 +35,13 @@ export const useAuthState = () => {
     clearAuthData();
     try {
       await supabase.auth.signOut();
-      toast({
-        title: "Session Expired",
-        description: "Please sign in again",
-        variant: "destructive",
-      });
+      toast.error("Session expired. Please sign in again");
       setIsAuthenticated(false);
       navigate("/auth", { replace: true });
     } catch (error) {
       console.error("Error handling auth error:", error);
     }
-  }, [clearAuthData, navigate, toast]);
+  }, [clearAuthData, navigate]);
 
   useEffect(() => {
     let mounted = true;
@@ -48,21 +49,22 @@ export const useAuthState = () => {
     const checkAuth = async () => {
       try {
         console.log("Checking auth status...");
-        // Try to get session from local storage first for faster initial load
-        let checkedLocalStorage = false;
         
+        // Try to get session from storage first for faster initial load
         try {
+          const sessionAuth = sessionStorage.getItem('is-authenticated');
+          if (sessionAuth === 'true' && !initialCheckDone.current) {
+            console.log("Found auth token in sessionStorage, setting authenticated");
+            setIsAuthenticated(true);
+          }
+          
           const localSession = localStorage.getItem('sb-auth-token');
-          if (localSession) {
-            // Optimistic update to improve perceived performance
-            if (mounted && !initialCheckDone.current) {
-              console.log("Found auth token in localStorage, setting authenticated");
-              setIsAuthenticated(true);
-            }
-            checkedLocalStorage = true;
+          if (localSession && !initialCheckDone.current) {
+            console.log("Found auth token in localStorage, setting authenticated");
+            setIsAuthenticated(true);
           }
         } catch (error) {
-          console.error("Error checking local storage:", error);
+          console.error("Error checking storage:", error);
         }
         
         // Verify with supabase
@@ -85,11 +87,12 @@ export const useAuthState = () => {
           setIsLoading(false);
           initialCheckDone.current = true;
           
-          // Save a token in localStorage for faster checks
+          // Save auth state to storage for faster checks
           try {
             localStorage.setItem('sb-auth-token', 'exists');
+            sessionStorage.setItem('is-authenticated', 'true');
           } catch (error) {
-            console.error("Error saving to localStorage:", error);
+            console.error("Error saving to storage:", error);
           }
         }
       } catch (error) {
@@ -97,6 +100,7 @@ export const useAuthState = () => {
         if (mounted) {
           await handleAuthError();
           initialCheckDone.current = true;
+          setIsLoading(false);
         }
       }
     };
@@ -119,12 +123,17 @@ export const useAuthState = () => {
         setIsLoading(false);
         initialCheckDone.current = true;
         
-        // Save a token in localStorage for faster checks
+        // Save auth state to storage for faster checks
         try {
           localStorage.setItem('sb-auth-token', 'exists');
           sessionStorage.setItem('is-authenticated', 'true');
         } catch (error) {
-          console.error("Error saving to localStorage:", error);
+          console.error("Error saving to storage:", error);
+        }
+        
+        // If we were previously on the auth page, navigate to dashboard
+        if (window.location.pathname.includes('/auth')) {
+          navigate('/', { replace: true });
         }
       }
     });
@@ -133,7 +142,7 @@ export const useAuthState = () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast, clearAuthData, handleAuthError]);
+  }, [navigate, clearAuthData, handleAuthError]);
 
   return { isLoading, isAuthenticated };
 };
