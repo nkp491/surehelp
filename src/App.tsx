@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import Profile from './pages/Profile';
@@ -14,52 +15,39 @@ import Home from './pages/marketing/Home';
 import About from './pages/marketing/About';
 import Pricing from './pages/marketing/Pricing';
 import TermsOfUse from './pages/marketing/TermsOfUse';
-import { MetricsProvider } from "./hooks/useMetricsContext";
-import { ThemeProvider } from 'next-themes';
-import { Toaster } from 'react-hot-toast';
 
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider
-        attribute="class"
-        defaultTheme="system"
-        enableSystem
-        disableTransitionOnChange
-      >
-        <MetricsProvider>
-          <Toaster />
-          <LanguageProvider>
-            <Router>
-              <Routes>
-                {/* Marketing pages */}
-                <Route path="/" element={<Home />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/pricing" element={<Pricing />} />
-                <Route path="/terms" element={<TermsOfUse />} />
-                
-                {/* Authentication routes */}
-                <Route path="/auth" element={<Auth />} />
-                <Route path="/auth/reset-password" element={<ResetPassword />} />
-                <Route path="/auth/callback" element={<CallbackHandler />} />
-                
-                {/* Protected routes with sidebar navigation */}
-                <Route path="/dashboard" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
-                <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/metrics" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/submitted-forms" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/manager-dashboard" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/admin" element={<AuthGuard><MainContent /></AuthGuard>} />
-                <Route path="/admin-actions" element={<AuthGuard><MainContent /></AuthGuard>} />
-              </Routes>
-            </Router>
-          </LanguageProvider>
-        </MetricsProvider>
-      </ThemeProvider>
+      <LanguageProvider>
+        <Router>
+          <Routes>
+            {/* Marketing pages */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/terms" element={<TermsOfUse />} />
+            
+            {/* Authentication routes */}
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/auth/reset-password" element={<ResetPassword />} />
+            <Route path="/auth/callback" element={<CallbackHandler />} />
+            
+            {/* Protected routes with sidebar navigation */}
+            <Route path="/dashboard" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
+            <Route path="/assessment" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/profile" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/metrics" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/submitted-forms" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/manager-dashboard" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/admin" element={<AuthGuard><MainContent /></AuthGuard>} />
+            <Route path="/admin-actions" element={<AuthGuard><MainContent /></AuthGuard>} />
+          </Routes>
+        </Router>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }

@@ -75,46 +75,49 @@ export default function TeamPage() {
           </p>
         </div>
       ) : (
-        <div className="space-y-6">
-          {/* Team Members and Team Bulletins side by side */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-12 gap-6">
+          {/* Left Column */}
+          <div className="col-span-12 md:col-span-3 space-y-6">
             {/* Team Members Section */}
             <TeamMembersList teamId={selectedTeamId} />
             
             {/* Team Bulletin Section */}
             <TeamBulletinBoard teamId={selectedTeamId} />
           </div>
-          
-          {/* Team Metrics Overview below the members and bulletins */}
-          <TeamMetricsOverview teamId={selectedTeamId} />
-          
-          {/* Additional Dashboard Sections */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            {/* Success Calculator Section */}
-            <Card className="p-4">
-              <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
-                SUCCESS CALCULATOR
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </h2>
-              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
-                <p className="text-muted-foreground">Success calculator coming soon</p>
-              </div>
-            </Card>
+
+          {/* Middle and Right Columns */}
+          <div className="col-span-12 md:col-span-9">
+            {/* Team Metrics Overview */}
+            <TeamMetricsOverview teamId={selectedTeamId} />
             
-            {/* 1:1 Notes Section */}
-            <Card className="p-4">
-              <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
-                1:1 NOTES
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </h2>
-              <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
-                <p className="text-muted-foreground">One-on-one notes coming soon</p>
-              </div>
-            </Card>
+            {/* Additional Dashboard Sections */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+              {/* Success Calculator Section */}
+              <Card className="p-4">
+                <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
+                  SUCCESS CALCULATOR
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </h2>
+                <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="text-muted-foreground">Success calculator coming soon</p>
+                </div>
+              </Card>
+              
+              {/* 1:1 Notes Section */}
+              <Card className="p-4">
+                <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
+                  1:1 NOTES
+                  <Button variant="ghost" size="icon">
+                    <Settings className="h-5 w-5" />
+                  </Button>
+                </h2>
+                <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
+                  <p className="text-muted-foreground">One-on-one notes coming soon</p>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       )}
