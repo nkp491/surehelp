@@ -90,6 +90,8 @@ export type ActionItem = {
   // Additional fields from profiles join
   assignee_name?: string;
   assignee_image?: string;
+  creator_name?: string;
+  meeting_title?: string;
 };
 
 export type MeetingFollowup = {

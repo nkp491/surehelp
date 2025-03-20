@@ -2,7 +2,7 @@
 import { Route, Routes } from "react-router-dom";
 import { useEffect } from "react";
 import { Toaster } from "@/components/ui/toaster";
-import { MainContent } from "@/components/layout/MainContent";
+import MainContent from "@/components/layout/MainContent";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import Assessment from "@/pages/Assessment";
 import SubmittedForms from "@/pages/SubmittedForms";
