@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from "react";
-import { Settings, Filter } from 'lucide-react';
+import { Settings, Filter, ArrowDownUp } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TeamSelector } from "@/components/team/TeamSelector";
@@ -24,14 +23,21 @@ import {
 } from "@/components/ui/popover";
 import { format } from "date-fns";
 import { Calendar } from "@/components/ui/calendar";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TeamHierarchyView } from "@/components/team/TeamHierarchyView";
 
 export default function TeamPage() {
   const { teams, isLoadingTeams, refreshTeams } = useTeamManagement();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
   const [timePeriod, setTimePeriod] = useState("7d");
   const [date, setDate] = useState<Date | undefined>(new Date());
+  const [viewMode, setViewMode] = useState<"hierarchy" | "single">("single");
+  const { hasRequiredRole } = useRoleCheck();
+  
+  const canViewHierarchy = hasRequiredRole(['manager_pro_gold', 'manager_pro_platinum', 'system_admin']);
 
-  // Select the first team by default when teams are loaded
   useEffect(() => {
     if (teams && teams.length > 0 && !selectedTeamId) {
       console.log("Auto-selecting first team:", teams[0].id);
@@ -39,7 +45,6 @@ export default function TeamPage() {
     }
   }, [teams, selectedTeamId]);
 
-  // Force refresh teams when component mounts
   useEffect(() => {
     refreshTeams().catch(err => {
       console.error("Error refreshing teams on page load:", err);
@@ -55,13 +60,31 @@ export default function TeamPage() {
             Manage your team, track performance, and communicate with your agents.
           </p>
         </div>
-        <div className="flex gap-2 items-center">
+        <div className="flex flex-col md:flex-row gap-2 md:items-center">
           <TeamSelector 
             selectedTeamId={selectedTeamId} 
             onTeamSelect={setSelectedTeamId}
           />
           
           <div className="flex gap-2">
+            {canViewHierarchy && (
+              <ToggleGroup 
+                type="single" 
+                value={viewMode}
+                onValueChange={(value) => {
+                  if (value) setViewMode(value as "hierarchy" | "single");
+                }}
+                className="border rounded-md"
+              >
+                <ToggleGroupItem value="single" size="sm">
+                  Single Team
+                </ToggleGroupItem>
+                <ToggleGroupItem value="hierarchy" size="sm">
+                  Hierarchy View
+                </ToggleGroupItem>
+              </ToggleGroup>
+            )}
+            
             <Select 
               value={timePeriod} 
               onValueChange={setTimePeriod}
@@ -126,51 +149,51 @@ export default function TeamPage() {
           </p>
         </div>
       ) : (
-        <div className="grid grid-cols-12 gap-6">
-          {/* Left Column */}
-          <div className="col-span-12 md:col-span-3 space-y-6">
-            {/* Team Members Section */}
-            <TeamMembersList teamId={selectedTeamId} />
-            
-            {/* Team Bulletin Section */}
-            <TeamBulletinBoard teamId={selectedTeamId} />
-          </div>
-
-          {/* Middle and Right Columns */}
-          <div className="col-span-12 md:col-span-9">
-            {/* Team Metrics Overview */}
-            <TeamMetricsOverview teamId={selectedTeamId} />
-            
-            {/* Additional Dashboard Sections */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              {/* Success Calculator Section */}
-              <Card className="p-4">
-                <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
-                  SUCCESS CALCULATOR
-                  <Button variant="ghost" size="icon">
-                    <Settings className="h-5 w-5" />
-                  </Button>
-                </h2>
-                <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
-                  <p className="text-muted-foreground">Success calculator coming soon</p>
-                </div>
-              </Card>
-              
-              {/* 1:1 Notes Section */}
-              <Card className="p-4">
-                <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
-                  1:1 NOTES
-                  <Button variant="ghost" size="icon">
-                    <Settings className="h-5 w-5" />
-                  </Button>
-                </h2>
-                <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
-                  <p className="text-muted-foreground">One-on-one notes coming soon</p>
-                </div>
-              </Card>
+        <>
+          {viewMode === 'hierarchy' && canViewHierarchy ? (
+            <div className="mb-6">
+              <TeamHierarchyView 
+                rootTeamId={selectedTeamId} 
+                timePeriod={timePeriod} 
+                customDate={timePeriod === 'custom' ? date : undefined} 
+              />
             </div>
-          </div>
-        </div>
+          ) : (
+            <div className="grid grid-cols-12 gap-6">
+              <div className="col-span-12 md:col-span-3 space-y-6">
+                <TeamMembersList teamId={selectedTeamId} />
+                <TeamBulletinBoard teamId={selectedTeamId} />
+              </div>
+              <div className="col-span-12 md:col-span-9">
+                <TeamMetricsOverview teamId={selectedTeamId} />
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                  <Card className="p-4">
+                    <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
+                      SUCCESS CALCULATOR
+                      <Button variant="ghost" size="icon">
+                        <Settings className="h-5 w-5" />
+                      </Button>
+                    </h2>
+                    <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
+                      <p className="text-muted-foreground">Success calculator coming soon</p>
+                    </div>
+                  </Card>
+                  <Card className="p-4">
+                    <h2 className="text-xl font-bold mb-4 flex items-center justify-between">
+                      1:1 NOTES
+                      <Button variant="ghost" size="icon">
+                        <Settings className="h-5 w-5" />
+                      </Button>
+                    </h2>
+                    <div className="h-[300px] flex items-center justify-center border-2 border-dashed border-gray-200 rounded-md">
+                      <p className="text-muted-foreground">One-on-one notes coming soon</p>
+                    </div>
+                  </Card>
+                </div>
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

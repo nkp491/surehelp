@@ -19,6 +19,7 @@ import { format, parseISO, subDays } from "date-fns";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { MetricCount } from "@/types/metrics";
 import RatioCard from "../metrics/RatioCard";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface TeamMetricsOverviewProps {
   teamId?: string;
@@ -26,6 +27,10 @@ interface TeamMetricsOverviewProps {
 
 export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
   const { teamMetrics, isLoadingTeamMetrics, teamTrends, isLoadingTeamTrends } = useTeamMetrics(teamId);
+  const { hasRequiredRole } = useRoleCheck();
+  
+  // Check if user has premium tier permissions
+  const hasPremiumAccess = hasRequiredRole(['manager_pro_gold', 'manager_pro_platinum', 'system_admin']);
 
   // Calculate aggregate team metrics
   const aggregateTeamMetrics: MetricCount = {
@@ -65,8 +70,13 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Team Performance</CardTitle>
+        {hasPremiumAccess && (
+          <Badge variant="outline" className="ml-2">
+            Premium Analytics
+          </Badge>
+        )}
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="members">
@@ -74,6 +84,9 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
             <TabsTrigger value="members">Member Stats</TabsTrigger>
             <TabsTrigger value="trends">Performance Trends</TabsTrigger>
             <TabsTrigger value="ratios">Team Ratios</TabsTrigger>
+            {hasPremiumAccess && (
+              <TabsTrigger value="advanced">Advanced Analytics</TabsTrigger>
+            )}
           </TabsList>
           
           <TabsContent value="members">
@@ -270,6 +283,20 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
               </div>
             )}
           </TabsContent>
+          
+          {hasPremiumAccess && (
+            <TabsContent value="advanced">
+              <div className="p-6 text-center border border-dashed rounded-md">
+                <h3 className="text-lg font-semibold mb-2">Premium Analytics</h3>
+                <p className="text-muted-foreground">
+                  Advanced analytics features will be implemented in Phase 2.
+                </p>
+                <p className="text-muted-foreground mt-2">
+                  This will include predictive metrics, performance forecasting, and custom reporting.
+                </p>
+              </div>
+            </TabsContent>
+          )}
         </Tabs>
       </CardContent>
     </Card>

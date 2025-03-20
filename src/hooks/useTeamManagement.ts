@@ -2,6 +2,8 @@
 import { useTeams } from "./team/useTeams";
 import { useTeamMembers } from "./team/useTeamMembers";
 import { useTeamPermissions } from "./team/useTeamPermissions";
+import { useTeamHierarchy } from "./team/useTeamHierarchy";
+import { hasManagerPermission } from "@/utils/team/managerTierUtils";
 
 /**
  * Main hook for team management, combining multiple specialized hooks
@@ -28,14 +30,72 @@ export const useTeamManagement = () => {
     isLoading: isLoadingMemberOps 
   } = useTeamMembers();
   
-  const { isTeamManager } = useTeamPermissions();
+  const { 
+    isTeamManager,
+    isSystemAdmin,
+    hasManagerTier,
+    isTeamOwner,
+    canViewTeamHierarchy,
+    canEditTeamSettings
+  } = useTeamPermissions();
+
+  // Add the team hierarchy hook
+  const {
+    hierarchy,
+    loading: isLoadingHierarchy,
+    error: hierarchyError,
+    fetchHierarchy,
+    canViewHierarchy
+  } = useTeamHierarchy();
 
   // Combined loading state
-  const isLoading = isLoadingTeamOps || isLoadingMemberOps;
+  const isLoading = isLoadingTeamOps || isLoadingMemberOps || isLoadingHierarchy;
 
   // Create a function to get team members that returns the query
   const getTeamMembersQuery = (teamId?: string) => {
     return fetchTeamMembers(teamId);
+  };
+
+  // Get user's manager tier and permissions for a specific team
+  const getManagerPermissionsForTeam = async (teamId: string) => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+    
+    try {
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('role')
+        .eq('team_id', teamId)
+        .eq('user_id', user.id)
+        .single();
+      
+      if (error || !data) {
+        // Check if user is system admin
+        const isAdmin = await isSystemAdmin();
+        return isAdmin ? { role: 'system_admin', permissions: getManagerPermissionsForRole('system_admin') } : null;
+      }
+      
+      return {
+        role: data.role,
+        permissions: getManagerPermissionsForRole(data.role)
+      };
+    } catch (error) {
+      console.error("Error getting manager permissions:", error);
+      return null;
+    }
+  };
+  
+  // Get permissions for a role
+  const getManagerPermissionsForRole = (role: string) => {
+    return {
+      canViewHierarchy: hasManagerPermission(role, 'canViewHierarchy'),
+      canViewSubteams: hasManagerPermission(role, 'canViewSubteams'),
+      canViewAdvancedMetrics: hasManagerPermission(role, 'canViewAdvancedMetrics'),
+      canExportTeamData: hasManagerPermission(role, 'canExportTeamData'),
+      canManageSubteams: hasManagerPermission(role, 'canManageSubteams'),
+      maxTeamDepth: hasManagerPermission(role, 'maxTeamDepth'),
+      maxMembersPerTeam: hasManagerPermission(role, 'maxMembersPerTeam')
+    };
   };
 
   return {
@@ -57,8 +117,26 @@ export const useTeamManagement = () => {
     
     // Permissions
     isTeamManager,
+    isSystemAdmin,
+    hasManagerTier,
+    isTeamOwner,
+    canViewTeamHierarchy,
+    canEditTeamSettings,
+    getManagerPermissionsForTeam,
+    getManagerPermissionsForRole,
+    
+    // Hierarchy
+    hierarchy,
+    isLoadingHierarchy,
+    hierarchyError,
+    fetchHierarchy,
+    canViewHierarchy,
     
     // Loading state
     isLoading
   };
 };
+
+// Add missing import
+import { supabase } from "@/integrations/supabase/client";
+import { getManagerPermissions } from "@/utils/team/managerTierUtils";
