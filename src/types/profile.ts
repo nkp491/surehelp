@@ -51,6 +51,6 @@ export type Profile = {
 };
 
 export type ReportingStructure = {
-  manager: Profile;
+  manager: Profile | null;
   directReports: Profile[];
 };
