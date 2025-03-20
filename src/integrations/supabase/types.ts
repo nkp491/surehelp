@@ -9,6 +9,41 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      bulletin_read_receipts: {
+        Row: {
+          bulletin_id: string | null
+          created_at: string | null
+          id: string
+          read_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bulletin_id?: string | null
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bulletin_id?: string | null
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulletin_read_receipts_bulletin_id_fkey"
+            columns: ["bulletin_id"]
+            isOneToOne: false
+            referencedRelation: "team_bulletins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_metrics: {
         Row: {
           ap: number | null
@@ -390,30 +425,36 @@ export type Database = {
       }
       team_bulletins: {
         Row: {
+          category: string | null
           content: string
           created_at: string
           created_by: string
           id: string
+          mentioned_users: string[] | null
           pinned: boolean
           team_id: string
           title: string
           updated_at: string
         }
         Insert: {
+          category?: string | null
           content: string
           created_at?: string
           created_by: string
           id?: string
+          mentioned_users?: string[] | null
           pinned?: boolean
           team_id: string
           title: string
           updated_at?: string
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string
           created_by?: string
           id?: string
+          mentioned_users?: string[] | null
           pinned?: boolean
           team_id?: string
           title?: string

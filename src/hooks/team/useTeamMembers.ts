@@ -51,13 +51,11 @@ export const useTeamMembers = (teamId?: string) => {
   };
 
   // Query for team members
-  const fetchTeamMembers = (teamId?: string) => {
-    return useQuery({
-      queryKey: ['team-members', teamId],
-      queryFn: () => getTeamMembers(teamId!),
-      enabled: !!teamId,
-    });
-  };
+  const { data: members, ...queryResult } = useQuery({
+    queryKey: ['team-members', teamId],
+    queryFn: () => getTeamMembers(teamId!),
+    enabled: !!teamId,
+  });
 
   // Add member to team
   const addTeamMember = useMutation({
@@ -163,8 +161,9 @@ export const useTeamMembers = (teamId?: string) => {
   });
 
   return {
+    members,
     getTeamMembers,
-    fetchTeamMembers,
+    fetchTeamMembers: (teamId?: string) => ({ data: members, ...queryResult }),
     addTeamMember,
     removeTeamMember,
     updateTeamMemberRole,

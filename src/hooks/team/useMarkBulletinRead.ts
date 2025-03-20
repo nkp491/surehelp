@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useMarkBulletinRead = (teamId?: string) => {
+  const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,6 +49,11 @@ export const useMarkBulletinRead = (teamId?: string) => {
     },
     onError: (error) => {
       console.error('Error marking bulletin as read:', error);
+      toast({
+        title: "Error",
+        description: "There was a problem marking the bulletin as read.",
+        variant: "destructive",
+      });
       setIsLoading(false);
     }
   });

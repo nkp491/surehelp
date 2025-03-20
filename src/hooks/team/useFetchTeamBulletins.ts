@@ -41,38 +41,64 @@ export const useFetchTeamBulletins = (teamId?: string) => {
 
       // Fetch read receipts for all bulletins
       const bulletinIds = bulletinsData.map(bulletin => bulletin.id);
-      const { data: readReceipts, error: receiptsError } = await supabase
-        .from('bulletin_read_receipts')
-        .select(`
-          id, 
-          bulletin_id, 
-          user_id, 
-          read_at,
-          profiles:user_id (
-            id, first_name, last_name, profile_image_url
-          )
-        `)
-        .in('bulletin_id', bulletinIds);
       
-      if (receiptsError) throw receiptsError;
-
-      // Group read receipts by bulletin ID
-      const receiptsByBulletin: Record<string, BulletinReadReceipt[]> = {};
-      readReceipts.forEach((receipt: any) => {
-        const bulletinId = receipt.bulletin_id;
-        if (!receiptsByBulletin[bulletinId]) {
-          receiptsByBulletin[bulletinId] = [];
-        }
+      // Only fetch read receipts if there are bulletins
+      let receiptsByBulletin: Record<string, BulletinReadReceipt[]> = {};
+      
+      if (bulletinIds.length > 0) {
+        const { data: readReceipts, error: receiptsError } = await supabase
+          .from('bulletin_read_receipts')
+          .select(`
+            id, 
+            bulletin_id, 
+            user_id, 
+            read_at
+          `)
+          .in('bulletin_id', bulletinIds);
         
-        receiptsByBulletin[bulletinId].push({
-          user_id: receipt.user_id,
-          user_name: receipt.profiles ? 
-            `${receipt.profiles.first_name || ''} ${receipt.profiles.last_name || ''}`.trim() : 
-            'Unknown',
-          user_image: receipt.profiles?.profile_image_url,
-          read_at: receipt.read_at
-        });
-      });
+        if (receiptsError) throw receiptsError;
+
+        // Get profiles for users who read the bulletins
+        const readerIds = readReceipts.map(receipt => receipt.user_id);
+        let readerProfiles: Record<string, any> = {};
+        
+        if (readerIds.length > 0) {
+          const { data: userProfiles, error: userProfilesError } = await supabase
+            .from('profiles')
+            .select('id, first_name, last_name, profile_image_url')
+            .in('id', readerIds);
+          
+          if (userProfilesError) throw userProfilesError;
+          
+          readerProfiles = userProfiles.reduce((acc, profile) => {
+            acc[profile.id] = profile;
+            return acc;
+          }, {} as Record<string, any>);
+        }
+
+        // Group read receipts by bulletin ID
+        receiptsByBulletin = {};
+        
+        if (readReceipts) {
+          readReceipts.forEach((receipt) => {
+            const bulletinId = receipt.bulletin_id;
+            if (!receiptsByBulletin[bulletinId]) {
+              receiptsByBulletin[bulletinId] = [];
+            }
+            
+            const profile = readerProfiles[receipt.user_id] || {};
+            
+            receiptsByBulletin[bulletinId].push({
+              user_id: receipt.user_id,
+              user_name: profile ? 
+                `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 
+                'Unknown',
+              user_image: profile?.profile_image_url,
+              read_at: receipt.read_at
+            });
+          });
+        }
+      }
 
       // Merge the bulletins with their creator's profile information and read receipts
       return bulletinsData.map((bulletin) => ({
