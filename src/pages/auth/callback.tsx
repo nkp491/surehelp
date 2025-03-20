@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -9,25 +10,7 @@ const AuthCallback = () => {
   useEffect(() => {
     const handleCallback = async () => {
       try {
-        // Process the hash fragment from the URL if it exists
-        const hash = window.location.hash;
-        if (hash && hash.includes('access_token')) {
-          // Handle the hash fragment if present
-          const { data, error } = await supabase.auth.getSession();
-          
-          if (error) {
-            console.error('Error during auth callback:', error);
-            navigate('/auth?error=callback_error');
-            return;
-          }
-          
-          if (data.session) {
-            navigate('/assessment');
-            return;
-          }
-        }
-        
-        // Otherwise, attempt to get the session directly
+        // Process the callback and set the session
         const { data, error } = await supabase.auth.getSession();
         
         if (error) {
@@ -37,8 +20,20 @@ const AuthCallback = () => {
         }
         
         if (data.session) {
-          navigate('/assessment');
+          console.log("Session found in callback handler, redirecting to assessment");
+          
+          // Save authentication state to storage for faster checks
+          try {
+            localStorage.setItem('sb-auth-token', 'exists');
+            sessionStorage.setItem('is-authenticated', 'true');
+          } catch (e) {
+            console.error("Error saving auth state to storage:", e);
+          }
+          
+          // Redirect to assessment page
+          navigate('/assessment', { replace: true });
         } else {
+          console.log("No session found in callback, redirecting to auth");
           navigate('/auth');
         }
       } catch (e) {
