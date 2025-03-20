@@ -183,11 +183,16 @@ export const useTeamDirectory = () => {
         throw reportingError;
       }
 
-      // Map and sanitize direct reports
-      // Convert the data to Profile[] type by explicitly mapping and sanitizing each item
-      const directReports = Array.isArray(reportingData) 
-        ? reportingData.map(profile => sanitizeProfileData(profile)) 
-        : [];
+      // Initialize an empty array for direct reports
+      const directReports: Profile[] = [];
+      
+      // Process each direct report individually to avoid complex type instantiation
+      if (Array.isArray(reportingData) && reportingData.length > 0) {
+        for (const profile of reportingData) {
+          const sanitizedProfile = sanitizeProfileData(profile);
+          directReports.push(sanitizedProfile);
+        }
+      }
 
       // Create and return the reporting structure
       return {
