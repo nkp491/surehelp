@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { 
   Card, 
@@ -108,7 +109,7 @@ export function TeamHierarchyView({
               )}
             </Button>
           ) : (
-            <div className="w-7"></div>
+            <div className="w-7"></div> {/* Spacer */}
           )}
           
           <Button 
