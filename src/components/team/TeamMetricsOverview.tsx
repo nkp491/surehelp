@@ -7,28 +7,13 @@ import { Settings } from "lucide-react";
 import { MetricCount } from "@/types/metrics";
 import { TeamMemberStats } from "./TeamMemberStats";
 import { TeamMetricsRatios } from "./TeamMetricsRatios";
-import { useState } from "react";
-import { DateRangePicker } from "@/components/ui/date-range-picker";
-import { format, subDays } from "date-fns";
 
 interface TeamMetricsOverviewProps {
   teamId?: string;
 }
 
 export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
-  // Date range state for filtering metrics
-  const [dateRange, setDateRange] = useState<{
-    from: Date;
-    to: Date;
-  }>({
-    from: subDays(new Date(), 30),
-    to: new Date(),
-  });
-
-  const { teamMetrics, isLoadingTeamMetrics } = useTeamMetrics(teamId, {
-    fromDate: format(dateRange.from, 'yyyy-MM-dd'),
-    toDate: format(dateRange.to, 'yyyy-MM-dd')
-  });
+  const { teamMetrics, isLoadingTeamMetrics } = useTeamMetrics(teamId);
 
   // Calculate aggregated metrics for the team
   const aggregatedMetrics: MetricCount | null = teamMetrics?.length ? {
@@ -45,15 +30,9 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Team Performance</CardTitle>
-        <div className="flex items-center gap-2">
-          <DateRangePicker 
-            value={dateRange} 
-            onChange={setDateRange} 
-          />
-          <Button variant="ghost" size="icon">
-            <Settings className="h-5 w-5" />
-          </Button>
-        </div>
+        <Button variant="ghost" size="icon">
+          <Settings className="h-5 w-5" />
+        </Button>
       </CardHeader>
       <CardContent>
         <Tabs defaultValue="members">
