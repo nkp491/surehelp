@@ -3,7 +3,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import RatiosGrid from "@/components/metrics/RatiosGrid";
 import { MetricCount } from "@/types/metrics";
 import { Badge } from "@/components/ui/badge";
-import { Info } from "lucide-react";
+import { InfoCircle } from "lucide-react";
 import { 
   Tooltip, 
   TooltipContent, 
@@ -49,7 +49,7 @@ export function TeamMetricsRatios({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Badge variant="outline" className="flex items-center gap-1">
-                    <Info className="h-3 w-3" />
+                    <InfoCircle className="h-3 w-3" />
                     Hierarchical View
                   </Badge>
                 </TooltipTrigger>

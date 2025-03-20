@@ -1,4 +1,3 @@
-
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
 import { MetricsProvider } from "@/contexts/MetricsContext";
@@ -87,7 +86,7 @@ const BusinessMetricsContent = () => {
           <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
             <MetricsGrid aggregatedMetrics={aggregatedMetrics} />
             <Separator className="my-8" />
-            <RatiosGrid metrics={aggregatedMetrics} />
+            <RatiosGrid />
           </div>
 
           <MetricsChart 
