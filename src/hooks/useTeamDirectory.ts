@@ -183,13 +183,15 @@ export const useTeamDirectory = () => {
         throw reportingError;
       }
 
-      // Map and sanitize direct reports to Profile type
-      const directReports: Profile[] = (reportingData || []).map(profile => 
-        sanitizeProfileData(profile)
-      );
+      // Map and sanitize direct reports
+      // Convert the data to Profile[] type by explicitly mapping and sanitizing each item
+      const directReports = Array.isArray(reportingData) 
+        ? reportingData.map(profile => sanitizeProfileData(profile)) 
+        : [];
 
+      // Create and return the reporting structure
       return {
-        manager: manager || member, // If no manager found, use the profile itself
+        manager: manager || member,
         directReports: directReports
       };
     } catch (error: any) {
