@@ -2,6 +2,8 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import RatiosGrid from "@/components/metrics/RatiosGrid";
 import { MetricCount } from "@/types/metrics";
+import { calculateRatios } from "@/utils/metricsUtils";
+import RatioCard from "@/components/metrics/RatioCard";
 
 interface TeamMetricsRatiosProps {
   isLoading: boolean;
@@ -26,9 +28,21 @@ export function TeamMetricsRatios({ isLoading, teamId, aggregatedMetrics }: Team
     );
   }
 
+  // Calculate ratios directly from aggregated metrics
+  const ratios = calculateRatios(aggregatedMetrics);
+  
+  // Display the most important ratios in a grid
   return (
     <div className="space-y-4">
-      <RatiosGrid teamId={teamId} />
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+        {ratios.slice(0, 12).map((ratio, index) => (
+          <RatioCard
+            key={`${ratio.label}-${index}`}
+            label={ratio.label}
+            value={ratio.value}
+          />
+        ))}
+      </div>
     </div>
   );
 }

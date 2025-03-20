@@ -30,15 +30,27 @@ export interface TeamTrend {
   sales: number;
 }
 
-export const useTeamMetrics = (teamId?: string) => {
+interface TeamMetricsOptions {
+  fromDate?: string;
+  toDate?: string;
+}
+
+export const useTeamMetrics = (teamId?: string, options?: TeamMetricsOptions) => {
+  // Set default date range if not provided
+  const fromDate = options?.fromDate || format(subDays(new Date(), 30), 'yyyy-MM-dd');
+  const toDate = options?.toDate || format(new Date(), 'yyyy-MM-dd');
+
   // Query to fetch team member metrics
   const { data: teamMetrics, isLoading: isLoadingTeamMetrics } = useQuery({
-    queryKey: ['team-metrics', teamId],
+    queryKey: ['team-metrics', teamId, fromDate, toDate],
     queryFn: async (): Promise<TeamMemberMetrics[]> => {
       if (!teamId) return [];
       
+      // In a real implementation, this would fetch metrics from the database
+      // with the date range filter applied
+      console.log(`Fetching team metrics for team ${teamId} from ${fromDate} to ${toDate}`);
+      
       // For now, return mock data
-      // In a real implementation, you would fetch this data from your API
       return mockTeamMetrics;
     },
     enabled: !!teamId,
@@ -46,13 +58,15 @@ export const useTeamMetrics = (teamId?: string) => {
 
   // Query to fetch team trends over time
   const { data: teamTrends, isLoading: isLoadingTeamTrends } = useQuery({
-    queryKey: ['team-trends', teamId],
+    queryKey: ['team-trends', teamId, fromDate, toDate],
     queryFn: async (): Promise<TeamTrend[]> => {
       if (!teamId) return [];
       
-      // For now, return mock data
-      // In a real implementation, you would fetch this data from your API
-      return mockTeamTrends;
+      // For now, return mock data filtered by date range
+      return mockTeamTrends.filter(trend => {
+        const trendDate = trend.date;
+        return trendDate >= fromDate && trendDate <= toDate;
+      });
     },
     enabled: !!teamId,
   });
