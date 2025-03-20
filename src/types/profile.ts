@@ -33,7 +33,7 @@ export type Profile = {
       end: string;
     };
   } | null;
-  // New fields for Team Directory
+  // Team Directory fields
   skills: string[] | null;
   bio: string | null;
   job_title: string | null;

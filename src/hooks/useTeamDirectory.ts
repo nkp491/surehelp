@@ -1,9 +1,9 @@
 
-// Create this file to handle team directory functionality
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile } from '@/types/profile';
+import { Profile, ReportingStructure } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
+import { useProfileSanitization } from './profile/useProfileSanitization';
 
 export const useTeamDirectory = () => {
   const [members, setMembers] = useState<Profile[]>([]);
@@ -12,6 +12,7 @@ export const useTeamDirectory = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
+  const { sanitizeProfileData } = useProfileSanitization();
 
   // Function to fetch all team members
   const fetchTeamMembers = async () => {
@@ -31,37 +32,13 @@ export const useTeamDirectory = () => {
         throw new Error('No data returned from profiles');
       }
 
-      // Map the database profiles to our Profile type
-      const mappedProfiles: Profile[] = profileData.map(profile => ({
-        id: profile.id,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        email: profile.email,
-        phone: profile.phone,
-        profile_image_url: profile.profile_image_url,
-        role: profile.role,
-        roles: profile.roles,
-        created_at: profile.created_at,
-        updated_at: profile.updated_at,
-        last_sign_in: profile.last_sign_in,
-        language_preference: profile.language_preference,
-        privacy_settings: profile.privacy_settings,
-        notification_preferences: profile.notification_preferences,
-        skills: profile.skills || [],
-        bio: profile.bio || null,
-        job_title: profile.job_title || null,
-        department: profile.department || null,
-        location: profile.location || null,
-        reports_to: profile.reports_to || null,
-        hire_date: profile.hire_date || null,
-        extended_contact: profile.extended_contact || {
-          work_email: null,
-          personal_email: null,
-          work_phone: null,
-          home_phone: null,
-          emergency_contact: null
-        }
-      }));
+      // Map and sanitize the database profiles to our Profile type
+      const mappedProfiles: Profile[] = profileData.map(profile => 
+        sanitizeProfileData({
+          ...profile,
+          roles: [profile.role].filter(Boolean) // Convert single role to array for compatibility
+        })
+      );
 
       // Extract unique departments
       const uniqueDepartments: string[] = Array.from(
@@ -89,7 +66,7 @@ export const useTeamDirectory = () => {
   };
 
   // Function to search team members by name, email, role, etc.
-  const searchMembers = (query: string) => {
+  const searchTeamMembers = (query: string) => {
     if (!query.trim()) {
       setFilteredMembers(members);
       return;
@@ -144,37 +121,11 @@ export const useTeamDirectory = () => {
         throw new Error('Member not found');
       }
 
-      // Map to proper Profile type
-      return {
-        id: data.id,
-        first_name: data.first_name,
-        last_name: data.last_name,
-        email: data.email,
-        phone: data.phone,
-        profile_image_url: data.profile_image_url,
-        role: data.role,
-        roles: data.roles,
-        created_at: data.created_at,
-        updated_at: data.updated_at,
-        last_sign_in: data.last_sign_in,
-        language_preference: data.language_preference,
-        privacy_settings: data.privacy_settings,
-        notification_preferences: data.notification_preferences,
-        skills: data.skills || [],
-        bio: data.bio || null,
-        job_title: data.job_title || null,
-        department: data.department || null,
-        location: data.location || null,
-        reports_to: data.reports_to || null,
-        hire_date: data.hire_date || null,
-        extended_contact: data.extended_contact || {
-          work_email: null,
-          personal_email: null,
-          work_phone: null,
-          home_phone: null,
-          emergency_contact: null
-        }
-      };
+      // Sanitize and return the profile
+      return sanitizeProfileData({
+        ...data,
+        roles: [data.role].filter(Boolean)
+      });
     } catch (error: any) {
       console.error('Error fetching member details:', error);
       toast({
@@ -212,6 +163,56 @@ export const useTeamDirectory = () => {
     }
   };
 
+  // Function to get reporting structure for a team member
+  const getReportingStructure = async (profileId: string): Promise<ReportingStructure | null> => {
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      // Get the requested profile
+      const member = await getMemberById(profileId);
+      
+      // If profile has a reports_to field, get the manager
+      let manager: Profile | null = null;
+      if (member.reports_to) {
+        manager = await getMemberById(member.reports_to);
+      }
+      
+      // Get direct reports (people who report to this profile)
+      const { data: reportingData, error: reportingError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('reports_to', profileId);
+
+      if (reportingError) {
+        throw reportingError;
+      }
+
+      // Map and sanitize direct reports to Profile type
+      const directReports: Profile[] = reportingData ? 
+        reportingData.map(profile => sanitizeProfileData({
+          ...profile,
+          roles: [profile.role].filter(Boolean) 
+        })) : [];
+
+      return {
+        manager: manager || member, // If no manager found, use the profile itself
+        directReports: directReports
+      };
+    } catch (error: any) {
+      console.error('Error fetching reporting structure:', error);
+      setError(error.message || 'Failed to load reporting structure');
+      toast({
+        title: 'Error',
+        description: 'Failed to load reporting structure',
+        variant: 'destructive'
+      });
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Load team members on component mount
   useEffect(() => {
     fetchTeamMembers();
@@ -224,8 +225,9 @@ export const useTeamDirectory = () => {
     isLoading,
     error,
     refreshMembers: fetchTeamMembers,
-    searchMembers,
+    searchTeamMembers,
     filterByDepartment,
-    getMemberById
+    getMemberById,
+    getReportingStructure
   };
 };

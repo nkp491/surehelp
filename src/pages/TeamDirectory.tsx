@@ -10,38 +10,27 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Users } from "lucide-react";
 
 export default function TeamDirectory() {
-  const { teamMembers, isLoading, fetchTeamMembers, searchTeamMembers } = useTeamDirectory();
+  const { members, filteredMembers, isLoading, error, refreshMembers, searchTeamMembers, filterByDepartment, departments } = useTeamDirectory();
   const [selectedMember, setSelectedMember] = useState<Profile | null>(null);
   const [isDetailOpen, setIsDetailOpen] = useState(false);
-  const [departments, setDepartments] = useState<string[]>([]);
-  const [filteredMembers, setFilteredMembers] = useState<Profile[]>([]);
   const [activeTab, setActiveTab] = useState("all");
   const [selectedDepartment, setSelectedDepartment] = useState<string | null>(null);
+  const [displayedMembers, setDisplayedMembers] = useState<Profile[]>([]);
 
   useEffect(() => {
-    fetchTeamMembers();
-  }, [fetchTeamMembers]);
+    refreshMembers();
+  }, [refreshMembers]);
 
   useEffect(() => {
-    if (teamMembers.length > 0) {
-      // Extract unique departments
-      const uniqueDepartments = Array.from(
-        new Set(
-          teamMembers
-            .map(member => member.department)
-            .filter(Boolean) as string[]
-        )
-      );
-      setDepartments(uniqueDepartments);
-      
+    if (filteredMembers.length > 0) {
       // Apply active filters
-      filterMembers(teamMembers, activeTab, selectedDepartment);
+      filterMembers(filteredMembers, activeTab, selectedDepartment);
     }
-  }, [teamMembers, activeTab, selectedDepartment]);
+  }, [filteredMembers, activeTab, selectedDepartment]);
 
   const handleSearch = (query: string) => {
     if (query.trim() === "") {
-      fetchTeamMembers();
+      refreshMembers();
     } else {
       searchTeamMembers(query);
     }
@@ -84,7 +73,7 @@ export default function TeamDirectory() {
       );
     }
     
-    setFilteredMembers(filtered);
+    setDisplayedMembers(filtered);
   };
 
   return (
@@ -139,7 +128,7 @@ export default function TeamDirectory() {
             </div>
           ))}
         </div>
-      ) : filteredMembers.length === 0 ? (
+      ) : displayedMembers.length === 0 ? (
         <div className="text-center py-12">
           <h3 className="text-lg font-medium">No team members found</h3>
           <p className="text-muted-foreground mt-2">
@@ -148,7 +137,7 @@ export default function TeamDirectory() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {filteredMembers.map((member) => (
+          {displayedMembers.map((member) => (
             <MemberCard
               key={member.id}
               member={member}
