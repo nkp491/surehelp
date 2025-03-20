@@ -19,6 +19,38 @@ export type Profile = {
   } | null;
   notification_preferences: {
     email_notifications: boolean;
-    phone_notifications: boolean;
+    in_app_notifications: boolean;
+    sms_notifications: boolean;
+    team_updates: boolean;
+    meeting_reminders: boolean;
+    performance_updates: boolean;
+    system_announcements: boolean;
+    role_changes: boolean;
+    do_not_disturb: boolean;
+    quiet_hours: {
+      enabled: boolean;
+      start: string;
+      end: string;
+    };
   } | null;
+  // New fields for Team Directory
+  skills: string[] | null;
+  bio: string | null;
+  job_title: string | null;
+  department: string | null;
+  location: string | null;
+  reports_to: string | null;
+  hire_date: string | null;
+  extended_contact: {
+    work_email: string | null;
+    personal_email: string | null;
+    work_phone: string | null;
+    home_phone: string | null;
+    emergency_contact: string | null;
+  } | null;
+};
+
+export type ReportingStructure = {
+  manager: Profile;
+  directReports: Profile[];
 };
