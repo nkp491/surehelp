@@ -109,7 +109,7 @@ export function TeamHierarchyView({
               )}
             </Button>
           ) : (
-            <div className="w-7"></div> /* Spacer */
+            <div className="w-7"></div> {/* Spacer */}
           )}
           
           <Button 

@@ -1,10 +1,9 @@
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { TeamMemberMetrics } from "@/hooks/useTeamMetrics";
 import { MetricCount } from "@/types/metrics";
-import { InfoCircle } from "lucide-react";
+import { Info } from "lucide-react";
 import { 
   Tooltip, 
   TooltipContent, 
@@ -116,7 +115,7 @@ function AggregatedMetricsGrid({
             <Tooltip>
               <TooltipTrigger asChild>
                 <Badge variant="outline" className="flex items-center gap-1">
-                  <InfoCircle className="h-3 w-3" />
+                  <Info className="h-3 w-3" />
                   Hierarchical View
                 </Badge>
               </TooltipTrigger>

@@ -1,44 +1,50 @@
 
-import useMetrics from "@/hooks/useMetricsContext";
-import RatioCard from "./RatioCard";
-import LeadMTDSpend from "./LeadMTDSpend";
-import { calculateRatios } from "@/utils/metricsUtils";
 import { MetricCount } from "@/types/metrics";
-import { useTeamMetrics } from "@/hooks/useTeamMetrics";
 
-const RatiosGrid = ({ teamId }: { teamId?: string }) => {
-  const { metrics, timePeriod, aggregatedMetrics } = useMetrics();
-  const { teamMetrics } = useTeamMetrics(teamId);
+interface RatiosGridProps {
+  teamId?: string;
+  metrics: MetricCount;
+}
+
+export default function RatiosGrid({ teamId, metrics }: RatiosGridProps) {
+  // Calculate ratios based on the provided metrics
+  const contactsToLeads = metrics.leads > 0 
+    ? ((metrics.contacts / metrics.leads) * 100).toFixed(1) 
+    : '0';
   
-  // Calculate team aggregated metrics if teamId is provided
-  const teamAggregatedMetrics: MetricCount | null = teamMetrics?.length ? {
-    leads: teamMetrics.reduce((sum, member) => sum + member.metrics.total_leads, 0),
-    calls: teamMetrics.reduce((sum, member) => sum + member.metrics.total_calls, 0),
-    contacts: teamMetrics.reduce((sum, member) => sum + member.metrics.total_contacts, 0),
-    scheduled: teamMetrics.reduce((sum, member) => sum + member.metrics.total_scheduled, 0),
-    sits: teamMetrics.reduce((sum, member) => sum + member.metrics.total_sits, 0),
-    sales: teamMetrics.reduce((sum, member) => sum + member.metrics.total_sales, 0),
-    ap: teamMetrics.reduce((sum, member) => sum + member.metrics.average_ap, 0),
-  } : null;
-
-  // Use team metrics if available, otherwise fall back to individual metrics
-  const metricsToUse: MetricCount = teamAggregatedMetrics || 
-    (timePeriod === '24h' ? metrics : (aggregatedMetrics || metrics));
-    
-  const ratios = calculateRatios(metricsToUse);
+  const scheduledToContacts = metrics.contacts > 0 
+    ? ((metrics.scheduled / metrics.contacts) * 100).toFixed(1) 
+    : '0';
+  
+  const sitsToScheduled = metrics.scheduled > 0 
+    ? ((metrics.sits / metrics.scheduled) * 100).toFixed(1) 
+    : '0';
+  
+  const salesToSits = metrics.sits > 0 
+    ? ((metrics.sales / metrics.sits) * 100).toFixed(1) 
+    : '0';
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-      {!teamId && <LeadMTDSpend />}
-      {ratios.map((ratio, index) => (
-        <RatioCard
-          key={`${ratio.label}-${timePeriod}-${index}`}
-          label={ratio.label}
-          value={ratio.value}
-        />
-      ))}
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="bg-muted/30 p-4 rounded-md">
+        <p className="text-xs text-muted-foreground mb-1">Contacts / Leads</p>
+        <p className="text-2xl font-semibold">{contactsToLeads}%</p>
+      </div>
+      
+      <div className="bg-muted/30 p-4 rounded-md">
+        <p className="text-xs text-muted-foreground mb-1">Scheduled / Contacts</p>
+        <p className="text-2xl font-semibold">{scheduledToContacts}%</p>
+      </div>
+      
+      <div className="bg-muted/30 p-4 rounded-md">
+        <p className="text-xs text-muted-foreground mb-1">Sits / Scheduled</p>
+        <p className="text-2xl font-semibold">{sitsToScheduled}%</p>
+      </div>
+      
+      <div className="bg-muted/30 p-4 rounded-md">
+        <p className="text-xs text-muted-foreground mb-1">Sales / Sits</p>
+        <p className="text-2xl font-semibold">{salesToSits}%</p>
+      </div>
     </div>
   );
-};
-
-export default RatiosGrid;
+}
