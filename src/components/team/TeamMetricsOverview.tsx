@@ -16,6 +16,9 @@ import {
   Legend,
 } from "recharts";
 import { format, parseISO, subDays } from "date-fns";
+import { calculateRatios } from "@/utils/metricsUtils";
+import { MetricCount } from "@/types/metrics";
+import RatioCard from "../metrics/RatioCard";
 
 interface TeamMetricsOverviewProps {
   teamId?: string;
@@ -23,6 +26,20 @@ interface TeamMetricsOverviewProps {
 
 export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
   const { teamMetrics, isLoadingTeamMetrics, teamTrends, isLoadingTeamTrends } = useTeamMetrics(teamId);
+
+  // Calculate aggregate team metrics
+  const aggregateTeamMetrics: MetricCount = {
+    leads: teamMetrics?.reduce((sum, member) => sum + member.metrics.total_leads, 0) || 0,
+    calls: teamMetrics?.reduce((sum, member) => sum + member.metrics.total_calls, 0) || 0,
+    contacts: teamMetrics?.reduce((sum, member) => sum + member.metrics.total_contacts, 0) || 0,
+    scheduled: teamMetrics?.reduce((sum, member) => sum + member.metrics.total_scheduled, 0) || 0,
+    sits: teamMetrics?.reduce((sum, member) => sum + member.metrics.total_sits, 0) || 0,
+    sales: teamMetrics?.reduce((sum, member) => sum + member.metrics.total_sales, 0) || 0,
+    ap: teamMetrics?.reduce((sum, member) => sum + member.metrics.average_ap, 0) || 0,
+  };
+
+  // Calculate ratios from aggregate metrics
+  const teamRatios = calculateRatios(aggregateTeamMetrics);
 
   // Format date for x-axis
   const formatXAxis = (dateStr: string) => {
@@ -56,6 +73,7 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
           <TabsList className="mb-4">
             <TabsTrigger value="members">Member Stats</TabsTrigger>
             <TabsTrigger value="trends">Performance Trends</TabsTrigger>
+            <TabsTrigger value="ratios">Team Ratios</TabsTrigger>
           </TabsList>
           
           <TabsContent value="members">
@@ -88,37 +106,37 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Leads</p>
                     <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_leads, 0)}
+                      {aggregateTeamMetrics.leads}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Calls</p>
                     <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_calls, 0)}
+                      {aggregateTeamMetrics.calls}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Contacts</p>
                     <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_contacts, 0)}
+                      {aggregateTeamMetrics.contacts}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Scheduled</p>
                     <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_scheduled, 0)}
+                      {aggregateTeamMetrics.scheduled}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Sits</p>
                     <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_sits, 0)}
+                      {aggregateTeamMetrics.sits}
                     </p>
                   </div>
                   <div className="p-2 bg-muted/30 rounded-md">
                     <p className="text-xs text-muted-foreground">Sales</p>
                     <p className="font-medium">
-                      {teamMetrics?.reduce((sum, member) => sum + member.metrics.total_sales, 0)}
+                      {aggregateTeamMetrics.sales}
                     </p>
                   </div>
                 </div>
@@ -229,6 +247,26 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
                     />
                   </LineChart>
                 </ResponsiveContainer>
+              </div>
+            )}
+          </TabsContent>
+          
+          <TabsContent value="ratios">
+            {isLoadingTeamMetrics ? (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+                {Array.from({ length: 10 }).map((_, idx) => (
+                  <Skeleton key={idx} className="h-16 w-full" />
+                ))}
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+                {teamRatios.map((ratio, index) => (
+                  <RatioCard
+                    key={`${ratio.label}-${index}`}
+                    label={ratio.label}
+                    value={ratio.value}
+                  />
+                ))}
               </div>
             )}
           </TabsContent>

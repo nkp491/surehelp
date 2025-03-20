@@ -1,6 +1,6 @@
 
 import { useState, useEffect } from "react";
-import { Settings } from 'lucide-react';
+import { Settings, Filter } from 'lucide-react';
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { TeamSelector } from "@/components/team/TeamSelector";
@@ -10,10 +10,26 @@ import { TeamMetricsOverview } from "@/components/team/TeamMetricsOverview";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from "@/components/ui/select";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+import { format } from "date-fns";
+import { Calendar } from "@/components/ui/calendar";
 
 export default function TeamPage() {
   const { teams, isLoadingTeams, refreshTeams } = useTeamManagement();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
+  const [timePeriod, setTimePeriod] = useState("7d");
+  const [date, setDate] = useState<Date | undefined>(new Date());
 
   // Select the first team by default when teams are loaded
   useEffect(() => {
@@ -39,11 +55,46 @@ export default function TeamPage() {
             Manage your team, track performance, and communicate with your agents.
           </p>
         </div>
-        <div>
+        <div className="flex gap-2 items-center">
           <TeamSelector 
             selectedTeamId={selectedTeamId} 
             onTeamSelect={setSelectedTeamId}
           />
+          
+          <div className="flex gap-2">
+            <Select 
+              value={timePeriod} 
+              onValueChange={setTimePeriod}
+            >
+              <SelectTrigger className="w-[110px]">
+                <SelectValue placeholder="Select period" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="24h">Last 24h</SelectItem>
+                <SelectItem value="7d">Last 7 days</SelectItem>
+                <SelectItem value="30d">Last 30 days</SelectItem>
+                <SelectItem value="custom">Custom</SelectItem>
+              </SelectContent>
+            </Select>
+
+            {timePeriod === 'custom' && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-[130px]">
+                    {date ? format(date, "PPP") : "Pick a date"}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0">
+                  <Calendar
+                    mode="single"
+                    selected={date}
+                    onSelect={setDate}
+                    initialFocus
+                  />
+                </PopoverContent>
+              </Popover>
+            )}
+          </div>
         </div>
       </div>
 
