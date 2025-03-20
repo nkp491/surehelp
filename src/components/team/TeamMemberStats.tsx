@@ -3,13 +3,18 @@ import { Badge } from "@/components/ui/badge";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { TeamMemberMetrics } from "@/hooks/useTeamMetrics";
 import { MetricCount } from "@/types/metrics";
-import { Info } from "lucide-react";
+import { Calculator, MessageSquare, ChevronDown, ChevronRight, Info } from "lucide-react";
 import { 
   Tooltip, 
   TooltipContent, 
   TooltipProvider, 
   TooltipTrigger 
 } from "@/components/ui/tooltip";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { TeamMemberSuccessCalculator } from "./TeamMemberSuccessCalculator";
+import { TeamMemberOneOnOneNotes } from "./TeamMemberOneOnOneNotes";
 
 interface TeamMemberStatsProps {
   isLoading: boolean;
@@ -68,34 +73,52 @@ export function TeamMemberStats({
       />
       
       {teamMetrics?.map((member) => (
-        <div key={member.user_id} className="border rounded-md p-3">
-          <div className="flex justify-between items-center mb-2">
-            <div className="flex items-center space-x-3">
-              <ProfileAvatar
-                imageUrl={member.profile_image_url}
-                firstName={member.first_name}
-                className="h-10 w-10"
-              />
-              <div>
-                <p className="font-medium">
-                  {member.first_name} {member.last_name}
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  {member.email}
-                </p>
-              </div>
-            </div>
-            
-            <div>
-              <Badge variant="outline" className="ml-2">
-                AP: ${(member.metrics.average_ap / 100).toFixed(2)}
-              </Badge>
-            </div>
-          </div>
-          
-          <MemberMetricsGrid metrics={member.metrics} />
-        </div>
+        <TeamMemberCard key={member.user_id} member={member} />
       ))}
+    </div>
+  );
+}
+
+function TeamMemberCard({ member }: { member: TeamMemberMetrics }) {
+  const [isExpanded, setIsExpanded] = useState(false);
+
+  return (
+    <div className="border rounded-md p-3">
+      <div className="flex justify-between items-center mb-2">
+        <div className="flex items-center space-x-3">
+          <ProfileAvatar
+            imageUrl={member.profile_image_url}
+            firstName={member.first_name}
+            className="h-10 w-10"
+          />
+          <div>
+            <p className="font-medium">
+              {member.first_name} {member.last_name}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {member.email}
+            </p>
+          </div>
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Badge variant="outline" className="ml-2">
+            AP: ${(member.metrics.average_ap / 100).toFixed(2)}
+          </Badge>
+          <Button variant="ghost" size="sm" onClick={() => setIsExpanded(!isExpanded)}>
+            {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+          </Button>
+        </div>
+      </div>
+      
+      <MemberMetricsGrid metrics={member.metrics} />
+      
+      <Collapsible open={isExpanded} onOpenChange={setIsExpanded} className="mt-3">
+        <CollapsibleContent className="space-y-4 mt-4 pt-4 border-t">
+          <TeamMemberSuccessCalculator userId={member.user_id} metrics={member.metrics} />
+          <TeamMemberOneOnOneNotes userId={member.user_id} name={`${member.first_name} ${member.last_name}`} />
+        </CollapsibleContent>
+      </Collapsible>
     </div>
   );
 }
