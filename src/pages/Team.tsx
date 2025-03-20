@@ -10,17 +10,10 @@ import { TeamMetricsOverview } from "@/components/team/TeamMetricsOverview";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertCircle } from "lucide-react";
-import { TeamHierarchyView } from "@/components/team/TeamHierarchyView";
-import { useTeamHierarchy } from "@/hooks/team/useTeamHierarchy";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 export default function TeamPage() {
   const { teams, isLoadingTeams, refreshTeams } = useTeamManagement();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>(undefined);
-  const { hasRequiredRole } = useRoleCheck();
-  const { teamHierarchy, isLoading: isLoadingHierarchy } = useTeamHierarchy();
-  
-  const hasGoldOrHigher = hasRequiredRole(['manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']);
 
   // Select the first team by default when teams are loaded
   useEffect(() => {
@@ -83,18 +76,6 @@ export default function TeamPage() {
         </div>
       ) : (
         <div className="space-y-6">
-          {/* Team Hierarchy (Gold & Platinum) */}
-          {hasGoldOrHigher && (
-            <div className="grid grid-cols-1 gap-6">
-              <TeamHierarchyView 
-                hierarchy={teamHierarchy}
-                isLoading={isLoadingHierarchy}
-                onSelectTeam={setSelectedTeamId}
-                selectedTeamId={selectedTeamId}
-              />
-            </div>
-          )}
-          
           {/* Team Members and Team Bulletins side by side */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Team Members Section */}
@@ -105,10 +86,7 @@ export default function TeamPage() {
           </div>
           
           {/* Team Metrics Overview below the members and bulletins */}
-          <TeamMetricsOverview 
-            teamId={selectedTeamId} 
-            includeHierarchy={hasGoldOrHigher}
-          />
+          <TeamMetricsOverview teamId={selectedTeamId} />
           
           {/* Additional Dashboard Sections */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

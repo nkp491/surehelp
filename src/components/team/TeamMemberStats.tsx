@@ -4,27 +4,14 @@ import { Badge } from "@/components/ui/badge";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { TeamMemberMetrics } from "@/hooks/useTeamMetrics";
 import { MetricCount } from "@/types/metrics";
-import { InfoCircle } from "lucide-react";
-import { 
-  Tooltip, 
-  TooltipContent, 
-  TooltipProvider, 
-  TooltipTrigger 
-} from "@/components/ui/tooltip";
 
 interface TeamMemberStatsProps {
   isLoading: boolean;
   teamMetrics?: TeamMemberMetrics[];
   aggregatedMetrics: MetricCount | null;
-  hierarchicalView?: boolean;
 }
 
-export function TeamMemberStats({ 
-  isLoading, 
-  teamMetrics, 
-  aggregatedMetrics,
-  hierarchicalView = false
-}: TeamMemberStatsProps) {
+export function TeamMemberStats({ isLoading, teamMetrics, aggregatedMetrics }: TeamMemberStatsProps) {
   if (isLoading) {
     return (
       <div className="space-y-4">
@@ -63,10 +50,7 @@ export function TeamMemberStats({
 
   return (
     <div className="space-y-4">
-      <AggregatedMetricsGrid 
-        aggregatedMetrics={aggregatedMetrics} 
-        hierarchicalView={hierarchicalView}
-      />
+      <AggregatedMetricsGrid aggregatedMetrics={aggregatedMetrics} />
       
       {teamMetrics?.map((member) => (
         <div key={member.user_id} className="border rounded-md p-3">
@@ -101,72 +85,44 @@ export function TeamMemberStats({
   );
 }
 
-function AggregatedMetricsGrid({ 
-  aggregatedMetrics, 
-  hierarchicalView 
-}: { 
-  aggregatedMetrics: MetricCount | null,
-  hierarchicalView: boolean
-}) {
+function AggregatedMetricsGrid({ aggregatedMetrics }: { aggregatedMetrics: MetricCount | null }) {
   return (
-    <div className="relative">
-      {hierarchicalView && (
-        <div className="absolute -top-7 right-0">
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Badge variant="outline" className="flex items-center gap-1">
-                  <InfoCircle className="h-3 w-3" />
-                  Hierarchical View
-                </Badge>
-              </TooltipTrigger>
-              <TooltipContent side="top">
-                <p className="text-xs max-w-xs">
-                  Showing metrics for this team and all sub-teams in the hierarchy
-                </p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
-        <div className="p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground">Leads</p>
-          <p className="font-medium text-lg">
-            {aggregatedMetrics?.leads || 0}
-          </p>
-        </div>
-        <div className="p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground">Calls</p>
-          <p className="font-medium text-lg">
-            {aggregatedMetrics?.calls || 0}
-          </p>
-        </div>
-        <div className="p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground">Contacts</p>
-          <p className="font-medium text-lg">
-            {aggregatedMetrics?.contacts || 0}
-          </p>
-        </div>
-        <div className="p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground">Scheduled</p>
-          <p className="font-medium text-lg">
-            {aggregatedMetrics?.scheduled || 0}
-          </p>
-        </div>
-        <div className="p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground">Sits</p>
-          <p className="font-medium text-lg">
-            {aggregatedMetrics?.sits || 0}
-          </p>
-        </div>
-        <div className="p-2 bg-muted/30 rounded-md">
-          <p className="text-xs text-muted-foreground">Sales</p>
-          <p className="font-medium text-lg">
-            {aggregatedMetrics?.sales || 0}
-          </p>
-        </div>
+    <div className="grid grid-cols-3 md:grid-cols-6 gap-2 mb-4 text-center">
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Leads</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.leads || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Calls</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.calls || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Contacts</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.contacts || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Scheduled</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.scheduled || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Sits</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.sits || 0}
+        </p>
+      </div>
+      <div className="p-2 bg-muted/30 rounded-md">
+        <p className="text-xs text-muted-foreground">Sales</p>
+        <p className="font-medium text-lg">
+          {aggregatedMetrics?.sales || 0}
+        </p>
       </div>
     </div>
   );
