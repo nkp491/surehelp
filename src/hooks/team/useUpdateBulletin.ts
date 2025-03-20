@@ -14,12 +14,16 @@ export const useUpdateBulletin = (teamId?: string) => {
       bulletinId, 
       title, 
       content, 
-      pinned 
+      pinned,
+      category,
+      mentioned_users
     }: { 
       bulletinId: string; 
       title?: string; 
       content?: string; 
-      pinned?: boolean 
+      pinned?: boolean;
+      category?: string;
+      mentioned_users?: string[];
     }) => {
       setIsLoading(true);
       
@@ -27,6 +31,8 @@ export const useUpdateBulletin = (teamId?: string) => {
       if (title !== undefined) updates.title = title;
       if (content !== undefined) updates.content = content;
       if (pinned !== undefined) updates.pinned = pinned;
+      if (category !== undefined) updates.category = category;
+      if (mentioned_users !== undefined) updates.mentioned_users = mentioned_users;
 
       const { data, error } = await supabase
         .from('team_bulletins')

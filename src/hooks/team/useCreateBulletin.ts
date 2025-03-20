@@ -10,7 +10,19 @@ export const useCreateBulletin = (teamId?: string) => {
   const [isLoading, setIsLoading] = useState(false);
 
   const createBulletin = useMutation({
-    mutationFn: async ({ title, content, pinned = false }: { title: string; content: string; pinned?: boolean }) => {
+    mutationFn: async ({ 
+      title, 
+      content, 
+      pinned = false,
+      category,
+      mentioned_users = []
+    }: { 
+      title: string; 
+      content: string; 
+      pinned?: boolean;
+      category?: string;
+      mentioned_users?: string[];
+    }) => {
       if (!teamId) throw new Error('Team ID is required');
       setIsLoading(true);
       
@@ -24,7 +36,9 @@ export const useCreateBulletin = (teamId?: string) => {
           created_by: user.id,
           title,
           content,
-          pinned
+          pinned,
+          category,
+          mentioned_users
         }])
         .select()
         .single();

@@ -11,29 +11,61 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { Loader2 } from "lucide-react";
+import { Loader2, Tag } from "lucide-react";
 import { TeamBulletin } from "@/types/team";
+import { RichTextEditor } from "./RichTextEditor";
+import { MentionSelector } from "./MentionSelector";
+import { useTeamMembers } from "@/hooks/team/useTeamMembers";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue
+} from "@/components/ui/select";
 
 interface CreateBulletinDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: { title: string; content: string; pinned?: boolean }) => void;
+  onSubmit: (data: { 
+    title: string; 
+    content: string; 
+    pinned?: boolean;
+    category?: string;
+    mentioned_users?: string[];
+  }) => void;
   isLoading: boolean;
   initialData?: TeamBulletin;
+  teamId?: string;
 }
+
+// Predefined categories for bulletins
+const BULLETIN_CATEGORIES = [
+  "Announcement",
+  "Update",
+  "Question",
+  "Discussion",
+  "Important",
+  "FYI",
+  "Action Required"
+];
 
 export function CreateBulletinDialog({
   open,
   onOpenChange,
   onSubmit,
   isLoading,
-  initialData
+  initialData,
+  teamId
 }: CreateBulletinDialogProps) {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [pinned, setPinned] = useState(false);
+  const [category, setCategory] = useState<string | undefined>(undefined);
+  const [mentionedUsers, setMentionedUsers] = useState<string[]>([]);
+  
+  const { members } = useTeamMembers(teamId);
   
   const isEditMode = !!initialData;
   const dialogTitle = isEditMode ? "Edit Bulletin" : "Create Bulletin";
@@ -47,10 +79,14 @@ export function CreateBulletinDialog({
       setTitle(initialData.title);
       setContent(initialData.content);
       setPinned(initialData.pinned);
+      setCategory(initialData.category || undefined);
+      setMentionedUsers(initialData.mentioned_users || []);
     } else {
       setTitle("");
       setContent("");
       setPinned(false);
+      setCategory(undefined);
+      setMentionedUsers([]);
     }
   }, [initialData, open]);
 
@@ -58,18 +94,26 @@ export function CreateBulletinDialog({
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
     
-    onSubmit({ title, content, pinned });
+    onSubmit({ 
+      title, 
+      content, 
+      pinned, 
+      category,
+      mentioned_users: mentionedUsers
+    });
     
     if (!isEditMode) {
       setTitle("");
       setContent("");
       setPinned(false);
+      setCategory(undefined);
+      setMentionedUsers([]);
     }
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="sm:max-w-[700px]">
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>{dialogTitle}</DialogTitle>
@@ -87,17 +131,50 @@ export function CreateBulletinDialog({
                 required
               />
             </div>
+            
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="bulletin-category">Category</Label>
+                <Select
+                  value={category}
+                  onValueChange={setCategory}
+                >
+                  <SelectTrigger id="bulletin-category">
+                    <SelectValue placeholder="Select a category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {BULLETIN_CATEGORIES.map((cat) => (
+                      <SelectItem key={cat} value={cat}>
+                        <div className="flex items-center">
+                          <Tag className="h-4 w-4 mr-2" />
+                          {cat}
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="grid gap-2">
+                <Label htmlFor="mention-members">Mention Team Members</Label>
+                <MentionSelector 
+                  teamMembers={members || []}
+                  selectedMembers={mentionedUsers}
+                  onChange={setMentionedUsers}
+                />
+              </div>
+            </div>
+            
             <div className="grid gap-2">
               <Label htmlFor="bulletin-content">Content</Label>
-              <Textarea
-                id="bulletin-content"
+              <RichTextEditor
                 value={content}
-                onChange={(e) => setContent(e.target.value)}
+                onChange={setContent}
+                id="bulletin-content"
                 placeholder="Enter bulletin content"
-                required
-                className="min-h-[150px]"
               />
             </div>
+            
             <div className="flex items-center space-x-2">
               <Switch
                 id="pin-bulletin"

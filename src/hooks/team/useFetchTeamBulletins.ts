@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamBulletin } from "@/types/team";
+import { TeamBulletin, BulletinReadReceipt } from "@/types/team";
 
 /**
  * Hook to fetch team bulletins with author information
@@ -39,13 +39,49 @@ export const useFetchTeamBulletins = (teamId?: string) => {
         return acc;
       }, {} as Record<string, any>);
 
-      // Merge the bulletins with their creator's profile information
+      // Fetch read receipts for all bulletins
+      const bulletinIds = bulletinsData.map(bulletin => bulletin.id);
+      const { data: readReceipts, error: receiptsError } = await supabase
+        .from('bulletin_read_receipts')
+        .select(`
+          id, 
+          bulletin_id, 
+          user_id, 
+          read_at,
+          profiles:user_id (
+            id, first_name, last_name, profile_image_url
+          )
+        `)
+        .in('bulletin_id', bulletinIds);
+      
+      if (receiptsError) throw receiptsError;
+
+      // Group read receipts by bulletin ID
+      const receiptsByBulletin: Record<string, BulletinReadReceipt[]> = {};
+      readReceipts.forEach((receipt: any) => {
+        const bulletinId = receipt.bulletin_id;
+        if (!receiptsByBulletin[bulletinId]) {
+          receiptsByBulletin[bulletinId] = [];
+        }
+        
+        receiptsByBulletin[bulletinId].push({
+          user_id: receipt.user_id,
+          user_name: receipt.profiles ? 
+            `${receipt.profiles.first_name || ''} ${receipt.profiles.last_name || ''}`.trim() : 
+            'Unknown',
+          user_image: receipt.profiles?.profile_image_url,
+          read_at: receipt.read_at
+        });
+      });
+
+      // Merge the bulletins with their creator's profile information and read receipts
       return bulletinsData.map((bulletin) => ({
         ...bulletin,
         author_name: profileMap[bulletin.created_by] ? 
           `${profileMap[bulletin.created_by].first_name || ''} ${profileMap[bulletin.created_by].last_name || ''}`.trim() : 
           'Unknown',
-        author_image: profileMap[bulletin.created_by]?.profile_image_url
+        author_image: profileMap[bulletin.created_by]?.profile_image_url,
+        read_receipts: receiptsByBulletin[bulletin.id] || []
       })) as TeamBulletin[];
     },
     enabled: !!teamId,
