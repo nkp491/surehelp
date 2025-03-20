@@ -34,7 +34,19 @@ const ProfileSections = ({
 
   const defaultNotificationPreferences = {
     email_notifications: true,
-    phone_notifications: false,
+    in_app_notifications: true,
+    sms_notifications: false,
+    team_updates: true,
+    meeting_reminders: true,
+    performance_updates: true,
+    system_announcements: true,
+    role_changes: true,
+    do_not_disturb: false,
+    quiet_hours: {
+      enabled: false,
+      start: "22:00",
+      end: "07:00"
+    }
   };
 
   // Use type guard to ensure privacy_settings has the correct structure

@@ -1,7 +1,8 @@
+
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { medicalConditionsTranslations } from "@/utils/translations";
+import { medicalConditionsTranslations } from "@/utils/translations/medical";
 
 interface MedicalConditionsCheckboxProps {
   selectedConditions: string[];

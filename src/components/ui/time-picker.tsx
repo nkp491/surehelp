@@ -4,7 +4,7 @@ import { Clock } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-interface TimePickerProps extends React.InputHTMLAttributes<HTMLInputElement> {
+interface TimePickerProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, 'onChange'> {
   label?: string;
   value?: string;
   onChange?: (value: string) => void;
