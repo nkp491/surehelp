@@ -40,16 +40,16 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       const directReports: Profile[] = [];
       
       // Process each direct report individually to avoid complex type instantiation
-      if (Array.isArray(reportingData) && reportingData.length > 0) {
-        for (const profile of reportingData) {
-          const sanitizedProfile = sanitizeProfileData(profile);
+      if (reportingData && Array.isArray(reportingData)) {
+        for (let i = 0; i < reportingData.length; i++) {
+          const sanitizedProfile = sanitizeProfileData(reportingData[i]);
           directReports.push(sanitizedProfile);
         }
       }
 
       // Create and return the reporting structure
       return {
-        manager: manager || member,
+        manager: manager || null,
         directReports: directReports
       };
     } catch (error: any) {
