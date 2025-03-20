@@ -1,4 +1,3 @@
-
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
@@ -16,7 +15,6 @@ import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { TeamMemberSuccessCalculator } from "./TeamMemberSuccessCalculator";
 import { TeamMemberOneOnOneNotes } from "./TeamMemberOneOnOneNotes";
-import { TeamMemberRatios } from "./TeamMemberRatios";
 
 interface TeamMemberStatsProps {
   isLoading: boolean;
@@ -84,17 +82,6 @@ export function TeamMemberStats({
 function TeamMemberCard({ member }: { member: TeamMemberMetrics }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
-  // Convert member metrics to MetricCount format for ratios
-  const memberMetrics: MetricCount = {
-    leads: member.metrics.total_leads,
-    calls: member.metrics.total_calls,
-    contacts: member.metrics.total_contacts,
-    scheduled: member.metrics.total_scheduled,
-    sits: member.metrics.total_sits,
-    sales: member.metrics.total_sales,
-    ap: member.metrics.average_ap
-  };
-
   return (
     <div className="border rounded-md p-3">
       <div className="flex justify-between items-center mb-2">
@@ -125,11 +112,6 @@ function TeamMemberCard({ member }: { member: TeamMemberMetrics }) {
       </div>
       
       <MemberMetricsGrid metrics={member.metrics} />
-      
-      {/* Show ratios for this team member */}
-      <div className="mt-3">
-        <TeamMemberRatios metrics={memberMetrics} />
-      </div>
       
       <Collapsible open={isExpanded} onOpenChange={setIsExpanded} className="mt-3">
         <CollapsibleContent className="space-y-4 mt-4 pt-4 border-t">
