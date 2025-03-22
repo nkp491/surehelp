@@ -1,3 +1,4 @@
+
 import { useNavigate, useLocation } from "react-router-dom";
 import { NavigationItem } from "./navigationItems";
 import {
@@ -11,7 +12,7 @@ import {
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
-import { Loader2, AlertCircle } from "lucide-react";
+import { Loader2, AlertCircle, File, Circle } from "lucide-react";
 import * as LucideIcons from "lucide-react";
 
 type SidebarNavigationProps = {
@@ -158,6 +159,7 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
     navigate('/');
   };
   
+  // Fixed renderIcon function to properly handle different icon types
   const renderIcon = (item: NavigationItem) => {
     if (typeof item.icon === 'function') {
       const Icon = item.icon;
@@ -165,12 +167,17 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
     }
     
     if (typeof item.icon === 'string') {
+      // Explicitly check if the icon exists in LucideIcons
       const iconName = item.icon as keyof typeof LucideIcons;
-      const IconComponent = LucideIcons[iconName];
-      return IconComponent ? <IconComponent className="w-5 h-5" /> : <LucideIcons.File className="w-5 h-5" />;
+      if (LucideIcons[iconName] && typeof LucideIcons[iconName] === 'function') {
+        // Use dynamic component reference
+        const DynamicIcon = LucideIcons[iconName];
+        return <DynamicIcon className="w-5 h-5" />;
+      }
+      return <File className="w-5 h-5" />;
     }
     
-    return <LucideIcons.Circle className="w-5 h-5" />;
+    return <Circle className="w-5 h-5" />;
   };
 
   return (

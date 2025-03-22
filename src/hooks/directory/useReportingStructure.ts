@@ -13,9 +13,15 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
   
   // Helper function to safely clone a profile and break type dependencies
   const safeCloneProfile = (profile: any): Profile => {
-    // Use primitive serialization to completely break reference chains
-    const detached = JSON.parse(JSON.stringify(profile));
-    return sanitizeProfileData(detached);
+    try {
+      // Create a completely new object to break reference chains
+      return sanitizeProfileData(JSON.parse(JSON.stringify(profile)));
+    } catch (err) {
+      console.error('Error cloning profile:', err);
+      // Return a primitive copy in case of JSON serialization failures
+      const copy = { ...profile };
+      return copy as Profile;
+    }
   };
   
   // Isolated function to fetch direct reports
@@ -80,7 +86,7 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       // Step 3: Get direct reports as a standalone operation
       const directReportsArray = await fetchDirectReports(profileId);
       
-      // Step 4: Construct the final structure with no references to original objects
+      // Step 4: Construct the final structure with new object instances
       const result: ReportingStructure = {
         manager: managerProfile,
         directReports: [...directReportsArray]
