@@ -178,11 +178,10 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
     navigate('/');
   };
   
-  // Helper function to get the icon component
-  const getIconComponent = (item: NavigationItem) => {
-    // Use the item's icon directly
-    const IconComponent = item.icon;
-    return <IconComponent className="w-5 h-5" />;
+  // Render the correct icon component
+  const renderIcon = (item: NavigationItem) => {
+    const Icon = item.icon;
+    return <Icon className="w-5 h-5" />;
   };
   
   return (
@@ -219,7 +218,7 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
                   {isNavigating && activePathName === item.path ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    getIconComponent(item)
+                    renderIcon(item)
                   )}
                   <span>{item.title}</span>
                 </SidebarMenuButton>
