@@ -5,17 +5,22 @@ import { Profile, ReportingStructure } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from '../profile/useProfileSanitization';
 
+// Define a simpler type for raw database records
+interface RawProfileData {
+  [key: string]: any;
+}
+
 export const useReportingStructure = (getMemberById: (id: string) => Promise<Profile>) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
-
+  
   // Function to get reporting structure for a team member
   const getReportingStructure = async (profileId: string): Promise<ReportingStructure | null> => {
     setIsLoading(true);
     setError(null);
-
+    
     try {
       // Get the requested profile
       const member = await getMemberById(profileId);
@@ -36,41 +41,42 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
         .from('profiles')
         .select('*')
         .eq('reports_to', profileId);
-
+        
       if (reportingError) {
         throw reportingError;
       }
-
-      // Using any[] type to break recursive type inference
+      
+      // Use a more direct approach to create reports array
       const directReports: Profile[] = [];
       
-      // Process direct reports with type assertions to avoid deep instantiation
-      if (reportingData && Array.isArray(reportingData)) {
-        // Use any[] to break the deep type instantiation
-        const rawReports = reportingData as any[];
+      // Break the type inference chain to avoid excessive recursion
+      if (reportingData) {
+        // Cast to any[] first to break type recursion
+        const safeData = reportingData as any[];
         
-        for (const rawReport of rawReports) {
+        // Then process each item individually with explicit typing
+        for (const item of safeData) {
           try {
-            // Use any type assertion to break type recursion
-            const sanitizedProfile = sanitizeProfileData(rawReport as any);
-            directReports.push(sanitizedProfile);
+            // Use an intermediate type to avoid excessive type checking
+            const rawData = item as RawProfileData;
+            const profile = sanitizeProfileData(rawData) as Profile;
+            directReports.push(profile);
           } catch (err) {
             console.error('Error processing direct report:', err);
           }
         }
       }
-
-      // Create and return the reporting structure with type assertion
+      
+      // Create the final structure with explicit typing
       const result: ReportingStructure = {
         manager,
         directReports
       };
       
       return result;
-    } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to load reporting structure';
+    } catch (error: any) {
       console.error('Error fetching reporting structure:', error);
-      setError(errorMessage);
+      setError(error.message || 'Failed to load reporting structure');
       toast({
         title: 'Error',
         description: 'Failed to load reporting structure',
@@ -81,7 +87,7 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       setIsLoading(false);
     }
   };
-
+  
   return {
     getReportingStructure,
     isLoadingStructure: isLoading,
