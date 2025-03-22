@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, ReportingStructure } from '@/types/profile';
@@ -11,17 +12,19 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
   const { sanitizeProfileData } = useProfileSanitization();
   
   // Helper function to safely clone a profile and break type dependencies
-  const safeCloneProfile = (profile: any): Profile => {
+  const safeCloneProfile = (profile: any) => {
     try {
-      // Create a completely new object to break reference chains
-      // Use a simpler approach to avoid excessive type instantiation
+      // Create a new object using JSON parse/stringify to completely break references
       const stringified = JSON.stringify(profile);
       const parsed = JSON.parse(stringified);
-      return sanitizeProfileData(parsed);
+      // Cast the result directly to unknown first, then to Profile
+      // This avoids the deep type checking that causes the infinite instantiation
+      return sanitizeProfileData(parsed as unknown as Record<string, any>);
     } catch (err) {
       console.error('Error cloning profile:', err);
-      // Return a primitive copy in case of JSON serialization failures
-      return { ...profile } as Profile;
+      // Return a shallow copy in case of serialization failures
+      // Again, using the unknown type to break the deep type checking
+      return sanitizeProfileData({ ...profile } as unknown as Record<string, any>);
     }
   };
   
