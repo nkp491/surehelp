@@ -5,7 +5,7 @@ import { Profile, ReportingStructure } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from '../profile/useProfileSanitization';
 
-// Define a simpler type for raw database records
+// Define a type for raw database records
 interface RawProfileData {
   [key: string]: any;
 }
@@ -16,80 +16,109 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
   
-  // Helper function to safely convert raw data to Profile objects
-  const convertToProfile = (rawData: RawProfileData): Profile => {
-    // Use JSON parsing to completely break any type references
-    const detachedData = JSON.parse(JSON.stringify(rawData)) as RawProfileData;
-    return sanitizeProfileData(detachedData);
+  // Helper function to safely process a raw profile and break type chains
+  const processRawProfile = (rawData: RawProfileData): Profile => {
+    // Create a shallow copy to break reference chains
+    const detachedData = { ...rawData };
+    
+    // Use sanitization function to ensure proper shape
+    const sanitizedProfile = sanitizeProfileData(detachedData);
+    
+    // Force type assertion to Profile
+    return sanitizedProfile as Profile;
   };
   
-  // Function to get reporting structure for a team member
+  // Helper function to fetch direct reports safely
+  const fetchDirectReports = async (profileId: string): Promise<Profile[]> => {
+    try {
+      // Query profiles that report to the given profileId
+      const { data, error: queryError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('reports_to', profileId);
+      
+      if (queryError) {
+        console.error('Error fetching direct reports:', queryError);
+        return [];
+      }
+      
+      if (!data || !Array.isArray(data)) {
+        return [];
+      }
+      
+      // Process each report individually to break type chains
+      const reports: Profile[] = [];
+      
+      for (let i = 0; i < data.length; i++) {
+        try {
+          // First convert to unknown to break type inference
+          const rawItem: unknown = data[i];
+          
+          // Then cast to our intermediate type
+          const rawProfile = rawItem as RawProfileData;
+          
+          // Process the profile
+          const profile = processRawProfile(rawProfile);
+          
+          // Add to array
+          reports.push(profile);
+        } catch (err) {
+          console.error('Error processing direct report:', err);
+        }
+      }
+      
+      return reports;
+    } catch (err) {
+      console.error('Unexpected error in fetchDirectReports:', err);
+      return [];
+    }
+  };
+  
+  // Main function to get reporting structure
   const getReportingStructure = async (profileId: string): Promise<ReportingStructure | null> => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Get the requested profile
-      const member = await getMemberById(profileId);
+      // Step 1: Get the requested profile with explicit error handling
+      let member: Profile;
+      try {
+        member = await getMemberById(profileId);
+      } catch (err) {
+        console.error('Error fetching member profile:', err);
+        throw new Error('Failed to load team member profile');
+      }
       
-      // If profile has a reports_to field, get the manager
+      // Step 2: Get manager if applicable (isolated logic)
       let manager: Profile | null = null;
       if (member.reports_to) {
         try {
-          manager = await getMemberById(member.reports_to);
-        } catch (error) {
-          console.error('Error fetching manager:', error);
-          // Continue even if manager fetch fails
+          const fetchedManager = await getMemberById(member.reports_to);
+          // Create a new object to break reference chain
+          manager = { ...fetchedManager } as Profile;
+        } catch (err) {
+          console.error('Error fetching manager:', err);
+          // Continue without manager
         }
       }
       
-      // Get direct reports (people who report to this profile)
-      const { data, error: reportingError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('reports_to', profileId);
-        
-      if (reportingError) {
-        throw reportingError;
-      }
+      // Step 3: Get direct reports (using helper function)
+      const directReports = await fetchDirectReports(profileId);
       
-      // Process direct reports with complete type isolation
-      const directReports: Profile[] = [];
-      
-      // We need to explicitly type our data to break type inference
-      const reportingData: unknown = data;
-      
-      // Ensure we have data and it's an array
-      if (reportingData && Array.isArray(reportingData)) {
-        // Process each item individually without type inference
-        for (let i = 0; i < reportingData.length; i++) {
-          try {
-            // Convert each item type safely without type inference chains
-            const item = reportingData[i] as object;
-            const rawData: RawProfileData = { ...item }; 
-            
-            // Use our helper function to safely convert to Profile
-            const profile = convertToProfile(rawData);
-            directReports.push(profile);
-          } catch (err) {
-            console.error('Error processing direct report:', err);
-          }
-        }
-      }
-      
-      // Create the final structure with explicit typing
+      // Step 4: Construct final result with spreads to break reference chains
       const result: ReportingStructure = {
-        manager,
-        directReports
+        manager: manager ? { ...manager } : null,
+        directReports: [...directReports]
       };
       
       return result;
     } catch (error: any) {
       console.error('Error fetching reporting structure:', error);
-      setError(error.message || 'Failed to load reporting structure');
+      const errorMessage = error.message || 'Failed to load reporting structure';
+      setError(errorMessage);
       toast({
         title: 'Error',
-        description: 'Failed to load reporting structure',
+        description: errorMessage,
         variant: 'destructive'
       });
       return null;
