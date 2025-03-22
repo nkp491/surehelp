@@ -41,21 +41,18 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
         throw reportingError;
       }
 
-      // Initialize the direct reports array with proper type annotation
+      // Using any[] type to break recursive type inference
       const directReports: Profile[] = [];
       
-      // Process direct reports with explicit typing to avoid deep instantiation
+      // Process direct reports with type assertions to avoid deep instantiation
       if (reportingData && Array.isArray(reportingData)) {
-        // Type assertion for the entire array to break potential circular references
-        const typedReportingData = reportingData as Record<string, unknown>[];
+        // Use any[] to break the deep type instantiation
+        const rawReports = reportingData as any[];
         
-        // Process each report with explicit typing
-        for (let i = 0; i < typedReportingData.length; i++) {
+        for (const rawReport of rawReports) {
           try {
-            // Use a more specific type assertion that doesn't trigger deep instantiation
-            const reportData = typedReportingData[i];
-            // Sanitize the profile data with explicit typing
-            const sanitizedProfile = sanitizeProfileData(reportData as Record<string, unknown>);
+            // Use any type assertion to break type recursion
+            const sanitizedProfile = sanitizeProfileData(rawReport as any);
             directReports.push(sanitizedProfile);
           } catch (err) {
             console.error('Error processing direct report:', err);
@@ -63,11 +60,13 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
         }
       }
 
-      // Create and return the reporting structure with explicit type
-      return {
+      // Create and return the reporting structure with type assertion
+      const result: ReportingStructure = {
         manager,
         directReports
-      } as ReportingStructure;
+      };
+      
+      return result;
     } catch (error: unknown) {
       const errorMessage = error instanceof Error ? error.message : 'Failed to load reporting structure';
       console.error('Error fetching reporting structure:', error);
