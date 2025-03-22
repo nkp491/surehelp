@@ -25,6 +25,7 @@ import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 import { useTeamDirectory } from "@/hooks/useTeamDirectory";
+import { ReportingStructure } from "@/types/profile";
 
 interface MemberDetailDialogProps {
   member: Profile | null;
@@ -39,7 +40,7 @@ export function MemberDetailDialog({
 }: MemberDetailDialogProps) {
   const [showReporting, setShowReporting] = useState(false);
   const { getReportingStructure } = useTeamDirectory();
-  const [reportingStructure, setReportingStructure] = useState<any>(null);
+  const [reportingStructure, setReportingStructure] = useState<ReportingStructure | null>(null);
   const [isLoadingStructure, setIsLoadingStructure] = useState(false);
 
   const fullName = member 
@@ -56,9 +57,15 @@ export function MemberDetailDialog({
     
     if (!showReporting) {
       setIsLoadingStructure(true);
-      const structure = await getReportingStructure(member.id);
-      setReportingStructure(structure);
-      setIsLoadingStructure(false);
+      try {
+        const structure = await getReportingStructure(member.id);
+        setReportingStructure(structure);
+      } catch (error) {
+        console.error("Error fetching reporting structure:", error);
+        setReportingStructure(null);
+      } finally {
+        setIsLoadingStructure(false);
+      }
     }
     
     setShowReporting(!showReporting);

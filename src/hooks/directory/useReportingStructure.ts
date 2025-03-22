@@ -23,7 +23,12 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       // If profile has a reports_to field, get the manager
       let manager: Profile | null = null;
       if (member.reports_to) {
-        manager = await getMemberById(member.reports_to);
+        try {
+          manager = await getMemberById(member.reports_to);
+        } catch (error) {
+          console.error('Error fetching manager:', error);
+          // Continue even if manager fetch fails
+        }
       }
       
       // Get direct reports (people who report to this profile)
@@ -39,17 +44,23 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       // Initialize an empty array for direct reports
       const directReports: Profile[] = [];
       
-      // Process each direct report individually to avoid complex type instantiation
+      // Process each direct report individually using a for loop instead of map
+      // to avoid complex type instantiation
       if (reportingData && Array.isArray(reportingData)) {
         for (let i = 0; i < reportingData.length; i++) {
-          const sanitizedProfile = sanitizeProfileData(reportingData[i]);
-          directReports.push(sanitizedProfile);
+          try {
+            const sanitizedProfile = sanitizeProfileData(reportingData[i]);
+            directReports.push(sanitizedProfile);
+          } catch (error) {
+            console.error('Error processing direct report:', error);
+            // Continue with other direct reports even if one fails
+          }
         }
       }
 
       // Create and return the reporting structure
       return {
-        manager: manager || null,
+        manager: manager,
         directReports: directReports
       };
     } catch (error: any) {
