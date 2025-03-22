@@ -16,6 +16,13 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
   
+  // Helper function to safely convert raw data to Profile objects
+  const convertToProfile = (rawData: RawProfileData): Profile => {
+    // Use JSON parsing to completely break any type references
+    const detachedData = JSON.parse(JSON.stringify(rawData)) as RawProfileData;
+    return sanitizeProfileData(detachedData);
+  };
+  
   // Function to get reporting structure for a team member
   const getReportingStructure = async (profileId: string): Promise<ReportingStructure | null> => {
     setIsLoading(true);
@@ -37,7 +44,7 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       }
       
       // Get direct reports (people who report to this profile)
-      const { data: reportingData, error: reportingError } = await supabase
+      const { data, error: reportingError } = await supabase
         .from('profiles')
         .select('*')
         .eq('reports_to', profileId);
@@ -46,20 +53,23 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
         throw reportingError;
       }
       
-      // Use a more direct approach to create reports array
+      // Process direct reports with complete type isolation
       const directReports: Profile[] = [];
       
-      // Break the type inference chain to avoid excessive recursion
-      if (reportingData) {
-        // Cast to any[] first to break type recursion
-        const safeData = reportingData as any[];
-        
-        // Then process each item individually with explicit typing
-        for (const item of safeData) {
+      // We need to explicitly type our data to break type inference
+      const reportingData: unknown = data;
+      
+      // Ensure we have data and it's an array
+      if (reportingData && Array.isArray(reportingData)) {
+        // Process each item individually without type inference
+        for (let i = 0; i < reportingData.length; i++) {
           try {
-            // Use an intermediate type to avoid excessive type checking
-            const rawData = item as RawProfileData;
-            const profile = sanitizeProfileData(rawData) as Profile;
+            // Convert each item type safely without type inference chains
+            const item = reportingData[i] as object;
+            const rawData: RawProfileData = { ...item }; 
+            
+            // Use our helper function to safely convert to Profile
+            const profile = convertToProfile(rawData);
             directReports.push(profile);
           } catch (err) {
             console.error('Error processing direct report:', err);
