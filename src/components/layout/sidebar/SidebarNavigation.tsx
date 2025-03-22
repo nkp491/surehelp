@@ -13,6 +13,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useEffect, useState, useCallback } from "react";
 import { toast } from "sonner";
 import { Loader2, AlertCircle } from "lucide-react";
+import * as LucideIcons from "lucide-react";
 
 type SidebarNavigationProps = {
   navigationItems: NavigationItem[];
@@ -177,6 +178,13 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
     navigate('/');
   };
   
+  // Helper function to get the icon component
+  const getIconComponent = (item: NavigationItem) => {
+    // Use the item's icon directly
+    const IconComponent = item.icon;
+    return <IconComponent className="w-5 h-5" />;
+  };
+  
   return (
     <SidebarGroup>
       <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>
@@ -211,7 +219,7 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
                   {isNavigating && activePathName === item.path ? (
                     <Loader2 className="w-5 h-5 animate-spin" />
                   ) : (
-                    <item.icon className="w-5 h-5" />
+                    getIconComponent(item)
                   )}
                   <span>{item.title}</span>
                 </SidebarMenuButton>
