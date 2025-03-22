@@ -5,105 +5,132 @@ import { Profile, ReportingStructure } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from '../profile/useProfileSanitization';
 
+// Create a simplified type that breaks circular references
+type BasicProfileData = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  reports_to: string | null;
+  [key: string]: any; // Allow other properties
+};
+
 export const useReportingStructure = (getMemberById: (id: string) => Promise<Profile>) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
   
-  // Helper function to safely clone a profile and break type dependencies
-  const safeCloneProfile = (profile: any) => {
-    try {
-      // Create a new object using JSON parse/stringify to completely break references
-      const stringified = JSON.stringify(profile);
-      const parsed = JSON.parse(stringified);
-      // Cast the result directly to unknown first, then to Profile
-      // This avoids the deep type checking that causes the infinite instantiation
-      return sanitizeProfileData(parsed as unknown as Record<string, any>);
-    } catch (err) {
-      console.error('Error cloning profile:', err);
-      // Return a shallow copy in case of serialization failures
-      // Again, using the unknown type to break the deep type checking
-      return sanitizeProfileData({ ...profile } as unknown as Record<string, any>);
-    }
+  // Helper function to convert any profile data to a safe format
+  const createSafeProfile = (data: any): Profile => {
+    // First create a simple object with basic properties
+    const basicData: BasicProfileData = {
+      id: data.id || '',
+      first_name: data.first_name || null,
+      last_name: data.last_name || null,
+      email: data.email || null,
+      reports_to: data.reports_to || null
+    };
+    
+    // Copy other properties that aren't recursive
+    Object.keys(data).forEach(key => {
+      if (key !== 'manager' && key !== 'directReports') {
+        basicData[key] = data[key];
+      }
+    });
+    
+    // Then process with sanitization function
+    return sanitizeProfileData(basicData);
   };
   
-  // Isolated function to fetch direct reports
-  const fetchDirectReports = async (profileId: string): Promise<Profile[]> => {
-    try {
-      const { data, error: fetchError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('reports_to', profileId);
-      
-      if (fetchError) throw fetchError;
-      if (!data) return [];
-      
-      // Create a new array to hold results
-      const reports: Profile[] = [];
-      
-      // Process each record individually
-      for (let i = 0; i < data.length; i++) {
-        try {
-          const profile = safeCloneProfile(data[i]);
-          reports.push(profile);
-        } catch (err) {
-          console.error('Error processing team member:', err);
-        }
-      }
-      
-      return reports;
-    } catch (err) {
-      console.error('Error fetching direct reports:', err);
-      return [];
-    }
-  };
-
-  // Main function to get reporting structure
+  // Function to get reporting structure for a team member
   const getReportingStructure = async (profileId: string): Promise<ReportingStructure | null> => {
     setIsLoading(true);
     setError(null);
     
     try {
-      // Step 1: Get the member profile as a standalone operation
-      let memberProfile: Profile;
-      try {
-        const rawProfile = await getMemberById(profileId);
-        memberProfile = safeCloneProfile(rawProfile);
-      } catch (err) {
-        console.error('Error fetching member profile:', err);
-        throw new Error('Failed to load team member profile');
-      }
+      // Get the requested profile
+      const memberData = await getMemberById(profileId);
+      const member = createSafeProfile(memberData);
       
-      // Step 2: Get manager as a standalone operation
-      let managerProfile: Profile | null = null;
-      if (memberProfile.reports_to) {
+      // Initialize manager
+      let manager: Profile | null = null;
+      
+      // Get manager if applicable
+      if (member.reports_to) {
         try {
-          const rawManager = await getMemberById(memberProfile.reports_to);
-          managerProfile = safeCloneProfile(rawManager);
+          const managerData = await getMemberById(member.reports_to);
+          manager = createSafeProfile(managerData);
         } catch (err) {
           console.error('Error fetching manager:', err);
           // Continue without manager
         }
       }
       
-      // Step 3: Get direct reports as a standalone operation
-      const directReportsArray = await fetchDirectReports(profileId);
+      // Get direct reports
+      let directReports: Profile[] = [];
       
-      // Step 4: Construct the final structure with new object instances
+      try {
+        // Fetch data in a try/catch block
+        const { data, error: fetchError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('reports_to', profileId);
+          
+        if (fetchError) throw fetchError;
+        
+        // Process the data safely
+        if (data && Array.isArray(data)) {
+          // Map the data items directly
+          directReports = data.map(item => {
+            try {
+              return createSafeProfile(item);
+            } catch (err) {
+              console.error('Error processing direct report:', err);
+              // Return a minimal valid profile as fallback
+              return {
+                id: item.id || 'unknown',
+                first_name: null,
+                last_name: null,
+                email: null,
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString(),
+                last_sign_in: null,
+                language_preference: null,
+                privacy_settings: null,
+                notification_preferences: null,
+                skills: null,
+                bio: null,
+                job_title: null,
+                department: null,
+                location: null,
+                reports_to: null,
+                hire_date: null,
+                extended_contact: null,
+                profile_image_url: null,
+                role: null
+              } as Profile;
+            }
+          });
+        }
+      } catch (err) {
+        console.error('Error fetching direct reports:', err);
+        // Continue with empty array
+      }
+      
+      // Create the final structure object
       const result: ReportingStructure = {
-        manager: managerProfile,
-        directReports: [...directReportsArray]
+        manager,
+        directReports
       };
       
       return result;
     } catch (error: any) {
       console.error('Error fetching reporting structure:', error);
-      const errorMessage = error.message || 'Failed to load reporting structure';
-      setError(errorMessage);
+      setError(error.message || 'Failed to load reporting structure');
       toast({
         title: 'Error',
-        description: errorMessage,
+        description: 'Failed to load reporting structure',
         variant: 'destructive'
       });
       return null;
