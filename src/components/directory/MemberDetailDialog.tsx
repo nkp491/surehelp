@@ -229,7 +229,12 @@ export function MemberDetailDialog({
                           />
                           <div>
                             <p className="font-medium">{`${reportingStructure.manager.first_name || ''} ${reportingStructure.manager.last_name || ''}`}</p>
-                            <p className="text-xs text-muted-foreground">{reportingStructure.manager.job_title || reportingStructure.manager.role?.replace(/_/g, ' ')}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {reportingStructure.manager.job_title || 
+                               (reportingStructure.manager.role ? 
+                                reportingStructure.manager.role.replace(/_/g, ' ') : 
+                                '')}
+                            </p>
                           </div>
                         </div>
                       </div>
@@ -239,7 +244,7 @@ export function MemberDetailDialog({
                       <div>
                         <h4 className="text-sm font-medium mb-2">Direct Reports ({reportingStructure.directReports.length}):</h4>
                         <div className="space-y-2">
-                          {reportingStructure.directReports.map((report: Profile) => (
+                          {reportingStructure.directReports.map((report) => (
                             <div key={report.id} className="flex items-center p-2 border rounded-md">
                               <ProfileAvatar 
                                 imageUrl={report.profile_image_url}
@@ -248,7 +253,12 @@ export function MemberDetailDialog({
                               />
                               <div>
                                 <p className="font-medium">{`${report.first_name || ''} ${report.last_name || ''}`}</p>
-                                <p className="text-xs text-muted-foreground">{report.job_title || report.role?.replace(/_/g, ' ')}</p>
+                                <p className="text-xs text-muted-foreground">
+                                  {report.job_title || 
+                                   (report.role ? 
+                                    report.role.replace(/_/g, ' ') : 
+                                    '')}
+                                </p>
                               </div>
                             </div>
                           ))}

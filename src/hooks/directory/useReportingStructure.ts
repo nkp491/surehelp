@@ -44,15 +44,15 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       // Initialize an empty array for direct reports
       const directReports: Profile[] = [];
       
-      // Process each direct report individually using a for loop instead of map
-      // to avoid complex type instantiation
+      // Process each direct report individually using a for loop to avoid type complexity
       if (reportingData && Array.isArray(reportingData)) {
-        for (let i = 0; i < reportingData.length; i++) {
+        for (const reportData of reportingData) {
           try {
-            const sanitizedProfile = sanitizeProfileData(reportingData[i]);
+            // Process each report individually to avoid complex type instantiation
+            const sanitizedProfile = sanitizeProfileData(reportData);
             directReports.push(sanitizedProfile);
-          } catch (error) {
-            console.error('Error processing direct report:', error);
+          } catch (profileError) {
+            console.error('Error processing direct report:', profileError);
             // Continue with other direct reports even if one fails
           }
         }
