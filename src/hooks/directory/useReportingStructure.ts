@@ -5,23 +5,13 @@ import { Profile, ReportingStructure } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from '../profile/useProfileSanitization';
 
-// A simplified type for raw database records to break type chains
-type RawDatabaseRecord = Record<string, unknown>;
-
 export const useReportingStructure = (getMemberById: (id: string) => Promise<Profile>) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
   
-  // Helper function to safely convert a raw database record to a Profile
-  const convertToProfile = (rawData: RawDatabaseRecord): Profile => {
-    // Create a completely detached copy with no type references
-    const detachedData = JSON.parse(JSON.stringify(rawData)) as Record<string, unknown>;
-    return sanitizeProfileData(detachedData) as Profile;
-  };
-  
-  // Isolated function to fetch direct reports
+  // Isolated function to fetch direct reports without type dependencies
   const fetchDirectReports = async (profileId: string): Promise<Profile[]> => {
     try {
       const { data, error: fetchError } = await supabase
@@ -32,16 +22,15 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       if (fetchError) throw fetchError;
       if (!data) return [];
       
-      // Cast to unknown first to break type chains
-      const rawRecords = data as unknown as RawDatabaseRecord[];
+      // Process as plain objects first
       const reports: Profile[] = [];
       
-      // Process each record individually to avoid type recursion
-      for (let i = 0; i < rawRecords.length; i++) {
+      for (const rawProfile of data) {
         try {
-          // Process records one at a time with explicit conversions
-          const profile = convertToProfile(rawRecords[i]);
-          reports.push(profile);
+          // Create a sanitized copy with explicit type
+          const plainData = JSON.parse(JSON.stringify(rawProfile));
+          const sanitizedProfile = sanitizeProfileData(plainData);
+          reports.push(sanitizedProfile);
         } catch (err) {
           console.error('Error processing team member:', err);
         }
@@ -63,32 +52,34 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       // Step 1: Get the member profile
       let memberProfile: Profile;
       try {
-        memberProfile = await getMemberById(profileId);
+        const rawMember = await getMemberById(profileId);
+        // Create a disconnected copy to break type references
+        memberProfile = { ...rawMember };
       } catch (err) {
         console.error('Error fetching member profile:', err);
         throw new Error('Failed to load team member profile');
       }
       
-      // Step 2: Get manager if applicable (completely isolated)
+      // Step 2: Get manager if applicable
       let managerProfile: Profile | null = null;
       if (memberProfile.reports_to) {
         try {
-          const fetchedManager = await getMemberById(memberProfile.reports_to);
-          // Create completely new object to break reference chains
-          managerProfile = { ...fetchedManager } as Profile;
+          const rawManager = await getMemberById(memberProfile.reports_to);
+          // Create a disconnected copy
+          managerProfile = { ...rawManager };
         } catch (err) {
           console.error('Error fetching manager:', err);
           // Continue without manager
         }
       }
       
-      // Step 3: Get direct reports (using dedicated function)
+      // Step 3: Get direct reports
       const directReports = await fetchDirectReports(profileId);
       
-      // Step 4: Construct final structure with explicit typing and spreading
+      // Step 4: Construct final structure with explicit typing
       const result: ReportingStructure = {
         manager: managerProfile,
-        directReports: [...directReports]
+        directReports: directReports
       };
       
       return result;
