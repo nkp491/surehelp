@@ -1,3 +1,4 @@
+
 import React from "react";
 import { INITIAL_FIELDS } from "./FormFields";
 import { useFormLogic } from "@/hooks/useFormLogic";
@@ -33,7 +34,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-180px)] pb-8">
+    <form onSubmit={(e) => e.preventDefault()} className="pb-20">
       <DirectTotalIncomeCalculator formData={formData} setFormData={setFormData} />
       
       <div className="form-layout">

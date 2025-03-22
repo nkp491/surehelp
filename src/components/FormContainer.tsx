@@ -25,7 +25,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
                 <FamilyMemberToggle />
                 <LanguageToggle />
               </div>
-              <div className="bg-grid min-h-[calc(100vh-120px)]">
+              <div className="min-h-fit">
                 <MetricsSection />
                 <FormContent editingSubmission={editingSubmission} onUpdate={onUpdate} />
               </div>

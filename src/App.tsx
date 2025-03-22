@@ -42,7 +42,7 @@ function App() {
                 <div className="flex h-screen bg-background">
                   <SidebarProvider>
                     <AppSidebar />
-                    <main className="flex-1 overflow-auto">
+                    <main className="flex-1 overflow-y-auto">
                       <Routes>
                         <Route path="/" element={<Dashboard />} />
                         <Route path="/assessment" element={<Assessment />} />
