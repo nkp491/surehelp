@@ -163,21 +163,21 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   const renderIcon = (item: NavigationItem) => {
     if (typeof item.icon === 'function') {
       const Icon = item.icon;
-      return <Icon className="w-5 h-5" />;
+      return <Icon size={20} />;
     }
     
     if (typeof item.icon === 'string') {
       // Explicitly check if the icon exists in LucideIcons
       const iconName = item.icon as keyof typeof LucideIcons;
-      if (LucideIcons[iconName] && typeof LucideIcons[iconName] === 'function') {
-        // Use dynamic component reference
-        const DynamicIcon = LucideIcons[iconName];
-        return <DynamicIcon className="w-5 h-5" />;
+      if (LucideIcons[iconName]) {
+        // Use dynamic component reference with proper typing
+        const DynamicIcon = LucideIcons[iconName] as React.FC<{ size?: number }>;
+        return <DynamicIcon size={20} />;
       }
-      return <File className="w-5 h-5" />;
+      return <File size={20} />;
     }
     
-    return <Circle className="w-5 h-5" />;
+    return <Circle size={20} />;
   };
 
   return (

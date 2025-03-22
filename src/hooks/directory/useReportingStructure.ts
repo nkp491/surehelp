@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Profile, ReportingStructure } from '@/types/profile';
@@ -15,12 +14,14 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
   const safeCloneProfile = (profile: any): Profile => {
     try {
       // Create a completely new object to break reference chains
-      return sanitizeProfileData(JSON.parse(JSON.stringify(profile)));
+      // Use a simpler approach to avoid excessive type instantiation
+      const stringified = JSON.stringify(profile);
+      const parsed = JSON.parse(stringified);
+      return sanitizeProfileData(parsed);
     } catch (err) {
       console.error('Error cloning profile:', err);
       // Return a primitive copy in case of JSON serialization failures
-      const copy = { ...profile };
-      return copy as Profile;
+      return { ...profile } as Profile;
     }
   };
   
