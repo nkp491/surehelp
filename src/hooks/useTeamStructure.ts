@@ -76,13 +76,11 @@ export const useTeamStructure = () => {
           
           // Update the reports_to field if we found the manager
           if (managerData.id) {
-            // We need to use a type assertion here since TypeScript doesn't know the shape
-            // of the data we're updating
-            const updateData = { reports_to: managerData.id };
-            
+            // Using "as any" type assertion to bypass TypeScript's type checking
+            // This is necessary because TypeScript doesn't recognize all fields in the profiles table
             const { error: updateError } = await supabase
               .from('profiles')
-              .update(updateData)
+              .update({ reports_to: managerData.id } as any)
               .eq('id', profileId);
               
             if (updateError) {
