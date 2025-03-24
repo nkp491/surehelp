@@ -17,14 +17,12 @@ export const useTeamInvitations = (teamId?: string) => {
       .select(`
         *,
         teams:team_id (name),
-        inviters:invited_by (
-          id,
+        profiles_inviter:invited_by (
           first_name,
           last_name,
           profile_image_url
         ),
-        invitees:user_id (
-          id,
+        profiles_invitee:user_id (
           first_name,
           last_name,
           email
@@ -38,10 +36,10 @@ export const useTeamInvitations = (teamId?: string) => {
     return data.map(invitation => ({
       ...invitation,
       team_name: invitation.teams?.name,
-      inviter_name: `${invitation.inviters?.first_name || ''} ${invitation.inviters?.last_name || ''}`.trim(),
-      inviter_image: invitation.inviters?.profile_image_url,
-      invitee_name: invitation.invitees ? 
-        `${invitation.invitees.first_name || ''} ${invitation.invitees.last_name || ''}`.trim() : 
+      inviter_name: `${invitation.profiles_inviter?.first_name || ''} ${invitation.profiles_inviter?.last_name || ''}`.trim(),
+      inviter_image: invitation.profiles_inviter?.profile_image_url,
+      invitee_name: invitation.profiles_invitee ? 
+        `${invitation.profiles_invitee.first_name || ''} ${invitation.profiles_invitee.last_name || ''}`.trim() : 
         null
     })) as TeamInvitation[];
   };
@@ -66,8 +64,7 @@ export const useTeamInvitations = (teamId?: string) => {
       .select(`
         *,
         teams:team_id (name),
-        inviters:invited_by (
-          id,
+        profiles_inviter:invited_by (
           first_name,
           last_name,
           profile_image_url
@@ -82,8 +79,8 @@ export const useTeamInvitations = (teamId?: string) => {
     return data.map(invitation => ({
       ...invitation,
       team_name: invitation.teams?.name,
-      inviter_name: `${invitation.inviters?.first_name || ''} ${invitation.inviters?.last_name || ''}`.trim(),
-      inviter_image: invitation.inviters?.profile_image_url
+      inviter_name: `${invitation.profiles_inviter?.first_name || ''} ${invitation.profiles_inviter?.last_name || ''}`.trim(),
+      inviter_image: invitation.profiles_inviter?.profile_image_url
     })) as TeamInvitation[];
   };
 

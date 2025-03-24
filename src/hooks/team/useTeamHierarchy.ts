@@ -2,7 +2,7 @@
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamNode, TeamHierarchy } from "@/types/team-hierarchy";
+import { TeamNode, TeamHierarchy, TeamAggregateMetrics } from "@/types/team-hierarchy";
 import { TeamMember } from "@/types/team";
 import { useTeamPermissions } from "./useTeamPermissions";
 
@@ -193,13 +193,12 @@ export const useTeamHierarchy = () => {
       
       if (teamsError) throw teamsError;
       
-      // Fetch all members for these teams
-      const { data: members, error: membersError } = await supabase
+      // Fetch all members for these teams with profile info
+      const { data: membersData, error: membersError } = await supabase
         .from('team_members')
         .select(`
           *,
           profiles:user_id (
-            id,
             first_name,
             last_name,
             email,
@@ -211,12 +210,12 @@ export const useTeamHierarchy = () => {
       if (membersError) throw membersError;
       
       // Transform members data to include profile information
-      const transformedMembers = members.map(member => ({
+      const transformedMembers = membersData.map(member => ({
         ...member,
-        first_name: member.profiles?.first_name,
-        last_name: member.profiles?.last_name,
-        email: member.profiles?.email,
-        profile_image_url: member.profiles?.profile_image_url
+        first_name: member.profiles?.first_name || '',
+        last_name: member.profiles?.last_name || '',
+        email: member.profiles?.email || '',
+        profile_image_url: member.profiles?.profile_image_url || ''
       }));
       
       // Build the hierarchy
@@ -237,7 +236,7 @@ export const useTeamHierarchy = () => {
     return useQuery({
       queryKey: ['team-hierarchy', teamId],
       queryFn: () => fetchHierarchy(teamId!),
-      enabled: !!teamId && canViewTeamHierarchy(teamId),
+      enabled: !!teamId && Boolean(canViewTeamHierarchy(teamId)),
     });
   };
 

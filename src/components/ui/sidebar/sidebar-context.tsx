@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 export const SIDEBAR_COOKIE_NAME = "sidebar:state"
@@ -15,6 +16,9 @@ export type SidebarContext = {
   setOpenMobile: (open: boolean) => void
   isMobile: boolean
   toggleSidebar: () => void
+  isOpen?: boolean
+  onOpen?: () => void
+  onClose?: () => void
 }
 
 export const SidebarContext = React.createContext<SidebarContext | null>(null)

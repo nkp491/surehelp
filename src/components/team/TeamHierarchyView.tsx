@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
-import { supabase } from "@/integrations/supabase/client";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TeamMetricsOverview } from "./TeamMetricsOverview";
 import { Button } from "@/components/ui/button";
@@ -25,7 +24,7 @@ export function TeamHierarchyView({ rootTeamId, timePeriod, customDate }: TeamHi
   const [isLoading, setIsLoading] = useState(true);
   const [teamHierarchy, setTeamHierarchy] = useState<TeamNode | null>(null);
   const [expandedTeams, setExpandedTeams] = useState<string[]>([rootTeamId]);
-  const { fetchHierarchy, hierarchy } = useTeamManagement();
+  const { fetchHierarchy, isLoadingHierarchy } = useTeamManagement();
 
   useEffect(() => {
     const loadHierarchy = async () => {
@@ -137,7 +136,7 @@ export function TeamHierarchyView({ rootTeamId, timePeriod, customDate }: TeamHi
         <CardTitle>Team Hierarchy</CardTitle>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
+        {isLoading || isLoadingHierarchy ? (
           <div className="space-y-4">
             {Array.from({ length: 3 }).map((_, index) => (
               <Skeleton key={index} className="h-20 w-full" />
