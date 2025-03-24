@@ -7,7 +7,6 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { UpdateSuccessMessage } from "./UpdateSuccessMessage";
-import { Profile } from "@/types/profile";
 
 interface ManagerInfoProps {
   manager: {

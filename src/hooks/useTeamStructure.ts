@@ -3,10 +3,32 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from './profile/useProfileSanitization';
-import { ProfileMinimal, ReportingStructureFixed, toProfileMinimal } from '@/types/profile-minimal';
+
+// Use a simple type alias instead of complex interfaces
+type ProfileRecord = {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+  phone: string | null;
+  profile_image_url: string | null;
+  role: string | null;
+  roles?: string[];
+  reports_to?: string | null;
+  manager_email?: string | null;
+  created_at: string;
+  updated_at: string;
+  [key: string]: any; // Allow other properties without strict typing
+};
+
+// Create a simple structure without circular references
+type TeamStructure = {
+  manager: ProfileRecord | null;
+  directReports: ProfileRecord[];
+};
 
 export const useTeamStructure = () => {
-  const [reportingStructure, setReportingStructure] = useState<ReportingStructureFixed | null>(null);
+  const [reportingStructure, setReportingStructure] = useState<TeamStructure | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
@@ -18,7 +40,7 @@ export const useTeamStructure = () => {
 
     try {
       // Get the requested profile
-      const { data: profileData, error: profileError } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', profileId)
@@ -28,56 +50,48 @@ export const useTeamStructure = () => {
         throw profileError;
       }
 
-      if (!profileData) {
+      if (!profile) {
         throw new Error('Profile not found');
       }
 
-      // Sanitize profile data 
+      // Sanitize profile data without creating complex types
       const sanitizedProfile = sanitizeProfileData({
-        ...profileData,
-        roles: [profileData.role].filter(Boolean)
-      });
+        ...profile,
+        roles: [profile.role].filter(Boolean)
+      }) as ProfileRecord;
       
-      // Convert to minimal profile
-      const mappedProfile = toProfileMinimal(sanitizedProfile);
-
       // Get manager if reports_to is set
-      let manager: ProfileMinimal | null = null;
-      if (mappedProfile.reports_to) {
+      let manager: ProfileRecord | null = null;
+      if (sanitizedProfile.reports_to) {
         const { data: managerData, error: managerError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('id', mappedProfile.reports_to)
+          .eq('id', sanitizedProfile.reports_to)
           .single();
         
         if (!managerError && managerData) {
-          const sanitizedManager = sanitizeProfileData({
+          manager = sanitizeProfileData({
             ...managerData,
             roles: [managerData.role].filter(Boolean)
-          });
-          
-          manager = toProfileMinimal(sanitizedManager);
+          }) as ProfileRecord;
         }
-      } else if (mappedProfile.manager_email) {
+      } else if (sanitizedProfile.manager_email) {
         // Try to find manager by email if reports_to is not set but manager_email is
         const { data: managerData, error: managerError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('email', mappedProfile.manager_email)
+          .eq('email', sanitizedProfile.manager_email)
           .single();
           
         if (!managerError && managerData) {
-          const sanitizedManager = sanitizeProfileData({
+          manager = sanitizeProfileData({
             ...managerData,
             roles: [managerData.role].filter(Boolean)
-          });
-          
-          manager = toProfileMinimal(sanitizedManager);
+          }) as ProfileRecord;
           
           // Update the reports_to field if we found the manager
           if (managerData.id) {
-            // Using "as any" type assertion to bypass TypeScript's type checking
-            // This is necessary because TypeScript doesn't recognize all fields in the profiles table
+            // Using type assertion to bypass TypeScript's type checking
             const { error: updateError } = await supabase
               .from('profiles')
               .update({ reports_to: managerData.id } as any)
@@ -100,18 +114,16 @@ export const useTeamStructure = () => {
         throw reportingError;
       }
 
-      // Map direct reports to minimal profiles
-      const directReports = (reportingData || []).map(report => {
-        const sanitizedReport = sanitizeProfileData({
+      // Sanitize direct reports data
+      const directReports = (reportingData || []).map(report => 
+        sanitizeProfileData({
           ...report,
           roles: [report.role].filter(Boolean)
-        });
-        
-        return toProfileMinimal(sanitizedReport);
-      });
+        }) as ProfileRecord
+      );
 
-      // Create the reporting structure
-      const structure: ReportingStructureFixed = {
+      // Create a simple structure object
+      const structure: TeamStructure = {
         manager,
         directReports
       };
