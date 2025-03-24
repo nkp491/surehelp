@@ -1,12 +1,18 @@
 
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { TeamInvitation } from "@/types/team";
 
 export const useTeamInvitations = (teamId?: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const [teamInvitations, setTeamInvitations] = useState<TeamInvitation[]>([]);
+  const [userInvitations, setUserInvitations] = useState<TeamInvitation[]>([]);
+  const [isLoadingTeamInvitations, setIsLoadingTeamInvitations] = useState(false);
+  const [isLoadingUserInvitations, setIsLoadingUserInvitations] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Fetch invitations for a specific team
   const fetchInvitations = useCallback(async (teamId: string) => {
@@ -91,23 +97,65 @@ export const useTeamInvitations = (teamId?: string) => {
         ...invitation,
         team_name: team.name || 'Unknown team',
         invited_by_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
-        invited_by_profile_image: invitedByProfile.profile_image_url || ''
+        invited_by_profile_image: invitedByProfile.profile_image_url || '',
+        inviter_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
+        inviter_image: invitedByProfile.profile_image_url || ''
       };
     });
   }, []);
 
+  // Explicit refresh functions
+  const refreshTeamInvitations = useCallback(async () => {
+    if (!teamId) return;
+    setIsLoadingTeamInvitations(true);
+    try {
+      const invitations = await fetchInvitations(teamId);
+      setTeamInvitations(invitations);
+      return invitations;
+    } catch (error) {
+      console.error("Error refreshing team invitations:", error);
+      return [];
+    } finally {
+      setIsLoadingTeamInvitations(false);
+    }
+  }, [teamId, fetchInvitations]);
+
+  const refreshUserInvitations = useCallback(async () => {
+    setIsLoadingUserInvitations(true);
+    try {
+      const invitations = await fetchUserInvitations();
+      setUserInvitations(invitations);
+      return invitations;
+    } catch (error) {
+      console.error("Error refreshing user invitations:", error);
+      return [];
+    } finally {
+      setIsLoadingUserInvitations(false);
+    }
+  }, [fetchUserInvitations]);
+
   // Create a new invitation
-  const createInvitation = async ({ userId, role }: { userId: string, role: string }) => {
+  const createInvitation = async ({ teamId, email, role }: { teamId: string, email: string, role: string }) => {
     if (!teamId) throw new Error("Team ID is required");
 
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error("You must be logged in to invite users");
+
+    // Check if the email exists in profiles
+    const { data: profileData } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", email)
+      .single();
+
+    const userId = profileData?.id;
 
     const { data, error } = await supabase
       .from("team_invitations")
       .insert({
         team_id: teamId,
         user_id: userId,
+        email: email,
         invited_by: user.id,
         role,
         status: "pending"
@@ -197,114 +245,113 @@ export const useTeamInvitations = (teamId?: string) => {
     return useQuery({
       queryKey: ['team-invitations', teamId],
       queryFn: () => fetchInvitations(teamId!),
-      enabled: !!teamId
+      enabled: !!teamId,
+      onSuccess: (data) => {
+        setTeamInvitations(data);
+      }
     });
   };
 
   const useUserInvitationsQuery = () => {
     return useQuery({
       queryKey: ['user-invitations'],
-      queryFn: fetchUserInvitations
+      queryFn: fetchUserInvitations,
+      onSuccess: (data) => {
+        setUserInvitations(data);
+      }
     });
   };
+
+  // Update invitation status (accept or decline)
+  const updateInvitationStatus = useMutation({
+    mutationFn: async ({ invitationId, status }: { invitationId: string, status: "accepted" | "declined" }) => {
+      if (status === "accepted") {
+        return await acceptInvitation(invitationId);
+      } else {
+        return await declineInvitation(invitationId);
+      }
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['user-invitations'] });
+      queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      toast({
+        title: "Invitation updated",
+        description: "The invitation status has been updated",
+      });
+      refreshUserInvitations();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error updating invitation",
+        description: error.message || "There was an error updating the invitation",
+        variant: "destructive"
+      });
+    }
+  });
 
   // Use React Query mutations for actions
-  const useCreateInvitationMutation = () => {
-    return useMutation({
-      mutationFn: createInvitation,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['team-invitations', teamId] });
-        toast({
-          title: "Invitation sent",
-          description: "The user has been invited to join the team",
-        });
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error sending invitation",
-          description: error.message || "There was an error sending the invitation",
-          variant: "destructive"
-        });
-      }
-    });
-  };
+  const createInvitationMutation = useMutation({
+    mutationFn: createInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-invitations', teamId] });
+      toast({
+        title: "Invitation sent",
+        description: "The user has been invited to join the team",
+      });
+      refreshTeamInvitations();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error sending invitation",
+        description: error.message || "There was an error sending the invitation",
+        variant: "destructive"
+      });
+    }
+  });
 
-  const useAcceptInvitationMutation = () => {
-    return useMutation({
-      mutationFn: acceptInvitation,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['user-invitations'] });
-        queryClient.invalidateQueries({ queryKey: ['team-members'] });
-        toast({
-          title: "Invitation accepted",
-          description: "You have joined the team",
-        });
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error accepting invitation",
-          description: error.message || "There was an error accepting the invitation",
-          variant: "destructive"
-        });
-      }
-    });
-  };
-
-  const useDeclineInvitationMutation = () => {
-    return useMutation({
-      mutationFn: declineInvitation,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['user-invitations'] });
-        toast({
-          title: "Invitation declined",
-          description: "The invitation has been declined",
-        });
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error declining invitation",
-          description: error.message || "There was an error declining the invitation",
-          variant: "destructive"
-        });
-      }
-    });
-  };
-
-  const useCancelInvitationMutation = () => {
-    return useMutation({
-      mutationFn: cancelInvitation,
-      onSuccess: () => {
-        queryClient.invalidateQueries({ queryKey: ['team-invitations', teamId] });
-        toast({
-          title: "Invitation cancelled",
-          description: "The invitation has been cancelled",
-        });
-      },
-      onError: (error: any) => {
-        toast({
-          title: "Error cancelling invitation",
-          description: error.message || "There was an error cancelling the invitation",
-          variant: "destructive"
-        });
-      }
-    });
-  };
+  const deleteInvitationMutation = useMutation({
+    mutationFn: cancelInvitation,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['team-invitations', teamId] });
+      toast({
+        title: "Invitation cancelled",
+        description: "The invitation has been cancelled",
+      });
+      refreshTeamInvitations();
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error cancelling invitation",
+        description: error.message || "There was an error cancelling the invitation",
+        variant: "destructive"
+      });
+    }
+  });
 
   return {
-    // Data fetching hooks
+    // Data
+    teamInvitations,
+    userInvitations,
+    isLoadingTeamInvitations,
+    isLoadingUserInvitations,
+    isLoading,
+    
+    // Refresh functions
+    refreshTeamInvitations,
+    refreshUserInvitations,
+    
+    // Query hooks
     useTeamInvitationsQuery,
     useUserInvitationsQuery,
     
-    // Action hooks
-    useCreateInvitationMutation,
-    useAcceptInvitationMutation,
-    useDeclineInvitationMutation,
-    useCancelInvitationMutation,
+    // Mutation hooks
+    createInvitation: createInvitationMutation,
+    updateInvitationStatus,
+    deleteInvitation: deleteInvitationMutation,
     
-    // Raw functions
+    // Raw functions for direct use
     fetchInvitations,
     fetchUserInvitations,
-    createInvitation,
     acceptInvitation,
     declineInvitation,
     cancelInvitation

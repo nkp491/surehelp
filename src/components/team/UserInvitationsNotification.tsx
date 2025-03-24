@@ -19,6 +19,7 @@ export function UserInvitationsNotification() {
     refreshUserInvitations,
     updateInvitationStatus,
   } = useTeamInvitations();
+  
   const navigate = useNavigate();
 
   // Get only pending invitations
@@ -28,7 +29,9 @@ export function UserInvitationsNotification() {
 
   // Refresh invitations when component mounts
   useEffect(() => {
-    refreshUserInvitations();
+    if (refreshUserInvitations) {
+      refreshUserInvitations();
+    }
   }, [refreshUserInvitations]);
 
   const handleAcceptInvitation = async (invitationId: string) => {
@@ -83,7 +86,7 @@ export function UserInvitationsNotification() {
                 <div className="mb-2">
                   <p className="font-medium">{invitation.team_name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {invitation.inviter_name} invited you to join as {invitation.role.replace("_", " ")}
+                    {invitation.inviter_name || invitation.invited_by_name} invited you to join as {invitation.role.replace("_", " ")}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {formatDistanceToNow(new Date(invitation.created_at), { addSuffix: true })}

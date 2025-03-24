@@ -5,7 +5,7 @@ import { TeamInvitation } from "@/types/team";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, Mail, UserPlus, X, Check, AlertCircle } from "lucide-react";
+import { Loader2, Mail, UserPlus, X } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Input } from "@/components/ui/input";
@@ -69,7 +69,7 @@ export function TeamInvitationsList({ teamId }: TeamInvitationsListProps) {
   const getBadgeVariant = (status: string) => {
     switch (status) {
       case "pending": return "secondary";
-      case "accepted": return "success";
+      case "accepted": return "default";  // Changed from success to default
       case "declined": return "destructive";
       case "expired": return "outline";
       default: return "default";

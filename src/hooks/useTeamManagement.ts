@@ -50,6 +50,7 @@ export const useTeamManagement = () => {
   } = useTeamHierarchy();
 
   // Add the team invitations hook
+  const invitationHook = useTeamInvitations();
   const {
     teamInvitations,
     isLoadingTeamInvitations,
@@ -61,7 +62,7 @@ export const useTeamManagement = () => {
     updateInvitationStatus,
     deleteInvitation,
     isLoading: isLoadingInvitations
-  } = useTeamInvitations();
+  } = invitationHook;
 
   // Combined loading state
   const isLoading = 

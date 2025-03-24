@@ -209,7 +209,7 @@ export const useTeamHierarchy = () => {
       const { data: membersData, error: membersError } = await supabase
         .from('team_members')
         .select(`
-          id, team_id, user_id, role, joined_at,
+          id, team_id, user_id, role,
           profiles:user_id (
             first_name,
             last_name,
@@ -223,14 +223,15 @@ export const useTeamHierarchy = () => {
       
       // Transform members data to include profile information
       const transformedMembers = membersData.map(member => {
-        // Check if profiles exists and is not null
+        // Handle case where profiles might be null
         const profile = member.profiles || {};
+        
         return {
           ...member,
-          first_name: profile.first_name || '',
-          last_name: profile.last_name || '',
-          email: profile.email || '',
-          profile_image_url: profile.profile_image_url || ''
+          first_name: (profile && profile.first_name) || '',
+          last_name: (profile && profile.last_name) || '',
+          email: (profile && profile.email) || '',
+          profile_image_url: (profile && profile.profile_image_url) || ''
         };
       });
       
@@ -252,9 +253,7 @@ export const useTeamHierarchy = () => {
     return useQuery({
       queryKey: ['team-hierarchy', teamId],
       queryFn: () => fetchHierarchy(teamId!),
-      enabled: !!teamId && (typeof canViewTeamHierarchy === 'function' 
-        ? !!canViewTeamHierarchy(teamId)
-        : false)
+      enabled: !!teamId && !!canViewTeamHierarchy(teamId)
     });
   };
 
@@ -264,6 +263,7 @@ export const useTeamHierarchy = () => {
     buildHierarchy,
     loading,
     error,
-    canViewHierarchy: canViewTeamHierarchy
+    canViewHierarchy: canViewTeamHierarchy,
+    hierarchy: null // Added for backward compatibility
   };
 };

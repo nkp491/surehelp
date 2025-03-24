@@ -5,7 +5,7 @@ import { Profile } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from './profile/useProfileSanitization';
 
-// Define a non-recursive type for ReportingStructure
+// Define a type for ReportingStructure without recursion
 export interface ReportingStructure {
   manager: Profile | null;
   directReports: Profile[];
@@ -79,10 +79,10 @@ export const useTeamStructure = () => {
         }) as Profile
       );
 
-      // Create the reporting structure without circular references
+      // Create the reporting structure
       const structure: ReportingStructure = {
-        manager: manager,  // Changed from the original to avoid recursion
-        directReports: directReports
+        manager,
+        directReports
       };
 
       setReportingStructure(structure);
