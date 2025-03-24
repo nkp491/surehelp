@@ -29,7 +29,9 @@ export function UserInvitationsNotification() {
 
   // Refresh invitations when component mounts
   useEffect(() => {
-    refreshUserInvitations();
+    if (typeof refreshUserInvitations === 'function') {
+      refreshUserInvitations();
+    }
   }, [refreshUserInvitations]);
 
   const handleAcceptInvitation = async (invitationId: string) => {

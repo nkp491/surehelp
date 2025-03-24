@@ -45,16 +45,19 @@ export const useTeamInvitations = (teamId?: string) => {
 
     // Process the data to handle nullable fields and ensure proper structure
     return data.map(invitation => {
+      // Use nullish coalescing to ensure we have objects even if the data is null
       const team = invitation.team || {}; 
       const invitedByProfile = invitation.invited_by_profile || {};
       const userProfile = invitation.user_profile || {};
       
       return {
         ...invitation,
-        team_name: team.name || 'Unknown team',
-        invited_by_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
-        invited_by_profile_image: invitedByProfile.profile_image_url || '',
-        user_name: userProfile.first_name && userProfile.last_name 
+        team_name: team?.name || 'Unknown team',
+        invited_by_name: invitedByProfile?.first_name && invitedByProfile?.last_name 
+          ? `${invitedByProfile.first_name} ${invitedByProfile.last_name}`.trim() 
+          : 'Unknown user',
+        invited_by_profile_image: invitedByProfile?.profile_image_url || '',
+        user_name: userProfile?.first_name && userProfile?.last_name 
           ? `${userProfile.first_name} ${userProfile.last_name}` 
           : 'Unknown user',
         status: invitation.status as InvitationStatus
@@ -91,16 +94,21 @@ export const useTeamInvitations = (teamId?: string) => {
 
     // Process the data to handle nullable fields and ensure proper structure
     return data.map(invitation => {
+      // Use nullish coalescing to ensure we have objects even if the data is null
       const team = invitation.team || {}; 
       const invitedByProfile = invitation.invited_by_profile || {};
       
       return {
         ...invitation,
-        team_name: team.name || 'Unknown team',
-        invited_by_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
-        invited_by_profile_image: invitedByProfile.profile_image_url || '',
-        inviter_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
-        inviter_image: invitedByProfile.profile_image_url || '',
+        team_name: team?.name || 'Unknown team',
+        invited_by_name: invitedByProfile?.first_name && invitedByProfile?.last_name 
+          ? `${invitedByProfile.first_name} ${invitedByProfile.last_name}`.trim() 
+          : 'Unknown user',
+        invited_by_profile_image: invitedByProfile?.profile_image_url || '',
+        inviter_name: invitedByProfile?.first_name && invitedByProfile?.last_name
+          ? `${invitedByProfile.first_name} ${invitedByProfile.last_name}`.trim()
+          : 'Unknown user',
+        inviter_image: invitedByProfile?.profile_image_url || '',
         status: invitation.status as InvitationStatus
       } as TeamInvitation;
     });
