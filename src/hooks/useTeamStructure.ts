@@ -45,7 +45,7 @@ export const useTeamStructure = () => {
       const mappedProfile = sanitizeProfileData({
         ...profile,
         roles: [profile.role].filter(Boolean)
-      }) as SimplifiedProfile;
+      });
 
       // Get manager if reports_to is set
       let manager: Profile | null = null;

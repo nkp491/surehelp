@@ -5,6 +5,17 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { TeamInvitation, InvitationStatus } from "@/types/team";
 
+// Define interfaces for the joined data from Supabase
+interface TeamData {
+  name?: string;
+}
+
+interface ProfileData {
+  first_name?: string;
+  last_name?: string;
+  profile_image_url?: string;
+}
+
 export const useTeamInvitations = (teamId?: string) => {
   const queryClient = useQueryClient();
   const { toast } = useToast();
@@ -45,10 +56,10 @@ export const useTeamInvitations = (teamId?: string) => {
 
     // Process the data to handle nullable fields and ensure proper structure
     return data.map(invitation => {
-      // Use nullish coalescing to ensure we have objects even if the data is null
-      const team = invitation.team || {}; 
-      const invitedByProfile = invitation.invited_by_profile || {};
-      const userProfile = invitation.user_profile || {};
+      // Explicitly type the joined data to avoid TypeScript errors
+      const team = (invitation.team || {}) as TeamData;
+      const invitedByProfile = (invitation.invited_by_profile || {}) as ProfileData;
+      const userProfile = (invitation.user_profile || {}) as ProfileData;
       
       return {
         ...invitation,
@@ -94,9 +105,9 @@ export const useTeamInvitations = (teamId?: string) => {
 
     // Process the data to handle nullable fields and ensure proper structure
     return data.map(invitation => {
-      // Use nullish coalescing to ensure we have objects even if the data is null
-      const team = invitation.team || {}; 
-      const invitedByProfile = invitation.invited_by_profile || {};
+      // Explicitly type the joined data to avoid TypeScript errors
+      const team = (invitation.team || {}) as TeamData;
+      const invitedByProfile = (invitation.invited_by_profile || {}) as ProfileData;
       
       return {
         ...invitation,

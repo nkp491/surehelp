@@ -1,4 +1,3 @@
-
 export type Team = {
   id: string;
   name: string;
@@ -146,4 +145,5 @@ export type TeamRelationship = {
 // Helper type for team member with profile data
 export type TeamMemberWithProfile = TeamMember & {
   full_name: string;
+  profile_image_url?: string | null;
 };
