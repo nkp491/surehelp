@@ -1,9 +1,8 @@
-
 import { useCallback, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { TeamInvitation } from "@/types/team";
+import { TeamInvitation, InvitationStatus } from "@/types/team";
 
 export const useTeamInvitations = (teamId?: string) => {
   const queryClient = useQueryClient();
@@ -56,8 +55,9 @@ export const useTeamInvitations = (teamId?: string) => {
         invited_by_profile_image: invitedByProfile.profile_image_url || '',
         user_name: userProfile.first_name && userProfile.last_name 
           ? `${userProfile.first_name} ${userProfile.last_name}` 
-          : 'Unknown user'
-      };
+          : 'Unknown user',
+        status: invitation.status as InvitationStatus
+      } as TeamInvitation;
     });
   }, []);
 
@@ -99,8 +99,9 @@ export const useTeamInvitations = (teamId?: string) => {
         invited_by_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
         invited_by_profile_image: invitedByProfile.profile_image_url || '',
         inviter_name: `${invitedByProfile.first_name || ''} ${invitedByProfile.last_name || ''}`.trim() || 'Unknown user',
-        inviter_image: invitedByProfile.profile_image_url || ''
-      };
+        inviter_image: invitedByProfile.profile_image_url || '',
+        status: invitation.status as InvitationStatus
+      } as TeamInvitation;
     });
   }, []);
 
@@ -110,7 +111,7 @@ export const useTeamInvitations = (teamId?: string) => {
     setIsLoadingTeamInvitations(true);
     try {
       const invitations = await fetchInvitations(teamId);
-      setTeamInvitations(invitations);
+      setTeamInvitations(invitations as TeamInvitation[]);
       return invitations;
     } catch (error) {
       console.error("Error refreshing team invitations:", error);
@@ -124,7 +125,7 @@ export const useTeamInvitations = (teamId?: string) => {
     setIsLoadingUserInvitations(true);
     try {
       const invitations = await fetchUserInvitations();
-      setUserInvitations(invitations);
+      setUserInvitations(invitations as TeamInvitation[]);
       return invitations;
     } catch (error) {
       console.error("Error refreshing user invitations:", error);
@@ -246,8 +247,10 @@ export const useTeamInvitations = (teamId?: string) => {
       queryKey: ['team-invitations', teamId],
       queryFn: () => fetchInvitations(teamId!),
       enabled: !!teamId,
-      onSuccess: (data) => {
-        setTeamInvitations(data);
+      meta: {
+        onSuccess: (data: any) => {
+          setTeamInvitations(data as TeamInvitation[]);
+        }
       }
     });
   };
@@ -256,8 +259,10 @@ export const useTeamInvitations = (teamId?: string) => {
     return useQuery({
       queryKey: ['user-invitations'],
       queryFn: fetchUserInvitations,
-      onSuccess: (data) => {
-        setUserInvitations(data);
+      meta: {
+        onSuccess: (data: any) => {
+          setUserInvitations(data as TeamInvitation[]);
+        }
       }
     });
   };

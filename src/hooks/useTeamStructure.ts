@@ -18,6 +18,9 @@ export const useTeamStructure = () => {
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
 
+  // Simplified type for internal use to avoid recursion
+  type SimplifiedProfile = Omit<Profile, 'manager' | 'directReports'>;
+
   const getReportingStructure = async (profileId: string) => {
     setIsLoading(true);
     setError(null);
@@ -42,7 +45,7 @@ export const useTeamStructure = () => {
       const mappedProfile = sanitizeProfileData({
         ...profile,
         roles: [profile.role].filter(Boolean)
-      }) as Profile;
+      }) as SimplifiedProfile;
 
       // Get manager if reports_to is set
       let manager: Profile | null = null;

@@ -1,4 +1,3 @@
-
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -222,18 +221,30 @@ export const useTeamHierarchy = () => {
       if (membersError) throw membersError;
       
       // Transform members data to include profile information
-      const transformedMembers = membersData.map(member => {
-        // Handle case where profiles might be null
-        const profile = member.profiles || {};
-        
-        return {
-          ...member,
-          first_name: (profile && profile.first_name) || '',
-          last_name: (profile && profile.last_name) || '',
-          email: (profile && profile.email) || '',
-          profile_image_url: (profile && profile.profile_image_url) || ''
-        };
-      });
+      const mapMembersWithProfiles = (members: any[]): TeamMemberWithProfile[] => {
+        return members.map(member => {
+          // Ensure we have objects for nested properties to avoid "property does not exist on type '{}'" errors
+          const userProfile = member.user_profile || {};
+          
+          return {
+            id: member.id,
+            team_id: member.team_id,
+            user_id: member.user_id,
+            role: member.role,
+            created_at: member.created_at,
+            updated_at: member.updated_at,
+            first_name: userProfile.first_name || '',
+            last_name: userProfile.last_name || '',
+            email: userProfile.email || '',
+            profile_image_url: userProfile.profile_image_url || '',
+            full_name: userProfile.first_name && userProfile.last_name 
+              ? `${userProfile.first_name} ${userProfile.last_name}`
+              : 'Unknown User'
+          };
+        });
+      };
+      
+      const transformedMembers = mapMembersWithProfiles(membersData);
       
       // Build the hierarchy
       const hierarchy = buildHierarchy(teams, relationships, transformedMembers);

@@ -1,4 +1,3 @@
-
 export type Team = {
   id: string;
   name: string;
@@ -125,6 +124,9 @@ export type TeamInvitation = {
   inviter_name?: string;
   inviter_image?: string;
   invitee_name?: string;
+  invited_by_name?: string;
+  invited_by_profile_image?: string;
+  user_name?: string;
 };
 
 // Team Relationship Type
