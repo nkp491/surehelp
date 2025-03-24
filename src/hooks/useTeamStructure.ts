@@ -13,6 +13,7 @@ export const useTeamStructure = () => {
   const { sanitizeProfileData } = useProfileSanitization();
 
   // Define a simplified profile type to avoid infinite type instantiation
+  // The key is to exclude the recursive properties (manager and directReports)
   type SimplifiedProfile = Omit<Profile, 'manager' | 'directReports'>;
 
   const getReportingStructure = async (profileId: string) => {
@@ -84,7 +85,7 @@ export const useTeamStructure = () => {
       });
 
       // Create the reporting structure
-      // Use type assertion to satisfy TypeScript but avoid infinite recursion
+      // Use explicit type assertions to break the circular reference
       const structure: ReportingStructure = {
         manager: manager as unknown as Profile | null,
         directReports: directReports as unknown as Profile[]
