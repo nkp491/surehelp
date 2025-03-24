@@ -1,15 +1,9 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile } from '@/types/profile';
+import { Profile, ReportingStructure } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from './profile/useProfileSanitization';
-
-// Define a type for ReportingStructure without recursion
-export interface ReportingStructure {
-  manager: Profile | null;
-  directReports: Profile[];
-}
 
 export const useTeamStructure = () => {
   const [reportingStructure, setReportingStructure] = useState<ReportingStructure | null>(null);
@@ -18,7 +12,7 @@ export const useTeamStructure = () => {
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
 
-  // Non-recursive profile type to avoid infinite type instantiation
+  // Define a simplified profile type to avoid infinite type instantiation
   type SimplifiedProfile = Omit<Profile, 'manager' | 'directReports'>;
 
   const getReportingStructure = async (profileId: string) => {
@@ -41,14 +35,17 @@ export const useTeamStructure = () => {
         throw new Error('Profile not found');
       }
 
-      // Map to our Profile type with sanitization
-      const mappedProfile = sanitizeProfileData({
+      // Map to our SimplifiedProfile type with sanitization
+      const sanitizedProfile = sanitizeProfileData({
         ...profile,
         roles: [profile.role].filter(Boolean)
       });
+      
+      // Cast to SimplifiedProfile to avoid recursive type issues
+      const mappedProfile = sanitizedProfile as SimplifiedProfile;
 
       // Get manager if reports_to is set
-      let manager: Profile | null = null;
+      let manager: SimplifiedProfile | null = null;
       if (mappedProfile.reports_to) {
         const { data: managerData, error: managerError } = await supabase
           .from('profiles')
@@ -57,10 +54,12 @@ export const useTeamStructure = () => {
           .single();
         
         if (!managerError && managerData) {
-          manager = sanitizeProfileData({
+          const sanitizedManager = sanitizeProfileData({
             ...managerData,
             roles: [managerData.role].filter(Boolean)
-          }) as Profile;
+          });
+          // Cast to SimplifiedProfile to avoid recursive type issues
+          manager = sanitizedManager as SimplifiedProfile;
         }
       }
 
@@ -74,13 +73,15 @@ export const useTeamStructure = () => {
         throw reportingError;
       }
 
-      // Map direct reports to Profile type with sanitization
-      const directReports = (reportingData || []).map(report => 
-        sanitizeProfileData({
+      // Map direct reports to SimplifiedProfile type with sanitization
+      const directReports = (reportingData || []).map(report => {
+        const sanitizedReport = sanitizeProfileData({
           ...report,
           roles: [report.role].filter(Boolean)
-        }) as Profile
-      );
+        });
+        // Cast to SimplifiedProfile to avoid recursive type issues
+        return sanitizedReport as SimplifiedProfile;
+      });
 
       // Create the reporting structure
       const structure: ReportingStructure = {
