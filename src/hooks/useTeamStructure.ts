@@ -33,10 +33,10 @@ export const useTeamStructure = () => {
       }
 
       // Map to our Profile type with sanitization
-      const mappedProfile: Profile = sanitizeProfileData({
+      const mappedProfile = sanitizeProfileData({
         ...profile,
         roles: [profile.role].filter(Boolean)
-      });
+      }) as Profile;
 
       // Get manager if reports_to is set
       let manager: Profile | null = null;
@@ -51,7 +51,7 @@ export const useTeamStructure = () => {
           manager = sanitizeProfileData({
             ...managerData,
             roles: [managerData.role].filter(Boolean)
-          });
+          }) as Profile;
         }
       }
 
@@ -66,16 +66,16 @@ export const useTeamStructure = () => {
       }
 
       // Map direct reports to Profile type with sanitization
-      const directReports: Profile[] = (reportingData || []).map(report => 
+      const directReports = (reportingData || []).map(report => 
         sanitizeProfileData({
           ...report,
           roles: [report.role].filter(Boolean)
-        })
+        }) as Profile
       );
 
-      // Create the reporting structure
+      // Create the reporting structure without circular references
       const structure: ReportingStructure = {
-        manager: manager || mappedProfile,  // If no manager found, use the profile itself
+        manager: manager || null,  // Changed from the original to avoid recursion
         directReports: directReports
       };
 

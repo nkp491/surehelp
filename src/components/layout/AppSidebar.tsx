@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -38,7 +39,7 @@ import {
 import { cn } from "@/lib/utils";
 
 export function AppSidebar() {
-  const { isOpen, onOpen, onClose } = useSidebar();
+  const sidebar = useSidebar();
   const { pathname } = useLocation();
   const { signOut } = useAuth();
   const { toast } = useToast();

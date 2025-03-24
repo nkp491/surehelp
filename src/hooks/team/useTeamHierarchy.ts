@@ -210,13 +210,17 @@ export const useTeamHierarchy = () => {
       if (membersError) throw membersError;
       
       // Transform members data to include profile information
-      const transformedMembers = membersData.map(member => ({
-        ...member,
-        first_name: member.profiles?.first_name || '',
-        last_name: member.profiles?.last_name || '',
-        email: member.profiles?.email || '',
-        profile_image_url: member.profiles?.profile_image_url || ''
-      }));
+      const transformedMembers = membersData.map(member => {
+        // Check if profiles exists and handle possible null values safely
+        const profile = member.profiles || {};
+        return {
+          ...member,
+          first_name: profile?.first_name || '',
+          last_name: profile?.last_name || '',
+          email: profile?.email || '',
+          profile_image_url: profile?.profile_image_url || ''
+        };
+      });
       
       // Build the hierarchy
       const hierarchy = buildHierarchy(teams, relationships, transformedMembers);
@@ -236,7 +240,7 @@ export const useTeamHierarchy = () => {
     return useQuery({
       queryKey: ['team-hierarchy', teamId],
       queryFn: () => fetchHierarchy(teamId!),
-      enabled: !!teamId && Boolean(canViewTeamHierarchy(teamId)),
+      enabled: !!teamId && canViewTeamHierarchy(teamId),
     });
   };
 

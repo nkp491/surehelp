@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,16 +31,22 @@ export const useTeamInvitations = (teamId?: string) => {
 
     if (error) throw error;
 
-    // Transform data to include nested properties
-    return data.map(invitation => ({
-      ...invitation,
-      team_name: invitation.teams?.name,
-      inviter_name: `${invitation.profiles_inviter?.first_name || ''} ${invitation.profiles_inviter?.last_name || ''}`.trim(),
-      inviter_image: invitation.profiles_inviter?.profile_image_url,
-      invitee_name: invitation.profiles_invitee ? 
-        `${invitation.profiles_invitee.first_name || ''} ${invitation.profiles_invitee.last_name || ''}`.trim() : 
-        null
-    })) as TeamInvitation[];
+    // Transform data to include nested properties safely
+    return data.map(invitation => {
+      const inviterProfile = invitation.profiles_inviter || {};
+      const inviteeProfile = invitation.profiles_invitee || null;
+      const team = invitation.teams || {};
+      
+      return {
+        ...invitation,
+        team_name: team?.name,
+        inviter_name: `${inviterProfile?.first_name || ''} ${inviterProfile?.last_name || ''}`.trim(),
+        inviter_image: inviterProfile?.profile_image_url,
+        invitee_name: inviteeProfile ? 
+          `${inviteeProfile.first_name || ''} ${inviteeProfile.last_name || ''}`.trim() : 
+          null
+      };
+    }) as TeamInvitation[];
   };
 
   // Get user's pending invitations
@@ -75,13 +80,18 @@ export const useTeamInvitations = (teamId?: string) => {
 
     if (error) throw error;
 
-    // Transform data
-    return data.map(invitation => ({
-      ...invitation,
-      team_name: invitation.teams?.name,
-      inviter_name: `${invitation.profiles_inviter?.first_name || ''} ${invitation.profiles_inviter?.last_name || ''}`.trim(),
-      inviter_image: invitation.profiles_inviter?.profile_image_url
-    })) as TeamInvitation[];
+    // Transform data safely
+    return data.map(invitation => {
+      const inviterProfile = invitation.profiles_inviter || {};
+      const team = invitation.teams || {};
+      
+      return {
+        ...invitation,
+        team_name: team?.name,
+        inviter_name: `${inviterProfile?.first_name || ''} ${inviterProfile?.last_name || ''}`.trim(),
+        inviter_image: inviterProfile?.profile_image_url
+      };
+    }) as TeamInvitation[];
   };
 
   // Team invitations query
