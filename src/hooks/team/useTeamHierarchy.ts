@@ -1,8 +1,9 @@
+
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TeamNode, TeamHierarchy } from "@/types/team-hierarchy";
-import { TeamMember } from "@/types/team";
+import { TeamMember, TeamMemberWithProfile } from "@/types/team";
 import { useTeamPermissions } from "./useTeamPermissions";
 
 export interface TeamAggregateMetrics {
@@ -224,30 +225,30 @@ export const useTeamHierarchy = () => {
       const mapMembersWithProfiles = (members: any[]): TeamMemberWithProfile[] => {
         return members.map(member => {
           // Ensure we have objects for nested properties to avoid "property does not exist on type '{}'" errors
-          const userProfile = member.user_profile || {};
+          const profile = member.profiles || {};
           
           return {
             id: member.id,
             team_id: member.team_id,
             user_id: member.user_id,
             role: member.role,
-            created_at: member.created_at,
-            updated_at: member.updated_at,
-            first_name: userProfile.first_name || '',
-            last_name: userProfile.last_name || '',
-            email: userProfile.email || '',
-            profile_image_url: userProfile.profile_image_url || '',
-            full_name: userProfile.first_name && userProfile.last_name 
-              ? `${userProfile.first_name} ${userProfile.last_name}`
+            created_at: member.created_at || new Date().toISOString(),
+            updated_at: member.updated_at || new Date().toISOString(),
+            first_name: profile.first_name || '',
+            last_name: profile.last_name || '',
+            email: profile.email || '',
+            profile_image_url: profile.profile_image_url || '',
+            full_name: profile.first_name && profile.last_name 
+              ? `${profile.first_name} ${profile.last_name}`
               : 'Unknown User'
           };
         });
       };
       
-      const transformedMembers = mapMembersWithProfiles(membersData);
+      const transformedMembers = mapMembersWithProfiles(membersData || []);
       
       // Build the hierarchy
-      const hierarchy = buildHierarchy(teams, relationships, transformedMembers);
+      const hierarchy = buildHierarchy(teams || [], relationships || [], transformedMembers);
       
       return hierarchy;
     } catch (error: any) {

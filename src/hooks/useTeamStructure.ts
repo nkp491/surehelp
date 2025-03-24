@@ -18,7 +18,7 @@ export const useTeamStructure = () => {
   const { toast } = useToast();
   const { sanitizeProfileData } = useProfileSanitization();
 
-  // Simplified type for internal use to avoid recursion
+  // Non-recursive profile type to avoid infinite type instantiation
   type SimplifiedProfile = Omit<Profile, 'manager' | 'directReports'>;
 
   const getReportingStructure = async (profileId: string) => {

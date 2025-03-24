@@ -1,3 +1,4 @@
+
 export type Team = {
   id: string;
   name: string;
@@ -17,6 +18,7 @@ export type TeamMember = {
   last_name?: string | null;
   email?: string | null;
   profile_image_url?: string | null;
+  full_name?: string; // Added for convenience
 };
 
 export type BulletinReadReceipt = {
@@ -139,4 +141,9 @@ export type TeamRelationship = {
   // Additional fields from joins
   parent_team_name?: string;
   child_team_name?: string;
+};
+
+// Helper type for team member with profile data
+export type TeamMemberWithProfile = TeamMember & {
+  full_name: string;
 };

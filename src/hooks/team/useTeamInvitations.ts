@@ -1,3 +1,4 @@
+
 import { useCallback, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -107,7 +108,7 @@ export const useTeamInvitations = (teamId?: string) => {
 
   // Explicit refresh functions
   const refreshTeamInvitations = useCallback(async () => {
-    if (!teamId) return;
+    if (!teamId) return [];
     setIsLoadingTeamInvitations(true);
     try {
       const invitations = await fetchInvitations(teamId);
