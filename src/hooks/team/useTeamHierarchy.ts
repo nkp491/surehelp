@@ -1,350 +1,252 @@
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamHierarchy, TeamNode, TeamAggregateMetrics } from "@/types/team-hierarchy";
-import { useToast } from "@/hooks/use-toast";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { TeamNode, TeamHierarchy } from "@/types/team-hierarchy";
 import { TeamMember } from "@/types/team";
+import { useTeamPermissions } from "./useTeamPermissions";
 
-/**
- * Hook for fetching and managing team hierarchies
- */
-export const useTeamHierarchy = (rootTeamId?: string) => {
+export const useTeamHierarchy = () => {
   const [loading, setLoading] = useState(false);
-  const [hierarchy, setHierarchy] = useState<TeamHierarchy | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const { toast } = useToast();
-  const { hasRequiredRole } = useRoleCheck();
-  
-  // Check if user has permission to view team hierarchies
-  const canViewHierarchy = hasRequiredRole(['manager_pro_gold', 'manager_pro_platinum', 'system_admin']);
+  const { canViewTeamHierarchy } = useTeamPermissions();
 
-  // Fetch the team hierarchy data
-  const fetchHierarchy = useCallback(async (teamId: string) => {
-    if (!canViewHierarchy) {
-      setError("You don't have permission to view team hierarchies");
-      toast({
-        title: "Access Denied",
-        description: "You need Manager Pro Gold or higher to view team hierarchies.",
-        variant: "destructive"
+  // Function to build team hierarchy from flat data
+  const buildHierarchy = useCallback((
+    teams: any[], 
+    relationships: any[], 
+    members: any[]
+  ): TeamHierarchy | null => {
+    if (!teams.length) return null;
+
+    // Create a map of team IDs to team nodes
+    const teamMap = new Map<string, TeamNode>();
+    
+    // Initialize all teams as nodes
+    teams.forEach(team => {
+      teamMap.set(team.id, {
+        ...team,
+        children: [],
+        members: [],
+        level: 0,
+        isExpanded: false
       });
-      return null;
-    }
+    });
     
-    if (!teamId) {
-      setError("No team ID provided");
-      return null;
-    }
-    
-    setLoading(true);
-    setError(null);
-    
-    try {
-      console.log(`Fetching hierarchy for team ${teamId}`);
-      
-      // Step 1: Fetch the root team
-      const { data: rootTeamData, error: rootTeamError } = await supabase
-        .from('teams')
-        .select('id, name, created_at, updated_at')
-        .eq('id', teamId)
-        .single();
-      
-      if (rootTeamError) {
-        throw rootTeamError;
+    // Group members by team
+    members.forEach(member => {
+      const team = teamMap.get(member.team_id);
+      if (team) {
+        if (!team.members) team.members = [];
+        team.members.push(member);
+        
+        // Set the manager if the role is manager_pro*
+        if (member.role && member.role.startsWith('manager_pro')) {
+          team.manager = member;
+        }
       }
-      
-      // Step 2: Recursively build the hierarchy
-      const builtHierarchy = await buildTeamHierarchy(teamId, 0);
-      
-      if (!builtHierarchy) {
-        throw new Error("Failed to build team hierarchy");
+    });
+
+    // Create parent-child relationships
+    const childrenMap = new Map<string, string[]>();
+    relationships.forEach(rel => {
+      if (!childrenMap.has(rel.parent_team_id)) {
+        childrenMap.set(rel.parent_team_id, []);
       }
+      childrenMap.get(rel.parent_team_id)!.push(rel.child_team_id);
       
-      const result: TeamHierarchy = {
-        rootTeam: builtHierarchy,
-        allTeams: flattenHierarchy(builtHierarchy),
-        allMembers: await getAllTeamMembers(builtHierarchy)
+      // Set parent team reference
+      const childTeam = teamMap.get(rel.child_team_id);
+      if (childTeam) {
+        childTeam.parentTeamId = rel.parent_team_id;
+      }
+    });
+    
+    // Build the hierarchical structure
+    childrenMap.forEach((childIds, parentId) => {
+      const parentTeam = teamMap.get(parentId);
+      if (parentTeam) {
+        childIds.forEach(childId => {
+          const childTeam = teamMap.get(childId);
+          if (childTeam) {
+            if (!parentTeam.children) parentTeam.children = [];
+            parentTeam.children.push(childTeam);
+          }
+        });
+      }
+    });
+    
+    // Find root teams (teams with no parent)
+    const rootTeams: TeamNode[] = [];
+    teamMap.forEach(team => {
+      if (!team.parentTeamId) {
+        rootTeams.push(team);
+      }
+    });
+    
+    // Assign levels based on hierarchy
+    const assignLevels = (node: TeamNode, level: number) => {
+      node.level = level;
+      if (node.children) {
+        node.children.forEach(child => assignLevels(child, level + 1));
+      }
+    };
+    
+    rootTeams.forEach(root => assignLevels(root, 0));
+    
+    // Calculate aggregate metrics
+    const calculateMetrics = (node: TeamNode): TeamAggregateMetrics => {
+      const baseMetrics = {
+        totalLeads: 0,
+        totalCalls: 0,
+        totalContacts: 0,
+        totalScheduled: 0,
+        totalSits: 0,
+        totalSales: 0,
+        averageAP: 0,
+        teamCount: 1, // Count this team
+        memberCount: node.members?.length || 0
       };
       
-      setHierarchy(result);
-      return result;
-    } catch (err: any) {
-      console.error("Error fetching team hierarchy:", err);
-      const errorMessage = err.message || "Failed to fetch team hierarchy";
-      setError(errorMessage);
+      // If there are no children, return base metrics
+      if (!node.children || node.children.length === 0) {
+        return baseMetrics;
+      }
       
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive"
+      // Recursively calculate metrics for all children
+      const childMetrics = node.children.map(child => calculateMetrics(child));
+      
+      // Combine all metrics
+      const aggregateMetrics = childMetrics.reduce((acc, curr) => {
+        return {
+          totalLeads: acc.totalLeads + curr.totalLeads,
+          totalCalls: acc.totalCalls + curr.totalCalls,
+          totalContacts: acc.totalContacts + curr.totalContacts,
+          totalScheduled: acc.totalScheduled + curr.totalScheduled,
+          totalSits: acc.totalSits + curr.totalSits,
+          totalSales: acc.totalSales + curr.totalSales,
+          averageAP: 0, // Will calculate after
+          teamCount: acc.teamCount + curr.teamCount,
+          memberCount: acc.memberCount + curr.memberCount
+        };
+      }, baseMetrics);
+      
+      // Calculate weighted average AP
+      const totalMembers = aggregateMetrics.memberCount;
+      if (totalMembers > 0) {
+        aggregateMetrics.averageAP = 
+          (baseMetrics.averageAP * baseMetrics.memberCount + 
+           childMetrics.reduce((sum, curr) => sum + curr.averageAP * curr.memberCount, 0)) / totalMembers;
+      }
+      
+      node.metrics = aggregateMetrics;
+      return aggregateMetrics;
+    };
+    
+    // Apply metrics to all root teams
+    rootTeams.forEach(root => calculateMetrics(root));
+    
+    // Return the hierarchy with the first root team as the root
+    // In most cases, we'll query for a specific team so there will be only one root
+    return {
+      rootTeam: rootTeams[0] || null,
+      allTeams: Array.from(teamMap.values()),
+      allMembers: members
+    };
+  }, []);
+
+  // Function to fetch team hierarchy data
+  const fetchHierarchy = useCallback(async (rootTeamId: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      // Fetch the root team and its details
+      const { data: rootTeam, error: rootTeamError } = await supabase
+        .from('teams')
+        .select('*')
+        .eq('id', rootTeamId)
+        .single();
+      
+      if (rootTeamError) throw rootTeamError;
+      
+      // Fetch all teams that are related to this team (child teams)
+      const { data: relationships, error: relError } = await supabase
+        .from('team_relationships')
+        .select('*')
+        .or(`parent_team_id.eq.${rootTeamId},child_team_id.eq.${rootTeamId}`);
+      
+      if (relError) throw relError;
+      
+      // Get all team IDs involved in the hierarchy
+      const teamIds = new Set<string>([rootTeamId]);
+      relationships.forEach(rel => {
+        teamIds.add(rel.parent_team_id);
+        teamIds.add(rel.child_team_id);
       });
       
+      // Fetch all teams in the hierarchy
+      const { data: teams, error: teamsError } = await supabase
+        .from('teams')
+        .select('*')
+        .in('id', Array.from(teamIds));
+      
+      if (teamsError) throw teamsError;
+      
+      // Fetch all members for these teams
+      const { data: members, error: membersError } = await supabase
+        .from('team_members')
+        .select(`
+          *,
+          profiles:user_id (
+            id,
+            first_name,
+            last_name,
+            email,
+            profile_image_url
+          )
+        `)
+        .in('team_id', Array.from(teamIds));
+      
+      if (membersError) throw membersError;
+      
+      // Transform members data to include profile information
+      const transformedMembers = members.map(member => ({
+        ...member,
+        first_name: member.profiles?.first_name,
+        last_name: member.profiles?.last_name,
+        email: member.profiles?.email,
+        profile_image_url: member.profiles?.profile_image_url
+      }));
+      
+      // Build the hierarchy
+      const hierarchy = buildHierarchy(teams, relationships, transformedMembers);
+      
+      return hierarchy;
+    } catch (error: any) {
+      console.error("Error fetching team hierarchy:", error);
+      setError(error.message || "Failed to load team hierarchy");
       return null;
     } finally {
       setLoading(false);
     }
-  }, [canViewHierarchy, toast]);
-  
-  // Build the team hierarchy recursively
-  const buildTeamHierarchy = async (teamId: string, level: number): Promise<TeamNode | null> => {
-    // Fetch team details
-    const { data: team, error: teamError } = await supabase
-      .from('teams')
-      .select('id, name, created_at, updated_at')
-      .eq('id', teamId)
-      .single();
-    
-    if (teamError || !team) {
-      console.error("Error fetching team details:", teamError);
-      return null;
-    }
-    
-    // Fetch team members
-    const { data: members, error: membersError } = await supabase
-      .from('team_members')
-      .select(`
-        id, team_id, user_id, role,
-        profiles:user_id (
-          id, first_name, last_name, email, profile_image_url
-        )
-      `)
-      .eq('team_id', teamId);
-    
-    if (membersError) {
-      console.error("Error fetching team members:", membersError);
-      return null;
-    }
-    
-    // Process members and find manager
-    const processedMembers: TeamMember[] = members.map((member: any) => ({
-      id: member.id,
-      team_id: member.team_id,
-      user_id: member.user_id,
-      role: member.role,
-      created_at: member.created_at,
-      updated_at: member.updated_at,
-      first_name: member.profiles?.first_name,
-      last_name: member.profiles?.last_name,
-      email: member.profiles?.email,
-      profile_image_url: member.profiles?.profile_image_url
-    }));
-    
-    const manager = processedMembers.find(member => 
-      member.role?.startsWith('manager_pro')
-    );
-    
-    // Fetch subteams (teams that have this team as parent)
-    // For now, in Phase 2 we'll mock this with sample data
-    // In later phases, we'll implement proper parent-child team relationships
-    const mockChildren: TeamNode[] = level < 2 ? await getMockChildTeams(teamId, level + 1) : [];
-    
-    // Calculate metrics
-    const metrics = await calculateTeamMetrics(teamId, processedMembers, mockChildren);
-    
-    // Construct the team node
-    const teamNode: TeamNode = {
-      ...team,
-      level,
-      members: processedMembers,
-      manager: manager,
-      children: mockChildren,
-      metrics,
-      isExpanded: level === 0 // Root team is expanded by default
-    };
-    
-    return teamNode;
-  };
-  
-  // Helper: Mock child teams for demonstration
-  const getMockChildTeams = async (parentId: string, level: number): Promise<TeamNode[]> => {
-    // In Phase 2, we'll use mock data to demonstrate the hierarchy
-    // In later phases, this will be replaced with real parent-child relationships
-    if (level > 2) return []; // Limit depth for demo
-    
-    const numChildren = Math.floor(Math.random() * 3) + 1; // 1-3 children
-    const mockChildren: TeamNode[] = [];
-    
-    for (let i = 0; i < numChildren; i++) {
-      // Get a random existing team to use as a mock child
-      const { data: randomTeams, error } = await supabase
-        .from('teams')
-        .select('id, name, created_at, updated_at')
-        .neq('id', parentId)
-        .limit(10);
-      
-      if (error || !randomTeams || randomTeams.length === 0) {
-        continue;
-      }
-      
-      // Pick a random team
-      const randomIndex = Math.floor(Math.random() * randomTeams.length);
-      const randomTeam = randomTeams[randomIndex];
-      
-      // Create a mock child team
-      const childNode = await buildTeamHierarchy(randomTeam.id, level);
-      if (childNode) {
-        childNode.parentTeamId = parentId;
-        mockChildren.push(childNode);
-      }
-    }
-    
-    return mockChildren;
-  };
-  
-  // Calculate aggregate metrics for a team including its subteams
-  const calculateTeamMetrics = async (
-    teamId: string, 
-    members: TeamMember[], 
-    children: TeamNode[]
-  ): Promise<TeamAggregateMetrics> => {
-    // Get metrics for the team members
-    const memberIds = members.map(m => m.user_id);
-    
-    // Fetch real metrics when available, otherwise generate mock metrics
-    const { data: metricsData, error: metricsError } = await supabase
-      .from('daily_metrics')
-      .select('*')
-      .in('user_id', memberIds)
-      .gte('date', new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]) // Last 30 days
-      .order('date', { ascending: false });
-    
-    // If no metrics data, create some mock data for demonstration
-    const teamMetrics: TeamAggregateMetrics = {
-      totalLeads: 0,
-      totalCalls: 0,
-      totalContacts: 0,
-      totalScheduled: 0,
-      totalSits: 0,
-      totalSales: 0,
-      averageAP: 0,
-      teamCount: 1 + children.length, // This team + subteams
-      memberCount: members.length
-    };
-    
-    // Aggregate metrics from team members
-    if (metricsData && metricsData.length > 0) {
-      // Use actual data if available
-      const userMetrics = new Map();
-      
-      // Group by user and take the most recent entry for each
-      metricsData.forEach(metric => {
-        if (!userMetrics.has(metric.user_id) || 
-            new Date(metric.date) > new Date(userMetrics.get(metric.user_id).date)) {
-          userMetrics.set(metric.user_id, metric);
-        }
-      });
-      
-      // Sum up metrics
-      userMetrics.forEach(metric => {
-        teamMetrics.totalLeads += metric.leads || 0;
-        teamMetrics.totalCalls += metric.calls || 0;
-        teamMetrics.totalContacts += metric.contacts || 0;
-        teamMetrics.totalScheduled += metric.scheduled || 0;
-        teamMetrics.totalSits += metric.sits || 0;
-        teamMetrics.totalSales += metric.sales || 0;
-        
-        if (metric.ap) {
-          teamMetrics.averageAP += metric.ap;
-        }
-      });
-      
-      // Calculate average AP
-      if (userMetrics.size > 0 && teamMetrics.averageAP > 0) {
-        teamMetrics.averageAP = Math.round(teamMetrics.averageAP / userMetrics.size);
-      }
-    } else {
-      // Use mock data if no real metrics
-      const mockTotalLeads = members.length * (Math.floor(Math.random() * 10) + 5);
-      const mockContactRate = 0.6 + (Math.random() * 0.3); // 60-90% contact rate
-      const mockAppointmentRate = 0.3 + (Math.random() * 0.3); // 30-60% appointment rate
-      const mockSitRate = 0.5 + (Math.random() * 0.3); // 50-80% sit rate
-      const mockCloseRate = 0.3 + (Math.random() * 0.4); // 30-70% close rate
-      
-      teamMetrics.totalLeads = mockTotalLeads;
-      teamMetrics.totalCalls = Math.floor(mockTotalLeads * 2.5);
-      teamMetrics.totalContacts = Math.floor(mockTotalLeads * mockContactRate);
-      teamMetrics.totalScheduled = Math.floor(teamMetrics.totalContacts * mockAppointmentRate);
-      teamMetrics.totalSits = Math.floor(teamMetrics.totalScheduled * mockSitRate);
-      teamMetrics.totalSales = Math.floor(teamMetrics.totalSits * mockCloseRate);
-      teamMetrics.averageAP = Math.floor(25000 + (Math.random() * 25000)); // $250-500 AP
-    }
-    
-    // Add metrics from child teams
-    children.forEach(child => {
-      if (child.metrics) {
-        teamMetrics.totalLeads += child.metrics.totalLeads;
-        teamMetrics.totalCalls += child.metrics.totalCalls;
-        teamMetrics.totalContacts += child.metrics.totalContacts;
-        teamMetrics.totalScheduled += child.metrics.totalScheduled;
-        teamMetrics.totalSits += child.metrics.totalSits;
-        teamMetrics.totalSales += child.metrics.totalSales;
-        
-        if (child.metrics.averageAP > 0 && child.metrics.memberCount > 0) {
-          teamMetrics.averageAP = Math.round(
-            (teamMetrics.averageAP * teamMetrics.memberCount + 
-             child.metrics.averageAP * child.metrics.memberCount) /
-            (teamMetrics.memberCount + child.metrics.memberCount)
-          );
-        }
-        
-        teamMetrics.memberCount += child.metrics.memberCount;
-      }
+  }, [buildHierarchy]);
+
+  // Query function to fetch and cache hierarchy data
+  const useHierarchyQuery = (teamId?: string) => {
+    return useQuery({
+      queryKey: ['team-hierarchy', teamId],
+      queryFn: () => fetchHierarchy(teamId!),
+      enabled: !!teamId && canViewTeamHierarchy(teamId),
     });
-    
-    return teamMetrics;
   };
-  
-  // Helper: Flatten hierarchy into an array of all teams
-  const flattenHierarchy = (rootTeam: TeamNode): TeamNode[] => {
-    const result: TeamNode[] = [rootTeam];
-    
-    if (rootTeam.children && rootTeam.children.length > 0) {
-      rootTeam.children.forEach(child => {
-        result.push(...flattenHierarchy(child));
-      });
-    }
-    
-    return result;
-  };
-  
-  // Helper: Get all team members from the hierarchy
-  const getAllTeamMembers = async (rootTeam: TeamNode): Promise<TeamMember[]> => {
-    const allMembers: Map<string, TeamMember> = new Map();
-    
-    // Add members from the root team
-    if (rootTeam.members) {
-      rootTeam.members.forEach(member => {
-        allMembers.set(member.user_id, member);
-      });
-    }
-    
-    // Add members from child teams
-    if (rootTeam.children && rootTeam.children.length > 0) {
-      for (const childTeam of rootTeam.children) {
-        const childMembers = await getAllTeamMembers(childTeam);
-        childMembers.forEach(member => {
-          if (!allMembers.has(member.user_id)) {
-            allMembers.set(member.user_id, member);
-          }
-        });
-      }
-    }
-    
-    return Array.from(allMembers.values());
-  };
-  
-  // Fetch the hierarchy when the root team ID changes
-  useEffect(() => {
-    if (rootTeamId && canViewHierarchy) {
-      fetchHierarchy(rootTeamId);
-    }
-  }, [rootTeamId, canViewHierarchy, fetchHierarchy]);
-  
+
   return {
-    hierarchy,
+    fetchHierarchy,
+    useHierarchyQuery,
+    buildHierarchy,
     loading,
     error,
-    fetchHierarchy,
-    canViewHierarchy
+    canViewHierarchy: canViewTeamHierarchy
   };
 };

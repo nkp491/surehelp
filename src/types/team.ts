@@ -104,3 +104,37 @@ export type MeetingFollowup = {
   created_at: string;
   updated_at: string;
 };
+
+// Team Invitation Types
+export type InvitationStatus = 'pending' | 'accepted' | 'declined' | 'expired';
+
+export type TeamInvitation = {
+  id: string;
+  team_id: string;
+  user_id?: string;
+  email?: string;
+  invited_by: string;
+  role: string;
+  status: InvitationStatus;
+  token: string;
+  expires_at: string;
+  created_at: string;
+  updated_at: string;
+  // Additional fields from joins
+  team_name?: string;
+  inviter_name?: string;
+  inviter_image?: string;
+  invitee_name?: string;
+};
+
+// Team Relationship Type
+export type TeamRelationship = {
+  id: string;
+  parent_team_id: string;
+  child_team_id: string;
+  created_at: string;
+  updated_at: string;
+  // Additional fields from joins
+  parent_team_name?: string;
+  child_team_name?: string;
+};

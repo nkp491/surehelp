@@ -3,6 +3,7 @@ import { useTeams } from "./team/useTeams";
 import { useTeamMembers } from "./team/useTeamMembers";
 import { useTeamPermissions } from "./team/useTeamPermissions";
 import { useTeamHierarchy } from "./team/useTeamHierarchy";
+import { useTeamInvitations } from "./team/useTeamInvitations";
 import { hasManagerPermission } from "@/utils/team/managerTierUtils";
 
 /**
@@ -41,15 +42,33 @@ export const useTeamManagement = () => {
 
   // Add the team hierarchy hook
   const {
-    hierarchy,
+    fetchHierarchy,
+    useHierarchyQuery,
     loading: isLoadingHierarchy,
     error: hierarchyError,
-    fetchHierarchy,
     canViewHierarchy
   } = useTeamHierarchy();
 
+  // Add the team invitations hook
+  const {
+    teamInvitations,
+    isLoadingTeamInvitations,
+    refreshTeamInvitations,
+    userInvitations,
+    isLoadingUserInvitations,
+    refreshUserInvitations,
+    createInvitation,
+    updateInvitationStatus,
+    deleteInvitation,
+    isLoading: isLoadingInvitations
+  } = useTeamInvitations();
+
   // Combined loading state
-  const isLoading = isLoadingTeamOps || isLoadingMemberOps || isLoadingHierarchy;
+  const isLoading = 
+    isLoadingTeamOps || 
+    isLoadingMemberOps || 
+    isLoadingHierarchy || 
+    isLoadingInvitations;
 
   // Create a function to get team members that returns the query
   const getTeamMembersQuery = (teamId?: string) => {
@@ -126,11 +145,22 @@ export const useTeamManagement = () => {
     getManagerPermissionsForRole,
     
     // Hierarchy
-    hierarchy,
+    fetchHierarchy,
+    useHierarchyQuery,
     isLoadingHierarchy,
     hierarchyError,
-    fetchHierarchy,
     canViewHierarchy,
+    
+    // Invitations
+    teamInvitations,
+    isLoadingTeamInvitations,
+    refreshTeamInvitations,
+    userInvitations,
+    isLoadingUserInvitations,
+    refreshUserInvitations,
+    createInvitation,
+    updateInvitationStatus,
+    deleteInvitation,
     
     // Loading state
     isLoading
@@ -139,4 +169,3 @@ export const useTeamManagement = () => {
 
 // Add missing import
 import { supabase } from "@/integrations/supabase/client";
-import { getManagerPermissions } from "@/utils/team/managerTierUtils";

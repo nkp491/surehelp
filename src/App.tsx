@@ -14,6 +14,7 @@ import CommissionTracker from "@/pages/CommissionTracker";
 import RoleManagement from "@/pages/RoleManagement";
 import Team from "@/pages/Team";
 import TeamDirectory from "@/pages/TeamDirectory";
+import TeamManagement from "@/pages/TeamManagement";
 import Notifications from "@/pages/Notifications";
 import ManagerDashboard from "@/pages/ManagerDashboard";
 import AuthCallback from "@/pages/auth/callback";
@@ -54,6 +55,7 @@ function App() {
                         <Route path="/role-management" element={<RoleManagement />} />
                         <Route path="/team" element={<Team />} />
                         <Route path="/team-directory" element={<TeamDirectory />} />
+                        <Route path="/team-management" element={<TeamManagement />} />
                         <Route path="/notifications" element={<Notifications />} />
                         <Route path="/one-on-one" element={<OneOnOneManagement />} />
                         <Route path="/manager-dashboard" element={<ManagerDashboard />} />

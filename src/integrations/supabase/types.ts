@@ -640,6 +640,56 @@ export type Database = {
           },
         ]
       }
+      team_invitations: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          invited_by: string
+          role: string
+          status: string
+          team_id: string
+          token: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          invited_by: string
+          role: string
+          status?: string
+          team_id: string
+          token?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          invited_by?: string
+          role?: string
+          status?: string
+          team_id?: string
+          token?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           created_at: string
@@ -669,6 +719,45 @@ export type Database = {
           {
             foreignKeyName: "team_members_team_id_fkey"
             columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_relationships: {
+        Row: {
+          child_team_id: string
+          created_at: string | null
+          id: string
+          parent_team_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          child_team_id: string
+          created_at?: string | null
+          id?: string
+          parent_team_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          child_team_id?: string
+          created_at?: string | null
+          id?: string
+          parent_team_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_relationships_child_team_id_fkey"
+            columns: ["child_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_relationships_parent_team_id_fkey"
+            columns: ["parent_team_id"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
