@@ -84,9 +84,10 @@ export const useTeamStructure = () => {
       });
 
       // Create the reporting structure
+      // Use type assertion to satisfy TypeScript but avoid infinite recursion
       const structure: ReportingStructure = {
-        manager,
-        directReports
+        manager: manager as unknown as Profile | null,
+        directReports: directReports as unknown as Profile[]
       };
 
       setReportingStructure(structure);
