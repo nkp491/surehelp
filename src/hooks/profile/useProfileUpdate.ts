@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
@@ -129,6 +128,35 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       // Log what we're sending to debug
       console.log("Updating profile with:", updatesToSave);
 
+      // Handle manager_email update specifically
+      if (updatesToSave.manager_email !== undefined) {
+        console.log("Processing manager email update:", updatesToSave.manager_email);
+        
+        try {
+          // Look up the manager's user ID from their email
+          if (updatesToSave.manager_email) {
+            const { data: managerData, error: managerError } = await supabase
+              .from("profiles")
+              .select("id")
+              .eq("email", updatesToSave.manager_email)
+              .single();
+            
+            if (managerError) {
+              console.error("Error finding manager:", managerError);
+              // Don't throw yet, we'll add a pending request
+            } else if (managerData) {
+              // Update the reports_to field with the manager's ID
+              updatesToSave.reports_to = managerData.id;
+            }
+          } else {
+            // If manager_email is empty or null, clear the reports_to field
+            updatesToSave.reports_to = null;
+          }
+        } catch (error) {
+          console.error("Error processing manager relationship:", error);
+        }
+      }
+
       // Define user metadata fields to update
       const userMetadata: any = {};
       let hasMetadataUpdates = false;
@@ -245,6 +273,27 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       }
       
       console.log("Profile updated successfully:", updateResult);
+      
+      // Create pending team request if manager email was specified but manager not found
+      if (updatesToSave.manager_email && !updatesToSave.reports_to) {
+        try {
+          // Create a pending request in the team_requests table if it exists
+          const { error: requestError } = await supabase
+            .from("team_requests")
+            .upsert({
+              user_id: session.user.id,
+              manager_email: updatesToSave.manager_email,
+              status: "pending",
+              created_at: new Date().toISOString()
+            });
+            
+          if (requestError) {
+            console.warn("Note: team_requests table doesn't exist yet, skipping request creation");
+          }
+        } catch (error) {
+          console.warn("Could not create team request:", error);
+        }
+      }
       
       // Verify the synchronization was successful
       const isSynced = await verifyProfileSync(session.user.id, profileUpdate);

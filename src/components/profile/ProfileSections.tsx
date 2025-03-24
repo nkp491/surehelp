@@ -8,6 +8,9 @@ import PrivacySettings from "@/components/profile/PrivacySettings";
 import NotificationPreferences from "@/components/profile/NotificationPreferences";
 import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import DebugTools from "@/components/profile/DebugTools";
+import ManagerInfo from "@/components/profile/ManagerInfo";
+import { useTeamStructure } from "@/hooks/useTeamStructure";
+import { useEffect, useState } from "react";
 
 interface ProfileSectionsProps {
   profile: Profile | null;
@@ -64,6 +67,20 @@ const ProfileSections = ({
       : defaultNotificationPreferences;
 
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
+  
+  // Get reporting structure for current user
+  const { reportingStructure, getReportingStructure } = useTeamStructure();
+  const [manager, setManager] = useState<any>(null);
+  
+  useEffect(() => {
+    if (profile?.id) {
+      getReportingStructure(profile.id).then((structure) => {
+        if (structure && structure.manager) {
+          setManager(structure.manager);
+        }
+      });
+    }
+  }, [profile?.id, getReportingStructure]);
 
   return (
     <div className="space-y-6">
@@ -84,6 +101,12 @@ const ProfileSections = ({
 
       <div className="flex flex-col gap-6">
         <UserRole role={profile?.role} roles={profile?.roles} />
+        
+        <ManagerInfo
+          manager={manager}
+          onUpdate={updateProfile}
+          userRole={profile?.role}
+        />
 
         <PasswordSettings />
 

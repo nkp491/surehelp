@@ -42,6 +42,7 @@ export interface ProfileMinimal {
   department: string | null;
   location: string | null;
   reports_to: string | null;
+  manager_email: string | null; // Added manager_email field
   hire_date: string | null;
   extended_contact: {
     work_email: string | null;
@@ -81,6 +82,7 @@ export const toProfileMinimal = (profile: any): ProfileMinimal => {
     department,
     location,
     reports_to,
+    manager_email,
     hire_date,
     extended_contact
   } = profile;
@@ -106,6 +108,7 @@ export const toProfileMinimal = (profile: any): ProfileMinimal => {
     department,
     location,
     reports_to,
+    manager_email,
     hire_date,
     extended_contact
   };

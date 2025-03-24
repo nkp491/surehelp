@@ -58,6 +58,34 @@ export const useTeamStructure = () => {
           
           manager = toProfileMinimal(sanitizedManager);
         }
+      } else if (profile.manager_email) {
+        // Try to find manager by email if reports_to is not set but manager_email is
+        const { data: managerData, error: managerError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('email', profile.manager_email)
+          .single();
+          
+        if (!managerError && managerData) {
+          const sanitizedManager = sanitizeProfileData({
+            ...managerData,
+            roles: [managerData.role].filter(Boolean)
+          });
+          
+          manager = toProfileMinimal(sanitizedManager);
+          
+          // Update the reports_to field if we found the manager
+          if (!profile.reports_to) {
+            const { error: updateError } = await supabase
+              .from('profiles')
+              .update({ reports_to: managerData.id })
+              .eq('id', profileId);
+              
+            if (updateError) {
+              console.error("Error updating reports_to field:", updateError);
+            }
+          }
+        }
       }
 
       // Get direct reports
