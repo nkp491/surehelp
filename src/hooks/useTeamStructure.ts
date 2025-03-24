@@ -76,9 +76,13 @@ export const useTeamStructure = () => {
           
           // Update the reports_to field if we found the manager
           if (managerData.id) {
+            // We need to use a type assertion here since TypeScript doesn't know the shape
+            // of the data we're updating
+            const updateData = { reports_to: managerData.id };
+            
             const { error: updateError } = await supabase
               .from('profiles')
-              .update({ reports_to: managerData.id })
+              .update(updateData)
               .eq('id', profileId);
               
             if (updateError) {
