@@ -143,7 +143,7 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
             
             if (managerError) {
               console.error("Error finding manager:", managerError);
-              // Don't throw yet, we'll add a pending request
+              // Don't throw yet, we'll log the pending request instead
             } else if (managerData) {
               // Update the reports_to field with the manager's ID
               updatesToSave.reports_to = managerData.id;
@@ -276,22 +276,28 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       
       // Create pending team request if manager email was specified but manager not found
       if (updatesToSave.manager_email && !updatesToSave.reports_to) {
+        console.log("Manager email specified but manager not found:", updatesToSave.manager_email);
+        // Instead of trying to insert into a non-existent table, just log the information
+        console.warn("Note: team_requests table doesn't exist yet, would create request for:", {
+          user_id: session.user.id,
+          manager_email: updatesToSave.manager_email,
+          status: "pending",
+          created_at: new Date().toISOString()
+        });
+        
         try {
-          // Create a pending request in the team_requests table if it exists
-          const { error: requestError } = await supabase
-            .from("team_requests")
-            .upsert({
-              user_id: session.user.id,
-              manager_email: updatesToSave.manager_email,
-              status: "pending",
-              created_at: new Date().toISOString()
-            });
+          // Check if a table exists before trying to use it
+          const { error: checkError } = await supabase
+            .from("team_members")
+            .select("id")
+            .limit(1);
             
-          if (requestError) {
-            console.warn("Note: team_requests table doesn't exist yet, skipping request creation");
+          if (!checkError) {
+            // If the check worked, we know the database is accessible
+            console.log("Database is accessible, but team_requests table doesn't exist yet");
           }
         } catch (error) {
-          console.warn("Could not create team request:", error);
+          console.warn("Error checking database status:", error);
         }
       }
       

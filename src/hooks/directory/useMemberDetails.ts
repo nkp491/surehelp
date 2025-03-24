@@ -60,6 +60,7 @@ export const useMemberDetails = (members: Profile[]) => {
         department: null,
         location: null,
         reports_to: null,
+        manager_email: null, // Add the missing field
         hire_date: null,
         extended_contact: null
       };

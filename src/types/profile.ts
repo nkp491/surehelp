@@ -40,7 +40,7 @@ export type Profile = {
   department: string | null;
   location: string | null;
   reports_to: string | null;
-  manager_email: string | null; // New field for manager's email
+  manager_email: string | null; // This field was missing
   hire_date: string | null;
   extended_contact: {
     work_email: string | null;

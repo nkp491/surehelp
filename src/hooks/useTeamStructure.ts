@@ -18,7 +18,7 @@ export const useTeamStructure = () => {
 
     try {
       // Get the requested profile
-      const { data: profile, error: profileError } = await supabase
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
         .select('*')
         .eq('id', profileId)
@@ -28,14 +28,14 @@ export const useTeamStructure = () => {
         throw profileError;
       }
 
-      if (!profile) {
+      if (!profileData) {
         throw new Error('Profile not found');
       }
 
       // Sanitize profile data 
       const sanitizedProfile = sanitizeProfileData({
-        ...profile,
-        roles: [profile.role].filter(Boolean)
+        ...profileData,
+        roles: [profileData.role].filter(Boolean)
       });
       
       // Convert to minimal profile
@@ -58,12 +58,12 @@ export const useTeamStructure = () => {
           
           manager = toProfileMinimal(sanitizedManager);
         }
-      } else if (profile.manager_email) {
+      } else if (mappedProfile.manager_email) {
         // Try to find manager by email if reports_to is not set but manager_email is
         const { data: managerData, error: managerError } = await supabase
           .from('profiles')
           .select('*')
-          .eq('email', profile.manager_email)
+          .eq('email', mappedProfile.manager_email)
           .single();
           
         if (!managerError && managerData) {
@@ -75,7 +75,7 @@ export const useTeamStructure = () => {
           manager = toProfileMinimal(sanitizedManager);
           
           // Update the reports_to field if we found the manager
-          if (!profile.reports_to) {
+          if (managerData.id) {
             const { error: updateError } = await supabase
               .from('profiles')
               .update({ reports_to: managerData.id })
