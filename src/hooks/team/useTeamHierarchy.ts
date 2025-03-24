@@ -2,9 +2,21 @@
 import { useState, useCallback } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamNode, TeamHierarchy, TeamAggregateMetrics } from "@/types/team-hierarchy";
+import { TeamNode, TeamHierarchy } from "@/types/team-hierarchy";
 import { TeamMember } from "@/types/team";
 import { useTeamPermissions } from "./useTeamPermissions";
+
+export interface TeamAggregateMetrics {
+  totalLeads: number;
+  totalCalls: number;
+  totalContacts: number;
+  totalScheduled: number;
+  totalSits: number;
+  totalSales: number;
+  averageAP: number;
+  teamCount: number;
+  memberCount: number;
+}
 
 export const useTeamHierarchy = () => {
   const [loading, setLoading] = useState(false);
@@ -197,7 +209,7 @@ export const useTeamHierarchy = () => {
       const { data: membersData, error: membersError } = await supabase
         .from('team_members')
         .select(`
-          *,
+          id, team_id, user_id, role, joined_at,
           profiles:user_id (
             first_name,
             last_name,
@@ -211,14 +223,14 @@ export const useTeamHierarchy = () => {
       
       // Transform members data to include profile information
       const transformedMembers = membersData.map(member => {
-        // Check if profiles exists and handle possible null values safely
+        // Check if profiles exists and is not null
         const profile = member.profiles || {};
         return {
           ...member,
-          first_name: profile?.first_name || '',
-          last_name: profile?.last_name || '',
-          email: profile?.email || '',
-          profile_image_url: profile?.profile_image_url || ''
+          first_name: profile.first_name || '',
+          last_name: profile.last_name || '',
+          email: profile.email || '',
+          profile_image_url: profile.profile_image_url || ''
         };
       });
       
@@ -240,7 +252,9 @@ export const useTeamHierarchy = () => {
     return useQuery({
       queryKey: ['team-hierarchy', teamId],
       queryFn: () => fetchHierarchy(teamId!),
-      enabled: !!teamId && canViewTeamHierarchy(teamId),
+      enabled: !!teamId && (typeof canViewTeamHierarchy === 'function' 
+        ? !!canViewTeamHierarchy(teamId)
+        : false)
     });
   };
 

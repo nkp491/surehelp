@@ -1,9 +1,15 @@
 
 import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile, ReportingStructure } from '@/types/profile';
+import { Profile } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from './profile/useProfileSanitization';
+
+// Define a non-recursive type for ReportingStructure
+export interface ReportingStructure {
+  manager: Profile | null;
+  directReports: Profile[];
+}
 
 export const useTeamStructure = () => {
   const [reportingStructure, setReportingStructure] = useState<ReportingStructure | null>(null);
@@ -75,7 +81,7 @@ export const useTeamStructure = () => {
 
       // Create the reporting structure without circular references
       const structure: ReportingStructure = {
-        manager: manager || null,  // Changed from the original to avoid recursion
+        manager: manager,  // Changed from the original to avoid recursion
         directReports: directReports
       };
 
