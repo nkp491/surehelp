@@ -51,6 +51,7 @@ function App() {
                         <Route path="/metrics" element={<Dashboard />} />
                         <Route path="/profile" element={<Profile />} />
                         <Route path="/admin" element={<AdminActions />} />
+                        <Route path="/admin-actions" element={<AdminActions />} />
                         <Route path="/commission-tracker" element={<CommissionTracker />} />
                         <Route path="/role-management" element={<RoleManagement />} />
                         <Route path="/team" element={<Team />} />

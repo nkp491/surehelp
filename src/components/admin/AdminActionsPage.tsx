@@ -1,10 +1,18 @@
 
+import { useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SingleUserRoleManager } from "./SingleUserRoleManager";
 import { BulkUserRoleManager } from "./BulkUserRoleManager";
 import { Toaster } from "@/components/ui/toaster";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 export default function AdminActionsPage() {
+  const { hasSystemAdminRole } = useRoleCheck();
+  
+  useEffect(() => {
+    console.log("AdminActionsPage loaded, hasSystemAdminRole:", hasSystemAdminRole);
+  }, [hasSystemAdminRole]);
+
   return (
     <div className="container mx-auto py-8 px-4">
       <h1 className="text-3xl font-bold mb-6">Admin Actions</h1>

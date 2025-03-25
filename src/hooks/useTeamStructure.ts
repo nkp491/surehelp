@@ -55,7 +55,6 @@ export const useTeamStructure = () => {
             ...managerData,
             roles: [managerData.role].filter(Boolean)
           });
-          // Convert to ProfileMinimal type to break circular references
           manager = toProfileMinimal(sanitizedManager);
         }
       }
@@ -69,13 +68,11 @@ export const useTeamStructure = () => {
           .eq('manager_email', sanitizedProfile.email);
 
         if (!reportingError && reportingData) {
-          // Map and sanitize direct reports, converting each to ProfileMinimal
           directReports = (reportingData || []).map(report => {
             const sanitizedReport = sanitizeProfileData({
               ...report,
               roles: [report.role].filter(Boolean)
             });
-            // Convert to ProfileMinimal type to break circular references
             return toProfileMinimal(sanitizedReport);
           });
         }

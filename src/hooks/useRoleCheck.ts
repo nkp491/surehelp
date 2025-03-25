@@ -22,6 +22,8 @@ export function useRoleCheck() {
     queryKey: ["user-roles"],
     queryFn: async () => {
       try {
+        console.log("Fetching user roles...");
+        
         // Check session storage first for fastest access
         try {
           const sessionRoles = sessionStorage.getItem('user-roles');
@@ -40,6 +42,7 @@ export function useRoleCheck() {
             fetchUserRoles().then(freshRoles => {
               // Update session storage if roles have changed
               if (JSON.stringify(freshRoles) !== JSON.stringify(roles)) {
+                console.log("Updating session roles with fresh data:", freshRoles);
                 sessionStorage.setItem('user-roles', JSON.stringify(freshRoles));
               }
             }).catch(error => {
@@ -52,9 +55,20 @@ export function useRoleCheck() {
           console.error('Error checking session storage:', e);
         }
         
+        // Check if we have a system_admin flag in localStorage as a quick check
+        try {
+          const isSystemAdmin = localStorage.getItem('is-system-admin') === 'true';
+          if (isSystemAdmin) {
+            console.log("Found system_admin flag in localStorage");
+          }
+        } catch (e) {
+          console.error('Error checking localStorage:', e);
+        }
+        
         // Force clear any system admin flags when fetching fresh
         localStorage.removeItem('is-system-admin');
         const roles = await fetchUserRoles();
+        console.log("Fetched fresh user roles:", roles);
         setIsInitialLoading(false);
         
         // Cache the admin status immediately if detected
@@ -90,12 +104,15 @@ export function useRoleCheck() {
 
   // Optimized system admin role check
   const hasSystemAdminRole = useMemo(() => {
+    console.log("Checking if user is system admin, roles:", userRoles);
+    
     // Fast path: check session storage for fastest response
     try {
       const sessionRoles = sessionStorage.getItem('user-roles');
       if (sessionRoles) {
         const roles = JSON.parse(sessionRoles);
         if (Array.isArray(roles) && roles.includes('system_admin')) {
+          console.log("System admin found in session storage");
           return true;
         }
       }
@@ -154,6 +171,7 @@ export function useRoleCheck() {
     
     // Cache the admin status if positive
     if (isAdmin) {
+      console.log("Admin status confirmed through checkSystemAdminRole");
       try {
         localStorage.setItem('is-system-admin', 'true');
         localStorage.setItem('has-admin-access', 'true');

@@ -10,6 +10,7 @@ export const hasSystemAdminRole = async (): Promise<boolean> => {
   try {
     const { data: session } = await supabase.auth.getSession();
     if (!session?.session?.user?.id) {
+      console.log("No active session found");
       return false;
     }
 
@@ -24,7 +25,19 @@ export const hasSystemAdminRole = async (): Promise<boolean> => {
       return false;
     }
 
-    return data && data.length > 0;
+    const isAdmin = data && data.length > 0;
+    console.log(`User ${session.session.user.id} is${isAdmin ? '' : ' not'} a system admin`);
+    
+    // Cache the result for faster access
+    if (isAdmin) {
+      try {
+        localStorage.setItem('is-system-admin', 'true');
+      } catch (e) {
+        console.error('Error saving to localStorage:', e);
+      }
+    }
+    
+    return isAdmin;
   } catch (error) {
     console.error("Error checking admin role:", error);
     return false;
