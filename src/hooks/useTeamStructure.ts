@@ -38,6 +38,9 @@ export const useTeamStructure = () => {
         roles: [profile.role].filter(Boolean)
       });
       
+      // Convert to ProfileMinimal type to break circular references
+      const profileMinimal = toProfileMinimal(sanitizedProfile);
+      
       // Get manager if reports_to is set - but check if field exists first to avoid SQL errors
       let manager: ProfileMinimal | null = null;
       
@@ -55,6 +58,7 @@ export const useTeamStructure = () => {
             ...managerData,
             roles: [managerData.role].filter(Boolean)
           });
+          // Use toProfileMinimal to avoid type recursion issues
           manager = toProfileMinimal(sanitizedManager);
         }
       }
@@ -73,6 +77,7 @@ export const useTeamStructure = () => {
               ...report,
               roles: [report.role].filter(Boolean)
             });
+            // Use toProfileMinimal to avoid type recursion issues
             return toProfileMinimal(sanitizedReport);
           });
         }

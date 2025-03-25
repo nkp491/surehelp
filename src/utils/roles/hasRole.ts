@@ -14,6 +14,19 @@ export const hasSystemAdminRole = async (): Promise<boolean> => {
       return false;
     }
 
+    // Check if we've already verified admin status in this session
+    try {
+      const cachedAdminStatus = localStorage.getItem('is-system-admin');
+      if (cachedAdminStatus === 'true') {
+        console.log("Using cached admin status: true");
+        return true;
+      }
+    } catch (e) {
+      console.error("Error checking localStorage:", e);
+    }
+
+    console.log("Checking admin role for user:", session.session.user.id);
+    
     const { data, error } = await supabase
       .from("user_roles")
       .select("*")
