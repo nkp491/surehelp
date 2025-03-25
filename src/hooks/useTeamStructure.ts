@@ -55,6 +55,7 @@ export const useTeamStructure = () => {
             ...managerData,
             roles: [managerData.role].filter(Boolean)
           });
+          
           // Convert to minimal profile to avoid circular references
           manager = toProfileMinimal(sanitizedManager);
         }
@@ -84,10 +85,10 @@ export const useTeamStructure = () => {
         // Continue with empty direct reports
       }
 
-      // Create the structure object with the correct type
+      // Create the reporting structure with explicit typing
       const structure: ReportingStructureFixed = {
-        manager,
-        directReports
+        manager: manager as ProfileMinimal | null,
+        directReports: directReports as ProfileMinimal[]
       };
 
       setReportingStructure(structure);
