@@ -55,6 +55,7 @@ export const useTeamStructure = () => {
             ...managerData,
             roles: [managerData.role].filter(Boolean)
           });
+          // Use the toProfileMinimal helper to avoid type recursion
           manager = toProfileMinimal(sanitizedManager);
         }
       }
@@ -74,6 +75,7 @@ export const useTeamStructure = () => {
               ...report,
               roles: [report.role].filter(Boolean)
             });
+            // Use the toProfileMinimal helper to avoid type recursion
             return toProfileMinimal(sanitizedReport);
           });
         }
@@ -82,7 +84,7 @@ export const useTeamStructure = () => {
         // Continue with empty direct reports
       }
 
-      // Create the structure object
+      // Create the structure object with the correct type
       const structure: ReportingStructureFixed = {
         manager,
         directReports
