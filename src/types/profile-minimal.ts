@@ -42,7 +42,7 @@ export interface ProfileMinimal {
   department: string | null;
   location: string | null;
   reports_to: string | null;
-  manager_email: string | null; // Added manager_email field
+  manager_email: string | null; // We'll use this instead of a nested manager object
   hire_date: string | null;
   extended_contact: {
     work_email: string | null;
@@ -54,6 +54,7 @@ export interface ProfileMinimal {
 }
 
 // Create fixed reporting structure using ProfileMinimal
+// This is where we allow nesting, but ONLY at this top level
 export interface ReportingStructureFixed {
   manager: ProfileMinimal | null;
   directReports: ProfileMinimal[];
