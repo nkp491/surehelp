@@ -71,10 +71,12 @@ export const useTeamStructure = () => {
           
           // Update the reports_to field if we found the manager
           if (managerData.id) {
-            // Fix: Use a specific type for the update operation
+            // Fix: Explicitly define the type and avoid type inference
+            const updateData: { reports_to: string } = { reports_to: managerData.id };
+            
             const { error: updateError } = await supabase
               .from('profiles')
-              .update({ reports_to: managerData.id } as Record<string, unknown>)
+              .update(updateData)
               .eq('id', profileId);
               
             if (updateError) {
