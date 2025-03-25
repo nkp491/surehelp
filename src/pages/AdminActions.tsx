@@ -1,18 +1,34 @@
+
 import { FC, useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
 import AdminActionsPage from '@/components/admin/AdminActionsPage';
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Loader2 } from "lucide-react";
+import { toast } from '@/hooks/use-toast';
 
 const AdminActions: FC = () => {
-  const { hasSystemAdminRole, isLoadingRoles } = useRoleCheck();
+  const { hasSystemAdminRole, isLoadingRoles, refetchRoles } = useRoleCheck();
   const navigate = useNavigate();
   const [accessChecked, setAccessChecked] = useState(false);
+
+  // Force refetch roles to ensure we have the latest data
+  useEffect(() => {
+    refetchRoles();
+  }, [refetchRoles]);
 
   useEffect(() => {
     if (!isLoadingRoles) {
       setAccessChecked(true);
+      
+      // Display toast when admin page is loaded successfully for system admins
+      if (hasSystemAdminRole) {
+        toast({
+          title: "Admin Access Granted",
+          description: "You have access to the Admin Actions page",
+          duration: 3000,
+        });
+      }
       
       try {
         const pageVisits = JSON.parse(localStorage.getItem('page-visits') || '{}');
@@ -26,6 +42,8 @@ const AdminActions: FC = () => {
       }
     }
   }, [isLoadingRoles, hasSystemAdminRole]);
+
+  console.log('AdminActions page:', { isLoadingRoles, accessChecked, hasSystemAdminRole });
 
   if (isLoadingRoles || !accessChecked) {
     return (
