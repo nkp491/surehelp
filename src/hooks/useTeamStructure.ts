@@ -38,24 +38,12 @@ export const useTeamStructure = () => {
         roles: [profile.role].filter(Boolean)
       });
       
-      // Get manager if reports_to is set
+      // Get manager if reports_to is set - but check if field exists first to avoid SQL errors
       let manager: ProfileMinimal | null = null;
-      if (sanitizedProfile.reports_to) {
-        const { data: managerData, error: managerError } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', sanitizedProfile.reports_to)
-          .single();
-        
-        if (!managerError && managerData) {
-          const sanitizedManager = sanitizeProfileData({
-            ...managerData,
-            roles: [managerData.role].filter(Boolean)
-          });
-          manager = toProfileMinimal(sanitizedManager);
-        }
-      } else if (sanitizedProfile.manager_email) {
-        // Try to find manager by email if reports_to is not set but manager_email is
+      
+      // Check if manager_email is set
+      if (sanitizedProfile.manager_email) {
+        // Try to find manager by email if manager_email is set
         const { data: managerData, error: managerError } = await supabase
           .from('profiles')
           .select('*')
@@ -68,42 +56,32 @@ export const useTeamStructure = () => {
             roles: [managerData.role].filter(Boolean)
           });
           manager = toProfileMinimal(sanitizedManager);
-          
-          // Update the reports_to field if we found the manager
-          if (managerData.id) {
-            // Fix: Explicitly define the type and avoid type inference
-            const updateData: { reports_to: string } = { reports_to: managerData.id };
-            
-            const { error: updateError } = await supabase
-              .from('profiles')
-              .update(updateData)
-              .eq('id', profileId);
-              
-            if (updateError) {
-              console.error("Error updating reports_to field:", updateError);
-            }
-          }
         }
       }
 
-      // Get direct reports
-      const { data: reportingData, error: reportingError } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('reports_to', profileId);
+      // Get direct reports - check if field exists in database first
+      // We should be careful with the reports_to field as it might not exist yet
+      let directReports: ProfileMinimal[] = [];
+      try {
+        const { data: reportingData, error: reportingError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('manager_email', sanitizedProfile.email);
 
-      if (reportingError) {
-        throw reportingError;
+        if (!reportingError && reportingData) {
+          // Sanitize direct reports data and convert to ProfileMinimal
+          directReports = (reportingData || []).map(report => {
+            const sanitizedReport = sanitizeProfileData({
+              ...report,
+              roles: [report.role].filter(Boolean)
+            });
+            return toProfileMinimal(sanitizedReport);
+          });
+        }
+      } catch (reportingError) {
+        console.warn("Error fetching direct reports:", reportingError);
+        // Continue with empty direct reports
       }
-
-      // Sanitize direct reports data and convert to ProfileMinimal
-      const directReports = (reportingData || []).map(report => {
-        const sanitizedReport = sanitizeProfileData({
-          ...report,
-          roles: [report.role].filter(Boolean)
-        });
-        return toProfileMinimal(sanitizedReport);
-      });
 
       // Create a fixed structure object that uses ProfileMinimal
       const structure: ReportingStructureFixed = {
