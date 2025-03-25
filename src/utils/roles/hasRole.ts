@@ -21,30 +21,41 @@ export const hasSystemAdminRole = async (): Promise<boolean> => {
         console.log("Using cached admin status: true");
         return true;
       }
+      
+      // Also check sessionStorage which is even faster
+      const sessionAdminStatus = sessionStorage.getItem('is-admin');
+      if (sessionAdminStatus === 'true') {
+        console.log("Using session storage admin status: true");
+        return true;
+      }
     } catch (e) {
       console.error("Error checking localStorage:", e);
     }
 
-    console.log("Checking admin role for user:", session.session.user.id);
+    const userId = session.session.user.id;
+    console.log("Checking admin role for user:", userId);
     
+    // Attempt to directly fetch user roles from the database
     const { data, error } = await supabase
       .from("user_roles")
-      .select("*")
-      .eq("user_id", session.session.user.id)
-      .eq("role", "system_admin");
+      .select("role")
+      .eq("user_id", userId);
 
     if (error) {
       console.error("Error checking admin role:", error);
       return false;
     }
 
-    const isAdmin = data && data.length > 0;
-    console.log(`User ${session.session.user.id} is${isAdmin ? '' : ' not'} a system admin`);
+    // Check if any of the roles is system_admin
+    const isAdmin = Array.isArray(data) && data.some(role => role.role === "system_admin");
+    console.log(`User ${userId} is${isAdmin ? '' : ' not'} a system admin. Roles:`, data?.map(r => r.role));
     
     // Cache the result for faster access
     if (isAdmin) {
       try {
         localStorage.setItem('is-system-admin', 'true');
+        sessionStorage.setItem('is-admin', 'true');
+        console.log("Cached admin status as true");
       } catch (e) {
         console.error('Error saving to localStorage:', e);
       }

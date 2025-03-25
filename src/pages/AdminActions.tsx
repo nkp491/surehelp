@@ -7,6 +7,7 @@ import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Loader2 } from "lucide-react";
 import { toast } from '@/hooks/use-toast';
 import { hasSystemAdminRole as checkSystemAdminRoleDirectly } from "@/utils/roles/hasRole";
+import { supabase } from '@/integrations/supabase/client'; 
 
 const AdminActions: FC = () => {
   const { hasSystemAdminRole, isLoadingRoles, refetchRoles } = useRoleCheck();
@@ -14,6 +15,52 @@ const AdminActions: FC = () => {
   const [accessChecked, setAccessChecked] = useState(false);
   const [directAccessCheck, setDirectAccessCheck] = useState<boolean | null>(null);
   const [isDirectlyChecking, setIsDirectlyChecking] = useState(true);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [userRoles, setUserRoles] = useState<string[]>([]);
+  
+  // Directly check user session and roles for debugging
+  useEffect(() => {
+    const checkUserSession = async () => {
+      try {
+        const { data } = await supabase.auth.getSession();
+        if (data.session?.user) {
+          setUserId(data.session.user.id);
+          console.log("Current user ID:", data.session.user.id);
+          
+          // Directly check roles from database
+          const { data: roles, error } = await supabase
+            .from("user_roles")
+            .select("role")
+            .eq("user_id", data.session.user.id);
+            
+          if (error) {
+            console.error("Error fetching roles:", error);
+          } else {
+            const roleNames = roles?.map(r => r.role) || [];
+            setUserRoles(roleNames);
+            console.log("Direct DB role check:", roleNames);
+            
+            // Check if user has system_admin role directly
+            if (roleNames.includes('system_admin')) {
+              // Save this for future quick checks
+              try {
+                localStorage.setItem('is-system-admin', 'true');
+                localStorage.setItem('has-admin-access', 'true');
+                sessionStorage.setItem('is-admin', 'true');
+                console.log("Saved admin status to storage");
+              } catch (e) {
+                console.error('Error setting admin flag:', e);
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error checking user session:", error);
+      }
+    };
+    
+    checkUserSession();
+  }, []);
 
   // Force refetch roles to ensure we have the latest data
   useEffect(() => {
@@ -43,7 +90,8 @@ const AdminActions: FC = () => {
       console.log("Admin access check complete:", {
         hasSystemAdminRole,
         directAccessCheck,
-        isLoadingRoles
+        isLoadingRoles,
+        userRoles
       });
       
       // Display toast when admin page is loaded successfully for system admins
@@ -60,21 +108,24 @@ const AdminActions: FC = () => {
         pageVisits['admin-actions'] = {
           timestamp: new Date().toISOString(),
           hasSystemAdminRole,
-          directAccessCheck
+          directAccessCheck,
+          userRoles
         };
         localStorage.setItem('page-visits', JSON.stringify(pageVisits));
       } catch (e) {
         console.error('Error tracking page visit:', e);
       }
     }
-  }, [isLoadingRoles, hasSystemAdminRole, directAccessCheck]);
+  }, [isLoadingRoles, hasSystemAdminRole, directAccessCheck, userRoles]);
 
   console.log('AdminActions page state:', { 
     isLoadingRoles, 
     accessChecked, 
     hasSystemAdminRole,
     directAccessCheck,
-    isDirectlyChecking
+    isDirectlyChecking,
+    userRoles,
+    userId
   });
 
   if (isLoadingRoles || !accessChecked || isDirectlyChecking) {
@@ -85,12 +136,20 @@ const AdminActions: FC = () => {
           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           <span className="ml-2 text-muted-foreground">Checking permissions...</span>
         </div>
+        
+        {/* Show debugging info during check */}
+        <div className="mt-4 p-4 bg-muted rounded-md text-xs">
+          <p>User ID: {userId || 'Checking...'}</p>
+          <p>Roles from DB: {userRoles.length > 0 ? userRoles.join(', ') : 'Checking...'}</p>
+          <p>System Admin (hook): {hasSystemAdminRole ? 'Yes' : 'No/Checking'}</p>
+          <p>System Admin (direct): {directAccessCheck === null ? 'Checking' : (directAccessCheck ? 'Yes' : 'No')}</p>
+        </div>
       </div>
     );
   }
   
   // Grant access if either check passes - this provides fallback
-  const hasAccess = hasSystemAdminRole || directAccessCheck;
+  const hasAccess = hasSystemAdminRole || directAccessCheck || userRoles.includes('system_admin');
   
   if (!hasAccess) {
     return (
@@ -103,6 +162,15 @@ const AdminActions: FC = () => {
             You need the system_admin role to access Admin Actions. Please contact an administrator for appropriate permissions.
           </AlertDescription>
         </Alert>
+        
+        {/* Show debugging info */}
+        <div className="mt-4 p-4 bg-muted rounded-md text-xs mb-4">
+          <p>User ID: {userId || 'Unknown'}</p>
+          <p>Roles from DB: {userRoles.join(', ') || 'None found'}</p>
+          <p>System Admin (hook): {hasSystemAdminRole ? 'Yes' : 'No'}</p>
+          <p>System Admin (direct): {directAccessCheck ? 'Yes' : 'No'}</p>
+        </div>
+        
         <button 
           onClick={() => {
             refetchRoles();

@@ -32,16 +32,13 @@ export const useTeamStructure = () => {
         throw new Error('Profile not found');
       }
 
-      // Sanitize profile data and convert to ProfileMinimal to avoid circular references
+      // Sanitize profile data
       const sanitizedProfile = sanitizeProfileData({
         ...profile,
         roles: [profile.role].filter(Boolean)
       });
       
-      // Convert to ProfileMinimal type to break circular references
-      const profileMinimal = toProfileMinimal(sanitizedProfile);
-      
-      // Get manager if reports_to is set - but check if field exists first to avoid SQL errors
+      // Get manager if available - but check if field exists first to avoid SQL errors
       let manager: ProfileMinimal | null = null;
       
       // Check if manager_email is set
@@ -58,28 +55,29 @@ export const useTeamStructure = () => {
             ...managerData,
             roles: [managerData.role].filter(Boolean)
           });
-          // Use toProfileMinimal to avoid type recursion issues
+          // Convert to minimal profile to avoid circular references
           manager = toProfileMinimal(sanitizedManager);
         }
       }
 
       // Get direct reports - check if field exists in database first
-      let directReports: ProfileMinimal[] = [];
+      const directReports: ProfileMinimal[] = [];
       try {
         const { data: reportingData, error: reportingError } = await supabase
           .from('profiles')
           .select('*')
           .eq('manager_email', sanitizedProfile.email);
 
-        if (!reportingError && reportingData) {
-          directReports = (reportingData || []).map(report => {
+        if (!reportingError && reportingData && Array.isArray(reportingData)) {
+          // Process each direct report separately to avoid type issues
+          for (const report of reportingData) {
             const sanitizedReport = sanitizeProfileData({
               ...report,
               roles: [report.role].filter(Boolean)
             });
-            // Use toProfileMinimal to avoid type recursion issues
-            return toProfileMinimal(sanitizedReport);
-          });
+            // Convert to minimal profile to avoid circular references
+            directReports.push(toProfileMinimal(sanitizedReport));
+          }
         }
       } catch (reportingError) {
         console.warn("Error fetching direct reports:", reportingError);
