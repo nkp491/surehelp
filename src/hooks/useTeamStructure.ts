@@ -85,10 +85,10 @@ export const useTeamStructure = () => {
         // Continue with empty direct reports
       }
 
-      // Create the reporting structure with explicit typing
+      // Create the reporting structure with proper type annotations to break circular references
       const structure: ReportingStructureFixed = {
-        manager: manager as ProfileMinimal | null,
-        directReports: directReports as ProfileMinimal[]
+        manager,
+        directReports
       };
 
       setReportingStructure(structure);
