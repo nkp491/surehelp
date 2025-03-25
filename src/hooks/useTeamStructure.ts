@@ -60,7 +60,6 @@ export const useTeamStructure = () => {
       }
 
       // Get direct reports - check if field exists in database first
-      // We should be careful with the reports_to field as it might not exist yet
       let directReports: ProfileMinimal[] = [];
       try {
         const { data: reportingData, error: reportingError } = await supabase
@@ -69,7 +68,7 @@ export const useTeamStructure = () => {
           .eq('manager_email', sanitizedProfile.email);
 
         if (!reportingError && reportingData) {
-          // Sanitize direct reports data and convert to ProfileMinimal
+          // Sanitize direct reports
           directReports = (reportingData || []).map(report => {
             const sanitizedReport = sanitizeProfileData({
               ...report,
@@ -83,7 +82,7 @@ export const useTeamStructure = () => {
         // Continue with empty direct reports
       }
 
-      // Create a fixed structure object that uses ProfileMinimal
+      // Create the structure object
       const structure: ReportingStructureFixed = {
         manager,
         directReports
