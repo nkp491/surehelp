@@ -30,6 +30,9 @@ const ManagerInfo = ({ manager, onUpdate, userRole }: ManagerInfoProps) => {
   // Only show for agent roles
   const isAgent = userRole === "agent" || userRole === "agent_pro";
 
+  // Debug agent role and component visibility
+  console.log("ManagerInfo component - userRole:", userRole, "isAgent:", isAgent);
+
   useEffect(() => {
     // Update the manager email when the prop changes
     setManagerEmail(manager?.email || "");
@@ -56,6 +59,7 @@ const ManagerInfo = ({ manager, onUpdate, userRole }: ManagerInfoProps) => {
     
     try {
       setIsSubmitting(true);
+      console.log("Updating manager to:", managerEmail);
       await onUpdate({ manager_email: managerEmail });
       setIsEditing(false);
       setUpdateSuccess(true);
@@ -75,7 +79,10 @@ const ManagerInfo = ({ manager, onUpdate, userRole }: ManagerInfoProps) => {
     }
   };
 
-  if (!isAgent) return null;
+  if (!isAgent) {
+    console.log("ManagerInfo not rendering - user is not an agent");
+    return null;
+  }
 
   return (
     <Card className="shadow-sm">
