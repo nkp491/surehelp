@@ -134,21 +134,24 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
         console.log("Processing manager email update:", updatesToSave.manager_email);
         
         try {
-          // Check if manager_email field exists by using a more compatible approach
-          // Instead of querying information_schema directly, try a sample query
+          // Check if manager_email field exists using a safer approach
           let managerEmailExists = true;
           
           try {
-            // Attempt to filter by manager_email as a test
-            const { count, error: countError } = await supabase
+            // Attempt to query a single row with manager_email field as a test
+            const testQuery = await supabase
               .from('profiles')
-              .select('id', { count: 'exact', head: true })
-              .eq('manager_email', 'test@example.com');
+              .select('id')
+              .limit(1);
               
-            if (countError && countError.message && countError.message.includes('column')) {
-              managerEmailExists = false;
-            }
+            // Check if we can access the field on the result
+            const hasField = testQuery.data && 
+                            testQuery.data[0] && 
+                            'manager_email' in testQuery.data[0];
+            
+            managerEmailExists = !!hasField;
           } catch (testError: any) {
+            // If we get a specific error about the column, it doesn't exist
             if (testError.message && testError.message.includes('column')) {
               managerEmailExists = false;
             }
@@ -156,9 +159,7 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
           
           if (!managerEmailExists) {
             console.log("manager_email column doesn't exist, will handle gracefully");
-            
-            // Since we can't create the column directly through the client API,
-            // let's handle this gracefully and continue with the update
+            // Since we can't create the column directly, just continue
             console.log("Will update anyway and let backend handle it");
           } else {
             console.log("manager_email column exists, proceeding with update");
@@ -293,18 +294,16 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       console.log("Final profile update data with explicit fields:", profileUpdate);
       
       try {
-        // Safer approach to check if manager_email column exists
+        // Simplified check for manager_email column existence
         let shouldRemoveManagerEmail = false;
         
         try {
-          // Try a simple query first to see if the column exists
-          const { data: sampleData, error: sampleError } = await supabase
+          const { error } = await supabase
             .from('profiles')
             .select('manager_email')
-            .limit(1)
-            .single();
+            .limit(1);
             
-          if (sampleError && sampleError.message && sampleError.message.includes('column')) {
+          if (error && error.message && error.message.includes('column')) {
             shouldRemoveManagerEmail = true;
           }
         } catch (e: any) {
