@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
@@ -133,30 +134,32 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
         console.log("Processing manager email update:", updatesToSave.manager_email);
         
         try {
-          // First ensure manager_email column exists
-          // Check if column exists by querying the database schema
-          const { data: columnExists, error: columnCheckError } = await supabase
-            .from('information_schema.columns')
-            .select('column_name')
-            .eq('table_name', 'profiles')
-            .eq('column_name', 'manager_email')
-            .maybeSingle();
+          // Check if manager_email field exists by using a more compatible approach
+          // Instead of querying information_schema directly, try a sample query
+          let managerEmailExists = true;
           
-          if (columnCheckError) {
-            console.error("Error checking if manager_email column exists:", columnCheckError);
+          try {
+            // Attempt to filter by manager_email as a test
+            const { count, error: countError } = await supabase
+              .from('profiles')
+              .select('id', { count: 'exact', head: true })
+              .eq('manager_email', 'test@example.com');
+              
+            if (countError && countError.message && countError.message.includes('column')) {
+              managerEmailExists = false;
+            }
+          } catch (testError: any) {
+            if (testError.message && testError.message.includes('column')) {
+              managerEmailExists = false;
+            }
           }
           
-          if (!columnExists) {
-            console.log("manager_email column doesn't exist, will use RPC call");
+          if (!managerEmailExists) {
+            console.log("manager_email column doesn't exist, will handle gracefully");
             
-            // Call a stored procedure to add the column safely if it doesn't exist
-            try {
-              // Since we can't create the column directly through the client API,
-              // let's handle this gracefully and continue with the update
-              console.log("Will update anyway and let backend handle it");
-            } catch (alterError) {
-              console.error("Error trying to fix missing column:", alterError);
-            }
+            // Since we can't create the column directly through the client API,
+            // let's handle this gracefully and continue with the update
+            console.log("Will update anyway and let backend handle it");
           } else {
             console.log("manager_email column exists, proceeding with update");
           }
@@ -290,19 +293,30 @@ export const useProfileUpdate = (refetch: () => Promise<any>, invalidateProfile:
       console.log("Final profile update data with explicit fields:", profileUpdate);
       
       try {
-        // First check if manager_email field exists by attempting a query
-        const { count, error: countError } = await supabase
-          .from('profiles')
-          .select('id', { count: 'exact', head: true })
-          .eq('manager_email', 'test@example.com');
+        // Safer approach to check if manager_email column exists
+        let shouldRemoveManagerEmail = false;
         
-        // If we get an error about column not existing, let's try to add it
-        if (countError && countError.message.includes('does not exist')) {
-          console.log("manager_email column doesn't exist, need to create it");
-          
-          // Since we can't directly execute ALTER TABLE, let's try RPC or handle gracefully
-          // For now, we'll just notify and remove the field from the update to prevent errors
+        try {
+          // Try a simple query first to see if the column exists
+          const { data: sampleData, error: sampleError } = await supabase
+            .from('profiles')
+            .select('manager_email')
+            .limit(1)
+            .single();
+            
+          if (sampleError && sampleError.message && sampleError.message.includes('column')) {
+            shouldRemoveManagerEmail = true;
+          }
+        } catch (e: any) {
+          if (e.message && e.message.includes('column')) {
+            shouldRemoveManagerEmail = true;
+          }
+        }
+        
+        if (shouldRemoveManagerEmail) {
+          console.log("manager_email column doesn't exist, removing from update");
           delete profileUpdate.manager_email;
+          
           toast({
             title: "Database Update Required",
             description: "Your administrator needs to update the database schema.",
