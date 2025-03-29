@@ -7,7 +7,7 @@ import { useProfileSanitization } from "./useProfileSanitization";
 export const useProfileData = () => {
   const { profile, isLoading, refetch, invalidateProfile } = useProfileFetch();
   const { createDefaultProfile } = useDefaultProfile();
-  const { syncMetadataWithProfile, syncProfileWithMetadata } = useProfileSync();
+  const { verifyProfileSync, forceProfileSync } = useProfileSync();
   const { sanitizeProfileData } = useProfileSanitization();
 
   return {
