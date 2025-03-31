@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { TeamBulletin, BulletinReadReceipt } from "@/types/team";
+import { TeamBulletin } from "@/types/team";
 
 /**
  * Hook to fetch team bulletins with author information
@@ -39,75 +39,13 @@ export const useFetchTeamBulletins = (teamId?: string) => {
         return acc;
       }, {} as Record<string, any>);
 
-      // Fetch read receipts for all bulletins
-      const bulletinIds = bulletinsData.map(bulletin => bulletin.id);
-      
-      // Only fetch read receipts if there are bulletins
-      let receiptsByBulletin: Record<string, BulletinReadReceipt[]> = {};
-      
-      if (bulletinIds.length > 0) {
-        const { data: readReceipts, error: receiptsError } = await supabase
-          .from('bulletin_read_receipts')
-          .select(`
-            id, 
-            bulletin_id, 
-            user_id, 
-            read_at
-          `)
-          .in('bulletin_id', bulletinIds);
-        
-        if (receiptsError) throw receiptsError;
-
-        // Get profiles for users who read the bulletins
-        const readerIds = readReceipts.map(receipt => receipt.user_id);
-        let readerProfiles: Record<string, any> = {};
-        
-        if (readerIds.length > 0) {
-          const { data: userProfiles, error: userProfilesError } = await supabase
-            .from('profiles')
-            .select('id, first_name, last_name, profile_image_url')
-            .in('id', readerIds);
-          
-          if (userProfilesError) throw userProfilesError;
-          
-          readerProfiles = userProfiles.reduce((acc, profile) => {
-            acc[profile.id] = profile;
-            return acc;
-          }, {} as Record<string, any>);
-        }
-
-        // Group read receipts by bulletin ID
-        receiptsByBulletin = {};
-        
-        if (readReceipts) {
-          readReceipts.forEach((receipt) => {
-            const bulletinId = receipt.bulletin_id;
-            if (!receiptsByBulletin[bulletinId]) {
-              receiptsByBulletin[bulletinId] = [];
-            }
-            
-            const profile = readerProfiles[receipt.user_id] || {};
-            
-            receiptsByBulletin[bulletinId].push({
-              user_id: receipt.user_id,
-              user_name: profile ? 
-                `${profile.first_name || ''} ${profile.last_name || ''}`.trim() : 
-                'Unknown',
-              user_image: profile?.profile_image_url,
-              read_at: receipt.read_at
-            });
-          });
-        }
-      }
-
-      // Merge the bulletins with their creator's profile information and read receipts
+      // Merge the bulletins with their creator's profile information
       return bulletinsData.map((bulletin) => ({
         ...bulletin,
         author_name: profileMap[bulletin.created_by] ? 
           `${profileMap[bulletin.created_by].first_name || ''} ${profileMap[bulletin.created_by].last_name || ''}`.trim() : 
           'Unknown',
-        author_image: profileMap[bulletin.created_by]?.profile_image_url,
-        read_receipts: receiptsByBulletin[bulletin.id] || []
+        author_image: profileMap[bulletin.created_by]?.profile_image_url
       })) as TeamBulletin[];
     },
     enabled: !!teamId,

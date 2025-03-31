@@ -45,7 +45,7 @@ const Assessment = () => {
     !hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']);
 
   return (
-    <div className="w-full overflow-y-auto pb-20">
+    <div className="relative h-screen w-full overflow-hidden">
       <div className="w-full max-w-[95vw] mx-auto px-0 pt-4">
         {isLimitReached ? (
           <div className="p-6">

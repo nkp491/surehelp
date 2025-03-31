@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
-import { useNavigate } from "react-router-dom";
 
 interface UpgradePromptProps {
   title: string;
@@ -26,15 +25,10 @@ export function UpgradePrompt({
   onClose 
 }: UpgradePromptProps) {
   const [isVisible, setIsVisible] = useState(true);
-  const navigate = useNavigate();
 
   const handleClose = () => {
     setIsVisible(false);
     if (onClose) onClose();
-  };
-  
-  const handleLearnMore = () => {
-    navigate('/pricing');
   };
 
   if (!isVisible) return null;
@@ -67,7 +61,7 @@ export function UpgradePrompt({
         <Button variant="outline" onClick={handleClose}>
           Dismiss
         </Button>
-        <Button variant="default" onClick={handleLearnMore}>
+        <Button variant="default">
           Learn More
         </Button>
       </CardFooter>

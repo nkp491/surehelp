@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
@@ -39,7 +38,7 @@ const AssessmentFormSection = ({
             </CollapsibleTrigger>
           </div>
           
-          <CollapsibleContent className="w-full overflow-visible">
+          <CollapsibleContent className="w-full">
             <FormContainer />
           </CollapsibleContent>
         </Collapsible>

@@ -22,7 +22,6 @@ import {
 import { Loader2, UserPlus } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface AddTeamMemberDialogProps {
   open: boolean;
@@ -36,13 +35,9 @@ export function AddTeamMemberDialog({
   teamId 
 }: AddTeamMemberDialogProps) {
   const { addTeamMember, isLoading } = useTeamManagement();
-  const { hasRequiredRole } = useRoleCheck();
   const [userQuery, setUserQuery] = useState("");
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedRole, setSelectedRole] = useState("agent");
-
-  // Determine if user can add managers
-  const canAddManagers = hasRequiredRole(['manager_pro_gold', 'manager_pro_platinum', 'system_admin']);
 
   // Search for users that aren't already in the team
   const { data: searchResults, isLoading: isSearching } = useQuery({
@@ -170,19 +165,7 @@ export function AddTeamMemberDialog({
                   <SelectContent>
                     <SelectItem value="agent">Agent</SelectItem>
                     <SelectItem value="agent_pro">Agent Pro</SelectItem>
-                    
-                    {/* Only show manager roles if user has permission */}
-                    {canAddManagers && (
-                      <>
-                        <SelectItem value="manager_pro">Manager Pro</SelectItem>
-                        {hasRequiredRole(['manager_pro_platinum', 'system_admin']) && (
-                          <>
-                            <SelectItem value="manager_pro_gold">Manager Pro Gold</SelectItem>
-                            <SelectItem value="manager_pro_platinum">Manager Pro Platinum</SelectItem>
-                          </>
-                        )}
-                      </>
-                    )}
+                    <SelectItem value="manager_pro">Manager Pro</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

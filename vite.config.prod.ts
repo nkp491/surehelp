@@ -1,14 +1,9 @@
-
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import path from 'path';
 
 // Production-specific configuration
 export default defineConfig({
-  define: {
-    // Define the WS_TOKEN to prevent the "not defined" error
-    __WS_TOKEN__: JSON.stringify("production-token"),
-  },
   plugins: [react()],
   resolve: {
     alias: {
@@ -37,4 +32,4 @@ export default defineConfig({
       'Content-Security-Policy': "default-src 'self'; script-src 'self' https://cdn.gpteng.co; style-src 'self' 'unsafe-inline'; img-src 'self' data: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; upgrade-insecure-requests;",
     },
   },
-});
+}); 

@@ -1,4 +1,3 @@
-
 import { commonTranslations } from './common';
 import { formTranslations } from './form';
 import { medicalConditionsTranslations } from './medical';

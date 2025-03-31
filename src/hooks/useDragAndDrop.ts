@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { arrayMove } from "@dnd-kit/sortable";
 import { INITIAL_FIELDS } from "@/components/form/FormFields";

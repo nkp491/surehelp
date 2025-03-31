@@ -1,6 +1,5 @@
+// Import from the hooks directory
+import { useToast, toast } from "@/hooks/use-toast";
 
-// Re-export from our hooks implementation
-import { useToast, toast, debugToast } from "@/hooks/use-toast";
-
-// Export everything
-export { useToast, toast, debugToast };
+// Re-export
+export { useToast, toast };

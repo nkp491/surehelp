@@ -1,16 +1,14 @@
-import { useNavigate, useLocation } from "react-router-dom";
+
+import { useNavigate } from "react-router-dom";
 import { Mail, Instagram } from "lucide-react";
 
 const Footer = () => {
   const navigate = useNavigate();
-  const location = useLocation();
 
   const scrollToContact = () => {
-    if (location.pathname === '/') {
-      const contactSection = document.querySelector('#contact-section');
-      if (contactSection) {
-        contactSection.scrollIntoView({ behavior: 'smooth' });
-      }
+    const contactSection = document.querySelector('#contact-section');
+    if (contactSection) {
+      contactSection.scrollIntoView({ behavior: 'smooth' });
     } else {
       navigate('/#contact-section');
     }
@@ -29,9 +27,6 @@ const Footer = () => {
         </div>
         <div className="mt-8 md:order-1 md:mt-0">
           <nav className="flex justify-center space-x-6 mb-8 md:mb-4">
-            <button onClick={() => navigate('/')} className="text-white/60 hover:text-white text-sm">
-              Home
-            </button>
             <button onClick={() => navigate('/about')} className="text-white/60 hover:text-white text-sm">
               About
             </button>

@@ -3,7 +3,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { medicalConditionsTranslations } from "@/utils/translations/medical";
+import { medicalConditionsTranslations } from "@/utils/translations";
 
 interface MedicalConditionsProps {
   formData: any;

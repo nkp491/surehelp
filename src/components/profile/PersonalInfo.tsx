@@ -2,19 +2,16 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { useToast } from "@/hooks/use-toast";
-import { usePersonalInfoForm } from "@/hooks/profile/usePersonalInfoForm";
-import { PersonalInfoFields } from "./PersonalInfoFields";
-import { UpdateSuccessMessage } from "./UpdateSuccessMessage";
 
 interface PersonalInfoProps {
   firstName?: string | null;
   lastName?: string | null;
   email?: string | null;
   phone?: string | null;
-  onUpdate: (data: any) => Promise<void>;
+  onUpdate: (data: any) => void;
 }
 
 const PersonalInfo = ({
@@ -25,99 +22,120 @@ const PersonalInfo = ({
   onUpdate
 }: PersonalInfoProps) => {
   const [isEditing, setIsEditing] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [updateSuccess, setUpdateSuccess] = useState(false);
-  const { toast } = useToast();
+  const [formData, setFormData] = useState({
+    first_name: firstName || '',
+    last_name: lastName || '',
+    email: email || '',
+    phone: phone || ''
+  });
+
   const { language } = useLanguage();
   const t = translations[language];
-  
-  const { formData, setFormData } = usePersonalInfoForm(firstName, lastName, email, phone);
 
-  // Clear success message after 3 seconds
+  // Update form data when props change
   useEffect(() => {
-    let timer: number;
-    if (updateSuccess) {
-      timer = window.setTimeout(() => {
-        setUpdateSuccess(false);
-      }, 3000);
+    if (firstName !== undefined || lastName !== undefined || email !== undefined || phone !== undefined) {
+      setFormData({
+        first_name: firstName || '',
+        last_name: lastName || '',
+        email: email || '',
+        phone: phone || ''
+      });
     }
-    return () => {
-      if (timer) {
-        clearTimeout(timer);
-      }
-    };
-  }, [updateSuccess]);
+  }, [firstName, lastName, email, phone]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (isSubmitting) return;
-    
-    try {
-      setIsSubmitting(true);
-      await onUpdate(formData);
-      setIsEditing(false);
-      setUpdateSuccess(true);
-      toast({
-        title: t.updateSuccess,
-        description: t.personalInfoUpdated,
-      });
-    } catch (error) {
-      console.error("Error submitting form:", error);
-      toast({
-        title: t.error,
-        description: t.updateFailed,
-        variant: "destructive",
-      });
-      setIsEditing(false);
-    } finally {
-      setIsSubmitting(false);
-    }
+    onUpdate(formData);
+    setIsEditing(false);
   };
 
   const handleToggleEdit = () => {
     if (isEditing) {
-      handleSubmit(new Event('submit') as any);
-    } else {
-      setIsEditing(true);
-      setUpdateSuccess(false);
+      // If we're currently editing and toggling off, submit the form
+      onUpdate(formData);
     }
+    setIsEditing(!isEditing);
   };
 
   return (
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-        <CardTitle className="text-xl font-semibold text-foreground">
-          {t.personalInfo}
-        </CardTitle>
-        <div className="flex items-center space-x-2">
-          <UpdateSuccessMessage show={updateSuccess && !isEditing} />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={isEditing ? handleSubmit : handleToggleEdit}
-            disabled={isSubmitting}
-            className="px-4"
-          >
-            {isEditing ? (isSubmitting ? t.saving : t.save) : t.edit}
-          </Button>
-        </div>
+        <CardTitle className="text-xl font-semibold text-foreground">{t.personalInfo}</CardTitle>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleToggleEdit}
+          className="px-4"
+        >
+          {isEditing ? t.save : t.edit}
+        </Button>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit}>
-          <PersonalInfoFields
-            formData={formData}
-            setFormData={setFormData}
-            isEditing={isEditing}
-            firstName={firstName}
-            lastName={lastName}
-            email={email}
-            phone={phone}
-          />
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.firstName}</label>
+              {isEditing ? (
+                <Input
+                  value={formData.first_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, first_name: e.target.value })
+                  }
+                  className="w-full"
+                />
+              ) : (
+                <p className="text-base text-gray-900 pt-1">{firstName || '-'}</p>
+              )}
+            </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.lastName}</label>
+              {isEditing ? (
+                <Input
+                  value={formData.last_name}
+                  onChange={(e) =>
+                    setFormData({ ...formData, last_name: e.target.value })
+                  }
+                  className="w-full"
+                />
+              ) : (
+                <p className="text-base text-gray-900 pt-1">{lastName || '-'}</p>
+              )}
+            </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.email}</label>
+              {isEditing ? (
+                <Input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) =>
+                    setFormData({ ...formData, email: e.target.value })
+                  }
+                  className="w-full"
+                />
+              ) : (
+                <p className="text-base text-gray-900 pt-1">{email || '-'}</p>
+              )}
+            </div>
+            <div className="space-y-2.5">
+              <label className="text-sm font-medium text-gray-700">{t.phone}</label>
+              {isEditing ? (
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) =>
+                    setFormData({ ...formData, phone: e.target.value })
+                  }
+                  className="w-full"
+                />
+              ) : (
+                <p className="text-base text-gray-900 pt-1">{phone || '-'}</p>
+              )}
+            </div>
+          </div>
           {isEditing && (
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isSubmitting}>
-                {isSubmitting ? t.saving : t.save}
-              </Button>
+              <Button type="submit">{t.save}</Button>
             </div>
           )}
         </form>

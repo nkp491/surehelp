@@ -36,11 +36,6 @@ export const profileTranslations = {
     rolesAndPermissions: "Roles & Permissions",
     searchUsers: "Search users",
     noUsersFound: "No users found",
-    updateSuccess: "Success",
-    personalInfoUpdated: "Personal information updated successfully",
-    updateFailed: "Failed to update personal information. Please try again.",
-    savedSuccessfully: "Saved",
-    saving: "Saving...",
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -79,10 +74,5 @@ export const profileTranslations = {
     rolesAndPermissions: "Roles y Permisos",
     searchUsers: "Buscar usuarios",
     noUsersFound: "No se encontraron usuarios",
-    updateSuccess: "Éxito",
-    personalInfoUpdated: "Información personal actualizada con éxito",
-    updateFailed: "Error al actualizar la información personal. Por favor, inténtelo de nuevo.",
-    savedSuccessfully: "Guardado",
-    saving: "Guardando...",
   }
 };

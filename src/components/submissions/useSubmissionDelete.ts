@@ -8,16 +8,15 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 export const useSubmissionDelete = () => {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [submissionToDelete, setSubmissionToDelete] = useState<FormSubmission | null>(null);
-  const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
   const { hasRequiredRole } = useRoleCheck();
 
   const handleDelete = (submission: FormSubmission) => {
-    // Client-side role check
+    // Only allow deletion for agent_pro and above
     if (!hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'])) {
       toast({
-        title: "Access Denied",
-        description: "You need Agent Pro or higher role to delete submissions.",
+        title: "Upgrade Required",
+        description: "Deleting submissions requires Agent Pro or higher.",
         variant: "destructive",
       });
       return;
@@ -28,52 +27,32 @@ export const useSubmissionDelete = () => {
   };
 
   const confirmDelete = async () => {
-    if (!submissionToDelete) return;
-    
-    setIsDeleting(true);
-    
-    try {
-      // Server-side role verification through edge function
-      const { data: hasPermission, error: permissionError } = await supabase.functions.invoke(
-        'verify-delete-permission'
-      );
+    if (submissionToDelete) {
+      try {
+        const { error } = await supabase
+          .from('submissions')
+          .delete()
+          .eq('timestamp', submissionToDelete.timestamp);
 
-      if (permissionError || !hasPermission) {
+        if (error) throw error;
+
         toast({
-          title: "Access Denied",
-          description: "Server verification failed. You don't have permission to delete submissions.",
+          title: "Success",
+          description: "Form submission deleted successfully",
+        });
+
+        window.location.reload();
+      } catch (error) {
+        console.error("Error deleting submission:", error);
+        toast({
+          title: "Error",
+          description: "Failed to delete submission",
           variant: "destructive",
         });
-        setIsDeleting(false);
-        setDeleteDialogOpen(false);
-        return;
       }
-
-      const { error } = await supabase
-        .from('submissions')
-        .delete()
-        .eq('timestamp', submissionToDelete.timestamp);
-
-      if (error) throw error;
-
-      toast({
-        title: "Success",
-        description: "Form submission deleted successfully",
-      });
-
-      window.location.reload();
-    } catch (error) {
-      console.error("Error deleting submission:", error);
-      toast({
-        title: "Error",
-        description: "Failed to delete submission",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-      setDeleteDialogOpen(false);
-      setSubmissionToDelete(null);
     }
+    setDeleteDialogOpen(false);
+    setSubmissionToDelete(null);
   };
 
   return {
@@ -81,7 +60,6 @@ export const useSubmissionDelete = () => {
     setDeleteDialogOpen,
     submissionToDelete,
     handleDelete,
-    confirmDelete,
-    isDeleting
+    confirmDelete
   };
 };

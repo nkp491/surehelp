@@ -1,6 +1,5 @@
 
 import { Navigate, useLocation } from "react-router-dom";
-import { Loader2 } from "lucide-react";
 
 interface ProtectedRouteProps {
   isAuthenticated: boolean | null;
@@ -15,16 +14,14 @@ export const ProtectedRoute = ({
 }: ProtectedRouteProps) => {
   const location = useLocation();
   
-  // Show loading state while verifying
+  console.log("ProtectedRoute state:", { isAuthenticated, path: location.pathname });
+  
   if (isAuthenticated === null) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen">
+      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
+    </div>;
   }
 
-  // Redirect if not authenticated
   if (!isAuthenticated) {
     const searchParams = new URLSearchParams();
     if (location.pathname !== "/auth") {

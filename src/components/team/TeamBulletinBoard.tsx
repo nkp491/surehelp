@@ -1,10 +1,10 @@
 
-import { useState, useEffect, useMemo } from "react";
+import { useState } from "react";
 import { useTeamBulletins } from "@/hooks/useTeamBulletins";
 import { TeamBulletin as TeamBulletinType } from "@/types/team";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, Pin, PinOff, Edit, Trash2, Loader2, CheckCircle2, Tag } from "lucide-react";
+import { Plus, Pin, PinOff, Edit, Trash2, Loader2 } from "lucide-react";
 import { format, formatDistanceToNow } from "date-fns";
 import { CreateBulletinDialog } from "./CreateBulletinDialog";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
@@ -18,9 +18,6 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
-import { BulletinReadReceipts } from "./BulletinReadReceipts";
-import { BulletinContent } from "./BulletinContent";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface TeamBulletinBoardProps {
   teamId?: string;
@@ -34,13 +31,11 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
     updateBulletin,
     toggleBulletinPin,
     deleteBulletin,
-    markBulletinAsRead,
     isLoading
   } = useTeamBulletins(teamId);
   
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingBulletin, setEditingBulletin] = useState<TeamBulletinType | null>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
 
   // Check if current user is the author of a bulletin
   const { data: currentUserId } = useQuery({
@@ -51,46 +46,17 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
     }
   });
 
-  // Mark bulletins as read when they are viewed
-  useEffect(() => {
-    if (bulletins && bulletins.length > 0 && currentUserId && teamId) {
-      // Find all unread bulletins
-      const unreadBulletins = bulletins.filter(bulletin => 
-        !bulletin.read_receipts?.some(receipt => receipt.user_id === currentUserId)
-      );
-      
-      setUnreadCount(unreadBulletins.length);
-      
-      // Mark them as read
-      unreadBulletins.forEach(bulletin => {
-        markBulletinAsRead.mutate({ bulletinId: bulletin.id });
-      });
-    }
-  }, [bulletins, currentUserId, teamId, markBulletinAsRead]);
-
   const isBulletinAuthor = (bulletin: TeamBulletinType) => {
     return bulletin.created_by === currentUserId;
   };
 
-  const handleCreateBulletin = async (data: { 
-    title: string; 
-    content: string; 
-    pinned?: boolean;
-    category?: string;
-    mentioned_users?: string[];
-  }) => {
+  const handleCreateBulletin = async (data: { title: string; content: string; pinned?: boolean }) => {
     if (!teamId) return;
     await createBulletin.mutateAsync(data);
     setShowCreateDialog(false);
   };
 
-  const handleUpdateBulletin = async (data: { 
-    title: string; 
-    content: string; 
-    pinned?: boolean;
-    category?: string;
-    mentioned_users?: string[];
-  }) => {
+  const handleUpdateBulletin = async (data: { title: string; content: string; pinned?: boolean }) => {
     if (!editingBulletin) return;
     await updateBulletin.mutateAsync({
       bulletinId: editingBulletin.id,
@@ -113,14 +79,7 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
   return (
     <Card className="h-full flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Team Bulletins</CardTitle>
-          {unreadCount > 0 && (
-            <Badge variant="destructive" className="ml-2">
-              {unreadCount} unread
-            </Badge>
-          )}
-        </div>
+        <CardTitle>Team Bulletins</CardTitle>
         <Button
           size="sm"
           onClick={() => setShowCreateDialog(true)}
@@ -189,13 +148,6 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
                   </div>
                   
                   <div className="flex items-center space-x-2">
-                    {bulletin.category && (
-                      <Badge variant="outline" className="text-xs">
-                        <Tag className="h-3 w-3 mr-1" />
-                        {bulletin.category}
-                      </Badge>
-                    )}
-                    
                     {bulletin.pinned && (
                       <Badge variant="outline" className="bg-primary/10 text-primary">
                         <Pin className="h-3 w-3 mr-1" />
@@ -257,28 +209,12 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
                 </div>
                 
                 <h3 className="font-medium text-base mb-2">{bulletin.title}</h3>
+                <div className="whitespace-pre-wrap text-sm">{bulletin.content}</div>
                 
-                <BulletinContent content={bulletin.content} mentionedUsers={bulletin.mentioned_users} />
-                
-                <div className="mt-3 flex items-center justify-between">
-                  <div className="text-xs text-muted-foreground">
-                    {bulletin.updated_at !== bulletin.created_at && (
-                      <span>Edited {formatDistanceToNow(new Date(bulletin.updated_at), { addSuffix: true })}</span>
-                    )}
-                  </div>
-                  
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <div>
-                          <BulletinReadReceipts bulletin={bulletin} currentUserId={currentUserId} />
-                        </div>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Read receipts</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                <div className="mt-3 text-xs text-muted-foreground">
+                  {bulletin.updated_at !== bulletin.created_at && (
+                    <span>Edited {formatDistanceToNow(new Date(bulletin.updated_at), { addSuffix: true })}</span>
+                  )}
                 </div>
               </div>
             ))}
@@ -291,7 +227,6 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
         onOpenChange={setShowCreateDialog}
         onSubmit={handleCreateBulletin}
         isLoading={isLoading}
-        teamId={teamId}
       />
       
       {editingBulletin && (
@@ -301,7 +236,6 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
           onSubmit={handleUpdateBulletin}
           isLoading={isLoading}
           initialData={editingBulletin}
-          teamId={teamId}
         />
       )}
     </Card>

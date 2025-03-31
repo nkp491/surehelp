@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { DragEndEvent } from "@dnd-kit/core";
 import { FormField } from "@/types/formTypes";
@@ -18,7 +17,7 @@ export const useFieldPositions = ({ section, fields, selectedField }: UseFieldPo
   const { savePosition } = useSaveFieldPosition(section, fields);
   const { updateProperties } = useUpdateFieldProperties(section, fields, selectedField);
 
-  const handleDragEnd = async (event: any) => {
+  const handleDragEnd = async (event: DragEndEvent) => {
     const { active, delta } = event;
     if (!active) return;
 

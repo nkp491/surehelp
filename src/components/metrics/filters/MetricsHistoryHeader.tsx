@@ -1,8 +1,9 @@
-
 import React from 'react';
 import AddMetricsButton from "../AddMetricsButton";
 import SearchFilters from "./SearchFilters";
 import { TimePeriod } from "@/types/metrics";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 interface MetricsHistoryHeaderProps {
   selectedDate: Date | null;
@@ -30,7 +31,7 @@ const MetricsHistoryHeader = ({
           searchTerm={searchTerm}
           onSearchChange={onSearchChange}
           selectedDate={selectedDate || undefined}
-          onDateChange={(date) => onDateSelect(date)}
+          onDateChange={(date) => onDateSelect(date || null)}
           timePeriod={timePeriod}
           onTimePeriodChange={onTimePeriodChange}
         />

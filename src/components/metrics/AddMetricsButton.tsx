@@ -1,9 +1,7 @@
-
 import React from 'react';
 import { Button } from "@/components/ui/button";
 import { DatePicker } from "@/components/ui/date-picker";
 import { startOfDay } from "date-fns";
-import { CalendarIcon } from "lucide-react";
 
 interface AddMetricsButtonProps {
   selectedDate: Date | null;
@@ -30,15 +28,12 @@ const AddMetricsButton = ({
         selected={selectedDate}
         onSelect={handleDateSelect}
         maxDate={new Date()}
-        label="Select date"
-        placeholder="MM/DD/YYYY"
       />
       <Button
         onClick={() => selectedDate && onAdd(selectedDate)}
         disabled={!selectedDate}
         className="bg-[#2A6F97] text-white hover:bg-[#2A6F97]/90 disabled:bg-gray-200"
       >
-        <CalendarIcon className="mr-2 h-4 w-4" />
         Add Historical Entry
       </Button>
     </div>
