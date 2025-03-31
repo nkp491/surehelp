@@ -35,7 +35,11 @@ const TermsAcceptance = () => {
   }
 
   const handleAcceptTerms = async () => {
-    await acceptTerms();
+    try {
+      await acceptTerms();
+    } catch (error) {
+      console.error("Failed to accept terms:", error);
+    }
   };
 
   return (

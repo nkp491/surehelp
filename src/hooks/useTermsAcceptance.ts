@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -69,8 +70,7 @@ export const useTermsAcceptance = () => {
       // Set current timestamp
       const now = new Date().toISOString();
       
-      // Update profile with terms acceptance timestamp
-      // Important: Keep this query as simple as possible to avoid SQL errors
+      // Very minimal update to avoid any SQL errors - only update the terms_accepted_at field
       const { error } = await supabase
         .from("profiles")
         .update({ terms_accepted_at: now })
