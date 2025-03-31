@@ -17,7 +17,18 @@ export const useManagerTeam = (managerId?: string) => {
         .eq('manager_id', managerId);
 
       if (error) throw error;
-      return data as Profile[];
+      
+      // Transform the data to match our Profile type
+      return data.map(profile => ({
+        ...profile,
+        // Parse JSON fields properly if they're strings
+        privacy_settings: typeof profile.privacy_settings === 'string'
+          ? JSON.parse(profile.privacy_settings)
+          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
+        notification_preferences: typeof profile.notification_preferences === 'string'
+          ? JSON.parse(profile.notification_preferences)
+          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
+      })) as Profile[];
     },
     enabled: !!managerId,
   });

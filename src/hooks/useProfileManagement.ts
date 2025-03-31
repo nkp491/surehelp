@@ -41,15 +41,16 @@ export const useProfileManagement = () => {
       
       const roles = userRoles.map(r => r.role);
       
+      // Transform the data to match our Profile type
       return {
         ...profileData,
         roles: roles,
         privacy_settings: typeof profileData.privacy_settings === 'string' 
           ? JSON.parse(profileData.privacy_settings)
-          : profileData.privacy_settings,
+          : profileData.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
         notification_preferences: typeof profileData.notification_preferences === 'string'
           ? JSON.parse(profileData.notification_preferences)
-          : profileData.notification_preferences
+          : profileData.notification_preferences || { email_notifications: true, phone_notifications: false }
       } as Profile;
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
