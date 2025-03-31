@@ -4,12 +4,15 @@ import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Loader2, ExternalLink } from "lucide-react";
+import { Loader2, ExternalLink, CheckCircle } from "lucide-react";
 import { Link } from "react-router-dom";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 
 const TermsAcceptance = () => {
   const { hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting, acceptTerms } = useTermsAcceptance();
+  const [showAcceptSuccess, setShowAcceptSuccess] = useState(false);
+  const { toast } = useToast();
 
   // Debug logging
   useEffect(() => {
@@ -20,6 +23,26 @@ const TermsAcceptance = () => {
       isAccepting 
     });
   }, [hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting]);
+
+  const handleAcceptTerms = async () => {
+    try {
+      console.log("Accept terms button clicked");
+      await acceptTerms();
+      console.log("Terms acceptance complete");
+      
+      // Show success animation
+      setShowAcceptSuccess(true);
+      setTimeout(() => setShowAcceptSuccess(false), 3000);
+      
+    } catch (error) {
+      console.error("Failed to accept terms:", error);
+      toast({
+        title: "Error Accepting Terms",
+        description: "There was a problem accepting the terms. Please try again or contact support.",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (isLoading) {
     return (
@@ -33,13 +56,6 @@ const TermsAcceptance = () => {
       </Card>
     );
   }
-
-  const handleAcceptTerms = () => {
-    acceptTerms()
-      .catch(error => {
-        console.error("Failed to accept terms:", error);
-      });
-  };
 
   return (
     <Card>
@@ -68,6 +84,13 @@ const TermsAcceptance = () => {
               <p>You need to accept the Terms and Conditions to use all features of the application.</p>
             </div>
           )}
+          
+          {showAcceptSuccess && (
+            <div className="my-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-800 text-sm flex items-center">
+              <CheckCircle className="h-5 w-5 mr-2 text-green-500" />
+              <p>Terms and Conditions accepted successfully!</p>
+            </div>
+          )}
         </div>
       </CardContent>
       
@@ -84,9 +107,16 @@ const TermsAcceptance = () => {
             onClick={handleAcceptTerms} 
             disabled={isAccepting}
             size="sm"
+            className="relative"
           >
-            {isAccepting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Accept Terms
+            {isAccepting ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Accepting...
+              </>
+            ) : (
+              "Accept Terms"
+            )}
           </Button>
         )}
       </CardFooter>
