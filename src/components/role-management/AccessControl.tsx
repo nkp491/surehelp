@@ -3,7 +3,7 @@ import { ReactNode, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertTriangle, Loader2 } from "lucide-react";
-import { hasSystemAdminRole } from "@/utils/roles";
+import { useRolesCache } from "@/hooks/useRolesCache";
 
 interface AccessControlProps {
   children: ReactNode;
@@ -11,26 +11,23 @@ interface AccessControlProps {
 
 export function AccessControl({ children }: AccessControlProps) {
   const navigate = useNavigate();
+  const { userRoles, isLoadingRoles } = useRolesCache();
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
-  const [isCheckingAdmin, setIsCheckingAdmin] = useState(true);
 
   useEffect(() => {
-    const checkAdminRole = async () => {
-      setIsCheckingAdmin(true);
-      const result = await hasSystemAdminRole();
-      setIsAdmin(result);
-      setIsCheckingAdmin(false);
-
+    // Use the cached roles to determine admin status
+    if (!isLoadingRoles) {
+      const hasAdminRole = userRoles.includes('system_admin');
+      setIsAdmin(hasAdminRole);
+      
       // If not admin, redirect to dashboard
-      if (result === false) {
+      if (!hasAdminRole) {
         navigate("/metrics");
       }
-    };
-    
-    checkAdminRole();
-  }, [navigate]);
+    }
+  }, [userRoles, isLoadingRoles, navigate]);
 
-  if (isCheckingAdmin) {
+  if (isLoadingRoles) {
     return (
       <div className="container mx-auto py-8 px-4">
         <h1 className="text-3xl font-bold mb-6">Admin Actions</h1>
