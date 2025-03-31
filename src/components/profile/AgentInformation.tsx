@@ -6,6 +6,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import FormField from "./agent/FormField";
 import LineAuthorityField from "./agent/LineAuthorityField";
+import StatesField from "./agent/StatesField";
 import { useAgentInformation, AgentInfoData } from "@/hooks/useAgentInformation";
 
 interface AgentInformationProps {
@@ -87,6 +88,15 @@ const AgentInformation = ({
               onChange={(value) => handleFieldChange('line_authority', value)}
               isEditing={isEditing}
               placeholder={t.selectLineAuthority}
+            />
+            
+            {/* Active State Licenses - Multi-select */}
+            <StatesField
+              label={t.activeStateLicenses}
+              value={formData.active_state_licenses || []}
+              onChange={(value) => handleFieldChange('active_state_licenses', value)}
+              isEditing={isEditing}
+              placeholder={t.selectStateLicenses}
             />
             
             {/* National Producer Number */}

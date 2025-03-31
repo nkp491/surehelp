@@ -1,4 +1,3 @@
-
 export const profileTranslations = {
   en: {
     profileSettings: "Profile Settings",
@@ -53,6 +52,8 @@ export const profileTranslations = {
     continuingEducation: "Continuing Education Requirement",
     residentLicenseStatus: "Resident Insurance License Status",
     residentLicenseRenewal: "Resident Insurance License Renewal Date",
+    activeStateLicenses: "Active State Licenses",
+    selectStateLicenses: "Select state licenses",
     save: "Save",
     edit: "Edit"
   },
@@ -109,6 +110,8 @@ export const profileTranslations = {
     continuingEducation: "Requisito de Educación Continua",
     residentLicenseStatus: "Estado de la Licencia de Seguro de Residente",
     residentLicenseRenewal: "Fecha de Renovación de la Licencia de Seguro de Residente",
+    activeStateLicenses: "Licencias Estatales Activas",
+    selectStateLicenses: "Seleccionar licencias estatales",
     save: "Guardar",
     edit: "Editar"
   }

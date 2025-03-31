@@ -7,6 +7,7 @@ export type AgentInfoData = {
   resident_location?: string | null;
   years_of_service_date?: Date | string | null;
   line_authority?: string[] | null;
+  active_state_licenses?: string[] | null;
   national_producer_number?: string | null;
   resident_license_number?: string | null;
   doj_background_check_date?: Date | string | null;
@@ -27,6 +28,7 @@ export const useAgentInformation = (
     resident_location: "",
     years_of_service_date: null,
     line_authority: [],
+    active_state_licenses: [],
     national_producer_number: "",
     resident_license_number: "",
     doj_background_check_date: null,
@@ -47,6 +49,7 @@ export const useAgentInformation = (
           ? new Date(agentInfo.years_of_service_date) 
           : null,
         line_authority: agentInfo.line_authority || [],
+        active_state_licenses: agentInfo.active_state_licenses || [],
         national_producer_number: agentInfo.national_producer_number || "",
         resident_license_number: agentInfo.resident_license_number || "",
         doj_background_check_date: agentInfo.doj_background_check_date 

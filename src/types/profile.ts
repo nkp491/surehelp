@@ -29,6 +29,7 @@ export type Profile = {
     resident_location?: string | null;
     years_of_service_date?: string | null;
     line_authority?: string[] | null;
+    active_state_licenses?: string[] | null;
     national_producer_number?: string | null;
     resident_license_number?: string | null;
     doj_background_check_date?: string | null;
