@@ -75,6 +75,7 @@ const PersonalInfo = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("Submitting form data:", formData);
     onUpdate(formData);
     setIsEditing(false);
   };
@@ -82,6 +83,7 @@ const PersonalInfo = ({
   const handleToggleEdit = () => {
     if (isEditing) {
       // If we're currently editing and toggling off, submit the form
+      console.log("Saving data via toggle:", formData);
       onUpdate(formData);
     }
     setIsEditing(!isEditing);

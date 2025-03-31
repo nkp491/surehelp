@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -69,12 +70,17 @@ export const useProfileManagement = () => {
 
   async function updateProfile(updates: Partial<Profile>) {
     try {
+      console.log("updateProfile called with data:", updates);
+      
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
+        console.error("No active session found");
         navigate("/auth");
         return;
       }
+
+      console.log("Current user ID:", session.user.id);
 
       // Create a clean copy of updates for database
       const { roles, ...updatesToSave } = updates as any;
@@ -96,23 +102,32 @@ export const useProfileManagement = () => {
       // Log what we're sending to debug
       console.log("Updating profile with:", updatesToSave);
 
-      // When updating the profile, avoid sending the query directly and use .match instead of .eq
-      // This is to avoid the SQL error with user_role
-      const { error } = await supabase
+      // FIX: Use .eq instead of .match for more reliable updating
+      const { data, error } = await supabase
         .from("profiles")
         .update(updatesToSave)
-        .match({ id: session.user.id });
+        .eq("id", session.user.id)
+        .select();
 
-      if (error) throw error;
+      console.log("Update response:", { data, error });
+
+      if (error) {
+        console.error("Error details:", error);
+        throw error;
+      }
       
       // If email is updated, update it in user_roles table as well
       if (updates.email) {
+        console.log("Updating email in user_roles:", updates.email);
         const { error: rolesError } = await supabase
           .from("user_roles")
           .update({ email: updates.email })
           .eq("user_id", session.user.id);
           
-        if (rolesError) throw rolesError;
+        if (rolesError) {
+          console.error("Error updating user_roles:", rolesError);
+          throw rolesError;
+        }
       }
       
       // Refetch profile data to ensure we have the latest
