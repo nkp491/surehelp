@@ -55,7 +55,7 @@ export function useRoleCheck() {
   return { 
     userRoles, 
     isLoadingRoles, 
-    refetchRoles, 
+    refetchRoles,
     hasRequiredRole, 
     getHighestRole, 
     canUpgradeTo 

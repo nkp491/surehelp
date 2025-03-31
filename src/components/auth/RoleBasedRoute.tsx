@@ -1,5 +1,5 @@
 
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
@@ -16,19 +16,36 @@ export function RoleBasedRoute({
   requiredRoles, 
   fallbackPath = "/metrics" 
 }: RoleBasedRouteProps) {
-  const { hasRequiredRole, isLoadingRoles } = useRoleCheck();
+  const { hasRequiredRole, isLoadingRoles, userRoles, refetchRoles } = useRoleCheck();
+  const [isCheckingAccess, setIsCheckingAccess] = useState(true);
+  const [hasAccess, setHasAccess] = useState(false);
   
-  if (isLoadingRoles) {
+  useEffect(() => {
+    // When component mounts, ensure we have the latest roles
+    refetchRoles();
+  }, [refetchRoles]);
+  
+  useEffect(() => {
+    if (!isLoadingRoles) {
+      console.log("Checking access with roles:", userRoles);
+      console.log("Required roles:", requiredRoles);
+      const access = hasRequiredRole(requiredRoles);
+      console.log("Access granted:", access);
+      setHasAccess(access);
+      setIsCheckingAccess(false);
+    }
+  }, [isLoadingRoles, hasRequiredRole, requiredRoles, userRoles]);
+  
+  if (isLoadingRoles || isCheckingAccess) {
     return (
       <div className="container mx-auto py-8 px-4">
-        <div className="flex justify-center py-10">
-          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center py-10">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground mb-2" />
+          <p className="text-muted-foreground">Checking permissions...</p>
         </div>
       </div>
     );
   }
-
-  const hasAccess = hasRequiredRole(requiredRoles);
 
   if (!hasAccess) {
     return (

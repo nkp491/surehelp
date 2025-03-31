@@ -3,6 +3,7 @@ import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import LoadingScreen from '@/components/ui/loading-screen';
+import { queryClient } from '@/lib/react-query';
 
 /**
  * This component handles OAuth callback redirects
@@ -25,6 +26,26 @@ const CallbackHandler: React.FC = () => {
         }
         
         if (data.session) {
+          // Pre-fetch user roles before navigation to ensure they're in cache
+          await queryClient.prefetchQuery({
+            queryKey: ['user-roles'],
+            queryFn: async () => {
+              try {
+                if (!data.session?.user) return [];
+                
+                const { data: userRoles } = await supabase
+                  .from('user_roles')
+                  .select('role')
+                  .eq('user_id', data.session.user.id);
+                  
+                return userRoles?.map(r => r.role) || [];
+              } catch (error) {
+                console.error("Error pre-fetching user roles:", error);
+                return [];
+              }
+            }
+          });
+
           // Successful authentication, redirect to the default page
           navigate('/');
         } else {

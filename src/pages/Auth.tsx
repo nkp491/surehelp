@@ -1,3 +1,4 @@
+
 import { useEffect, useState, useCallback } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -10,6 +11,7 @@ import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
 import { useToast } from "@/hooks/use-toast";
 import TermsCheckbox from "@/components/auth/TermsCheckbox";
+import { queryClient } from "@/lib/react-query";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -124,6 +126,27 @@ const Auth = () => {
         }
         
         if (session) {
+          // Pre-fetch user roles before navigation to ensure they're in cache
+          await queryClient.prefetchQuery({
+            queryKey: ['user-roles'],
+            queryFn: async () => {
+              try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) return [];
+                
+                const { data: userRoles } = await supabase
+                  .from('user_roles')
+                  .select('role')
+                  .eq('user_id', user.id);
+                  
+                return userRoles?.map(r => r.role) || [];
+              } catch (error) {
+                console.error("Error pre-fetching user roles:", error);
+                return [];
+              }
+            }
+          });
+
           const returnUrl = new URLSearchParams(location.search).get('returnUrl');
           navigate(returnUrl || "/assessment", { replace: true });
         }
@@ -148,6 +171,26 @@ const Auth = () => {
       switch (event) {
         case "SIGNED_IN":
           if (session) {
+            // Pre-fetch user roles on sign in to ensure they're in cache
+            await queryClient.prefetchQuery({
+              queryKey: ['user-roles'],
+              queryFn: async () => {
+                try {
+                  if (!session.user) return [];
+                  
+                  const { data: userRoles } = await supabase
+                    .from('user_roles')
+                    .select('role')
+                    .eq('user_id', session.user.id);
+                    
+                  return userRoles?.map(r => r.role) || [];
+                } catch (error) {
+                  console.error("Error pre-fetching user roles:", error);
+                  return [];
+                }
+              }
+            });
+
             const returnUrl = new URLSearchParams(location.search).get('returnUrl');
             navigate(returnUrl || "/assessment", { replace: true });
           }
