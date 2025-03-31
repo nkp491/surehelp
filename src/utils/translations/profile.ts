@@ -1,4 +1,3 @@
-
 export const profileTranslations = {
   en: {
     profileSettings: "Profile Settings",
@@ -57,7 +56,8 @@ export const profileTranslations = {
     selectStateLicenses: "Select state licenses",
     selectState: "Select state",
     save: "Save",
-    edit: "Edit"
+    edit: "Edit",
+    enterManagerEmail: "Enter manager's email"
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -116,6 +116,7 @@ export const profileTranslations = {
     selectStateLicenses: "Seleccionar licencias estatales",
     selectState: "Seleccionar estado",
     save: "Guardar",
-    edit: "Editar"
+    edit: "Editar",
+    enterManagerEmail: "Ingrese el correo del gerente"
   }
 };
