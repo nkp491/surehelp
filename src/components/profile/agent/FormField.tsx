@@ -23,6 +23,11 @@ const FormField = ({ label, type, value, onChange, isEditing, required = false }
     onChange(e.target.value);
   };
 
+  // Convert date to formatted string for display
+  const displayValue = type === "date" 
+    ? formatDateValue(value)
+    : (value ? String(value) : "-");
+
   return (
     <div className="space-y-2.5">
       <Label className="text-sm font-medium text-gray-700">
@@ -47,7 +52,7 @@ const FormField = ({ label, type, value, onChange, isEditing, required = false }
         )
       ) : (
         <p className="text-base text-gray-900 pt-1">
-          {type === "date" ? formatDateValue(value) : (value || "-")}
+          {displayValue}
         </p>
       )}
     </div>
