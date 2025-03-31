@@ -6,9 +6,20 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Loader2, ExternalLink } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 
 const TermsAcceptance = () => {
   const { hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting, acceptTerms } = useTermsAcceptance();
+
+  // Debug logging to help diagnose issues
+  useEffect(() => {
+    console.log("Terms acceptance state:", { 
+      hasAcceptedTerms, 
+      termsAcceptedAt, 
+      isLoading, 
+      isAccepting 
+    });
+  }, [hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting]);
 
   if (isLoading) {
     return (
@@ -22,6 +33,10 @@ const TermsAcceptance = () => {
       </Card>
     );
   }
+
+  const handleAcceptTerms = async () => {
+    await acceptTerms();
+  };
 
   return (
     <Card>
@@ -63,7 +78,7 @@ const TermsAcceptance = () => {
         
         {!hasAcceptedTerms && (
           <Button 
-            onClick={acceptTerms} 
+            onClick={handleAcceptTerms} 
             disabled={isAccepting}
             size="sm"
           >
