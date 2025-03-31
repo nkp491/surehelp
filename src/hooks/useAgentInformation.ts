@@ -49,11 +49,15 @@ export const useAgentInformation = (
       let lineAuthority = agentInfo.line_authority || [];
       if (typeof lineAuthority === 'string') {
         lineAuthority = [lineAuthority];
+      } else if (!Array.isArray(lineAuthority)) {
+        lineAuthority = [];
       }
       
       let stateLicenses = agentInfo.active_state_licenses || [];
       if (typeof stateLicenses === 'string') {
         stateLicenses = [stateLicenses];
+      } else if (!Array.isArray(stateLicenses)) {
+        stateLicenses = [];
       }
       
       setFormData({

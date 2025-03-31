@@ -42,18 +42,21 @@ export const useProfileManagement = () => {
       const roles = userRoles.map(r => r.role);
       
       // Transform the data to match our Profile type
-      // Handle agent_info field which might not be in the database schema yet
+      // Explicitly cast the profileData to any to avoid TypeScript errors
+      const profile = profileData as any;
+      
+      // Transform the data to match our Profile type
       const transformedProfile = {
-        ...profileData,
+        ...profile,
         roles: roles,
-        privacy_settings: typeof profileData.privacy_settings === 'string' 
-          ? JSON.parse(profileData.privacy_settings)
-          : profileData.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
-        notification_preferences: typeof profileData.notification_preferences === 'string'
-          ? JSON.parse(profileData.notification_preferences)
-          : profileData.notification_preferences || { email_notifications: true, phone_notifications: false },
+        privacy_settings: typeof profile.privacy_settings === 'string' 
+          ? JSON.parse(profile.privacy_settings)
+          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
+        notification_preferences: typeof profile.notification_preferences === 'string'
+          ? JSON.parse(profile.notification_preferences)
+          : profile.notification_preferences || { email_notifications: true, phone_notifications: false },
         // Make sure agent_info is always defined in our profile object
-        agent_info: profileData.agent_info || null
+        agent_info: profile.agent_info || null
       } as Profile;
 
       console.log("Fetched profile data:", transformedProfile);
