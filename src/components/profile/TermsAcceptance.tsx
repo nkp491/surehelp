@@ -1,11 +1,14 @@
 
 import { format } from "date-fns";
 import { useTermsAcceptance } from "@/hooks/useTermsAcceptance";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Loader2, ExternalLink } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const TermsAcceptance = () => {
-  const { hasAcceptedTerms, termsAcceptedAt, isLoading } = useTermsAcceptance();
+  const { hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting, acceptTerms } = useTermsAcceptance();
 
   if (isLoading) {
     return (
@@ -41,8 +44,36 @@ const TermsAcceptance = () => {
               Accepted on: {format(new Date(termsAcceptedAt), "PPP 'at' p")}
             </div>
           )}
+          
+          {!hasAcceptedTerms && (
+            <div className="my-2 p-3 bg-yellow-50 border border-yellow-200 rounded-md text-yellow-800 text-sm">
+              <p>You need to accept the Terms and Conditions to use all features of the application.</p>
+            </div>
+          )}
         </div>
       </CardContent>
+      
+      <CardFooter className="flex justify-between">
+        <Link 
+          to="/auth/terms"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
+        >
+          View Terms <ExternalLink size={14} />
+        </Link>
+        
+        {!hasAcceptedTerms && (
+          <Button 
+            onClick={acceptTerms} 
+            disabled={isAccepting}
+            size="sm"
+          >
+            {isAccepting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+            Accept Terms
+          </Button>
+        )}
+      </CardFooter>
     </Card>
   );
 };

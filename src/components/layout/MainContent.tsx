@@ -13,6 +13,7 @@ import TeamPage from "@/pages/Team";
 import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
+import TermsOfUse from "@/pages/marketing/TermsOfUse";
 
 const MainContent = () => {
   const location = useLocation();
@@ -40,6 +41,8 @@ const MainContent = () => {
           return <RoleManagement />;
         case '/team':
           return <TeamPage />;
+        case '/auth/terms':
+          return <TermsOfUse />;
         case '/admin':
         case '/admin-actions':
           return <AdminActionsPage />;
