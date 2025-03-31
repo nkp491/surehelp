@@ -5,15 +5,15 @@ export type AgentInfoData = {
   direct_line?: string | null;
   email?: string | null;
   resident_location?: string | null;
-  years_of_service_date?: Date | null;
+  years_of_service_date?: Date | string | null;
   line_authority?: string[] | null;
   national_producer_number?: string | null;
   resident_license_number?: string | null;
-  doj_background_check_date?: Date | null;
-  live_scan_date?: Date | null;
-  continuing_education_date?: Date | null;
-  resident_license_status_date?: Date | null;
-  resident_license_renewal_date?: Date | null;
+  doj_background_check_date?: Date | string | null;
+  live_scan_date?: Date | string | null;
+  continuing_education_date?: Date | string | null;
+  resident_license_status_date?: Date | string | null;
+  resident_license_renewal_date?: Date | string | null;
 };
 
 export const useAgentInformation = (
@@ -80,12 +80,24 @@ export const useAgentInformation = (
       // If we're currently editing and toggling off, submit the form
       const formattedData = {
         ...formData,
-        years_of_service_date: formData.years_of_service_date?.toISOString() || null,
-        doj_background_check_date: formData.doj_background_check_date?.toISOString() || null,
-        live_scan_date: formData.live_scan_date?.toISOString() || null,
-        continuing_education_date: formData.continuing_education_date?.toISOString() || null,
-        resident_license_status_date: formData.resident_license_status_date?.toISOString() || null,
-        resident_license_renewal_date: formData.resident_license_renewal_date?.toISOString() || null,
+        years_of_service_date: formData.years_of_service_date instanceof Date 
+          ? formData.years_of_service_date.toISOString() 
+          : formData.years_of_service_date,
+        doj_background_check_date: formData.doj_background_check_date instanceof Date 
+          ? formData.doj_background_check_date.toISOString() 
+          : formData.doj_background_check_date,
+        live_scan_date: formData.live_scan_date instanceof Date 
+          ? formData.live_scan_date.toISOString() 
+          : formData.live_scan_date,
+        continuing_education_date: formData.continuing_education_date instanceof Date 
+          ? formData.continuing_education_date.toISOString() 
+          : formData.continuing_education_date,
+        resident_license_status_date: formData.resident_license_status_date instanceof Date 
+          ? formData.resident_license_status_date.toISOString() 
+          : formData.resident_license_status_date,
+        resident_license_renewal_date: formData.resident_license_renewal_date instanceof Date 
+          ? formData.resident_license_renewal_date.toISOString() 
+          : formData.resident_license_renewal_date,
       };
       
       onUpdate({ agent_info: formattedData });
@@ -99,12 +111,24 @@ export const useAgentInformation = (
     // Convert dates to ISO strings for database storage
     const formattedData = {
       ...formData,
-      years_of_service_date: formData.years_of_service_date?.toISOString() || null,
-      doj_background_check_date: formData.doj_background_check_date?.toISOString() || null,
-      live_scan_date: formData.live_scan_date?.toISOString() || null,
-      continuing_education_date: formData.continuing_education_date?.toISOString() || null,
-      resident_license_status_date: formData.resident_license_status_date?.toISOString() || null,
-      resident_license_renewal_date: formData.resident_license_renewal_date?.toISOString() || null,
+      years_of_service_date: formData.years_of_service_date instanceof Date 
+        ? formData.years_of_service_date.toISOString() 
+        : formData.years_of_service_date,
+      doj_background_check_date: formData.doj_background_check_date instanceof Date 
+        ? formData.doj_background_check_date.toISOString() 
+        : formData.doj_background_check_date,
+      live_scan_date: formData.live_scan_date instanceof Date 
+        ? formData.live_scan_date.toISOString() 
+        : formData.live_scan_date,
+      continuing_education_date: formData.continuing_education_date instanceof Date 
+        ? formData.continuing_education_date.toISOString() 
+        : formData.continuing_education_date,
+      resident_license_status_date: formData.resident_license_status_date instanceof Date 
+        ? formData.resident_license_status_date.toISOString() 
+        : formData.resident_license_status_date,
+      resident_license_renewal_date: formData.resident_license_renewal_date instanceof Date 
+        ? formData.resident_license_renewal_date.toISOString() 
+        : formData.resident_license_renewal_date,
     };
     
     onUpdate({ agent_info: formattedData });
