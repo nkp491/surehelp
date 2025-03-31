@@ -42,6 +42,7 @@ export const useProfileManagement = () => {
       const roles = userRoles.map(r => r.role);
       
       // Transform the data to match our Profile type
+      // Handle agent_info field which might not be in the database schema yet
       const transformedProfile = {
         ...profileData,
         roles: roles,
@@ -51,6 +52,7 @@ export const useProfileManagement = () => {
         notification_preferences: typeof profileData.notification_preferences === 'string'
           ? JSON.parse(profileData.notification_preferences)
           : profileData.notification_preferences || { email_notifications: true, phone_notifications: false },
+        // Add agent_info property even if it doesn't exist in the database
         agent_info: profileData.agent_info || null
       } as Profile;
 
