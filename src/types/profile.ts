@@ -23,4 +23,18 @@ export type Profile = {
     email_notifications: boolean;
     phone_notifications: boolean;
   } | null;
+  agent_info?: {
+    direct_line?: string | null;
+    email?: string | null;
+    resident_location?: string | null;
+    years_of_service_date?: string | null;
+    line_authority?: string | null;
+    national_producer_number?: string | null;
+    resident_license_number?: string | null;
+    doj_background_check_date?: string | null;
+    live_scan_date?: string | null;
+    continuing_education_date?: string | null;
+    resident_license_status_date?: string | null;
+    resident_license_renewal_date?: string | null;
+  } | null;
 };

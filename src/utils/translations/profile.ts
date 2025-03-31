@@ -39,6 +39,22 @@ export const profileTranslations = {
     noUsersFound: "No users found",
     teamInformation: "Team Information",
     yourManager: "Your Manager",
+    // New translations for Agent Information
+    agentInformation: "Agent Information",
+    directLine: "Direct Line",
+    residentLocation: "Resident Location",
+    yearsOfService: "Years of Service",
+    lineAuthority: "Line Authority",
+    selectLineAuthority: "Select line authority",
+    nationalProducerNumber: "National Producer Number",
+    residentLicenseNumber: "Resident License Number",
+    dojBackgroundCheck: "Department of Justice Background Check",
+    liveScanFingerprinting: "Live Scan Fingerprinting",
+    continuingEducation: "Continuing Education Requirement",
+    residentLicenseStatus: "Resident Insurance License Status",
+    residentLicenseRenewal: "Resident Insurance License Renewal Date",
+    save: "Save",
+    edit: "Edit"
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -79,5 +95,21 @@ export const profileTranslations = {
     noUsersFound: "No se encontraron usuarios",
     teamInformation: "Información del Equipo",
     yourManager: "Tu Manager",
+    // New translations for Agent Information
+    agentInformation: "Información del Agente",
+    directLine: "Línea Directa",
+    residentLocation: "Ubicación de Residencia",
+    yearsOfService: "Años de Servicio",
+    lineAuthority: "Línea de Autoridad",
+    selectLineAuthority: "Seleccionar línea de autoridad",
+    nationalProducerNumber: "Número de Productor Nacional",
+    residentLicenseNumber: "Número de Licencia de Residente",
+    dojBackgroundCheck: "Verificación de Antecedentes del Departamento de Justicia",
+    liveScanFingerprinting: "Escaneo Digital en Vivo",
+    continuingEducation: "Requisito de Educación Continua",
+    residentLicenseStatus: "Estado de la Licencia de Seguro de Residente",
+    residentLicenseRenewal: "Fecha de Renovación de la Licencia de Seguro de Residente",
+    save: "Guardar",
+    edit: "Editar"
   }
 };

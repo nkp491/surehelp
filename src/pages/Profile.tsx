@@ -10,6 +10,7 @@ import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
 import TeamInformation from "@/components/profile/TeamInformation";
+import AgentInformation from "@/components/profile/AgentInformation";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -38,6 +39,7 @@ const ProfileContent = () => {
   const t = translations[language];
   
   const isManager = profile?.role?.includes('manager_pro');
+  const isAgent = profile?.role?.includes('agent') || profile?.roles?.some(r => r.includes('agent'));
 
   if (loading) {
     return <ProfileLoading />;
@@ -67,6 +69,13 @@ const ProfileContent = () => {
           managerId={profile?.manager_id}
           onUpdate={updateProfile}
         />
+
+        {isAgent && (
+          <AgentInformation 
+            agentInfo={profile?.agent_info}
+            onUpdate={updateProfile}
+          />
+        )}
 
         <div className="flex flex-col gap-6">
           <UserRole role={profile?.role} roles={profile?.roles} />
