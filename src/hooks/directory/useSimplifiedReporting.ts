@@ -51,10 +51,17 @@ export const useSimplifiedReporting = () => {
       }
       
       // Convert data to SimpleReportingPerson with job_title set to null if missing
-      return {
-        ...data,
+      const result: SimpleReportingPerson = {
+        id: data.id,
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        profile_image_url: data.profile_image_url,
+        role: data.role,
         job_title: 'job_title' in data ? data.job_title : null
-      } as SimpleReportingPerson;
+      };
+      
+      return result;
     } catch (err) {
       console.error('Error in getManagerByEmail:', err);
       return null;
@@ -87,10 +94,17 @@ export const useSimplifiedReporting = () => {
       }
       
       // Convert data to SimpleReportingPerson with job_title set to null if missing
-      return {
-        ...data,
+      const result: SimpleReportingPerson = {
+        id: data.id,
+        email: data.email,
+        first_name: data.first_name,
+        last_name: data.last_name,
+        profile_image_url: data.profile_image_url,
+        role: data.role,
         job_title: 'job_title' in data ? data.job_title : null
-      } as SimpleReportingPerson;
+      };
+      
+      return result;
     } catch (err) {
       console.error('Error in getProfileById:', err);
       return null;
@@ -135,9 +149,14 @@ export const useSimplifiedReporting = () => {
       
       // Convert data to SimpleReportingPerson array with job_title set to null if missing
       return data.map(profile => ({
-        ...profile,
+        id: profile.id,
+        email: profile.email,
+        first_name: profile.first_name, 
+        last_name: profile.last_name,
+        profile_image_url: profile.profile_image_url,
+        role: profile.role,
         job_title: 'job_title' in profile ? profile.job_title : null
-      })) as SimpleReportingPerson[];
+      }));
     } catch (err) {
       console.error('Error in getDirectReportsByManagerEmail:', err);
       return [];
