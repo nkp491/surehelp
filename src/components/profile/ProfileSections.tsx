@@ -9,7 +9,7 @@ import NotificationPreferences from "@/components/profile/NotificationPreference
 import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import DebugTools from "@/components/profile/DebugTools";
 import ManagerInfo from "@/components/profile/ManagerInfo";
-import { useTeamStructure } from "@/hooks/useTeamStructure";
+import { useSimplifiedReporting } from "@/hooks/directory/useSimplifiedReporting";
 import { useEffect, useState } from "react";
 
 interface ProfileSectionsProps {
@@ -69,7 +69,7 @@ const ProfileSections = ({
   const hasBetaAccess = profile?.roles?.includes("beta_user") || false;
   
   // Get reporting structure for current user
-  const { reportingStructure, getReportingStructure } = useTeamStructure();
+  const { getReportingStructure } = useSimplifiedReporting();
   const [manager, setManager] = useState<any>(null);
   
   useEffect(() => {

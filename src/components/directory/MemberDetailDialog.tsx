@@ -24,8 +24,7 @@ import {
 import { format } from "date-fns";
 import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
-import { useTeamDirectory } from "@/hooks/useTeamDirectory";
-import { ReportingStructure } from "@/types/profile";
+import { SimpleReportingStructure, useSimplifiedReporting } from "@/hooks/directory/useSimplifiedReporting";
 
 interface MemberDetailDialogProps {
   member: Profile | null;
@@ -39,8 +38,8 @@ export function MemberDetailDialog({
   onOpenChange 
 }: MemberDetailDialogProps) {
   const [showReporting, setShowReporting] = useState(false);
-  const { getReportingStructure } = useTeamDirectory();
-  const [reportingStructure, setReportingStructure] = useState<ReportingStructure | null>(null);
+  const { getReportingStructure } = useSimplifiedReporting();
+  const [reportingStructure, setReportingStructure] = useState<SimpleReportingStructure | null>(null);
   const [isLoadingStructure, setIsLoadingStructure] = useState(false);
 
   const fullName = member 

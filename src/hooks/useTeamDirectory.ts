@@ -2,8 +2,7 @@
 import { useTeamMembersFetch } from './directory/useTeamMembersFetch';
 import { useTeamMembersSearch } from './directory/useTeamMembersSearch';
 import { useMemberDetails } from './directory/useMemberDetails';
-import { useReportingStructure } from './directory/useReportingStructure';
-import { ReportingStructure } from '@/types/profile';
+import { useSimplifiedReporting } from './directory/useSimplifiedReporting';
 
 export const useTeamDirectory = () => {
   const {
@@ -23,7 +22,7 @@ export const useTeamDirectory = () => {
 
   const { getMemberById } = useMemberDetails(members);
   
-  const { getReportingStructure, isLoadingStructure, structureError } = useReportingStructure(getMemberById);
+  const { getReportingStructure, isLoading: isLoadingStructure, error: structureError } = useSimplifiedReporting();
 
   return {
     members,

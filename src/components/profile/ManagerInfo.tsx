@@ -7,6 +7,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { UpdateSuccessMessage } from "./UpdateSuccessMessage";
+import { useSimplifiedReporting, SimpleReportingPerson } from "@/hooks/directory/useSimplifiedReporting";
 
 interface ManagerInfoProps {
   manager: {
