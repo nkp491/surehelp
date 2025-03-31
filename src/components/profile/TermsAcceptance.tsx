@@ -11,7 +11,7 @@ import { useEffect } from "react";
 const TermsAcceptance = () => {
   const { hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting, acceptTerms } = useTermsAcceptance();
 
-  // Debug logging to help diagnose issues
+  // Debug logging
   useEffect(() => {
     console.log("Terms acceptance state:", { 
       hasAcceptedTerms, 
@@ -27,8 +27,8 @@ const TermsAcceptance = () => {
         <CardHeader>
           <CardTitle>Terms and Conditions</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="h-6 w-full bg-gray-200 animate-pulse rounded"></div>
+        <CardContent className="flex items-center justify-center py-6">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </CardContent>
       </Card>
     );

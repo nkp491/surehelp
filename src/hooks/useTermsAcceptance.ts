@@ -67,10 +67,12 @@ export const useTermsAcceptance = () => {
 
       const now = new Date().toISOString();
       
-      // Update the profile - simplified query to avoid SQL operator error
+      // Execute the update operation with minimal fields to avoid any SQL errors
       const { error } = await supabase
         .from("profiles")
-        .update({ terms_accepted_at: now })
+        .update({ 
+          terms_accepted_at: now 
+        })
         .eq("id", session.user.id);
 
       if (error) {
@@ -87,7 +89,7 @@ export const useTermsAcceptance = () => {
         description: "You have successfully accepted the Terms and Conditions.",
       });
       
-      // Refresh profile data to ensure UI is in sync with database
+      // Double check by fetching the latest data to ensure UI state matches database
       const { data, error: fetchError } = await supabase
         .from("profiles")
         .select("terms_accepted_at")
@@ -97,12 +99,9 @@ export const useTermsAcceptance = () => {
       if (fetchError) {
         console.error("Error refreshing profile data:", fetchError);
       } else if (data) {
-        // Double check that our local state matches the database
-        const dbAccepted = data.terms_accepted_at !== null;
-        if (dbAccepted !== hasAcceptedTerms) {
-          setHasAcceptedTerms(dbAccepted);
-          setTermsAcceptedAt(data.terms_accepted_at);
-        }
+        // Update state with fresh data from database
+        setHasAcceptedTerms(data.terms_accepted_at !== null);
+        setTermsAcceptedAt(data.terms_accepted_at);
       }
     } catch (error: any) {
       console.error("Error accepting terms:", error);
@@ -111,6 +110,8 @@ export const useTermsAcceptance = () => {
         description: "Failed to accept terms. Please try again.",
         variant: "destructive",
       });
+      // Reset state on error
+      setHasAcceptedTerms(false);
     } finally {
       setIsAccepting(false);
     }
