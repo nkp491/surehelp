@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -79,6 +78,11 @@ export const useProfileManagement = () => {
 
       // Create a clean copy of updates for database
       const { roles, ...updatesToSave } = updates as any;
+      
+      // Handle manager_id special case - convert 'none' to null
+      if (updatesToSave.manager_id === 'none') {
+        updatesToSave.manager_id = null;
+      }
       
       // Handle JSON fields properly
       if (updatesToSave.privacy_settings && typeof updatesToSave.privacy_settings !== 'string') {

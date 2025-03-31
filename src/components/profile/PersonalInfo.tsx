@@ -174,7 +174,7 @@ const PersonalInfo = ({
                     <SelectValue placeholder={loadingManagers ? "Loading managers..." : "Select your manager"} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="">None</SelectItem>
+                    <SelectItem value="none">None</SelectItem>
                     {managers?.map((manager) => (
                       <SelectItem key={manager.id} value={manager.id}>
                         {manager.first_name} {manager.last_name} {manager.email ? `(${manager.email})` : ''}
