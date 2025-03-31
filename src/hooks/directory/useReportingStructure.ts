@@ -27,6 +27,7 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       let member: Profile;
       try {
         const rawMember = await getMemberById(profileId);
+        // Create a safe copy to avoid reference issues
         member = JSON.parse(JSON.stringify(rawMember));
       } catch (err) {
         throw new Error(`Failed to get member profile: ${err}`);
@@ -37,6 +38,7 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
       if (member.reports_to) {
         try {
           const rawManager = await getMemberById(member.reports_to);
+          // Create a safe copy to avoid reference issues
           manager = JSON.parse(JSON.stringify(rawManager));
         } catch (err) {
           console.error('Error fetching manager:', err);
@@ -55,16 +57,15 @@ export const useReportingStructure = (getMemberById: (id: string) => Promise<Pro
         if (fetchError) throw fetchError;
         
         if (data && Array.isArray(data)) {
-          directReports = data.map(item => {
-            return JSON.parse(JSON.stringify(item));
-          });
+          // Create safe copies to avoid reference issues
+          directReports = data.map(item => JSON.parse(JSON.stringify(item)));
         }
       } catch (err) {
         console.error('Error fetching direct reports:', err);
         // Continue with empty array
       }
       
-      // Create the final structure object
+      // Create the final structure object with explicit type
       const result: ReportingStructureResult = {
         manager,
         directReports

@@ -2,7 +2,6 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { Profile } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 
 // Define simple return types without recursive references
@@ -29,9 +28,20 @@ export const useSimplifiedReporting = () => {
   // Function to get manager by email
   const getManagerByEmail = async (managerEmail: string): Promise<SimpleReportingPerson | null> => {
     try {
+      // Check if we can select job_title from profiles
+      const testQuery = await supabase
+        .from('profiles')
+        .select('job_title')
+        .limit(1);
+      
+      // Define the selection fields based on what's available
+      const selectFields = testQuery.error && testQuery.error.message.includes('job_title')
+        ? 'id, email, first_name, last_name, profile_image_url, role'
+        : 'id, email, first_name, last_name, profile_image_url, role, job_title';
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, profile_image_url, role')
+        .select(selectFields)
         .eq('email', managerEmail)
         .single();
         
@@ -40,10 +50,10 @@ export const useSimplifiedReporting = () => {
         return null;
       }
       
-      // Convert data to SimpleReportingPerson with job_title set to null
+      // Convert data to SimpleReportingPerson with job_title set to null if missing
       return {
         ...data,
-        job_title: null // Add missing field
+        job_title: 'job_title' in data ? data.job_title : null
       } as SimpleReportingPerson;
     } catch (err) {
       console.error('Error in getManagerByEmail:', err);
@@ -54,9 +64,20 @@ export const useSimplifiedReporting = () => {
   // Function to get profile by ID with minimal fields
   const getProfileById = async (profileId: string): Promise<SimpleReportingPerson | null> => {
     try {
+      // Check if we can select job_title from profiles
+      const testQuery = await supabase
+        .from('profiles')
+        .select('job_title')
+        .limit(1);
+      
+      // Define the selection fields based on what's available
+      const selectFields = testQuery.error && testQuery.error.message.includes('job_title')
+        ? 'id, email, first_name, last_name, profile_image_url, role'
+        : 'id, email, first_name, last_name, profile_image_url, role, job_title';
+      
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, profile_image_url, role')
+        .select(selectFields)
         .eq('id', profileId)
         .single();
         
@@ -65,10 +86,10 @@ export const useSimplifiedReporting = () => {
         return null;
       }
       
-      // Convert data to SimpleReportingPerson with job_title set to null
+      // Convert data to SimpleReportingPerson with job_title set to null if missing
       return {
         ...data,
-        job_title: null // Add missing field
+        job_title: 'job_title' in data ? data.job_title : null
       } as SimpleReportingPerson;
     } catch (err) {
       console.error('Error in getProfileById:', err);
@@ -90,10 +111,21 @@ export const useSimplifiedReporting = () => {
         console.log("manager_email column doesn't exist, returning empty array");
         return [];
       }
+      
+      // Check if we can select job_title from profiles
+      const jobTitleTest = await supabase
+        .from('profiles')
+        .select('job_title')
+        .limit(1);
+      
+      // Define the selection fields based on what's available
+      const selectFields = jobTitleTest.error && jobTitleTest.error.message.includes('job_title')
+        ? 'id, email, first_name, last_name, profile_image_url, role'
+        : 'id, email, first_name, last_name, profile_image_url, role, job_title';
         
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, profile_image_url, role')
+        .select(selectFields)
         .eq('manager_email', managerEmail);
         
       if (error || !data) {
@@ -101,10 +133,10 @@ export const useSimplifiedReporting = () => {
         return [];
       }
       
-      // Convert data to SimpleReportingPerson array with job_title set to null
+      // Convert data to SimpleReportingPerson array with job_title set to null if missing
       return data.map(profile => ({
         ...profile,
-        job_title: null // Add missing field
+        job_title: 'job_title' in profile ? profile.job_title : null
       })) as SimpleReportingPerson[];
     } catch (err) {
       console.error('Error in getDirectReportsByManagerEmail:', err);
@@ -135,14 +167,19 @@ export const useSimplifiedReporting = () => {
           
         // If manager_email column doesn't exist, skip this part
         if (!testQuery.error || !testQuery.error.message.includes('manager_email')) {
-          const { data: profileData, error: profileError } = await supabase
-            .from('profiles')
-            .select('manager_email')
-            .eq('id', profileId)
-            .single();
-            
-          if (!profileError && profileData && profileData.manager_email) {
-            manager = await getManagerByEmail(profileData.manager_email);
+          try {
+            const { data: profileData, error: profileError } = await supabase
+              .from('profiles')
+              .select('manager_email')
+              .eq('id', profileId)
+              .single();
+              
+            if (!profileError && profileData && profileData.manager_email) {
+              manager = await getManagerByEmail(profileData.manager_email);
+            }
+          } catch (err) {
+            console.error("Error checking manager_email:", err);
+            // Continue without manager
           }
         } else {
           console.log("manager_email column doesn't exist, skipping manager lookup");
