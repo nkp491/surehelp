@@ -1,248 +1,36 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types/profile";
-import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
 
+import { useProfileData } from "./profile/useProfileData";
+import { useAuthState } from "./profile/useAuthState";
+import { useProfileUpdate } from "./profile/useProfileUpdate";
+import { useAvatarUpload } from "./profile/useAvatarUpload";
+import { useSignOut } from "./profile/useSignOut";
+
+/**
+ * Main profile management hook that combines all profile-related functionality
+ */
 export const useProfileManagement = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
-  const [uploading, setUploading] = useState(false);
-
-  // Profile query with React Query
-  const { data: profile, isLoading, refetch } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        navigate("/auth");
-        return null;
-      }
-
-      // Fetch basic profile data
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("*")
-        .eq("id", session.user.id)
-        .single();
-
-      if (profileError) throw profileError;
-      
-      // Fetch user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("role, email")
-        .eq("user_id", session.user.id);
-        
-      if (rolesError) throw rolesError;
-      
-      const roles = userRoles.map(r => r.role);
-      
-      // Transform the data to match our Profile type
-      // Explicitly cast the profileData to any to avoid TypeScript errors
-      const profile = profileData as any;
-      
-      // Transform the data to match our Profile type
-      const transformedProfile = {
-        ...profile,
-        roles: roles,
-        privacy_settings: typeof profile.privacy_settings === 'string' 
-          ? JSON.parse(profile.privacy_settings)
-          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
-        notification_preferences: typeof profile.notification_preferences === 'string'
-          ? JSON.parse(profile.notification_preferences)
-          : profile.notification_preferences || { email_notifications: true, phone_notifications: false },
-        // Make sure agent_info is always defined in our profile object
-        agent_info: profile.agent_info || null
-      } as Profile;
-
-      console.log("Fetched profile data:", transformedProfile);
-
-      // Handle agent_info transformation if it exists
-      if (transformedProfile.agent_info) {
-        // Make sure arrays are properly handled
-        if (transformedProfile.agent_info.line_authority) {
-          if (typeof transformedProfile.agent_info.line_authority === 'string') {
-            transformedProfile.agent_info.line_authority = [transformedProfile.agent_info.line_authority];
-          }
-        } else {
-          transformedProfile.agent_info.line_authority = [];
-        }
-        
-        if (transformedProfile.agent_info.active_state_licenses) {
-          if (typeof transformedProfile.agent_info.active_state_licenses === 'string') {
-            transformedProfile.agent_info.active_state_licenses = [transformedProfile.agent_info.active_state_licenses];
-          }
-        } else {
-          transformedProfile.agent_info.active_state_licenses = [];
-        }
-      }
-      
-      return transformedProfile;
-    },
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
-  });
-
-  // Auth state listener
-  useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-      if (event === "SIGNED_OUT") {
-        navigate("/auth");
-      }
-    });
-
-    return () => subscription.unsubscribe();
-  }, [navigate]);
-
-  async function updateProfile(updates: Partial<Profile>) {
-    try {
-      console.log("updateProfile called with data:", updates);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session) {
-        console.error("No active session found");
-        navigate("/auth");
-        return;
-      }
-
-      console.log("Current user ID:", session.user.id);
-
-      // Create a clean copy of updates for database
-      const { roles, ...updatesToSave } = updates as any;
-      
-      // Handle JSON fields properly
-      if (updatesToSave.privacy_settings && typeof updatesToSave.privacy_settings !== 'string') {
-        updatesToSave.privacy_settings = JSON.stringify(updatesToSave.privacy_settings);
-      }
-      
-      if (updatesToSave.notification_preferences && typeof updatesToSave.notification_preferences !== 'string') {
-        updatesToSave.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
-      }
-      
-      // Handle agent_info field properly
-      if (updatesToSave.agent_info) {
-        console.log("Updating agent info:", updatesToSave.agent_info);
-      }
-
-      // Handle manager_id specifically when updating
-      if (updatesToSave.manager_id !== undefined) {
-        console.log("Updating manager_id to:", updatesToSave.manager_id);
-      }
-
-      // Log what we're sending to debug
-      console.log("Updating profile with:", updatesToSave);
-
-      // FIX: Use .eq instead of .match for more reliable updating
-      const { data, error } = await supabase
-        .from("profiles")
-        .update(updatesToSave)
-        .eq("id", session.user.id)
-        .select();
-
-      console.log("Update response:", { data, error });
-
-      if (error) {
-        console.error("Error details:", error);
-        throw error;
-      }
-      
-      // If email is updated, update it in user_roles table as well
-      if (updates.email) {
-        console.log("Updating email in user_roles:", updates.email);
-        const { error: rolesError } = await supabase
-          .from("user_roles")
-          .update({ email: updates.email })
-          .eq("user_id", session.user.id);
-          
-        if (rolesError) {
-          console.error("Error updating user_roles:", rolesError);
-          throw rolesError;
-        }
-      }
-      
-      // Refetch profile data to ensure we have the latest
-      await refetch();
-      
-      toast({
-        title: "Profile updated",
-        description: "Your profile has been updated successfully.",
-      });
-
-      return true;
-    } catch (error) {
-      console.error("Error updating profile:", error);
-      toast({
-        title: "Error updating profile",
-        description: "There was a problem updating your profile. Please try again.",
-        variant: "destructive",
-      });
-      return false;
-    }
-  }
-
-  async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
-    try {
-      setUploading(true);
-      
-      if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
-      }
-
-      const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${crypto.randomUUID()}.${fileExt}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from('profile_images')
-        .upload(fileName, file);
-
-      if (uploadError) throw uploadError;
-
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile_images')
-        .getPublicUrl(fileName);
-
-      await updateProfile({ profile_image_url: publicUrl });
-
-      toast({
-        title: "Success",
-        description: "Profile picture updated successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error uploading image",
-        description: error.message,
-        variant: "destructive",
-      });
-    } finally {
-      setUploading(false);
-    }
-  }
-
-  async function signOut() {
-    const { error } = await supabase.auth.signOut();
-    if (error) {
-      console.error("Error signing out:", error);
-      toast({
-        title: "Error signing out",
-        description: "There was a problem signing out. Please try again.",
-        variant: "destructive",
-      });
-    } else {
-      navigate("/auth");
-    }
-  }
+  // Get profile data and loading state
+  const { data: profile, isLoading: loading, refetch } = useProfileData();
+  
+  // Handle auth state changes
+  useAuthState();
+  
+  // Get profile update functionality
+  const { updateProfile } = useProfileUpdate();
+  
+  // Get avatar upload functionality
+  const { uploading, uploadAvatar } = useAvatarUpload();
+  
+  // Get sign out functionality
+  const { signOut } = useSignOut();
 
   return {
     profile,
-    loading: isLoading,
+    loading,
     uploading,
     updateProfile,
     uploadAvatar,
-    signOut
+    signOut,
+    refetch
   };
 };
