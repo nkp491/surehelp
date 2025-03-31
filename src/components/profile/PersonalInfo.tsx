@@ -76,7 +76,16 @@ const PersonalInfo = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Submitting form data:", formData);
-    onUpdate(formData);
+    
+    // Create a clean copy of the data for submission
+    const cleanedData = {...formData};
+    
+    // Convert empty manager_id to null for database
+    if (cleanedData.manager_id === '' || cleanedData.manager_id === 'none') {
+      cleanedData.manager_id = null;
+    }
+    
+    onUpdate(cleanedData);
     setIsEditing(false);
   };
 
@@ -84,7 +93,16 @@ const PersonalInfo = ({
     if (isEditing) {
       // If we're currently editing and toggling off, submit the form
       console.log("Saving data via toggle:", formData);
-      onUpdate(formData);
+      
+      // Create a clean copy of the data for submission
+      const cleanedData = {...formData};
+      
+      // Convert empty manager_id to null for database
+      if (cleanedData.manager_id === '' || cleanedData.manager_id === 'none') {
+        cleanedData.manager_id = null;
+      }
+      
+      onUpdate(cleanedData);
     }
     setIsEditing(!isEditing);
   };
