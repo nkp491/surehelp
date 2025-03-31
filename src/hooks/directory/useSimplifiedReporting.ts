@@ -50,7 +50,7 @@ export const useSimplifiedReporting = () => {
         return null;
       }
       
-      // Convert data to SimpleReportingPerson with job_title set to null if missing
+      // Create a new object explicitly with only the properties we need
       const result: SimpleReportingPerson = {
         id: data.id,
         email: data.email,
@@ -93,7 +93,7 @@ export const useSimplifiedReporting = () => {
         return null;
       }
       
-      // Convert data to SimpleReportingPerson with job_title set to null if missing
+      // Create a new object explicitly with only the properties we need
       const result: SimpleReportingPerson = {
         id: data.id,
         email: data.email,
@@ -147,16 +147,18 @@ export const useSimplifiedReporting = () => {
         return [];
       }
       
-      // Convert data to SimpleReportingPerson array with job_title set to null if missing
-      return data.map(profile => ({
+      // Create new objects with only the properties we need
+      const reports: SimpleReportingPerson[] = data.map(profile => ({
         id: profile.id,
         email: profile.email,
-        first_name: profile.first_name, 
+        first_name: profile.first_name,
         last_name: profile.last_name,
         profile_image_url: profile.profile_image_url,
         role: profile.role,
         job_title: 'job_title' in profile ? profile.job_title : null
       }));
+      
+      return reports;
     } catch (err) {
       console.error('Error in getDirectReportsByManagerEmail:', err);
       return [];
@@ -187,13 +189,13 @@ export const useSimplifiedReporting = () => {
         // If manager_email column doesn't exist, skip this part
         if (!testQuery.error || !testQuery.error.message.includes('manager_email')) {
           try {
-            const { data: profileData, error: profileError } = await supabase
+            const { data: profileData } = await supabase
               .from('profiles')
               .select('manager_email')
               .eq('id', profileId)
               .single();
               
-            if (!profileError && profileData && profileData.manager_email) {
+            if (profileData && 'manager_email' in profileData && profileData.manager_email) {
               manager = await getManagerByEmail(profileData.manager_email);
             }
           } catch (err) {
