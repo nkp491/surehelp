@@ -31,7 +31,7 @@ export const useSimplifiedReporting = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, profile_image_url, job_title, role')
+        .select('id, email, first_name, last_name, profile_image_url, role')
         .eq('email', managerEmail)
         .single();
         
@@ -40,7 +40,11 @@ export const useSimplifiedReporting = () => {
         return null;
       }
       
-      return data as SimpleReportingPerson;
+      // Convert data to SimpleReportingPerson with job_title set to null
+      return {
+        ...data,
+        job_title: null // Add missing field
+      } as SimpleReportingPerson;
     } catch (err) {
       console.error('Error in getManagerByEmail:', err);
       return null;
@@ -52,7 +56,7 @@ export const useSimplifiedReporting = () => {
     try {
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, profile_image_url, job_title, role')
+        .select('id, email, first_name, last_name, profile_image_url, role')
         .eq('id', profileId)
         .single();
         
@@ -61,7 +65,11 @@ export const useSimplifiedReporting = () => {
         return null;
       }
       
-      return data as SimpleReportingPerson;
+      // Convert data to SimpleReportingPerson with job_title set to null
+      return {
+        ...data,
+        job_title: null // Add missing field
+      } as SimpleReportingPerson;
     } catch (err) {
       console.error('Error in getProfileById:', err);
       return null;
@@ -71,9 +79,21 @@ export const useSimplifiedReporting = () => {
   // Function to get direct reports by manager email
   const getDirectReportsByManagerEmail = async (managerEmail: string): Promise<SimpleReportingPerson[]> => {
     try {
+      // First check if manager_email column exists by attempting a query
+      const testQuery = await supabase
+        .from('profiles')
+        .select('manager_email')
+        .limit(1);
+        
+      // If manager_email column doesn't exist, return empty array 
+      if (testQuery.error && testQuery.error.message.includes('manager_email')) {
+        console.log("manager_email column doesn't exist, returning empty array");
+        return [];
+      }
+        
       const { data, error } = await supabase
         .from('profiles')
-        .select('id, email, first_name, last_name, profile_image_url, job_title, role')
+        .select('id, email, first_name, last_name, profile_image_url, role')
         .eq('manager_email', managerEmail);
         
       if (error || !data) {
@@ -81,7 +101,11 @@ export const useSimplifiedReporting = () => {
         return [];
       }
       
-      return data as SimpleReportingPerson[];
+      // Convert data to SimpleReportingPerson array with job_title set to null
+      return data.map(profile => ({
+        ...profile,
+        job_title: null // Add missing field
+      })) as SimpleReportingPerson[];
     } catch (err) {
       console.error('Error in getDirectReportsByManagerEmail:', err);
       return [];
@@ -103,14 +127,25 @@ export const useSimplifiedReporting = () => {
       // Get manager if available
       let manager: SimpleReportingPerson | null = null;
       if (profile.email) {
-        const { data: profileData, error: profileError } = await supabase
+        // First check if manager_email column exists
+        const testQuery = await supabase
           .from('profiles')
           .select('manager_email')
-          .eq('id', profileId)
-          .single();
+          .limit(1);
           
-        if (!profileError && profileData && profileData.manager_email) {
-          manager = await getManagerByEmail(profileData.manager_email);
+        // If manager_email column doesn't exist, skip this part
+        if (!testQuery.error || !testQuery.error.message.includes('manager_email')) {
+          const { data: profileData, error: profileError } = await supabase
+            .from('profiles')
+            .select('manager_email')
+            .eq('id', profileId)
+            .single();
+            
+          if (!profileError && profileData && profileData.manager_email) {
+            manager = await getManagerByEmail(profileData.manager_email);
+          }
+        } else {
+          console.log("manager_email column doesn't exist, skipping manager lookup");
         }
       }
       

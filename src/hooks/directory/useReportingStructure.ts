@@ -4,7 +4,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Profile } from '@/types/profile';
 import { useToast } from '@/hooks/use-toast';
 import { useProfileSanitization } from '../profile/useProfileSanitization';
-import { ProfileMinimal, toProfileMinimal, ReportingStructureFixed } from '@/types/profile-minimal';
 
 // Define a simple return type without recursive references
 interface ReportingStructureResult {
