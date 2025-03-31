@@ -5,12 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PersonalInfoProps {
   firstName?: string | null;
   lastName?: string | null;
   email?: string | null;
   phone?: string | null;
+  managerId?: string | null;
   onUpdate: (data: any) => void;
 }
 
@@ -19,6 +29,7 @@ const PersonalInfo = ({
   lastName,
   email,
   phone,
+  managerId,
   onUpdate
 }: PersonalInfoProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -26,23 +37,41 @@ const PersonalInfo = ({
     first_name: firstName || '',
     last_name: lastName || '',
     email: email || '',
-    phone: phone || ''
+    phone: phone || '',
+    manager_id: managerId || ''
   });
 
   const { language } = useLanguage();
   const t = translations[language];
 
+  // Fetch managers for selection
+  const { data: managers, isLoading: loadingManagers } = useQuery({
+    queryKey: ['managers'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum')
+        .order('first_name', { ascending: true });
+
+      if (error) throw error;
+      return data || [];
+    },
+    enabled: isEditing, // Only fetch when editing
+  });
+
   // Update form data when props change
   useEffect(() => {
-    if (firstName !== undefined || lastName !== undefined || email !== undefined || phone !== undefined) {
+    if (firstName !== undefined || lastName !== undefined || email !== undefined || phone !== undefined || managerId !== undefined) {
       setFormData({
         first_name: firstName || '',
         last_name: lastName || '',
         email: email || '',
-        phone: phone || ''
+        phone: phone || '',
+        manager_id: managerId || ''
       });
     }
-  }, [firstName, lastName, email, phone]);
+  }, [firstName, lastName, email, phone, managerId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -130,6 +159,35 @@ const PersonalInfo = ({
                 />
               ) : (
                 <p className="text-base text-gray-900 pt-1">{phone || '-'}</p>
+              )}
+            </div>
+            {/* Manager selection field */}
+            <div className="space-y-2.5 md:col-span-2">
+              <label className="text-sm font-medium text-gray-700">Your Manager</label>
+              {isEditing ? (
+                <Select
+                  value={formData.manager_id}
+                  onValueChange={(value) => setFormData({ ...formData, manager_id: value })}
+                  disabled={loadingManagers}
+                >
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={loadingManagers ? "Loading managers..." : "Select your manager"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="">None</SelectItem>
+                    {managers?.map((manager) => (
+                      <SelectItem key={manager.id} value={manager.id}>
+                        {manager.first_name} {manager.last_name} {manager.email ? `(${manager.email})` : ''}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-base text-gray-900 pt-1">
+                  {managers?.find(m => m.id === managerId) 
+                    ? `${managers.find(m => m.id === managerId)?.first_name} ${managers.find(m => m.id === managerId)?.last_name}`
+                    : (managerId ? 'Loading manager details...' : 'None assigned')}
+                </p>
               )}
             </div>
           </div>

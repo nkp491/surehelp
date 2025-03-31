@@ -9,6 +9,85 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      action_items: {
+        Row: {
+          assigned_to: string
+          completed_at: string | null
+          created_at: string | null
+          created_by: string
+          description: string
+          due_date: string | null
+          id: string
+          meeting_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          assigned_to: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by: string
+          description: string
+          due_date?: string | null
+          id?: string
+          meeting_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          assigned_to?: string
+          completed_at?: string | null
+          created_at?: string | null
+          created_by?: string
+          description?: string
+          due_date?: string | null
+          id?: string
+          meeting_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "action_items_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bulletin_read_receipts: {
+        Row: {
+          bulletin_id: string | null
+          created_at: string | null
+          id: string
+          read_at: string | null
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          bulletin_id?: string | null
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          bulletin_id?: string | null
+          created_at?: string | null
+          id?: string
+          read_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bulletin_read_receipts_bulletin_id_fkey"
+            columns: ["bulletin_id"]
+            isOneToOne: false
+            referencedRelation: "team_bulletins"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       daily_metrics: {
         Row: {
           ap: number | null
@@ -272,6 +351,82 @@ export type Database = {
         }
         Relationships: []
       }
+      meeting_followups: {
+        Row: {
+          created_at: string | null
+          created_by: string
+          id: string
+          meeting_id: string
+          message: string | null
+          reminder_at: string
+          reminder_sent: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by: string
+          id?: string
+          meeting_id: string
+          message?: string | null
+          reminder_at: string
+          reminder_sent?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          meeting_id?: string
+          message?: string | null
+          reminder_at?: string
+          reminder_sent?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_followups_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      meeting_notes: {
+        Row: {
+          content: string | null
+          created_at: string | null
+          created_by: string
+          id: string
+          meeting_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          content?: string | null
+          created_at?: string | null
+          created_by: string
+          id?: string
+          meeting_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          content?: string | null
+          created_at?: string | null
+          created_by?: string
+          id?: string
+          meeting_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_notes_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "one_on_one_meetings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notes_history: {
         Row: {
           created_at: string
@@ -307,6 +462,56 @@ export type Database = {
           },
         ]
       }
+      one_on_one_meetings: {
+        Row: {
+          attendee_id: string
+          created_at: string | null
+          created_by: string
+          duration_minutes: number
+          id: string
+          location: string | null
+          scheduled_at: string
+          status: string
+          team_id: string
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          attendee_id: string
+          created_at?: string | null
+          created_by: string
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          scheduled_at: string
+          status?: string
+          team_id: string
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          attendee_id?: string
+          created_at?: string | null
+          created_by?: string
+          duration_minutes?: number
+          id?: string
+          location?: string | null
+          scheduled_at?: string
+          status?: string
+          team_id?: string
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "one_on_one_meetings_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -316,6 +521,7 @@ export type Database = {
           language_preference: string | null
           last_name: string | null
           last_sign_in: string | null
+          manager_id: string | null
           notification_preferences: Json | null
           phone: string | null
           privacy_settings: Json | null
@@ -332,6 +538,7 @@ export type Database = {
           language_preference?: string | null
           last_name?: string | null
           last_sign_in?: string | null
+          manager_id?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           privacy_settings?: Json | null
@@ -348,6 +555,7 @@ export type Database = {
           language_preference?: string | null
           last_name?: string | null
           last_sign_in?: string | null
+          manager_id?: string | null
           notification_preferences?: Json | null
           phone?: string | null
           privacy_settings?: Json | null
@@ -390,30 +598,36 @@ export type Database = {
       }
       team_bulletins: {
         Row: {
+          category: string | null
           content: string
           created_at: string
           created_by: string
           id: string
+          mentioned_users: string[] | null
           pinned: boolean
           team_id: string
           title: string
           updated_at: string
         }
         Insert: {
+          category?: string | null
           content: string
           created_at?: string
           created_by: string
           id?: string
+          mentioned_users?: string[] | null
           pinned?: boolean
           team_id: string
           title: string
           updated_at?: string
         }
         Update: {
+          category?: string | null
           content?: string
           created_at?: string
           created_by?: string
           id?: string
+          mentioned_users?: string[] | null
           pinned?: boolean
           team_id?: string
           title?: string
@@ -422,6 +636,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "team_bulletins_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_invitations: {
+        Row: {
+          created_at: string | null
+          email: string | null
+          expires_at: string | null
+          id: string
+          invited_by: string
+          role: string
+          status: string
+          team_id: string
+          token: string
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          invited_by: string
+          role: string
+          status?: string
+          team_id: string
+          token?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string | null
+          expires_at?: string | null
+          id?: string
+          invited_by?: string
+          role?: string
+          status?: string
+          team_id?: string
+          token?: string
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_invitations_team_id_fkey"
             columns: ["team_id"]
             isOneToOne: false
             referencedRelation: "teams"
@@ -458,6 +722,45 @@ export type Database = {
           {
             foreignKeyName: "team_members_team_id_fkey"
             columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      team_relationships: {
+        Row: {
+          child_team_id: string
+          created_at: string | null
+          id: string
+          parent_team_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          child_team_id: string
+          created_at?: string | null
+          id?: string
+          parent_team_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          child_team_id?: string
+          created_at?: string | null
+          id?: string
+          parent_team_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_relationships_child_team_id_fkey"
+            columns: ["child_team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "team_relationships_parent_team_id_fkey"
+            columns: ["parent_team_id"]
             isOneToOne: false
             referencedRelation: "teams"
             referencedColumns: ["id"]
@@ -514,6 +817,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_team_with_member: {
+        Args: {
+          team_name: string
+          member_role?: string
+        }
+        Returns: Json
+      }
       get_user_role: {
         Args: {
           user_id: string
@@ -526,10 +836,33 @@ export type Database = {
         }
         Returns: string[]
       }
+      get_user_teams: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
       has_role: {
         Args: {
           check_user_id: string
           check_role: string
+        }
+        Returns: boolean
+      }
+      is_manager_of: {
+        Args: {
+          manager_id: string
+          user_id: string
+        }
+        Returns: boolean
+      }
+      is_team_manager: {
+        Args: {
+          check_team_id: string
+        }
+        Returns: boolean
+      }
+      is_team_member: {
+        Args: {
+          team_id: string
         }
         Returns: boolean
       }

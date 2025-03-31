@@ -12,6 +12,7 @@ export type Profile = {
   updated_at: string;
   last_sign_in: string | null;
   language_preference: string | null;
+  manager_id: string | null;
   privacy_settings: {
     show_email: boolean;
     show_phone: boolean;

@@ -12,6 +12,7 @@ import PasswordSettings from "@/components/profile/PasswordSettings";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ManagerTeamList } from "@/components/team/ManagerTeamList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +35,8 @@ const ProfileContent = () => {
 
   const { language } = useLanguage();
   const t = translations[language];
+  
+  const isManager = profile?.role?.includes('manager_pro');
 
   if (loading) {
     return <ProfileLoading />;
@@ -56,6 +59,7 @@ const ProfileContent = () => {
           lastName={profile?.last_name}
           email={profile?.email}
           phone={profile?.phone}
+          managerId={profile?.manager_id}
           onUpdate={updateProfile}
         />
 
@@ -75,6 +79,10 @@ const ProfileContent = () => {
           />
           
           <TermsAcceptance />
+          
+          {isManager && (
+            <ManagerTeamList managerId={profile?.id} />
+          )}
         </div>
       </div>
     </div>
