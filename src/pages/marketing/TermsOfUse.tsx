@@ -1,8 +1,19 @@
 
+import { useLocation, useNavigate } from "react-router-dom";
 import NavBar from "@/components/marketing/NavBar";
 import Footer from "@/components/marketing/Footer";
+import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 
 const TermsOfUse = () => {
+  const location = useLocation();
+  const navigate = useNavigate();
+  const isLoggedIn = location.pathname === "/terms"; // If the path is /terms (not /auth/terms), user is logged in
+
+  const handleBackToProfile = () => {
+    navigate("/profile");
+  };
+
   return (
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]">
       <NavBar />
@@ -10,6 +21,19 @@ const TermsOfUse = () => {
         <div className="relative isolate pt-24">
           <div className="w-full px-6 py-24 sm:py-32 lg:px-8">
             <div className="mx-auto max-w-4xl">
+              {isLoggedIn && (
+                <div className="mb-4">
+                  <Button
+                    variant="outline"
+                    className="bg-white/20 text-white hover:bg-white/30"
+                    onClick={handleBackToProfile}
+                  >
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Profile
+                  </Button>
+                </div>
+              )}
+              
               <div className="text-center mb-12">
                 <h1 className="text-4xl font-bold tracking-tight text-white sm:text-6xl">
                   SureHelp Terms & Conditions
