@@ -28,7 +28,7 @@ export type Profile = {
     email?: string | null;
     resident_location?: string | null;
     years_of_service_date?: string | null;
-    line_authority?: string | null;
+    line_authority?: string[] | null; // Changed from string to string[]
     national_producer_number?: string | null;
     resident_license_number?: string | null;
     doj_background_check_date?: string | null;

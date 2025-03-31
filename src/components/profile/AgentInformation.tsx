@@ -7,12 +7,12 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuCheckboxItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Check, ChevronDown } from "lucide-react";
 import FormField from "@/components/FormField";
 
 interface AgentInformationProps {
@@ -21,7 +21,7 @@ interface AgentInformationProps {
     email?: string | null;
     resident_location?: string | null;
     years_of_service_date?: string | null;
-    line_authority?: string | null;
+    line_authority?: string[] | null;
     national_producer_number?: string | null;
     resident_license_number?: string | null;
     doj_background_check_date?: string | null;
@@ -43,7 +43,7 @@ const AgentInformation = ({
     email: agentInfo?.email || '',
     resident_location: agentInfo?.resident_location || '',
     years_of_service_date: agentInfo?.years_of_service_date ? new Date(agentInfo.years_of_service_date) : null,
-    line_authority: agentInfo?.line_authority || '',
+    line_authority: agentInfo?.line_authority || [],
     national_producer_number: agentInfo?.national_producer_number || '',
     resident_license_number: agentInfo?.resident_license_number || '',
     doj_background_check_date: agentInfo?.doj_background_check_date ? new Date(agentInfo.doj_background_check_date) : null,
@@ -64,7 +64,7 @@ const AgentInformation = ({
         email: agentInfo.email || '',
         resident_location: agentInfo.resident_location || '',
         years_of_service_date: agentInfo.years_of_service_date ? new Date(agentInfo.years_of_service_date) : null,
-        line_authority: agentInfo.line_authority || '',
+        line_authority: agentInfo.line_authority || [],
         national_producer_number: agentInfo.national_producer_number || '',
         resident_license_number: agentInfo.resident_license_number || '',
         doj_background_check_date: agentInfo.doj_background_check_date ? new Date(agentInfo.doj_background_check_date) : null,
@@ -89,6 +89,27 @@ const AgentInformation = ({
       [field]: value
     });
   };
+
+  const handleLineAuthorityChange = (value: string) => {
+    setFormData(prevData => {
+      const currentAuthorities = prevData.line_authority as string[];
+      
+      // If already selected, remove it; otherwise, add it
+      if (currentAuthorities.includes(value)) {
+        return {
+          ...prevData,
+          line_authority: currentAuthorities.filter(auth => auth !== value)
+        };
+      } else {
+        return {
+          ...prevData,
+          line_authority: [...currentAuthorities, value]
+        };
+      }
+    });
+  };
+
+  const lineAuthorityOptions = ['life', 'accident', 'health'];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -126,6 +147,15 @@ const AgentInformation = ({
     setIsEditing(!isEditing);
   };
 
+  // Format the selected line authorities for display
+  const formatLineAuthorities = (authorities: string[]) => {
+    if (!authorities || authorities.length === 0) return '-';
+    
+    return authorities.map(auth => 
+      auth.charAt(0).toUpperCase() + auth.slice(1)
+    ).join(', ');
+  };
+
   return (
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -142,6 +172,7 @@ const AgentInformation = ({
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Direct Line */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.directLine}</label>
               {isEditing ? (
@@ -155,6 +186,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Email */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.email}</label>
               {isEditing ? (
@@ -169,6 +201,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Resident Location */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.residentLocation}</label>
               {isEditing ? (
@@ -183,6 +216,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Years of Service */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.yearsOfService}</label>
               {isEditing ? (
@@ -200,31 +234,44 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Line Authority - Multi-select */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.lineAuthority}</label>
               {isEditing ? (
-                <Select
-                  value={formData.line_authority}
-                  onValueChange={(value) => handleTextChange('line_authority', value)}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={t.selectLineAuthority} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="life">Life</SelectItem>
-                    <SelectItem value="accident">Accident</SelectItem>
-                    <SelectItem value="health">Health</SelectItem>
-                  </SelectContent>
-                </Select>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="outline" 
+                      className="w-full justify-between"
+                    >
+                      {formData.line_authority && (formData.line_authority as string[]).length > 0 
+                        ? formatLineAuthorities(formData.line_authority as string[])
+                        : t.selectLineAuthority}
+                      <ChevronDown className="h-4 w-4 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-full min-w-[200px]">
+                    {lineAuthorityOptions.map((option) => (
+                      <DropdownMenuCheckboxItem
+                        key={option}
+                        checked={(formData.line_authority as string[]).includes(option)}
+                        onCheckedChange={() => handleLineAuthorityChange(option)}
+                      >
+                        {option.charAt(0).toUpperCase() + option.slice(1)}
+                      </DropdownMenuCheckboxItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               ) : (
                 <p className="text-base text-gray-900 pt-1">
-                  {formData.line_authority ? 
-                    formData.line_authority.charAt(0).toUpperCase() + formData.line_authority.slice(1) : 
-                    '-'}
+                  {formData.line_authority && (formData.line_authority as string[]).length > 0
+                    ? formatLineAuthorities(formData.line_authority as string[])
+                    : '-'}
                 </p>
               )}
             </div>
             
+            {/* National Producer Number */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.nationalProducerNumber}</label>
               {isEditing ? (
@@ -238,6 +285,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Resident License Number */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.residentLicenseNumber}</label>
               {isEditing ? (
@@ -251,6 +299,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* DOJ Background Check */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.dojBackgroundCheck}</label>
               {isEditing ? (
@@ -268,6 +317,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Live Scan Fingerprinting */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.liveScanFingerprinting}</label>
               {isEditing ? (
@@ -285,6 +335,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Continuing Education */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.continuingEducation}</label>
               {isEditing ? (
@@ -302,6 +353,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Resident License Status */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.residentLicenseStatus}</label>
               {isEditing ? (
@@ -319,6 +371,7 @@ const AgentInformation = ({
               )}
             </div>
             
+            {/* Resident License Renewal */}
             <div className="space-y-2.5">
               <label className="text-sm font-medium text-gray-700">{t.residentLicenseRenewal}</label>
               {isEditing ? (

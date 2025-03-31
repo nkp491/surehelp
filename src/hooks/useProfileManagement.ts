@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -41,7 +42,7 @@ export const useProfileManagement = () => {
       const roles = userRoles.map(r => r.role);
       
       // Transform the data to match our Profile type
-      return {
+      const transformedProfile = {
         ...profileData,
         roles: roles,
         privacy_settings: typeof profileData.privacy_settings === 'string' 
@@ -51,6 +52,16 @@ export const useProfileManagement = () => {
           ? JSON.parse(profileData.notification_preferences)
           : profileData.notification_preferences || { email_notifications: true, phone_notifications: false }
       } as Profile;
+
+      // Handle agent_info transformation if it exists
+      if (transformedProfile.agent_info) {
+        // Convert line_authority to array if it's a string
+        if (transformedProfile.agent_info.line_authority && typeof transformedProfile.agent_info.line_authority === 'string') {
+          transformedProfile.agent_info.line_authority = [transformedProfile.agent_info.line_authority];
+        }
+      }
+      
+      return transformedProfile;
     },
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
     gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
