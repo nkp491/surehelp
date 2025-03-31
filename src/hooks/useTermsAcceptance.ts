@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -53,6 +52,8 @@ export const useTermsAcceptance = () => {
   const acceptTerms = async () => {
     try {
       setIsAccepting(true);
+      
+      // Get the current user session
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
@@ -65,14 +66,14 @@ export const useTermsAcceptance = () => {
         return;
       }
 
+      // Set current timestamp
       const now = new Date().toISOString();
       
-      // Execute the update operation with minimal fields to avoid any SQL errors
+      // Update profile with terms acceptance timestamp
+      // Important: Keep this query as simple as possible to avoid SQL errors
       const { error } = await supabase
         .from("profiles")
-        .update({ 
-          terms_accepted_at: now 
-        })
+        .update({ terms_accepted_at: now })
         .eq("id", session.user.id);
 
       if (error) {
@@ -80,7 +81,7 @@ export const useTermsAcceptance = () => {
         throw error;
       }
 
-      // Update local state
+      // Update the local state
       setHasAcceptedTerms(true);
       setTermsAcceptedAt(now);
       
@@ -88,21 +89,6 @@ export const useTermsAcceptance = () => {
         title: "Terms Accepted",
         description: "You have successfully accepted the Terms and Conditions.",
       });
-      
-      // Double check by fetching the latest data to ensure UI state matches database
-      const { data, error: fetchError } = await supabase
-        .from("profiles")
-        .select("terms_accepted_at")
-        .eq("id", session.user.id)
-        .single();
-        
-      if (fetchError) {
-        console.error("Error refreshing profile data:", fetchError);
-      } else if (data) {
-        // Update state with fresh data from database
-        setHasAcceptedTerms(data.terms_accepted_at !== null);
-        setTermsAcceptedAt(data.terms_accepted_at);
-      }
     } catch (error: any) {
       console.error("Error accepting terms:", error);
       toast({
@@ -110,8 +96,6 @@ export const useTermsAcceptance = () => {
         description: "Failed to accept terms. Please try again.",
         variant: "destructive",
       });
-      // Reset state on error
-      setHasAcceptedTerms(false);
     } finally {
       setIsAccepting(false);
     }
