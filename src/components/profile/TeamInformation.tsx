@@ -61,7 +61,8 @@ const TeamInformation = ({
     
     if (!managerEmail.trim()) {
       // If email is empty, remove manager
-      onUpdate({ manager_id: null });
+      console.log("Removing manager, setting manager_id to null");
+      await onUpdate({ manager_id: null });
       setIsEditing(false);
       toast({
         title: "Manager Removed",
@@ -73,18 +74,45 @@ const TeamInformation = ({
     setIsLoading(true);
     
     try {
-      // First verify if email exists and belongs to a manager
-      const { data: managerData, error: managerError } = await supabase
+      console.log("Checking if email exists and belongs to a manager:", managerEmail.trim());
+      
+      // First check if the email exists in profiles
+      const { data: profileData, error: profileError } = await supabase
         .from('profiles')
-        .select('id, role')
+        .select('id, email')
         .eq('email', managerEmail.trim())
-        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum')
         .maybeSingle();
         
-      if (managerError) throw managerError;
+      if (profileError) {
+        console.error("Error checking profile:", profileError);
+        throw profileError;
+      }
       
-      if (!managerData) {
-        // Email doesn't exist or user is not a manager
+      if (!profileData) {
+        console.log("Email not found in profiles");
+        toast({
+          title: "Invalid Manager Email",
+          description: "The email provided was not found in our system.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+      
+      // Then check if the user has a manager role in user_roles table
+      const { data: roleData, error: roleError } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', profileData.id)
+        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum');
+        
+      if (roleError) {
+        console.error("Error checking roles:", roleError);
+        throw roleError;
+      }
+      
+      if (!roleData || roleData.length === 0) {
+        console.log("User does not have manager role in user_roles table");
         toast({
           title: "Invalid Manager Email",
           description: "The email provided is not associated with a manager account.",
@@ -94,8 +122,10 @@ const TeamInformation = ({
         return;
       }
       
+      console.log("Valid manager found. Updating profile with manager_id:", profileData.id);
+      
       // Update profile with the manager's ID
-      await onUpdate({ manager_id: managerData.id });
+      await onUpdate({ manager_id: profileData.id });
       
       toast({
         title: "Manager Updated",
@@ -103,12 +133,16 @@ const TeamInformation = ({
       });
       
       // Also fetch the manager's name to display in the UI
-      const { data: managerProfile } = await supabase
+      const { data: managerProfile, error: managerProfileError } = await supabase
         .from('profiles')
         .select('first_name, last_name')
-        .eq('id', managerData.id)
+        .eq('id', profileData.id)
         .single();
         
+      if (managerProfileError) {
+        console.error("Error fetching manager profile:", managerProfileError);
+      }
+      
       if (managerProfile) {
         setManagerName(`${managerProfile.first_name || ''} ${managerProfile.last_name || ''}`.trim());
       }
