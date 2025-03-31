@@ -63,6 +63,10 @@ const TeamInformation = ({
       // If email is empty, remove manager
       onUpdate({ manager_id: null });
       setIsEditing(false);
+      toast({
+        title: "Manager Removed",
+        description: "You have removed your manager assignment.",
+      });
       return;
     }
     
@@ -74,22 +78,25 @@ const TeamInformation = ({
         .from('profiles')
         .select('id, role')
         .eq('email', managerEmail.trim())
-        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum');
+        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum')
+        .maybeSingle();
         
       if (managerError) throw managerError;
       
-      if (!managerData || managerData.length === 0) {
+      if (!managerData) {
         // Email doesn't exist or user is not a manager
         toast({
           title: "Invalid Manager Email",
           description: "The email provided is not associated with a manager account.",
           variant: "destructive",
         });
+        setIsLoading(false);
         return;
       }
       
       // Update profile with the manager's ID
-      onUpdate({ manager_id: managerData[0].id });
+      await onUpdate({ manager_id: managerData.id });
+      
       toast({
         title: "Manager Updated",
         description: "Your manager has been updated successfully.",
@@ -99,7 +106,7 @@ const TeamInformation = ({
       const { data: managerProfile } = await supabase
         .from('profiles')
         .select('first_name, last_name')
-        .eq('id', managerData[0].id)
+        .eq('id', managerData.id)
         .single();
         
       if (managerProfile) {
@@ -123,8 +130,9 @@ const TeamInformation = ({
     if (isEditing) {
       // If we're currently editing and toggling off, submit the form
       handleSubmit(new Event('submit') as unknown as React.FormEvent);
+    } else {
+      setIsEditing(true);
     }
-    setIsEditing(!isEditing);
   };
 
   return (
