@@ -63,13 +63,14 @@ const AgentInformation = ({
               isEditing={isEditing}
             />
             
-            {/* Resident Location */}
-            <FormField
+            {/* Resident Location - Changed to use StatesField */}
+            <StatesField
               label={t.residentLocation}
-              type="text"
               value={formData.resident_location || ""}
               onChange={(value) => handleFieldChange('resident_location', value)}
               isEditing={isEditing}
+              placeholder={t.selectState}
+              multiSelect={false}
             />
             
             {/* Years of Service */}
@@ -97,6 +98,7 @@ const AgentInformation = ({
               onChange={(value) => handleFieldChange('active_state_licenses', value)}
               isEditing={isEditing}
               placeholder={t.selectStateLicenses}
+              multiSelect={true}
             />
             
             {/* National Producer Number */}

@@ -1,3 +1,4 @@
+
 export const profileTranslations = {
   en: {
     profileSettings: "Profile Settings",
@@ -54,6 +55,7 @@ export const profileTranslations = {
     residentLicenseRenewal: "Resident Insurance License Renewal Date",
     activeStateLicenses: "Active State Licenses",
     selectStateLicenses: "Select state licenses",
+    selectState: "Select state",
     save: "Save",
     edit: "Edit"
   },
@@ -112,6 +114,7 @@ export const profileTranslations = {
     residentLicenseRenewal: "Fecha de Renovación de la Licencia de Seguro de Residente",
     activeStateLicenses: "Licencias Estatales Activas",
     selectStateLicenses: "Seleccionar licencias estatales",
+    selectState: "Seleccionar estado",
     save: "Guardar",
     edit: "Editar"
   }

@@ -7,17 +7,19 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuCheckboxItem,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 type StatesFieldProps = {
-  value: string[];
-  onChange: (states: string[]) => void;
+  value: string[] | string;
+  onChange: (states: string[] | string) => void;
   isEditing: boolean;
   label: string;
   placeholder: string;
+  multiSelect?: boolean;
 };
 
 // All US states plus DC
@@ -35,18 +37,48 @@ const US_STATES = [
   "Wyoming"
 ];
 
-const StatesField = ({ value, onChange, isEditing, label, placeholder }: StatesFieldProps) => {
+const StatesField = ({ 
+  value, 
+  onChange, 
+  isEditing, 
+  label, 
+  placeholder,
+  multiSelect = true 
+}: StatesFieldProps) => {
+  // Convert string to array for consistent internal handling
+  const valuesArray = multiSelect ? (value as string[]) : (value ? [value as string] : []);
+
   const handleStateChange = (state: string) => {
-    if (value.includes(state)) {
-      onChange(value.filter(s => s !== state));
+    if (multiSelect) {
+      if (valuesArray.includes(state)) {
+        onChange(valuesArray.filter(s => s !== state));
+      } else {
+        onChange([...valuesArray, state]);
+      }
     } else {
-      onChange([...value, state]);
+      // Single select mode just sets the value directly
+      onChange(state);
     }
   };
 
   const removeState = (state: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    onChange(value.filter(s => s !== state));
+    if (multiSelect) {
+      onChange(valuesArray.filter(s => s !== state));
+    } else {
+      onChange("");
+    }
+  };
+
+  // Get display text for dropdown button
+  const getButtonText = () => {
+    if (valuesArray.length === 0) return placeholder;
+    
+    if (multiSelect) {
+      return `${valuesArray.length} state${valuesArray.length !== 1 ? 's' : ''} selected`;
+    } else {
+      return valuesArray[0];
+    }
   };
 
   return (
@@ -59,31 +91,39 @@ const StatesField = ({ value, onChange, isEditing, label, placeholder }: StatesF
               variant="outline" 
               className="w-full justify-between"
             >
-              {value && value.length > 0 
-                ? `${value.length} state${value.length !== 1 ? 's' : ''} selected`
-                : placeholder}
+              {getButtonText()}
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-full min-w-[240px]">
             <ScrollArea className="h-[300px]">
               {US_STATES.map((state) => (
-                <DropdownMenuCheckboxItem
-                  key={state}
-                  checked={value.includes(state)}
-                  onCheckedChange={() => handleStateChange(state)}
-                >
-                  {state}
-                </DropdownMenuCheckboxItem>
+                multiSelect ? (
+                  <DropdownMenuCheckboxItem
+                    key={state}
+                    checked={valuesArray.includes(state)}
+                    onCheckedChange={() => handleStateChange(state)}
+                  >
+                    {state}
+                  </DropdownMenuCheckboxItem>
+                ) : (
+                  <DropdownMenuRadioItem
+                    key={state}
+                    value={state}
+                    onSelect={() => handleStateChange(state)}
+                  >
+                    {state}
+                  </DropdownMenuRadioItem>
+                )
               ))}
             </ScrollArea>
           </DropdownMenuContent>
         </DropdownMenu>
       ) : (
         <>
-          {value && value.length > 0 ? (
+          {valuesArray.length > 0 ? (
             <div className="flex flex-wrap gap-2 pt-1">
-              {value.map((state) => (
+              {valuesArray.map((state) => (
                 <Badge key={state} variant="secondary">
                   {state}
                 </Badge>
@@ -95,9 +135,9 @@ const StatesField = ({ value, onChange, isEditing, label, placeholder }: StatesF
         </>
       )}
       
-      {isEditing && value.length > 0 && (
+      {isEditing && valuesArray.length > 0 && (
         <div className="flex flex-wrap gap-2 mt-2">
-          {value.map((state) => (
+          {valuesArray.map((state) => (
             <Badge key={state} variant="secondary" className="flex items-center gap-1">
               {state}
               <X 
