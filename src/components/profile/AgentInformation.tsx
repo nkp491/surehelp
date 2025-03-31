@@ -8,6 +8,7 @@ import FormField from "./agent/FormField";
 import LineAuthorityField from "./agent/LineAuthorityField";
 import StatesField from "./agent/StatesField";
 import { useAgentInformation, AgentInfoData } from "@/hooks/useAgentInformation";
+import { useToast } from "@/hooks/use-toast";
 
 interface AgentInformationProps {
   agentInfo?: AgentInfoData | null;
@@ -20,6 +21,7 @@ const AgentInformation = ({
 }: AgentInformationProps) => {
   const { language } = useLanguage();
   const t = translations[language];
+  const { toast } = useToast();
 
   const {
     isEditing,
@@ -28,6 +30,8 @@ const AgentInformation = ({
     handleToggleEdit,
     handleSubmit
   } = useAgentInformation(agentInfo, onUpdate);
+
+  console.log("Agent Information Component - Current data:", formData);
 
   return (
     <Card className="shadow-sm">
@@ -63,7 +67,7 @@ const AgentInformation = ({
               isEditing={isEditing}
             />
             
-            {/* Resident Location - Changed to use StatesField */}
+            {/* Resident Location - State dropdown */}
             <StatesField
               label={t.residentLocation}
               value={formData.resident_location || ""}

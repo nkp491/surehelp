@@ -50,14 +50,29 @@ export const useProfileManagement = () => {
           : profileData.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
         notification_preferences: typeof profileData.notification_preferences === 'string'
           ? JSON.parse(profileData.notification_preferences)
-          : profileData.notification_preferences || { email_notifications: true, phone_notifications: false }
+          : profileData.notification_preferences || { email_notifications: true, phone_notifications: false },
+        agent_info: profileData.agent_info || null
       } as Profile;
+
+      console.log("Fetched profile data:", transformedProfile);
 
       // Handle agent_info transformation if it exists
       if (transformedProfile.agent_info) {
-        // Convert line_authority to array if it's a string
-        if (transformedProfile.agent_info.line_authority && typeof transformedProfile.agent_info.line_authority === 'string') {
-          transformedProfile.agent_info.line_authority = [transformedProfile.agent_info.line_authority];
+        // Make sure arrays are properly handled
+        if (transformedProfile.agent_info.line_authority) {
+          if (typeof transformedProfile.agent_info.line_authority === 'string') {
+            transformedProfile.agent_info.line_authority = [transformedProfile.agent_info.line_authority];
+          }
+        } else {
+          transformedProfile.agent_info.line_authority = [];
+        }
+        
+        if (transformedProfile.agent_info.active_state_licenses) {
+          if (typeof transformedProfile.agent_info.active_state_licenses === 'string') {
+            transformedProfile.agent_info.active_state_licenses = [transformedProfile.agent_info.active_state_licenses];
+          }
+        } else {
+          transformedProfile.agent_info.active_state_licenses = [];
         }
       }
       
@@ -102,6 +117,11 @@ export const useProfileManagement = () => {
       
       if (updatesToSave.notification_preferences && typeof updatesToSave.notification_preferences !== 'string') {
         updatesToSave.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
+      }
+      
+      // Handle agent_info field properly
+      if (updatesToSave.agent_info) {
+        console.log("Updating agent info:", updatesToSave.agent_info);
       }
 
       // Log what we're sending to debug

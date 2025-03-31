@@ -45,8 +45,10 @@ const StatesField = ({
   placeholder,
   multiSelect = true 
 }: StatesFieldProps) => {
-  // Convert string to array for consistent internal handling
-  const valuesArray = multiSelect ? (value as string[]) : (value ? [value as string] : []);
+  // Ensure value is in the correct format for internal handling
+  const valuesArray = multiSelect 
+    ? (Array.isArray(value) ? value : value ? [value as string] : []) 
+    : (value ? [value as string] : []);
 
   const handleStateChange = (state: string) => {
     if (multiSelect) {
