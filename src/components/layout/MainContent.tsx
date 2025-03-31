@@ -57,6 +57,15 @@ const MainContent = () => {
       );
     }
 
+    // For the team page, manually add role protection if not already covered
+    if (location.pathname === '/team' && !requiredRoles) {
+      return (
+        <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
+          {Component}
+        </RoleBasedRoute>
+      );
+    }
+
     return Component;
   };
 

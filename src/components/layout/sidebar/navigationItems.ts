@@ -37,7 +37,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Team",
     path: "/team",
     icon: Users2,
-    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user", "system_admin"],
   },
   {
     title: "Team Dashboard",

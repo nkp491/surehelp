@@ -5,6 +5,7 @@ import { ManagerTeamList } from "@/components/team/ManagerTeamList";
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
+import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 
 export default function TeamPage() {
   const { profile, loading } = useProfileManagement();
@@ -17,43 +18,45 @@ export default function TeamPage() {
   const isManager = profile?.role?.includes('manager_pro');
 
   return (
-    <div className="container max-w-7xl mx-auto py-6 space-y-6">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">Team Management</h1>
-        <p className="text-muted-foreground">
-          {isManager 
-            ? "Manage your team members and communicate through bulletins." 
-            : "View your team information and bulletins."}
-        </p>
-      </div>
+    <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
+      <div className="container max-w-7xl mx-auto py-6 space-y-6">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">Team Management</h1>
+          <p className="text-muted-foreground">
+            {isManager 
+              ? "Manage your team members and communicate through bulletins." 
+              : "View your team information and bulletins."}
+          </p>
+        </div>
 
-      <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="w-full justify-start mb-6">
-          <TabsTrigger value="members">Team Members</TabsTrigger>
-          {isManager && <TabsTrigger value="bulletins">Bulletins</TabsTrigger>}
-        </TabsList>
-        
-        <TabsContent value="members" className="space-y-6">
-          {isManager ? (
-            <ManagerTeamList managerId={profile?.id} />
-          ) : (
-            <div className="bg-muted rounded-lg p-6 text-center">
-              <h3 className="text-lg font-medium mb-2">Your Manager</h3>
-              <p className="text-muted-foreground">
-                {profile?.manager_id 
-                  ? "Your manager information will be displayed here" 
-                  : "You don't have a manager assigned yet. Please update your profile to select a manager."}
-              </p>
-            </div>
-          )}
-        </TabsContent>
-        
-        {isManager && (
-          <TabsContent value="bulletins">
-            <TeamBulletinBoard teamId={undefined} />
+        <Tabs defaultValue={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="w-full justify-start mb-6">
+            <TabsTrigger value="members">Team Members</TabsTrigger>
+            {isManager && <TabsTrigger value="bulletins">Bulletins</TabsTrigger>}
+          </TabsList>
+          
+          <TabsContent value="members" className="space-y-6">
+            {isManager ? (
+              <ManagerTeamList managerId={profile?.id} />
+            ) : (
+              <div className="bg-muted rounded-lg p-6 text-center">
+                <h3 className="text-lg font-medium mb-2">Your Manager</h3>
+                <p className="text-muted-foreground">
+                  {profile?.manager_id 
+                    ? "Your manager information will be displayed here" 
+                    : "You don't have a manager assigned yet. Please update your profile to select a manager."}
+                </p>
+              </div>
+            )}
           </TabsContent>
-        )}
-      </Tabs>
-    </div>
+          
+          {isManager && (
+            <TabsContent value="bulletins">
+              <TeamBulletinBoard teamId={undefined} />
+            </TabsContent>
+          )}
+        </Tabs>
+      </div>
+    </RoleBasedRoute>
   );
 }
