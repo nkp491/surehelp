@@ -9,6 +9,7 @@ import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
+import TeamInformation from "@/components/profile/TeamInformation";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -59,6 +60,10 @@ const ProfileContent = () => {
           lastName={profile?.last_name}
           email={profile?.email}
           phone={profile?.phone}
+          onUpdate={updateProfile}
+        />
+
+        <TeamInformation 
           managerId={profile?.manager_id}
           onUpdate={updateProfile}
         />

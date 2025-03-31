@@ -1,3 +1,4 @@
+
 export const profileTranslations = {
   en: {
     profileSettings: "Profile Settings",
@@ -36,6 +37,8 @@ export const profileTranslations = {
     rolesAndPermissions: "Roles & Permissions",
     searchUsers: "Search users",
     noUsersFound: "No users found",
+    teamInformation: "Team Information",
+    yourManager: "Your Manager",
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -74,5 +77,7 @@ export const profileTranslations = {
     rolesAndPermissions: "Roles y Permisos",
     searchUsers: "Buscar usuarios",
     noUsersFound: "No se encontraron usuarios",
+    teamInformation: "Información del Equipo",
+    yourManager: "Tu Manager",
   }
 };
