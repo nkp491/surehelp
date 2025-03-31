@@ -51,9 +51,9 @@ export const useAgentInformation = (
         lineAuthority = [lineAuthority];
       }
       
-      let statelicenses = agentInfo.active_state_licenses || [];
-      if (typeof statelicenses === 'string') {
-        statelicenses = [stateServices];
+      let stateLicenses = agentInfo.active_state_licenses || [];
+      if (typeof stateLicenses === 'string') {
+        stateLicenses = [stateLicenses];
       }
       
       setFormData({
@@ -62,7 +62,7 @@ export const useAgentInformation = (
         resident_location: agentInfo.resident_location || "",
         years_of_service_date: agentInfo.years_of_service_date || null,
         line_authority: lineAuthority,
-        active_state_licenses: stateServices,
+        active_state_licenses: stateLicenses,
         national_producer_number: agentInfo.national_producer_number || "",
         resident_license_number: agentInfo.resident_license_number || "",
         doj_background_check_date: agentInfo.doj_background_check_date || null,
