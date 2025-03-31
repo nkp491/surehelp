@@ -10,6 +10,7 @@ import MainContent from './components/layout/MainContent';
 import AuthGuard from './components/auth/AuthGuard';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { queryClient } from './lib/react-query';
+import TermsOfUse from './pages/marketing/TermsOfUse';
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<CallbackHandler />} />
+          <Route path="/auth/terms" element={<TermsOfUse />} />
           
           {/* Protected routes with sidebar navigation */}
           <Route path="/" element={<AuthGuard><Navigate to="/metrics" replace /></AuthGuard>} />
@@ -31,6 +33,7 @@ function App() {
           <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
+          <Route path="/terms" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/admin" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/admin-actions" element={<AuthGuard><MainContent /></AuthGuard>} />
         </Routes>

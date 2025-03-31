@@ -55,9 +55,7 @@ const TermsAcceptance = () => {
       
       <CardFooter className="flex justify-between">
         <Link 
-          to="/auth/terms"
-          target="_blank"
-          rel="noopener noreferrer"
+          to="/terms"
           className="text-sm text-blue-600 hover:text-blue-800 flex items-center gap-1"
         >
           View Terms <ExternalLink size={14} />

@@ -41,7 +41,7 @@ const MainContent = () => {
           return <RoleManagement />;
         case '/team':
           return <TeamPage />;
-        case '/auth/terms':
+        case '/terms':
           return <TermsOfUse />;
         case '/admin':
         case '/admin-actions':
