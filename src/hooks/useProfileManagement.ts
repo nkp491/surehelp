@@ -52,7 +52,7 @@ export const useProfileManagement = () => {
         notification_preferences: typeof profileData.notification_preferences === 'string'
           ? JSON.parse(profileData.notification_preferences)
           : profileData.notification_preferences || { email_notifications: true, phone_notifications: false },
-        // Add agent_info property even if it doesn't exist in the database
+        // Make sure agent_info is always defined in our profile object
         agent_info: profileData.agent_info || null
       } as Profile;
 
