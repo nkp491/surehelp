@@ -67,7 +67,7 @@ export const useTermsAcceptance = () => {
 
       const now = new Date().toISOString();
       
-      // Update the profile
+      // Update the profile - simplified query to avoid SQL operator error
       const { error } = await supabase
         .from("profiles")
         .update({ terms_accepted_at: now })
