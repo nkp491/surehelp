@@ -43,7 +43,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Team Directory",
     path: "/team-directory",
     icon: UserSearch,
-    requiredRoles: ["agent", "agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
+    requiredRoles: ["system_admin"],
   },
   {
     title: "Notifications",
