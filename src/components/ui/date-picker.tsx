@@ -33,11 +33,15 @@ export function DatePicker({
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
   const [year, setYear] = React.useState<number>(selected?.getFullYear() || new Date().getFullYear());
+  const [month, setMonth] = React.useState<Date>(
+    selected || new Date(year, new Date().getMonth())
+  );
 
   React.useEffect(() => {
     if (selected) {
       setInputValue(format(selected, "MM/dd/yyyy"));
       setYear(selected.getFullYear());
+      setMonth(selected);
     }
   }, [selected]);
 
@@ -72,6 +76,11 @@ export function DatePicker({
     const newYear = parseInt(value);
     setYear(newYear);
     
+    // Update the month view to show the same month in the new year
+    const newMonth = new Date(month);
+    newMonth.setFullYear(newYear);
+    setMonth(newMonth);
+    
     if (selected) {
       const newDate = new Date(selected);
       newDate.setFullYear(newYear);
@@ -79,8 +88,9 @@ export function DatePicker({
     }
   };
 
-  // Create a date object for the selected year and current month
-  const defaultMonth = new Date(year, new Date().getMonth());
+  const handleMonthChange = (newMonth: Date) => {
+    setMonth(newMonth);
+  };
 
   return (
     <div className="relative">
@@ -129,8 +139,8 @@ export function DatePicker({
             }}
             disabled={(date) => maxDate ? date > maxDate : false}
             initialFocus
-            month={defaultMonth}
-            onMonthChange={() => {}}
+            month={month}
+            onMonthChange={handleMonthChange}
           />
         </PopoverContent>
       </Popover>
