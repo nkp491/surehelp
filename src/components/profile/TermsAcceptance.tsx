@@ -14,21 +14,9 @@ const TermsAcceptance = () => {
   const [showAcceptSuccess, setShowAcceptSuccess] = useState(false);
   const { toast } = useToast();
 
-  // Debug logging
-  useEffect(() => {
-    console.log("Terms acceptance state:", { 
-      hasAcceptedTerms, 
-      termsAcceptedAt, 
-      isLoading, 
-      isAccepting 
-    });
-  }, [hasAcceptedTerms, termsAcceptedAt, isLoading, isAccepting]);
-
   const handleAcceptTerms = async () => {
     try {
-      console.log("Accept terms button clicked");
       await acceptTerms();
-      console.log("Terms acceptance complete");
       
       // Show success animation
       setShowAcceptSuccess(true);
@@ -107,7 +95,6 @@ const TermsAcceptance = () => {
             onClick={handleAcceptTerms} 
             disabled={isAccepting}
             size="sm"
-            className="relative"
           >
             {isAccepting ? (
               <>
