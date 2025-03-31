@@ -70,7 +70,7 @@ export const useTermsAcceptance = () => {
       // Set current timestamp
       const now = new Date().toISOString();
       
-      // Very minimal update to avoid any SQL errors - only update the terms_accepted_at field
+      // Extremely simple update - only update the terms_accepted_at field
       const { error } = await supabase
         .from("profiles")
         .update({ terms_accepted_at: now })
@@ -81,7 +81,7 @@ export const useTermsAcceptance = () => {
         throw error;
       }
 
-      // Update the local state
+      // Update local state
       setHasAcceptedTerms(true);
       setTermsAcceptedAt(now);
       

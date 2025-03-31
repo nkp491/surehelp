@@ -34,12 +34,11 @@ const TermsAcceptance = () => {
     );
   }
 
-  const handleAcceptTerms = async () => {
-    try {
-      await acceptTerms();
-    } catch (error) {
-      console.error("Failed to accept terms:", error);
-    }
+  const handleAcceptTerms = () => {
+    acceptTerms()
+      .catch(error => {
+        console.error("Failed to accept terms:", error);
+      });
   };
 
   return (
