@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -52,7 +51,6 @@ const TeamInformation = ({
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
   const isAgent = userRoles.some(role => role === 'agent' || role === 'agent_pro');
 
-  // Modified teams query to use a more direct approach
   const { 
     data: userTeams = [], 
     isLoading: isLoadingTeams,
@@ -67,7 +65,6 @@ const TeamInformation = ({
 
         console.log("Fetching teams directly for user:", user.id);
         
-        // First try to get teams directly from team_members
         const { data: teamMemberships, error: membershipError } = await supabase
           .from('team_members')
           .select('team_id')
@@ -81,12 +78,10 @@ const TeamInformation = ({
         if (!teamMemberships || teamMemberships.length === 0) {
           console.log("No direct team memberships found for user");
           
-          // Special case handling
           if (user.email === 'nielsenaragon@gmail.com') {
             return await fetchMomentumTeams();
           }
           
-          // For agent users with a manager, try to get teams through manager
           if (isAgent && managerId) {
             return await fetchTeamsThroughManager(managerId);
           }
@@ -94,7 +89,6 @@ const TeamInformation = ({
           return [];
         }
         
-        // Get the teams based on the memberships
         const teamIds = teamMemberships.map(tm => tm.team_id);
         
         const { data: teams, error: teamsError } = await supabase
@@ -113,7 +107,6 @@ const TeamInformation = ({
       } catch (error) {
         console.error("Error in fetchTeams:", error);
         
-        // Try another approach for users with manager
         if (isAgent && managerId) {
           try {
             return await fetchTeamsThroughManager(managerId);
@@ -124,7 +117,6 @@ const TeamInformation = ({
           }
         }
         
-        // Last resort fallback for special case
         if (await checkSpecialUserCase()) {
           return await fetchMomentumTeams();
         }
@@ -135,11 +127,10 @@ const TeamInformation = ({
     refetchOnWindowFocus: false,
     retry: 2,
     retryDelay: 1000,
-    staleTime: 1000 * 30, // 30 seconds
+    staleTime: 1000 * 30,
     enabled: true
   });
 
-  // Check if current user is a special case
   const checkSpecialUserCase = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -149,7 +140,6 @@ const TeamInformation = ({
     }
   };
 
-  // Helper function to fetch Momentum teams
   const fetchMomentumTeams = async () => {
     console.log("Fetching Momentum teams");
     
@@ -162,11 +152,9 @@ const TeamInformation = ({
     return momentumTeams || [];
   };
 
-  // Helper function to get teams through the user's manager
   const fetchTeamsThroughManager = async (managerId: string) => {
     console.log("Trying to fetch teams through manager:", managerId);
     
-    // Get team memberships for the manager
     const { data: managerTeams, error } = await supabase
       .from('team_members')
       .select('team_id')
@@ -177,10 +165,8 @@ const TeamInformation = ({
       return [];
     }
     
-    // Get the team IDs from the manager's memberships
     const teamIds = managerTeams.map(tm => tm.team_id);
     
-    // Get the team details
     const { data: teams, error: teamsError } = await supabase
       .from('teams')
       .select('*')
@@ -225,10 +211,8 @@ const TeamInformation = ({
     fetchManagerDetails();
   }, [managerId]);
 
-  // Effect to check if we need to auto-associate teams when manager exists but no teams
   useEffect(() => {
     const checkAutoAssociation = async () => {
-      // Only run for agents with managers when teams are loaded and empty
       if (isAgent && managerId && userTeams.length === 0 && !isLoadingTeams && !fixingTeamAssociation) {
         console.log("Agent has manager but no teams, checking auto-association");
         await handleForceTeamAssociation();
@@ -281,12 +265,10 @@ const TeamInformation = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      // Special case for nielsenaragon@gmail.com
       if (user.email === 'nielsenaragon@gmail.com') {
         console.log("Special refresh for nielsenaragon@gmail.com");
         await fixMomentumCapitolAssociation();
       } 
-      // For agents with managers
       else if (isAgent && managerId) {
         console.log("Agent refresh - associating with manager's teams");
         const success = await checkAndUpdateTeamAssociation(managerId);
@@ -319,7 +301,6 @@ const TeamInformation = ({
     }
   };
 
-  // Force team association for edge cases
   const handleForceTeamAssociation = async () => {
     setShowAlert(false);
     setFixingTeamAssociation(true);
@@ -347,7 +328,6 @@ const TeamInformation = ({
     }
   };
 
-  // Special fix for Momentum Capitol association
   useEffect(() => {
     fixMomentumCapitolAssociation();
   }, []);
@@ -390,7 +370,7 @@ const TeamInformation = ({
             </div>
             
             {showAlert && (
-              <Alert variant="warning" className="mb-4">
+              <Alert variant="destructive" className="mb-4">
                 <AlertCircle className="h-4 w-4" />
                 <AlertTitle>Team Association Issue</AlertTitle>
                 <AlertDescription className="flex flex-col gap-2">
