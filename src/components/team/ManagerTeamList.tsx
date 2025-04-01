@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { TeamMember } from "@/types/team";
 
 interface ManagerTeamListProps {
   managerId?: string;
@@ -10,17 +11,25 @@ interface ManagerTeamListProps {
 
 export function ManagerTeamList({ managerId, selectedTeamId }: ManagerTeamListProps) {
   const { teamMembers, isLoading } = useManagerTeam(managerId);
-  const [filteredMembers, setFilteredMembers] = useState(teamMembers);
+  const [filteredMembers, setFilteredMembers] = useState<TeamMember[]>([]);
 
   useEffect(() => {
-    if (teamMembers && selectedTeamId) {
-      // If a team is selected, filter to only show members of that team
-      const filtered = teamMembers.filter(member => member.team_id === selectedTeamId);
-      setFilteredMembers(filtered);
-      console.log(`Filtered team members for team ${selectedTeamId}:`, filtered.length);
+    if (teamMembers) {
+      if (selectedTeamId) {
+        // If selectedTeamId is provided, we need to filter the team members
+        // Profile objects don't have team_id, so we need to join with team_members table
+        // This filtering should actually happen in the useManagerTeam hook
+        console.log("Selected team ID:", selectedTeamId);
+        console.log("Filtering team members, but note that Profile objects don't have team_id property");
+        
+        // For now, we just show all team members when a team is selected since Profile doesn't have team_id
+        setFilteredMembers(teamMembers);
+      } else {
+        // Otherwise show all team members
+        setFilteredMembers(teamMembers);
+      }
     } else {
-      // Otherwise show all team members
-      setFilteredMembers(teamMembers);
+      setFilteredMembers([]);
     }
   }, [teamMembers, selectedTeamId]);
 

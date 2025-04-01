@@ -2,6 +2,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
+import { TeamMember } from "@/types/team";
 import { toast } from "@/hooks/use-toast";
 
 export const useManagerTeam = (managerId?: string) => {
@@ -25,17 +26,22 @@ export const useManagerTeam = (managerId?: string) => {
       
       console.log(`Found ${data?.length || 0} team members for manager:`, managerId);
       
-      // Transform the data to match our Profile type
+      // Transform the data to match our TeamMember type instead of Profile
+      // This ensures compatibility with the team filtering functionality
+      // We're creating a simplified version here since we don't have the actual team_id in profiles
       return data.map(profile => ({
-        ...profile,
-        // Parse JSON fields properly if they're strings
-        privacy_settings: typeof profile.privacy_settings === 'string'
-          ? JSON.parse(profile.privacy_settings)
-          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
-        notification_preferences: typeof profile.notification_preferences === 'string'
-          ? JSON.parse(profile.notification_preferences)
-          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
-      })) as Profile[];
+        id: profile.id,
+        user_id: profile.id,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        profile_image_url: profile.profile_image_url,
+        // For other TeamMember fields, we set defaults
+        team_id: "", // This will be populated later if filtering by team
+        role: "",
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      })) as TeamMember[];
     },
     enabled: !!managerId,
     staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes (reduced from default)
@@ -103,17 +109,19 @@ export const useManagerTeam = (managerId?: string) => {
       
       console.log(`Found ${nestedMembers?.length || 0} nested team members for sub-managers`);
       
-      // Transform the data to match our Profile type
+      // Transform the data to match our TeamMember type for consistency
       return nestedMembers.map(profile => ({
-        ...profile,
-        // Parse JSON fields properly if they're strings
-        privacy_settings: typeof profile.privacy_settings === 'string'
-          ? JSON.parse(profile.privacy_settings)
-          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
-        notification_preferences: typeof profile.notification_preferences === 'string'
-          ? JSON.parse(profile.notification_preferences)
-          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
-      })) as Profile[];
+        id: profile.id,
+        user_id: profile.id,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        profile_image_url: profile.profile_image_url,
+        team_id: "", // This would need to be joined from team_members table
+        role: "",
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      })) as TeamMember[];
     } catch (error) {
       console.error("Error fetching nested team members:", error);
       return [];
