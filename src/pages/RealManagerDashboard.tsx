@@ -5,23 +5,41 @@ import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { useTeams } from "@/hooks/team/useTeams";
 import { TeamsPanel } from "@/components/team/dashboard/TeamsPanel";
 import { TeamDashboardTabs } from "@/components/team/dashboard/TeamDashboardTabs";
+import { useToast } from "@/hooks/use-toast";
 
 export default function RealManagerDashboard() {
   const { profile } = useProfileManagement();
-  const { teams, isLoadingTeams } = useTeams();
+  const { teams, isLoadingTeams, refetchTeams } = useTeams();
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>();
   const { teamMembers, isLoading: isLoadingTeam } = useManagerTeam(profile?.id);
+  const { toast } = useToast();
+
+  // Fetch teams when dashboard loads
+  useEffect(() => {
+    refetchTeams();
+  }, [refetchTeams]);
 
   // Initialize with the first team when teams are loaded
   useEffect(() => {
     if (teams && teams.length > 0 && !selectedTeamId) {
       setSelectedTeamId(teams[0].id);
+      console.log("Selected first team:", teams[0].id, teams[0].name);
     }
   }, [teams, selectedTeamId]);
 
   // Handle team selection
   const handleTeamChange = (teamId: string) => {
+    console.log("Team selected:", teamId);
     setSelectedTeamId(teamId);
+  };
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    await refetchTeams();
+    toast({
+      title: "Teams Refreshed",
+      description: "Your teams list has been refreshed.",
+    });
   };
 
   return (
@@ -34,6 +52,7 @@ export default function RealManagerDashboard() {
             isLoadingTeams={isLoadingTeams}
             selectedTeamId={selectedTeamId}
             onTeamSelect={handleTeamChange}
+            onRefresh={handleRefresh}
           />
         </div>
 

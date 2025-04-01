@@ -17,6 +17,7 @@ export const useTeams = () => {
   const fetchTeams = useQuery({
     queryKey: ['user-teams'],
     queryFn: async () => {
+      console.log("Fetching user teams...");
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -25,7 +26,12 @@ export const useTeams = () => {
         .select('*')
         .order('name');
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching teams:", error);
+        throw error;
+      }
+      
+      console.log("Teams fetched:", data?.length || 0);
       return data as Team[];
     },
   });
@@ -34,6 +40,8 @@ export const useTeams = () => {
   const createTeam = useMutation({
     mutationFn: async (name: string) => {
       setIsLoading(true);
+      console.log("Creating new team:", name);
+      
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
@@ -44,7 +52,12 @@ export const useTeams = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error creating team:", error);
+        throw error;
+      }
+
+      console.log("Team created:", data);
 
       // Add the creator as a team manager
       const { data: userRoles } = await supabase
@@ -67,7 +80,10 @@ export const useTeams = () => {
           role: highestRole
         }]);
 
-      if (memberError) throw memberError;
+      if (memberError) {
+        console.error("Error adding member to team:", memberError);
+        throw memberError;
+      }
 
       return data;
     },
@@ -124,11 +140,17 @@ export const useTeams = () => {
     }
   });
 
+  // Expose the refetch function
+  const refetchTeams = async () => {
+    return await fetchTeams.refetch();
+  };
+
   return {
     teams: fetchTeams.data,
     isLoadingTeams: fetchTeams.isLoading,
     createTeam,
     updateTeam,
+    refetchTeams,
     isLoading
   };
 };

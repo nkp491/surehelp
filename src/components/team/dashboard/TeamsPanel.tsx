@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, Users } from "lucide-react";
+import { Settings, Users, RefreshCw } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Team } from "@/types/team";
 
@@ -11,23 +11,32 @@ interface TeamsPanelProps {
   isLoadingTeams: boolean;
   selectedTeamId: string | undefined;
   onTeamSelect: (teamId: string) => void;
+  onRefresh?: () => void;
 }
 
 export function TeamsPanel({ 
   teams, 
   isLoadingTeams, 
   selectedTeamId, 
-  onTeamSelect 
+  onTeamSelect,
+  onRefresh
 }: TeamsPanelProps) {
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">
         <h2 className="text-xl font-bold">TEAMS</h2>
-        <Button variant="ghost" size="icon" asChild>
-          <a href="/team">
-            <Settings className="h-5 w-5" />
-          </a>
-        </Button>
+        <div className="flex space-x-1">
+          {onRefresh && (
+            <Button variant="ghost" size="icon" onClick={onRefresh}>
+              <RefreshCw className="h-5 w-5" />
+            </Button>
+          )}
+          <Button variant="ghost" size="icon" asChild>
+            <a href="/team">
+              <Settings className="h-5 w-5" />
+            </a>
+          </Button>
+        </div>
       </div>
       <div className="space-y-2">
         {isLoadingTeams ? (

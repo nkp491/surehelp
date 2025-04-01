@@ -14,6 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface TeamCreationDialogProps {
   open: boolean;
@@ -31,6 +32,7 @@ export function TeamCreationDialog({
   const { createTeam, updateTeam, isLoading } = useTeamManagement();
   const { toast } = useToast();
   const [teamName, setTeamName] = useState(initialName);
+  const queryClient = useQueryClient();
   
   const isEditMode = !!teamId;
   const dialogTitle = isEditMode ? "Edit Team" : "Create Team";
@@ -43,18 +45,34 @@ export function TeamCreationDialog({
     e.preventDefault();
     if (!teamName.trim()) return;
     
-    if (isEditMode && teamId) {
-      await updateTeam.mutateAsync({ teamId, name: teamName });
-    } else {
-      await createTeam.mutateAsync(teamName);
+    try {
+      if (isEditMode && teamId) {
+        await updateTeam.mutateAsync({ teamId, name: teamName });
+        toast({
+          title: "Team Updated",
+          description: "Your team has been updated successfully.",
+        });
+      } else {
+        await createTeam.mutateAsync(teamName);
+        // Invalidate queries to ensure fresh data is fetched
+        await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+        
+        toast({
+          title: "Team Created",
+          description: "Your new team has been created successfully. You can manage it in the Teams Dashboard.",
+        });
+      }
+      
+      setTeamName("");
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Error during team operation:", error);
       toast({
-        title: "Team Created",
-        description: "Your new team has been created successfully. You can manage it in the Teams page.",
+        title: "Error",
+        description: "There was a problem with your request. Please try again.",
+        variant: "destructive",
       });
     }
-    
-    setTeamName("");
-    onOpenChange(false);
   };
 
   return (
