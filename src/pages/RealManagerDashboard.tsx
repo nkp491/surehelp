@@ -48,7 +48,7 @@ export default function RealManagerDashboard() {
       return;
     }
 
-    createBulletin({
+    createBulletin.mutateAsync({
       title,
       content,
       team_id: selectedTeamId,
@@ -126,8 +126,6 @@ export default function RealManagerDashboard() {
               ) : (
                 <TeamBulletinBoard 
                   teamId={selectedTeamId}
-                  limit={5}
-                  compact={true}
                 />
               )}
             </div>
@@ -201,7 +199,8 @@ export default function RealManagerDashboard() {
       <CreateBulletinDialog
         open={isCreatingBulletin}
         onOpenChange={setIsCreatingBulletin}
-        onCreateBulletin={handleCreateBulletin}
+        onSubmit={handleCreateBulletin}
+        isLoading={false}
       />
     </div>
   );
