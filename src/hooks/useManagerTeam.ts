@@ -1,7 +1,7 @@
 
 import { useToast } from "@/hooks/use-toast";
 import { TeamMember } from "@/types/team";
-import { useFetchTeamMembers, useFetchTeamMembersByTeam, useFetchNestedTeamMembers } from "./team/useFetchTeamMembers";
+import { useFetchManagerTeamMembers, useFetchTeamMembersByTeam, useFetchNestedTeamMembers } from "./team";
 import { useTeamMemberOperations } from "./team/useTeamMemberOperations";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -18,7 +18,7 @@ export const useManagerTeam = (managerId?: string) => {
     isLoading: isLoadingTeamMembers, 
     error, 
     refetch: refetchTeamMembers 
-  } = useFetchTeamMembers(managerId);
+  } = useFetchManagerTeamMembers(managerId);
 
   // Fetch nested team members
   const { 
