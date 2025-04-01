@@ -94,25 +94,30 @@ export function TeamManagement() {
             .select("id", { count: "exact" })
             .eq("team_id", team.id);
 
-          // Get team managers
-          const { data: teamManagers, error: managersError } = await supabase
+          // Get team managers - Using separate queries to avoid relationship errors
+          const { data: teamManagersData, error: managersError } = await supabase
             .from("team_members")
-            .select(`
-              user_id,
-              profiles:user_id(id, first_name, last_name, email)
-            `)
+            .select("user_id")
             .eq("team_id", team.id)
             .like("role", "manager%");
 
-          // Format managers data
-          const managers = teamManagers && !managersError 
-            ? teamManagers.map(item => ({
-                id: item.profiles.id,
-                first_name: item.profiles.first_name,
-                last_name: item.profiles.last_name,
-                email: item.profiles.email
-              }))
-            : [];
+          let managers: TeamManager[] = [];
+          
+          if (teamManagersData && !managersError && teamManagersData.length > 0) {
+            // Get manager profiles separately
+            const managerIds = teamManagersData.map(m => m.user_id);
+            
+            const { data: profilesData, error: profilesError } = await supabase
+              .from("profiles")
+              .select("id, first_name, last_name, email")
+              .in("id", managerIds);
+              
+            if (profilesData && !profilesError) {
+              managers = profilesData;
+            } else if (profilesError) {
+              console.error("Error fetching manager profiles:", profilesError);
+            }
+          }
 
           return {
             ...team,
