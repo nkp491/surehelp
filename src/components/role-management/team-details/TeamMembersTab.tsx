@@ -1,5 +1,6 @@
 
-import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { 
   Table, 
   TableBody, 
@@ -8,96 +9,75 @@ import {
   TableHeader, 
   TableRow 
 } from "@/components/ui/table";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Mail } from "lucide-react";
 import { TeamMember } from "@/types/team";
-import { Button } from "@/components/ui/button";
+import { Trash2, Mail, Calendar } from "lucide-react";
 
 interface TeamMembersTabProps {
   teamMembers: TeamMember[];
-  formatDate: (dateString: string) => string;
-  onDeleteTeam?: () => void;
+  formatDate: (date: string) => string;
+  onDeleteTeam: () => void;
 }
 
-export function TeamMembersTab({ teamMembers, formatDate, onDeleteTeam }: TeamMembersTabProps) {
-  // Helper functions for formatting and displaying data
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    if (!firstName && !lastName) return '??';
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  const getDisplayName = (member: TeamMember) => {
+export function TeamMembersTab({ 
+  teamMembers,
+  formatDate,
+  onDeleteTeam
+}: TeamMembersTabProps) {
+  const getDisplayName = (member: TeamMember): string => {
     const name = [member.first_name, member.last_name].filter(Boolean).join(' ');
     return name || member.email || 'Unknown User';
   };
 
-  const getRoleBadgeVariant = (role: string) => {
-    if (role.includes('manager_pro_platinum')) return "default";
-    if (role.includes('manager_pro_gold')) return "warning";
-    if (role.includes('manager_pro')) return "outline";
-    if (role.includes('agent_pro')) return "secondary";
-    return "secondary";
-  };
-
-  const getRoleDisplayName = (role: string) => {
-    if (role === 'manager_pro_platinum') return 'Manager Pro Platinum';
-    if (role === 'manager_pro_gold') return 'Manager Pro Gold';
-    if (role === 'manager_pro') return 'Manager Pro';
-    if (role === 'agent_pro') return 'Agent Pro';
-    if (role === 'agent') return 'Agent';
-    return role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  const getRoleBadgeColor = (role: string) => {
+    if (role.includes('manager')) return 'bg-blue-100 text-blue-800 border-blue-300';
+    if (role.includes('admin')) return 'bg-purple-100 text-purple-800 border-purple-300';
+    return 'bg-gray-100 text-gray-800 border-gray-300';
   };
 
   return (
-    <div className="space-y-4">
-      <div className="rounded-md border max-h-[400px] overflow-y-auto">
+    <div className="space-y-6">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
-              <TableHead>Email</TableHead>
+              <TableHead>Member</TableHead>
               <TableHead>Role</TableHead>
+              <TableHead>Email</TableHead>
               <TableHead>Joined</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {teamMembers.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                  This team has no members
+                <TableCell colSpan={4} className="text-center py-6 text-muted-foreground">
+                  No team members found
                 </TableCell>
               </TableRow>
             ) : (
               teamMembers.map((member) => (
                 <TableRow key={member.id}>
+                  <TableCell className="font-medium">{getDisplayName(member)}</TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={member.profile_image_url || undefined} />
-                        <AvatarFallback>
-                          {getInitials(member.first_name, member.last_name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span>{getDisplayName(member)}</span>
-                    </div>
+                    <Badge className={`${getRoleBadgeColor(member.role)}`}>
+                      {member.role}
+                    </Badge>
                   </TableCell>
                   <TableCell>
                     {member.email ? (
                       <div className="flex items-center gap-1">
                         <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                        <span className="text-sm">{member.email}</span>
+                        <span>{member.email}</span>
                       </div>
                     ) : (
-                      <span className="text-muted-foreground text-sm">No email</span>
+                      <span className="text-muted-foreground">No email</span>
                     )}
                   </TableCell>
                   <TableCell>
-                    <Badge variant={getRoleBadgeVariant(member.role)}>
-                      {getRoleDisplayName(member.role)}
-                    </Badge>
+                    <div className="flex items-center gap-1">
+                      <Calendar className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span>{formatDate(member.created_at)}</span>
+                    </div>
                   </TableCell>
-                  <TableCell>{formatDate(member.created_at)}</TableCell>
                 </TableRow>
               ))
             )}
@@ -105,16 +85,17 @@ export function TeamMembersTab({ teamMembers, formatDate, onDeleteTeam }: TeamMe
         </Table>
       </div>
       
-      {onDeleteTeam && (
-        <div className="flex justify-end">
-          <Button 
-            variant="destructive" 
-            onClick={onDeleteTeam}
-          >
-            Delete Team
-          </Button>
-        </div>
-      )}
+      <div className="flex justify-end">
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          onClick={onDeleteTeam}
+          className="flex items-center gap-1"
+        >
+          <Trash2 className="h-4 w-4" />
+          Delete Team
+        </Button>
+      </div>
     </div>
   );
 }
