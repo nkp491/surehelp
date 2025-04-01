@@ -87,6 +87,43 @@ export function TeamDetailsDialog({
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
 
+  // Helper functions for formatting and displaying data
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
+  const getInitials = (firstName?: string | null, lastName?: string | null) => {
+    if (!firstName && !lastName) return '??';
+    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
+  };
+
+  const getDisplayName = (member: TeamMember) => {
+    const name = [member.first_name, member.last_name].filter(Boolean).join(' ');
+    return name || member.email || 'Unknown User';
+  };
+
+  const getRoleBadgeVariant = (role: string) => {
+    if (role.includes('manager_pro_platinum')) return "default";
+    if (role.includes('manager_pro_gold')) return "warning";
+    if (role.includes('manager_pro')) return "outline";
+    if (role.includes('agent_pro')) return "secondary";
+    return "secondary";
+  };
+
+  const getRoleDisplayName = (role: string) => {
+    if (role === 'manager_pro_platinum') return 'Manager Pro Platinum';
+    if (role === 'manager_pro_gold') return 'Manager Pro Gold';
+    if (role === 'manager_pro') return 'Manager Pro';
+    if (role === 'agent_pro') return 'Agent Pro';
+    if (role === 'agent') return 'Agent';
+    return role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  };
+
   // Fetch team details when dialog opens
   useEffect(() => {
     if (open && team) {
@@ -312,42 +349,6 @@ export function TeamDetailsDialog({
     } finally {
       setIsDeleting(false);
     }
-  };
-
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    if (!firstName && !lastName) return '??';
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  const getDisplayName = (member: TeamMember) => {
-    const name = [member.first_name, member.last_name].filter(Boolean).join(' ');
-    return name || member.email || 'Unknown User';
-  };
-
-  const getRoleBadgeVariant = (role: string) => {
-    if (role.includes('manager_pro_platinum')) return "default";
-    if (role.includes('manager_pro_gold')) return "warning";
-    if (role.includes('manager_pro')) return "outline";
-    if (role.includes('agent_pro')) return "secondary";
-    return "secondary";
-  };
-
-  const getRoleDisplayName = (role: string) => {
-    if (role === 'manager_pro_platinum') return 'Manager Pro Platinum';
-    if (role === 'manager_pro_gold') return 'Manager Pro Gold';
-    if (role === 'manager_pro') return 'Manager Pro';
-    if (role === 'agent_pro') return 'Agent Pro';
-    if (role === 'agent') return 'Agent';
-    return role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
   };
 
   return (
