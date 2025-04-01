@@ -21,13 +21,15 @@ interface TeamCreationDialogProps {
   onOpenChange: (open: boolean) => void;
   teamId?: string;
   initialName?: string;
+  onSuccess?: () => void;
 }
 
 export function TeamCreationDialog({ 
   open, 
   onOpenChange, 
   teamId, 
-  initialName = "" 
+  initialName = "",
+  onSuccess
 }: TeamCreationDialogProps) {
   const { createTeam, updateTeam, isLoading } = useTeamManagement();
   const { toast } = useToast();
@@ -69,6 +71,11 @@ export function TeamCreationDialog({
       
       setTeamName("");
       onOpenChange(false);
+      
+      // Call onSuccess callback if provided to refresh team list
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error("Error during team operation:", error);
       toast({

@@ -11,7 +11,7 @@ import ManagerEmailInput from "./team/ManagerEmailInput";
 import { useManagerValidation } from "./team/useManagerValidation";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { TeamCreationDialog } from "@/components/team/TeamCreationDialog";
-import { Plus, Users } from "lucide-react";
+import { Plus, Users, RefreshCw } from "lucide-react";
 import { Team } from "@/types/team";
 
 interface TeamInformationProps {
@@ -70,55 +70,84 @@ const TeamInformation = ({
   }, [managerId]);
 
   // Fetch user's teams
-  useEffect(() => {
-    const fetchUserTeams = async () => {
-      setIsLoadingTeams(true);
-      try {
-        // Get the user's ID
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+  const fetchUserTeams = async () => {
+    setIsLoadingTeams(true);
+    try {
+      // Get the user's ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        setIsLoadingTeams(false);
+        return;
+      }
 
-        // Get teams where the user is a member
-        const { data: teamMembers, error: teamMembersError } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('user_id', user.id);
+      console.log("Fetching teams for user:", user.id);
+      
+      // First get all team_members entries for the user
+      const { data: teamMembers, error: teamMembersError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', user.id);
 
-        if (teamMembersError) throw teamMembersError;
+      if (teamMembersError) {
+        console.error("Error fetching team members:", teamMembersError);
+        toast({
+          title: "Error",
+          description: "Failed to fetch your team memberships.",
+          variant: "destructive",
+        });
+        setIsLoadingTeams(false);
+        return;
+      }
+      
+      if (!teamMembers || teamMembers.length === 0) {
+        console.log("No team memberships found for user");
+        setUserTeams([]);
+        setIsLoadingTeams(false);
+        return;
+      }
+      
+      console.log("Found team memberships:", teamMembers);
+      
+      // Extract team IDs
+      const teamIds = teamMembers.map(tm => tm.team_id);
+      
+      // Get team details
+      const { data: teams, error: teamsError } = await supabase
+        .from('teams')
+        .select('*')
+        .in('id', teamIds);
         
-        if (teamMembers && teamMembers.length > 0) {
-          // Extract team IDs
-          const teamIds = teamMembers.map(tm => tm.team_id);
-          
-          // Get team details
-          const { data: teams, error: teamsError } = await supabase
-            .from('teams')
-            .select('*')
-            .in('id', teamIds);
-            
-          if (teamsError) throw teamsError;
-          
-          setUserTeams(teams || []);
-          console.log("User teams:", teams);
-        } else {
-          setUserTeams([]);
-        }
-      } catch (error) {
-        console.error("Error fetching user teams:", error);
+      if (teamsError) {
+        console.error("Error fetching teams:", teamsError);
         toast({
           title: "Error",
           description: "Failed to fetch your teams.",
           variant: "destructive",
         });
-      } finally {
         setIsLoadingTeams(false);
+        return;
       }
-    };
+      
+      setUserTeams(teams || []);
+      console.log("User teams:", teams);
+    } catch (error) {
+      console.error("Error fetching user teams:", error);
+      toast({
+        title: "Error",
+        description: "Failed to fetch your teams.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoadingTeams(false);
+    }
+  };
 
+  // Load teams on component mount and when isManager changes
+  useEffect(() => {
     if (isManager) {
       fetchUserTeams();
     }
-  }, [isManager, toast]);
+  }, [isManager]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -150,6 +179,10 @@ const TeamInformation = ({
     } else {
       setIsEditing(true);
     }
+  };
+
+  const handleRefreshTeams = () => {
+    fetchUserTeams();
   };
 
   return (
@@ -197,7 +230,17 @@ const TeamInformation = ({
 
           {isManager && (
             <div className="space-y-2.5 mt-6 pt-6 border-t">
-              <label className="text-sm font-medium text-gray-700">Your Teams</label>
+              <div className="flex items-center justify-between">
+                <label className="text-sm font-medium text-gray-700">Your Teams</label>
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  onClick={handleRefreshTeams}
+                  className="h-8 w-8"
+                >
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+              </div>
               {isLoadingTeams ? (
                 <div className="text-sm text-gray-500">Loading teams...</div>
               ) : userTeams.length > 0 ? (
@@ -231,6 +274,7 @@ const TeamInformation = ({
       <TeamCreationDialog
         open={showCreateTeamDialog}
         onOpenChange={setShowCreateTeamDialog}
+        onSuccess={handleRefreshTeams}
       />
     </Card>
   );
