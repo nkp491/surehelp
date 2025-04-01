@@ -14,7 +14,6 @@ import AgentInformation from "@/components/profile/AgentInformation";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ManagerTeamList } from "@/components/team/ManagerTeamList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -98,10 +97,6 @@ const ProfileContent = () => {
           />
           
           <TermsAcceptance />
-          
-          {isManager && (
-            <ManagerTeamList managerId={profile?.id} />
-          )}
         </div>
       </div>
     </div>

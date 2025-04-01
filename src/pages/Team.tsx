@@ -6,6 +6,7 @@ import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function TeamPage() {
   const { profile, loading } = useProfileManagement();
@@ -15,7 +16,8 @@ export default function TeamPage() {
     return <ProfileLoading />;
   }
 
-  const isManager = profile?.role?.includes('manager_pro');
+  const isManager = profile?.role?.includes('manager_pro') || 
+                    profile?.roles?.some(r => r.includes('manager_pro'));
 
   return (
     <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
@@ -39,14 +41,22 @@ export default function TeamPage() {
             {isManager ? (
               <ManagerTeamList managerId={profile?.id} />
             ) : (
-              <div className="bg-muted rounded-lg p-6 text-center">
-                <h3 className="text-lg font-medium mb-2">Your Manager</h3>
-                <p className="text-muted-foreground">
-                  {profile?.manager_id 
-                    ? "Your manager information will be displayed here" 
-                    : "You don't have a manager assigned yet. Please update your profile to select a manager."}
-                </p>
-              </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle>Your Manager</CardTitle>
+                  <CardDescription>View information about your assigned manager</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <div className="bg-muted rounded-lg p-6 text-center">
+                    <h3 className="text-lg font-medium mb-2">Your Manager</h3>
+                    <p className="text-muted-foreground">
+                      {profile?.manager_id 
+                        ? "Your manager information will be displayed here" 
+                        : "You don't have a manager assigned yet. Please update your profile to select a manager."}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </TabsContent>
           
