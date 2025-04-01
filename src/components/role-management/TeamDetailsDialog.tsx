@@ -1,5 +1,5 @@
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { 
   Dialog, 
   DialogContent, 
@@ -8,39 +8,21 @@ import {
   DialogFooter 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
-import { Loader2, Trash2, Mail, AlertCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from "@/components/ui/table";
+import { Loader2, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger
 } from "@/components/ui/tabs";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { fetchTeamMembersByTeam } from "@/hooks/team/utils/teamMembers";
-import { TeamMember } from "@/types/team";
+
+// Import our extracted components
+import { TeamMembersTab } from "./team-details/TeamMembersTab";
+import { TeamRelationsTab } from "./team-details/TeamRelationsTab";
+import { TeamSummaryTab } from "./team-details/TeamSummaryTab";
+import { DeleteTeamDialog } from "./team-details/DeleteTeamDialog";
+import { useTeamDetailsData } from "./team-details/useTeamDetailsData";
 
 interface TeamManager {
   id: string;
@@ -70,239 +52,15 @@ export function TeamDetailsDialog({
   team,
   onTeamDeleted
 }: TeamDetailsDialogProps) {
-  const [isLoading, setIsLoading] = useState(true);
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [relatedTeams, setRelatedTeams] = useState<{id: string, name: string, relationship: string}[]>([]);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [isDeleting, setIsDeleting] = useState(false);
-  const { toast } = useToast();
-
-  // Helper functions for formatting and displaying data
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const getInitials = (firstName?: string | null, lastName?: string | null) => {
-    if (!firstName && !lastName) return '??';
-    return `${firstName?.charAt(0) || ''}${lastName?.charAt(0) || ''}`.toUpperCase();
-  };
-
-  const getDisplayName = (member: TeamMember) => {
-    const name = [member.first_name, member.last_name].filter(Boolean).join(' ');
-    return name || member.email || 'Unknown User';
-  };
-
-  const getRoleBadgeVariant = (role: string) => {
-    if (role.includes('manager_pro_platinum')) return "default";
-    if (role.includes('manager_pro_gold')) return "warning";
-    if (role.includes('manager_pro')) return "outline";
-    if (role.includes('agent_pro')) return "secondary";
-    return "secondary";
-  };
-
-  const getRoleDisplayName = (role: string) => {
-    if (role === 'manager_pro_platinum') return 'Manager Pro Platinum';
-    if (role === 'manager_pro_gold') return 'Manager Pro Gold';
-    if (role === 'manager_pro') return 'Manager Pro';
-    if (role === 'agent_pro') return 'Agent Pro';
-    if (role === 'agent') return 'Agent';
-    return role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-  };
-
-  // Fetch team details when dialog opens
-  useEffect(() => {
-    if (open && team) {
-      fetchTeamDetails();
-    }
-  }, [open, team]);
-
-  const fetchTeamDetails = async () => {
-    setIsLoading(true);
-    try {
-      // Use the fetchTeamMembersByTeam utility to avoid RLS recursion issues
-      const membersData = await fetchTeamMembersByTeam(team.id);
-      // The fetchTeamMembersByTeam returns data in the expected TeamMember format
-      setTeamMembers(membersData);
-
-      // Fetch related teams (parent teams) - Using explicit column specifications
-      try {
-        const { data: parentRelations, error: parentError } = await supabase
-          .from("team_relationships")
-          .select("parent_team_id")
-          .eq("child_team_id", team.id);
-
-        // Fetch parent team details separately
-        let parentTeams: {id: string, name: string, relationship: string}[] = [];
-        
-        if (parentRelations && !parentError && parentRelations.length > 0) {
-          const parentIds = parentRelations.map(relation => relation.parent_team_id);
-          
-          const { data: parentTeamsData, error: parentTeamsError } = await supabase
-            .from("teams")
-            .select("id, name")
-            .in("id", parentIds);
-            
-          if (parentTeamsData && !parentTeamsError) {
-            parentTeams = parentTeamsData.map(team => ({
-              id: team.id,
-              name: team.name,
-              relationship: 'Parent'
-            }));
-          } else if (parentTeamsError) {
-            console.error("Error fetching parent teams:", parentTeamsError);
-          }
-        }
-
-        // Fetch related teams (child teams) - Using explicit column specifications
-        const { data: childRelations, error: childError } = await supabase
-          .from("team_relationships")
-          .select("child_team_id")
-          .eq("parent_team_id", team.id);
-
-        // Fetch child team details separately
-        let childTeams: {id: string, name: string, relationship: string}[] = [];
-        
-        if (childRelations && !childError && childRelations.length > 0) {
-          const childIds = childRelations.map(relation => relation.child_team_id);
-          
-          const { data: childTeamsData, error: childTeamsError } = await supabase
-            .from("teams")
-            .select("id, name")
-            .in("id", childIds);
-            
-          if (childTeamsData && !childTeamsError) {
-            childTeams = childTeamsData.map(team => ({
-              id: team.id,
-              name: team.name,
-              relationship: 'Child'
-            }));
-          } else if (childTeamsError) {
-            console.error("Error fetching child teams:", childTeamsError);
-          }
-        }
-
-        if (!parentError && !childError) {
-          // Combine both parent and child teams
-          setRelatedTeams([...parentTeams, ...childTeams]);
-        } else {
-          console.error("Error fetching related teams:", parentError || childError);
-        }
-      } catch (error) {
-        console.error("Error fetching related teams:", error);
-      }
-      
-    } catch (error) {
-      console.error("Error in fetchTeamDetails:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while loading team details.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleDeleteTeam = async () => {
-    setIsDeleting(true);
-    try {
-      // First, delete team members
-      const { error: membersError } = await supabase
-        .from("team_members")
-        .delete()
-        .eq("team_id", team.id);
-
-      if (membersError) {
-        console.error("Error deleting team members:", membersError);
-        toast({
-          title: "Error",
-          description: "Failed to delete team members.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Next, delete any team bulletins
-      const { error: bulletinsError } = await supabase
-        .from("team_bulletins")
-        .delete()
-        .eq("team_id", team.id);
-
-      if (bulletinsError) {
-        console.error("Error deleting team bulletins:", bulletinsError);
-      }
-
-      // Delete team relationships
-      const { error: relParentError } = await supabase
-        .from("team_relationships")
-        .delete()
-        .eq("parent_team_id", team.id);
-
-      if (relParentError) {
-        console.error("Error deleting parent team relationships:", relParentError);
-      }
-
-      const { error: relChildError } = await supabase
-        .from("team_relationships")
-        .delete()
-        .eq("child_team_id", team.id);
-
-      if (relChildError) {
-        console.error("Error deleting child team relationships:", relChildError);
-      }
-
-      // Delete any team invitations
-      const { error: invitationsError } = await supabase
-        .from("team_invitations")
-        .delete()
-        .eq("team_id", team.id);
-
-      if (invitationsError) {
-        console.error("Error deleting team invitations:", invitationsError);
-      }
-
-      // Finally, delete the team
-      const { error: teamError } = await supabase
-        .from("teams")
-        .delete()
-        .eq("id", team.id);
-
-      if (teamError) {
-        console.error("Error deleting team:", teamError);
-        toast({
-          title: "Error",
-          description: "Failed to delete team.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Success
-      toast({
-        title: "Success",
-        description: "Team deleted successfully.",
-      });
-
-      // Close dialogs and notify parent
-      setShowDeleteConfirm(false);
-      onOpenChange(false);
-      onTeamDeleted();
-    } catch (error) {
-      console.error("Error deleting team:", error);
-      toast({
-        title: "Error",
-        description: "An unexpected error occurred while deleting the team.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsDeleting(false);
-    }
-  };
+  const {
+    isLoading,
+    teamMembers,
+    relatedTeams,
+    showDeleteConfirm,
+    setShowDeleteConfirm,
+    formatDate,
+    handleDeleteTeam
+  } = useTeamDetailsData(team, onTeamDeleted);
 
   return (
     <>
@@ -330,156 +88,24 @@ export function TeamDetailsDialog({
               </TabsList>
               
               <TabsContent value="members">
-                <div className="rounded-md border max-h-[400px] overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>User</TableHead>
-                        <TableHead>Email</TableHead>
-                        <TableHead>Role</TableHead>
-                        <TableHead>Joined</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {teamMembers.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                            This team has no members
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        teamMembers.map((member) => (
-                          <TableRow key={member.id}>
-                            <TableCell>
-                              <div className="flex items-center gap-2">
-                                <Avatar className="h-8 w-8">
-                                  <AvatarImage src={member.profile_image_url || undefined} />
-                                  <AvatarFallback>
-                                    {getInitials(member.first_name, member.last_name)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <span>{getDisplayName(member)}</span>
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              {member.email ? (
-                                <div className="flex items-center gap-1">
-                                  <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                                  <span className="text-sm">{member.email}</span>
-                                </div>
-                              ) : (
-                                <span className="text-muted-foreground text-sm">No email</span>
-                              )}
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant={getRoleBadgeVariant(member.role)}>
-                                {getRoleDisplayName(member.role)}
-                              </Badge>
-                            </TableCell>
-                            <TableCell>{formatDate(member.created_at)}</TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                <TeamMembersTab 
+                  teamMembers={teamMembers} 
+                  formatDate={formatDate} 
+                />
               </TabsContent>
               
               <TabsContent value="relations">
-                <div className="rounded-md border max-h-[400px] overflow-y-auto">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>Team Name</TableHead>
-                        <TableHead>Relationship</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {relatedTeams.length === 0 ? (
-                        <TableRow>
-                          <TableCell colSpan={2} className="text-center py-8 text-muted-foreground">
-                            This team has no relationships with other teams
-                          </TableCell>
-                        </TableRow>
-                      ) : (
-                        relatedTeams.map((relTeam, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{relTeam.name}</TableCell>
-                            <TableCell>
-                              <Badge variant={relTeam.relationship === 'Parent' ? 'default' : 'secondary'}>
-                                {relTeam.relationship}
-                              </Badge>
-                            </TableCell>
-                          </TableRow>
-                        ))
-                      )}
-                    </TableBody>
-                  </Table>
-                </div>
+                <TeamRelationsTab relatedTeams={relatedTeams} />
               </TabsContent>
               
               <TabsContent value="summary">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Team Overview</CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground">Team Name</h4>
-                        <p className="text-lg font-semibold">{team.name}</p>
-                      </div>
-                      <div>
-                        <h4 className="text-sm font-medium text-muted-foreground">Created At</h4>
-                        <p className="text-lg font-semibold">{formatDate(team.created_at)}</p>
-                      </div>
-                    </div>
-                    <Separator />
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-2">Membership Summary</h4>
-                      <div className="grid grid-cols-3 gap-4">
-                        <div className="bg-muted rounded-md p-3 text-center">
-                          <p className="text-2xl font-bold">{teamMembers.length}</p>
-                          <p className="text-sm text-muted-foreground">Total Members</p>
-                        </div>
-                        <div className="bg-muted rounded-md p-3 text-center">
-                          <p className="text-2xl font-bold">
-                            {teamMembers.filter(m => m.role.includes('manager')).length}
-                          </p>
-                          <p className="text-sm text-muted-foreground">Managers</p>
-                        </div>
-                        <div className="bg-muted rounded-md p-3 text-center">
-                          <p className="text-2xl font-bold">
-                            {teamMembers.filter(m => m.role.includes('agent')).length}
-                          </p>
-                          <p className="text-sm text-muted-foreground">Agents</p>
-                        </div>
-                      </div>
-                    </div>
-                    {relatedTeams.length > 0 && (
-                      <>
-                        <Separator />
-                        <div>
-                          <h4 className="text-sm font-medium text-muted-foreground mb-2">Team Relationships</h4>
-                          <div className="grid grid-cols-2 gap-4">
-                            <div className="bg-muted rounded-md p-3 text-center">
-                              <p className="text-2xl font-bold">
-                                {relatedTeams.filter(t => t.relationship === 'Parent').length}
-                              </p>
-                              <p className="text-sm text-muted-foreground">Parent Teams</p>
-                            </div>
-                            <div className="bg-muted rounded-md p-3 text-center">
-                              <p className="text-2xl font-bold">
-                                {relatedTeams.filter(t => t.relationship === 'Child').length}
-                              </p>
-                              <p className="text-sm text-muted-foreground">Child Teams</p>
-                            </div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-                  </CardContent>
-                </Card>
+                <TeamSummaryTab 
+                  teamName={team.name}
+                  createdAt={team.created_at}
+                  teamMembers={teamMembers}
+                  relatedTeams={relatedTeams}
+                  formatDate={formatDate}
+                />
               </TabsContent>
             </Tabs>
           )}
@@ -503,38 +129,12 @@ export function TeamDetailsDialog({
       </Dialog>
 
       {/* Delete confirmation dialog */}
-      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle className="flex items-center gap-2">
-              <AlertCircle className="h-5 w-5 text-destructive" />
-              Confirm Team Deletion
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you absolutely sure you want to delete &quot;{team.name}&quot;? 
-              This will permanently remove the team, all its members, and relationships.
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
-            <AlertDialogAction 
-              onClick={handleDeleteTeam} 
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              disabled={isDeleting}
-            >
-              {isDeleting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete Team"
-              )}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DeleteTeamDialog
+        open={showDeleteConfirm}
+        onOpenChange={setShowDeleteConfirm}
+        team={team}
+        onDelete={handleDeleteTeam}
+      />
     </>
   );
 }
