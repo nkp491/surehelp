@@ -84,7 +84,7 @@ export function TeamDetailsDialog({
                 <TeamMembersTab 
                   teamMembers={teamMembers}
                   formatDate={formatDate}
-                  onDeleteTeam={() => setShowDeleteConfirm(true)} 
+                  onDeleteTeam={() => setShowDeleteConfirm(true)}
                 />
               </TabsContent>
               
@@ -104,6 +104,7 @@ export function TeamDetailsDialog({
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
         teamName={team.name}
+        teamId={team.id}
         isDeleting={isDeleting}
         onConfirm={handleDeleteTeam}
       />

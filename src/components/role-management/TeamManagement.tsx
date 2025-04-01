@@ -76,7 +76,6 @@ export function TeamManagement() {
   const fetchTeams = async () => {
     setIsLoading(true);
     try {
-      // Fetch all teams
       const { data: teamsData, error: teamsError } = await supabase
         .from("teams")
         .select("*")
@@ -92,16 +91,13 @@ export function TeamManagement() {
         return;
       }
 
-      // For each team, get the member count, managers, and creator information
       const teamsWithDetails = await Promise.all(
         teamsData.map(async (team) => {
-          // Get member count
           const { count, error: countError } = await supabase
             .from("team_members")
             .select("id", { count: "exact" })
             .eq("team_id", team.id);
 
-          // Get team managers - Using separate queries to avoid relationship errors
           const { data: teamManagersData, error: managersError } = await supabase
             .from("team_members")
             .select("user_id")
@@ -111,7 +107,6 @@ export function TeamManagement() {
           let managers: TeamManager[] = [];
           
           if (teamManagersData && !managersError && teamManagersData.length > 0) {
-            // Get manager profiles separately
             const managerIds = teamManagersData.map(m => m.user_id);
             
             const { data: profilesData, error: profilesError } = await supabase
@@ -126,7 +121,6 @@ export function TeamManagement() {
             }
           }
 
-          // Find the creator of the team (assuming the first person who joined or has longest membership)
           let creator: TeamCreator | undefined;
           
           const { data: earliestMember, error: creatorError } = await supabase
@@ -186,84 +180,107 @@ export function TeamManagement() {
     
     setIsDeleting(true);
     try {
-      // First, delete team members
-      const { error: membersError } = await supabase
-        .from("team_members")
-        .delete()
-        .eq("team_id", deleteTeamId);
+      const { error: functionError } = await supabase.rpc('delete_team_with_related_data', {
+        team_id: deleteTeamId
+      });
 
-      if (membersError) {
-        console.error("Error deleting team members:", membersError);
-        toast({
-          title: "Error",
-          description: "Failed to delete team members. Please try again.",
-          variant: "destructive",
-        });
-        return;
+      if (functionError) {
+        console.error("RPC function error:", functionError);
+        
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          const userId = user?.id;
+          
+          if (!userId) {
+            toast({
+              title: "Error",
+              description: "User authentication required. Please sign in again.",
+              variant: "destructive",
+            });
+            return;
+          }
+          
+          const { error: memberDeleteError } = await supabase
+            .from("team_members")
+            .delete()
+            .eq("team_id", deleteTeamId);
+          
+          if (memberDeleteError) {
+            console.error("Error deleting team members:", memberDeleteError);
+            
+            const { data: roleData } = await supabase
+              .from("user_roles")
+              .select("role")
+              .eq("user_id", userId)
+              .eq("role", "system_admin");
+              
+            if (!roleData || roleData.length === 0) {
+              toast({
+                title: "Error",
+                description: "You don't have permission to delete this team.",
+                variant: "destructive",
+              });
+              return;
+            }
+            
+            await supabase.from("team_bulletins").delete().eq("team_id", deleteTeamId);
+            await supabase.from("team_relationships").delete().eq("parent_team_id", deleteTeamId);
+            await supabase.from("team_relationships").delete().eq("child_team_id", deleteTeamId);
+            await supabase.from("team_invitations").delete().eq("team_id", deleteTeamId);
+
+            await supabase.from("team_members").delete().eq("team_id", deleteTeamId);
+            
+            const { error: teamError } = await supabase
+              .from("teams")
+              .delete()
+              .eq("id", deleteTeamId);
+
+            if (teamError) {
+              console.error("Error deleting team:", teamError);
+              toast({
+                title: "Error",
+                description: "Failed to delete team. Please try again.",
+                variant: "destructive",
+              });
+              return;
+            }
+          } else {
+            await supabase.from("team_bulletins").delete().eq("team_id", deleteTeamId);
+            await supabase.from("team_relationships").delete().eq("parent_team_id", deleteTeamId);
+            await supabase.from("team_relationships").delete().eq("child_team_id", deleteTeamId);
+            await supabase.from("team_invitations").delete().eq("team_id", deleteTeamId);
+            
+            const { error: teamError } = await supabase
+              .from("teams")
+              .delete()
+              .eq("id", deleteTeamId);
+
+            if (teamError) {
+              console.error("Error deleting team:", teamError);
+              toast({
+                title: "Error",
+                description: "Failed to delete team. Please try again.",
+                variant: "destructive",
+              });
+              return;
+            }
+          }
+        } catch (fallbackError) {
+          console.error("Error in fallback deletion:", fallbackError);
+          toast({
+            title: "Error",
+            description: "Failed to delete team. Please try again.",
+            variant: "destructive",
+          });
+          return;
+        }
       }
 
-      // Next, delete any team bulletins
-      const { error: bulletinsError } = await supabase
-        .from("team_bulletins")
-        .delete()
-        .eq("team_id", deleteTeamId);
-
-      if (bulletinsError) {
-        console.error("Error deleting team bulletins:", bulletinsError);
-      }
-
-      // Delete team relationships
-      const { error: relParentError } = await supabase
-        .from("team_relationships")
-        .delete()
-        .eq("parent_team_id", deleteTeamId);
-
-      if (relParentError) {
-        console.error("Error deleting parent team relationships:", relParentError);
-      }
-
-      const { error: relChildError } = await supabase
-        .from("team_relationships")
-        .delete()
-        .eq("child_team_id", deleteTeamId);
-
-      if (relChildError) {
-        console.error("Error deleting child team relationships:", relChildError);
-      }
-
-      // Delete any team invitations
-      const { error: invitationsError } = await supabase
-        .from("team_invitations")
-        .delete()
-        .eq("team_id", deleteTeamId);
-
-      if (invitationsError) {
-        console.error("Error deleting team invitations:", invitationsError);
-      }
-
-      // Finally, delete the team
-      const { error: teamError } = await supabase
-        .from("teams")
-        .delete()
-        .eq("id", deleteTeamId);
-
-      if (teamError) {
-        console.error("Error deleting team:", teamError);
-        toast({
-          title: "Error",
-          description: "Failed to delete team. Please try again.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Success
       toast({
         title: "Success",
         description: "Team deleted successfully.",
       });
 
-      // Refresh teams list
       fetchTeams();
     } catch (error) {
       console.error("Error deleting team:", error);
@@ -311,11 +328,9 @@ export function TeamManagement() {
         description: "Team created successfully.",
       });
 
-      // Close dialog and reset form
       setShowCreateDialog(false);
       setNewTeamName("");
       
-      // Refresh teams list
       fetchTeams();
     } catch (error) {
       console.error("Error in handleCreateTeam:", error);

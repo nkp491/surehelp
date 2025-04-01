@@ -153,81 +153,11 @@ export function useTeamDetailsData(team: Team, onTeamDeleted: () => void) {
     }
   };
 
+  // This function is now simplified as the actual deletion logic is in DeleteTeamDialog
   const handleDeleteTeam = async () => {
     setIsDeleting(true);
     try {
-      // First, delete team members
-      const { error: membersError } = await supabase
-        .from("team_members")
-        .delete()
-        .eq("team_id", team.id);
-
-      if (membersError) {
-        console.error("Error deleting team members:", membersError);
-        toast({
-          title: "Error",
-          description: "Failed to delete team members.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Next, delete any team bulletins
-      const { error: bulletinsError } = await supabase
-        .from("team_bulletins")
-        .delete()
-        .eq("team_id", team.id);
-
-      if (bulletinsError) {
-        console.error("Error deleting team bulletins:", bulletinsError);
-      }
-
-      // Delete team relationships
-      const { error: relParentError } = await supabase
-        .from("team_relationships")
-        .delete()
-        .eq("parent_team_id", team.id);
-
-      if (relParentError) {
-        console.error("Error deleting parent team relationships:", relParentError);
-      }
-
-      const { error: relChildError } = await supabase
-        .from("team_relationships")
-        .delete()
-        .eq("child_team_id", team.id);
-
-      if (relChildError) {
-        console.error("Error deleting child team relationships:", relChildError);
-      }
-
-      // Delete any team invitations
-      const { error: invitationsError } = await supabase
-        .from("team_invitations")
-        .delete()
-        .eq("team_id", team.id);
-
-      if (invitationsError) {
-        console.error("Error deleting team invitations:", invitationsError);
-      }
-
-      // Finally, delete the team
-      const { error: teamError } = await supabase
-        .from("teams")
-        .delete()
-        .eq("id", team.id);
-
-      if (teamError) {
-        console.error("Error deleting team:", teamError);
-        toast({
-          title: "Error",
-          description: "Failed to delete team.",
-          variant: "destructive",
-        });
-        return;
-      }
-
-      // Success
+      // This function is called after successful deletion in the DeleteTeamDialog
       toast({
         title: "Success",
         description: "Team deleted successfully.",
@@ -236,10 +166,10 @@ export function useTeamDetailsData(team: Team, onTeamDeleted: () => void) {
       // Notify parent component
       onTeamDeleted();
     } catch (error) {
-      console.error("Error deleting team:", error);
+      console.error("Error handling team deletion:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred while deleting the team.",
+        description: "An unexpected error occurred.",
         variant: "destructive",
       });
     } finally {
