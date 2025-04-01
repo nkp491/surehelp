@@ -2,9 +2,10 @@
 import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MinusCircle } from "lucide-react";
+import { PlusCircle, MinusCircle, UserRound } from "lucide-react";
 import { formatRoleName, getBadgeVariant } from "@/components/role-management/roleUtils";
 import { useToast } from "@/hooks/use-toast";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface UserRoleItemProps {
   user: UserWithRoles;
@@ -22,6 +23,8 @@ export function UserRoleItem({
   onRemoveRole 
 }: UserRoleItemProps) {
   const { toast } = useToast();
+  const { hasRequiredRole } = useRoleCheck();
+  const isAdmin = hasRequiredRole(['system_admin']);
   
   const handleAssignRole = () => {
     if (!selectedRole) {
@@ -47,6 +50,16 @@ export function UserRoleItem({
             {user.first_name} {user.last_name}
           </h3>
           <p className="text-sm text-muted-foreground">{user.email}</p>
+          
+          {isAdmin && user.manager_id && (
+            <div className="mt-1 flex items-center text-sm text-muted-foreground">
+              <UserRound className="h-3 w-3 mr-1" />
+              <span>Manager: {user.manager_name || 'Unknown'}</span>
+              {user.manager_email && (
+                <span className="ml-1">({user.manager_email})</span>
+              )}
+            </div>
+          )}
         </div>
         
         <div className="flex items-center">

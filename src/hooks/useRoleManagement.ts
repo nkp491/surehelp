@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +18,9 @@ export type UserWithRoles = {
   first_name: string | null;
   last_name: string | null;
   roles: string[];
+  manager_id: string | null;
+  manager_name: string | null;
+  manager_email: string | null;
 };
 
 export const useRoleManagement = () => {
@@ -31,7 +35,7 @@ export const useRoleManagement = () => {
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, first_name, last_name");
+        .select("id, email, first_name, last_name, manager_id");
 
       if (profilesError) throw profilesError;
 
@@ -42,17 +46,45 @@ export const useRoleManagement = () => {
 
       if (rolesError) throw rolesError;
 
+      // Get all managers for efficient lookup
+      const managerIds = profiles
+        .filter((profile: any) => profile.manager_id)
+        .map((profile: any) => profile.manager_id);
+
+      const { data: managers, error: managersError } = await supabase
+        .from("profiles")
+        .select("id, email, first_name, last_name")
+        .in("id", managerIds);
+
+      if (managersError) throw managersError;
+
+      // Create a manager lookup map
+      const managerMap = new Map();
+      managers?.forEach((manager: any) => {
+        managerMap.set(manager.id, {
+          name: `${manager.first_name || ''} ${manager.last_name || ''}`.trim(),
+          email: manager.email
+        });
+      });
+
       // Combine the data to create users with their roles
       const usersWithRoles: UserWithRoles[] = profiles.map((profile: any) => {
         const userRoles = roleAssignments.filter(
           (role: any) => role.user_id === profile.id
         );
+        
+        // Get manager info if available
+        const managerInfo = profile.manager_id ? managerMap.get(profile.manager_id) : null;
+        
         return {
           id: profile.id,
           email: profile.email,
           first_name: profile.first_name,
           last_name: profile.last_name,
-          roles: userRoles.map((r: any) => r.role)
+          roles: userRoles.map((r: any) => r.role),
+          manager_id: profile.manager_id,
+          manager_name: managerInfo ? managerInfo.name : null,
+          manager_email: managerInfo ? managerInfo.email : null
         };
       });
 
