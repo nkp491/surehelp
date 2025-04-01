@@ -63,10 +63,8 @@ export function TeamPage() {
           </CardHeader>
           <CardContent>
             <TeamSelector
-              teams={teams || []}
-              isLoading={isLoadingTeams}
               selectedTeamId={selectedTeamId}
-              onSelectTeam={(teamId) => {
+              onTeamSelect={(teamId) => {
                 setSelectedTeamId(teamId);
                 checkPermissions();
               }}
@@ -98,9 +96,7 @@ export function TeamPage() {
                 </CardHeader>
                 <CardContent>
                   <TeamMembersList
-                    teamMembers={teamMembers || []}
-                    isLoading={isLoadingMembers}
-                    canManage={canManageTeam}
+                    teamId={selectedTeamId}
                   />
                 </CardContent>
               </Card>
@@ -117,10 +113,6 @@ export function TeamPage() {
       <TeamCreationDialog
         open={isCreatingTeam}
         onOpenChange={setIsCreatingTeam}
-        onCreateTeam={(name) => {
-          createTeam.mutate(name);
-          setIsCreatingTeam(false);
-        }}
       />
       
       {selectedTeamId && (
@@ -128,14 +120,6 @@ export function TeamPage() {
           open={isAddingMember}
           onOpenChange={setIsAddingMember}
           teamId={selectedTeamId}
-          onAddMember={(email, role) => {
-            addTeamMember.mutate({
-              teamId: selectedTeamId,
-              userId: email,
-              role
-            });
-            setIsAddingMember(false);
-          }}
         />
       )}
     </div>
