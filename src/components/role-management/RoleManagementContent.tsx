@@ -31,8 +31,8 @@ export function RoleManagementContent({
     <Tabs defaultValue="users">
       <TabsList className="mb-6">
         <TabsTrigger value="users">Users & Roles</TabsTrigger>
-        <TabsTrigger value="about">About Roles</TabsTrigger>
         {isAdmin && <TabsTrigger value="teams">Team Management</TabsTrigger>}
+        <TabsTrigger value="about">About Roles</TabsTrigger>
       </TabsList>
       
       <TabsContent value="users">
@@ -52,15 +52,15 @@ export function RoleManagementContent({
         )}
       </TabsContent>
       
-      <TabsContent value="about">
-        <RoleDescriptions />
-      </TabsContent>
-      
       {isAdmin && (
         <TabsContent value="teams">
           <TeamManagement />
         </TabsContent>
       )}
+      
+      <TabsContent value="about">
+        <RoleDescriptions />
+      </TabsContent>
     </Tabs>
   );
 }
