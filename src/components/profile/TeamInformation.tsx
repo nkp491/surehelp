@@ -40,6 +40,7 @@ const TeamInformation = ({
   const { checkAndUpdateTeamAssociation, fixMomentumCapitolAssociation } = useTeamAssociationService();
   
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
+  const isAgent = userRoles.some(role => role === 'agent' || role === 'agent_pro');
 
   // Modified teams query to use a more direct approach
   const { 
@@ -55,7 +56,7 @@ const TeamInformation = ({
 
         console.log("Fetching teams directly for user:", user.id);
         
-        // Direct query for team IDs - avoiding the infinite recursion
+        // First try to get teams directly
         const { data: teams, error } = await supabase
           .from('teams')
           .select('*')
@@ -71,10 +72,7 @@ const TeamInformation = ({
           return [];
         }
 
-        console.log("All teams found:", teams.length);
-        
-        // Now filter teams where user is a member
-        // By querying team_members table directly
+        // Check team memberships
         const { data: membershipData, error: membershipError } = await supabase
           .from('team_members')
           .select('team_id')
@@ -83,41 +81,46 @@ const TeamInformation = ({
         if (membershipError) {
           console.error("Error checking team memberships:", membershipError);
           
-          // Momentum Capitol special case - direct check
+          // Special case handling
           if (user.email === 'nielsenaragon@gmail.com') {
             const momentumTeams = teams.filter(team => 
               team.name.includes('Momentum Capitol') || team.name.includes('Momentum Capital')
             );
-            
-            console.log("Special case: Found Momentum teams for nielsenaragon@gmail.com:", momentumTeams);
+            console.log("Special case: Found Momentum teams:", momentumTeams);
             return momentumTeams || [];
+          }
+          
+          // For agent users with a manager, try to get teams through manager
+          if (isAgent && managerId) {
+            return await fetchTeamsThroughManager(managerId, teams);
           }
           
           return [];
         }
         
+        // If user has no direct team memberships
         if (!membershipData || membershipData.length === 0) {
-          console.log("No team memberships found for user");
+          console.log("No direct team memberships found for user");
           
-          // Momentum Capitol special case
+          // Special case handling
           if (user.email === 'nielsenaragon@gmail.com') {
             const momentumTeams = teams.filter(team => 
-              team.name.includes('Momentum Capitol') || 
-              team.name.includes('Momentum Capital')
+              team.name.includes('Momentum Capitol') || team.name.includes('Momentum Capital')
             );
-            
-            console.log("Special case: Found Momentum teams for nielsenaragon@gmail.com:", momentumTeams);
+            console.log("Special case: Found Momentum teams:", momentumTeams);
             return momentumTeams || [];
+          }
+          
+          // For agent users with a manager, try to get teams through manager
+          if (isAgent && managerId) {
+            return await fetchTeamsThroughManager(managerId, teams);
           }
           
           return [];
         }
 
-        // Extract the team IDs
+        // Filter and return the user's teams
         const teamIds = membershipData.map(tm => tm.team_id);
-        console.log("User team IDs found:", teamIds);
-        
-        // Filter the team data to only include user's teams
         const userTeams = teams.filter(team => teamIds.includes(team.id));
         console.log("User teams filtered:", userTeams);
         
@@ -125,7 +128,16 @@ const TeamInformation = ({
       } catch (error) {
         console.error("Error in direct team fetch:", error);
         
-        // Last resort fallback especially for nielsenaragon@gmail.com
+        // Try another approach for users with manager
+        if (isAgent && managerId) {
+          try {
+            return await fetchTeamsThroughManager(managerId);
+          } catch (innerError) {
+            console.error("Failed to fetch teams through manager:", innerError);
+          }
+        }
+        
+        // Last resort fallback for special case
         try {
           const { data: { user } } = await supabase.auth.getUser();
           if (user?.email === 'nielsenaragon@gmail.com') {
@@ -148,7 +160,40 @@ const TeamInformation = ({
     retry: 3,
     retryDelay: 1000,
     staleTime: 1000 * 60, // 1 minute
+    enabled: true
   });
+
+  // Helper function to get teams through the user's manager
+  const fetchTeamsThroughManager = async (managerId: string, allTeams?: any[]) => {
+    console.log("Trying to fetch teams through manager:", managerId);
+    
+    // If we don't have all teams, fetch them first
+    if (!allTeams) {
+      const { data: teams } = await supabase
+        .from('teams')
+        .select('*')
+        .order('name');
+      allTeams = teams || [];
+    }
+    
+    // Get team memberships for the manager
+    const { data: managerTeams, error } = await supabase
+      .from('team_members')
+      .select('team_id')
+      .eq('user_id', managerId);
+      
+    if (error || !managerTeams || managerTeams.length === 0) {
+      console.log("Manager has no teams or error fetching manager teams");
+      return [];
+    }
+    
+    // Filter to get just the manager's teams
+    const managerTeamIds = managerTeams.map(tm => tm.team_id);
+    const teamsFilteredByManager = allTeams.filter(team => managerTeamIds.includes(team.id));
+    
+    console.log("Found teams through manager:", teamsFilteredByManager.length);
+    return teamsFilteredByManager;
+  };
 
   useEffect(() => {
     const fetchManagerDetails = async () => {
@@ -263,6 +308,50 @@ const TeamInformation = ({
             title: "Team Association Fixed",
             description: "Your association with Momentum teams has been refreshed.",
           });
+        }
+      } else if (isAgent && managerId) {
+        // For agents with managers, try to associate them with their manager's teams
+        console.log("Refreshing team associations for agent with manager:", managerId);
+        
+        // Get manager's teams
+        const { data: managerTeams, error: managerTeamsError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', managerId);
+          
+        if (!managerTeamsError && managerTeams && managerTeams.length > 0) {
+          console.log("Found manager teams:", managerTeams.length);
+          
+          // For each team the manager is in, add this user as well
+          let teamsAdded = 0;
+          for (const team of managerTeams) {
+            // Check if already a member
+            const { data: existingMembership } = await supabase
+              .from('team_members')
+              .select('id')
+              .eq('team_id', team.team_id)
+              .eq('user_id', user.id);
+              
+            if (!existingMembership || existingMembership.length === 0) {
+              // Add user to the team
+              const { error: addError } = await supabase
+                .from('team_members')
+                .insert([{ 
+                  team_id: team.team_id,
+                  user_id: user.id,
+                  role: 'agent'
+                }]);
+                
+              if (!addError) teamsAdded++;
+            }
+          }
+          
+          if (teamsAdded > 0) {
+            toast({
+              title: "Team Associations Updated",
+              description: `You have been added to ${teamsAdded} team(s) associated with your manager.`,
+            });
+          }
         }
       }
       

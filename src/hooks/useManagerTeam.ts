@@ -37,6 +37,8 @@ export const useManagerTeam = (managerId?: string) => {
       
       // Also invalidate any other team-related queries
       queryClient.invalidateQueries({ queryKey: ['team-members-by-team'] });
+      queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
       
       return true;
     } catch (error) {
