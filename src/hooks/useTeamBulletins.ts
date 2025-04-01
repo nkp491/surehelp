@@ -8,9 +8,9 @@ import { useFetchTeamBulletins } from "./team/useFetchTeamBulletins";
 /**
  * Hook for managing team bulletins, combining multiple specialized hooks
  */
-export const useTeamBulletins = (teamId?: string) => {
+export const useTeamBulletins = (teamId?: string, directReportsOnly: boolean = false) => {
   // Get bulletins data
-  const { data: bulletins, isLoading: isLoadingBulletins } = useFetchTeamBulletins(teamId);
+  const { data: bulletins, isLoading: isLoadingBulletins } = useFetchTeamBulletins(teamId, directReportsOnly);
   
   // Mutation hooks
   const { createBulletin, isLoading: isLoadingCreate } = useCreateBulletin(teamId);

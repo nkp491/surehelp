@@ -21,9 +21,10 @@ import { useQuery } from "@tanstack/react-query";
 
 interface TeamBulletinBoardProps {
   teamId?: string;
+  directReportsOnly?: boolean;
 }
 
-export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
+export function TeamBulletinBoard({ teamId, directReportsOnly = false }: TeamBulletinBoardProps) {
   const { 
     bulletins, 
     isLoadingBulletins, 
@@ -32,7 +33,7 @@ export function TeamBulletinBoard({ teamId }: TeamBulletinBoardProps) {
     toggleBulletinPin,
     deleteBulletin,
     isLoading
-  } = useTeamBulletins(teamId);
+  } = useTeamBulletins(teamId, directReportsOnly);
   
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [editingBulletin, setEditingBulletin] = useState<TeamBulletinType | null>(null);

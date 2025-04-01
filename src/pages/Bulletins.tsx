@@ -62,12 +62,12 @@ export default function BulletinsPage() {
           <h1 className="text-3xl font-bold tracking-tight">Team Bulletins</h1>
           <p className="text-muted-foreground">
             {isManager 
-              ? "Post bulletins and communicate with your team members." 
+              ? "Post bulletins and communicate with your direct team members." 
               : "View bulletins from your manager and team."}
           </p>
         </div>
 
-        <TeamBulletinBoard teamId={teamId} />
+        <TeamBulletinBoard teamId={teamId} directReportsOnly={true} />
       </div>
     </RoleBasedRoute>
   );
