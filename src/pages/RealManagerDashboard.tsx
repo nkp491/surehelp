@@ -2,25 +2,19 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Settings, Plus, Users, MessageSquare } from "lucide-react";
+import { Settings, Users } from "lucide-react";
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
-import { useTeamBulletins } from "@/hooks/useTeamBulletins";
 import { useTeams } from "@/hooks/team/useTeams";
 import { ManagerTeamList } from "@/components/team/ManagerTeamList";
-import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
-import { CreateBulletinDialog } from "@/components/team/CreateBulletinDialog";
-import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 
 export default function RealManagerDashboard() {
   const { profile } = useProfileManagement();
   const { teams, isLoadingTeams } = useTeams();
-  const [isCreatingBulletin, setIsCreatingBulletin] = useState(false);
   const [selectedTeamId, setSelectedTeamId] = useState<string | undefined>();
   const { teamMembers, isLoading: isLoadingTeam } = useManagerTeam(profile?.id);
-  const { toast } = useToast();
 
   // Initialize with the first team when teams are loaded
   useEffect(() => {
@@ -29,32 +23,9 @@ export default function RealManagerDashboard() {
     }
   }, [teams, selectedTeamId]);
 
-  // Get team bulletins for the selected team
-  const { bulletins, isLoadingBulletins, createBulletin } = useTeamBulletins(selectedTeamId);
-
   // Handle team selection
   const handleTeamChange = (teamId: string) => {
     setSelectedTeamId(teamId);
-  };
-
-  // Handle bulletin creation
-  const handleCreateBulletin = (data: { title: string; content: string; pinned?: boolean }) => {
-    if (!selectedTeamId) {
-      toast({
-        title: "Error",
-        description: "Please select a team first",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    createBulletin.mutateAsync({
-      title: data.title,
-      content: data.content,
-      pinned: data.pinned
-    });
-    
-    setIsCreatingBulletin(false);
   };
 
   return (
@@ -101,41 +72,6 @@ export default function RealManagerDashboard() {
                   </a>
                 </div>
               )}
-            </div>
-          </Card>
-
-          {/* Team Bulletin Section */}
-          <Card className="p-4">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-bold">TEAM BULLETIN</h2>
-              <Button 
-                size="sm" 
-                variant="outline"
-                onClick={() => setIsCreatingBulletin(true)}
-                disabled={!selectedTeamId}
-              >
-                <Plus className="h-4 w-4 mr-1" /> 
-                New
-              </Button>
-            </div>
-            <div className="max-h-[400px] overflow-y-auto pr-2">
-              {!selectedTeamId ? (
-                <div className="text-muted-foreground text-sm text-center py-8">
-                  Please select a team to view bulletins
-                </div>
-              ) : (
-                <TeamBulletinBoard 
-                  teamId={selectedTeamId}
-                />
-              )}
-            </div>
-            <div className="mt-3 text-center">
-              <Button variant="outline" size="sm" asChild>
-                <a href="/bulletins">
-                  <MessageSquare className="h-4 w-4 mr-1" /> 
-                  All Bulletins
-                </a>
-              </Button>
             </div>
           </Card>
         </div>
@@ -194,14 +130,6 @@ export default function RealManagerDashboard() {
           </Tabs>
         </div>
       </div>
-
-      {/* Bulletin Creation Dialog */}
-      <CreateBulletinDialog
-        open={isCreatingBulletin}
-        onOpenChange={setIsCreatingBulletin}
-        onSubmit={handleCreateBulletin}
-        isLoading={false}
-      />
     </div>
   );
 }
