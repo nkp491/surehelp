@@ -154,12 +154,28 @@ export const useAgentInformation = (
     return years;
   };
 
+  // Format date with "Completed (as of M/YEAR)" label
+  const formatDateWithLabel = (
+    date: string | Date | null | undefined, 
+    baseLabel: string, 
+    completedText: string
+  ) => {
+    if (!date) return baseLabel;
+    
+    const dateObj = new Date(date);
+    const month = dateObj.toLocaleString('default', { month: 'short' });
+    const year = dateObj.getFullYear();
+    
+    return `${baseLabel} - ${completedText} ${month}/${year}`;
+  };
+
   return {
     isEditing,
     formData,
     handleFieldChange,
     handleToggleEdit,
     handleSubmit,
-    calculateYearsOfService
+    calculateYearsOfService,
+    formatDateWithLabel
   };
 };

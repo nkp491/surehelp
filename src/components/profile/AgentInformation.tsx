@@ -29,7 +29,8 @@ const AgentInformation = ({
     handleFieldChange,
     handleToggleEdit,
     handleSubmit,
-    calculateYearsOfService
+    calculateYearsOfService,
+    formatDateWithLabel
   } = useAgentInformation(agentInfo, onUpdate);
 
   console.log("Agent Information Component - Current data:", formData);
@@ -39,6 +40,25 @@ const AgentInformation = ({
   const serviceStartLabel = formData.years_of_service_date 
     ? `${t.yearsOfService} (${yearsOfService} ${t.years})` 
     : t.yearsOfService;
+    
+  // Format the date labels for certain fields
+  const dojBackgroundCheckLabel = formatDateWithLabel(
+    formData.doj_background_check_date, 
+    t.dojBackgroundCheck, 
+    t.completedAsOf
+  );
+  
+  const liveScanLabel = formatDateWithLabel(
+    formData.live_scan_date, 
+    t.liveScanFingerprinting, 
+    t.completedAsOf
+  );
+  
+  const continuingEducationLabel = formatDateWithLabel(
+    formData.continuing_education_date, 
+    t.continuingEducation, 
+    t.completedAsOf
+  );
 
   return (
     <Card className="shadow-sm">
@@ -132,7 +152,7 @@ const AgentInformation = ({
             
             {/* DOJ Background Check */}
             <FormField
-              label={t.dojBackgroundCheck}
+              label={dojBackgroundCheckLabel}
               type="date"
               value={formData.doj_background_check_date}
               onChange={(value) => handleFieldChange('doj_background_check_date', value)}
@@ -141,7 +161,7 @@ const AgentInformation = ({
             
             {/* Live Scan Fingerprinting */}
             <FormField
-              label={t.liveScanFingerprinting}
+              label={liveScanLabel}
               type="date"
               value={formData.live_scan_date}
               onChange={(value) => handleFieldChange('live_scan_date', value)}
@@ -150,7 +170,7 @@ const AgentInformation = ({
             
             {/* Continuing Education */}
             <FormField
-              label={t.continuingEducation}
+              label={continuingEducationLabel}
               type="date"
               value={formData.continuing_education_date}
               onChange={(value) => handleFieldChange('continuing_education_date', value)}

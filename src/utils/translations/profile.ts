@@ -59,7 +59,8 @@ export const profileTranslations = {
     selectState: "Select state",
     save: "Save",
     edit: "Edit",
-    enterManagerEmail: "Enter manager's email"
+    enterManagerEmail: "Enter manager's email",
+    completedAsOf: "Completed (as of"
   },
   es: {
     profileSettings: "Configuración del Perfil",
@@ -120,6 +121,7 @@ export const profileTranslations = {
     selectState: "Seleccionar estado",
     save: "Guardar",
     edit: "Editar",
-    enterManagerEmail: "Ingrese el correo del gerente"
+    enterManagerEmail: "Ingrese el correo del gerente",
+    completedAsOf: "Completado (a partir de"
   }
 };
