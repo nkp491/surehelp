@@ -1,6 +1,7 @@
 
 import { useState } from "react";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
+import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -28,6 +29,7 @@ export function TeamCreationDialog({
   initialName = "" 
 }: TeamCreationDialogProps) {
   const { createTeam, updateTeam, isLoading } = useTeamManagement();
+  const { toast } = useToast();
   const [teamName, setTeamName] = useState(initialName);
   
   const isEditMode = !!teamId;
@@ -45,6 +47,10 @@ export function TeamCreationDialog({
       await updateTeam.mutateAsync({ teamId, name: teamName });
     } else {
       await createTeam.mutateAsync(teamName);
+      toast({
+        title: "Team Created",
+        description: "Your new team has been created successfully. You can manage it in the Teams page.",
+      });
     }
     
     setTeamName("");

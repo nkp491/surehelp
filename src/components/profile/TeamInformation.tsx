@@ -9,6 +9,9 @@ import { supabase } from "@/integrations/supabase/client";
 import ManagerDisplay from "./team/ManagerDisplay";
 import ManagerEmailInput from "./team/ManagerEmailInput";
 import { useManagerValidation } from "./team/useManagerValidation";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { TeamCreationDialog } from "@/components/team/TeamCreationDialog";
+import { Plus } from "lucide-react";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -22,11 +25,16 @@ const TeamInformation = ({
   const [isEditing, setIsEditing] = useState(false);
   const [managerEmail, setManagerEmail] = useState('');
   const [managerName, setManagerName] = useState('');
+  const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
   
   const { language } = useLanguage();
   const { toast } = useToast();
   const t = translations[language];
   const { validateManagerEmail, isLoading } = useManagerValidation();
+  const { userRoles } = useRoleCheck();
+  
+  // Check if user has manager role
+  const isManager = userRoles.some(role => role.startsWith('manager_pro'));
 
   // Fetch current manager details if managerId exists
   useEffect(() => {
@@ -94,14 +102,27 @@ const TeamInformation = ({
     <Card className="shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <CardTitle className="text-xl font-semibold text-foreground">Team Information</CardTitle>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleToggleEdit}
-          className="px-4"
-        >
-          {isEditing ? t.save : t.edit}
-        </Button>
+        <div className="flex gap-2">
+          {isManager && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setShowCreateTeamDialog(true)}
+              className="flex items-center gap-1"
+            >
+              <Plus className="h-4 w-4" />
+              <span>Create Team</span>
+            </Button>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleToggleEdit}
+            className="px-4"
+          >
+            {isEditing ? t.save : t.edit}
+          </Button>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -128,6 +149,12 @@ const TeamInformation = ({
           )}
         </form>
       </CardContent>
+      
+      {/* Team Creation Dialog */}
+      <TeamCreationDialog
+        open={showCreateTeamDialog}
+        onOpenChange={setShowCreateTeamDialog}
+      />
     </Card>
   );
 };
