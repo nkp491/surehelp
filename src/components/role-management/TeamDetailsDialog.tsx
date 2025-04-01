@@ -83,6 +83,7 @@ export function TeamDetailsDialog({
               <TabsContent value="members">
                 <TeamMembersTab 
                   teamMembers={teamMembers}
+                  formatDate={formatDate}
                   onDeleteTeam={() => setShowDeleteConfirm(true)} 
                 />
               </TabsContent>

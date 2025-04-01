@@ -12,13 +12,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Mail } from "lucide-react";
 import { TeamMember } from "@/types/team";
+import { Button } from "@/components/ui/button";
 
 interface TeamMembersTabProps {
   teamMembers: TeamMember[];
   formatDate: (dateString: string) => string;
+  onDeleteTeam?: () => void;
 }
 
-export function TeamMembersTab({ teamMembers, formatDate }: TeamMembersTabProps) {
+export function TeamMembersTab({ teamMembers, formatDate, onDeleteTeam }: TeamMembersTabProps) {
   // Helper functions for formatting and displaying data
   const getInitials = (firstName?: string | null, lastName?: string | null) => {
     if (!firstName && !lastName) return '??';
@@ -48,58 +50,71 @@ export function TeamMembersTab({ teamMembers, formatDate }: TeamMembersTabProps)
   };
 
   return (
-    <div className="rounded-md border max-h-[400px] overflow-y-auto">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead>User</TableHead>
-            <TableHead>Email</TableHead>
-            <TableHead>Role</TableHead>
-            <TableHead>Joined</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {teamMembers.length === 0 ? (
+    <div className="space-y-4">
+      <div className="rounded-md border max-h-[400px] overflow-y-auto">
+        <Table>
+          <TableHeader>
             <TableRow>
-              <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
-                This team has no members
-              </TableCell>
+              <TableHead>User</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Role</TableHead>
+              <TableHead>Joined</TableHead>
             </TableRow>
-          ) : (
-            teamMembers.map((member) => (
-              <TableRow key={member.id}>
-                <TableCell>
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={member.profile_image_url || undefined} />
-                      <AvatarFallback>
-                        {getInitials(member.first_name, member.last_name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{getDisplayName(member)}</span>
-                  </div>
+          </TableHeader>
+          <TableBody>
+            {teamMembers.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                  This team has no members
                 </TableCell>
-                <TableCell>
-                  {member.email ? (
-                    <div className="flex items-center gap-1">
-                      <Mail className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-sm">{member.email}</span>
-                    </div>
-                  ) : (
-                    <span className="text-muted-foreground text-sm">No email</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  <Badge variant={getRoleBadgeVariant(member.role)}>
-                    {getRoleDisplayName(member.role)}
-                  </Badge>
-                </TableCell>
-                <TableCell>{formatDate(member.created_at)}</TableCell>
               </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
+            ) : (
+              teamMembers.map((member) => (
+                <TableRow key={member.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={member.profile_image_url || undefined} />
+                        <AvatarFallback>
+                          {getInitials(member.first_name, member.last_name)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{getDisplayName(member)}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {member.email ? (
+                      <div className="flex items-center gap-1">
+                        <Mail className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-sm">{member.email}</span>
+                      </div>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">No email</span>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant={getRoleBadgeVariant(member.role)}>
+                      {getRoleDisplayName(member.role)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>{formatDate(member.created_at)}</TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
+      
+      {onDeleteTeam && (
+        <div className="flex justify-end">
+          <Button 
+            variant="destructive" 
+            onClick={onDeleteTeam}
+          >
+            Delete Team
+          </Button>
+        </div>
+      )}
     </div>
   );
 }

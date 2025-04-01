@@ -12,33 +12,23 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2, AlertCircle } from "lucide-react";
 
-interface Team {
-  id: string;
-  name: string;
-}
-
 interface DeleteTeamDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  team: Team;
-  onDelete: () => Promise<void>;
+  teamName: string;
+  isDeleting: boolean;
+  onConfirm: () => Promise<void>;
 }
 
 export function DeleteTeamDialog({ 
   open, 
   onOpenChange, 
-  team, 
-  onDelete 
+  teamName, 
+  isDeleting,
+  onConfirm
 }: DeleteTeamDialogProps) {
-  const [isDeleting, setIsDeleting] = useState(false);
-
   const handleDeleteTeam = async () => {
-    setIsDeleting(true);
-    try {
-      await onDelete();
-    } finally {
-      setIsDeleting(false);
-    }
+    await onConfirm();
   };
 
   return (
@@ -50,7 +40,7 @@ export function DeleteTeamDialog({
             Confirm Team Deletion
           </AlertDialogTitle>
           <AlertDialogDescription>
-            Are you absolutely sure you want to delete &quot;{team.name}&quot;? 
+            Are you absolutely sure you want to delete &quot;{teamName}&quot;? 
             This will permanently remove the team, all its members, and relationships.
             This action cannot be undone.
           </AlertDialogDescription>
