@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { Profile } from "@/types/profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,18 +13,27 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { UserX, MoreHorizontal } from "lucide-react";
+import { UserX, MoreHorizontal, RefreshCw } from "lucide-react";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/hooks/use-toast";
 
 interface ManagerTeamListProps {
   managerId?: string;
 }
 
 export function ManagerTeamList({ managerId }: ManagerTeamListProps) {
-  const { teamMembers, isLoading, updateTeamMemberManager } = useManagerTeam(managerId);
+  const { teamMembers, isLoading, updateTeamMemberManager, refetch } = useManagerTeam(managerId);
   const [searchQuery, setSearchQuery] = useState("");
+  const { toast } = useToast();
+
+  // Force refresh on component mount to ensure data is current
+  useEffect(() => {
+    if (managerId) {
+      refetch();
+    }
+  }, [managerId, refetch]);
 
   // Function to format role display
   const formatRoleName = (role: string | null) => {
@@ -64,10 +73,23 @@ export function ManagerTeamList({ managerId }: ManagerTeamListProps) {
     updateTeamMemberManager(memberId, null);
   };
 
+  // Handle manual refresh
+  const handleRefresh = () => {
+    refetch();
+    toast({
+      title: "Refreshed",
+      description: "Team members list has been refreshed",
+    });
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>Your Team Members</CardTitle>
+        <Button variant="outline" size="sm" onClick={handleRefresh}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
@@ -90,9 +112,13 @@ export function ManagerTeamList({ managerId }: ManagerTeamListProps) {
               </div>
             ))
           ) : filteredMembers?.length === 0 ? (
-            <p className="text-center text-muted-foreground py-4">
-              {searchQuery.trim() ? "No members match your search" : "No team members found"}
-            </p>
+            <div className="text-center text-muted-foreground py-6">
+              {searchQuery.trim() 
+                ? "No members match your search" 
+                : managerId
+                  ? "No team members found. Agents need to set you as their manager in their profile."
+                  : "You need to be a manager to have team members."}
+            </div>
           ) : (
             filteredMembers?.map((member: Profile) => (
               <div key={member.id} className="flex items-center justify-between border rounded-md p-3 hover:bg-muted/30">

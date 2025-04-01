@@ -11,12 +11,19 @@ export const useManagerTeam = (managerId?: string) => {
     queryFn: async () => {
       if (!managerId) return [];
 
+      console.log("Fetching team members for manager:", managerId);
+
       const { data, error } = await supabase
         .from('profiles')
         .select('*')
         .eq('manager_id', managerId);
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching team members:", error);
+        throw error;
+      }
+      
+      console.log(`Found ${data?.length || 0} team members for manager:`, managerId);
       
       // Transform the data to match our Profile type
       return data.map(profile => ({
@@ -31,6 +38,8 @@ export const useManagerTeam = (managerId?: string) => {
       })) as Profile[];
     },
     enabled: !!managerId,
+    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes (reduced from default)
+    refetchOnWindowFocus: true, // Refresh data when window regains focus
   });
 
   // Update a team member's manager

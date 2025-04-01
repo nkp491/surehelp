@@ -38,8 +38,13 @@ const ProfileContent = () => {
   const { language } = useLanguage();
   const t = translations[language];
   
-  const isManager = profile?.role?.includes('manager_pro');
-  const isAgent = profile?.role?.includes('agent') || profile?.roles?.some(r => r.includes('agent'));
+  // Improve manager role detection - check both profile.role and profile.roles
+  const isManager = profile?.role?.includes('manager_pro') || 
+                    profile?.roles?.some(r => r.includes('manager_pro'));
+  
+  // Improve agent role detection - check both profile.role and profile.roles
+  const isAgent = profile?.role?.includes('agent') || 
+                  profile?.roles?.some(r => r.includes('agent'));
 
   if (loading) {
     return <ProfileLoading />;
