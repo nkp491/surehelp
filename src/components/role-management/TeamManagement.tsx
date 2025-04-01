@@ -12,7 +12,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, Search, PlusCircle } from "lucide-react";
+import { Trash2, Loader2, Search, PlusCircle, Users, User } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -26,12 +26,22 @@ import {
 import { Input } from "@/components/ui/input";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { TeamDetailsDialog } from "./TeamDetailsDialog";
+
+interface TeamManager {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
 
 interface Team {
   id: string;
   name: string;
   created_at: string;
   memberCount?: number;
+  managers?: TeamManager[];
 }
 
 export function TeamManagement() {
@@ -44,6 +54,8 @@ export function TeamManagement() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [newTeamName, setNewTeamName] = useState("");
   const [isCreating, setIsCreating] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState<Team | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const { toast } = useToast();
   const { hasRequiredRole } = useRoleCheck();
   const isAdmin = hasRequiredRole(['system_admin']);
@@ -73,22 +85,44 @@ export function TeamManagement() {
         return;
       }
 
-      // For each team, get the member count
-      const teamsWithMemberCount = await Promise.all(
+      // For each team, get the member count and managers
+      const teamsWithDetails = await Promise.all(
         teamsData.map(async (team) => {
+          // Get member count
           const { count, error: countError } = await supabase
             .from("team_members")
             .select("id", { count: "exact" })
             .eq("team_id", team.id);
 
+          // Get team managers
+          const { data: teamManagers, error: managersError } = await supabase
+            .from("team_members")
+            .select(`
+              user_id,
+              profiles:user_id(id, first_name, last_name, email)
+            `)
+            .eq("team_id", team.id)
+            .like("role", "manager%");
+
+          // Format managers data
+          const managers = teamManagers && !managersError 
+            ? teamManagers.map(item => ({
+                id: item.profiles.id,
+                first_name: item.profiles.first_name,
+                last_name: item.profiles.last_name,
+                email: item.profiles.email
+              }))
+            : [];
+
           return {
             ...team,
             memberCount: countError ? 0 : count || 0,
+            managers
           };
         })
       );
 
-      setTeams(teamsWithMemberCount);
+      setTeams(teamsWithDetails);
     } catch (error) {
       console.error("Error in fetchTeams:", error);
       toast({
@@ -254,8 +288,17 @@ export function TeamManagement() {
     }
   };
 
+  const viewTeamDetails = (team: Team) => {
+    setSelectedTeam(team);
+    setShowDetailsDialog(true);
+  };
+
   const filteredTeams = teams.filter(team => 
-    team.name.toLowerCase().includes(searchTerm.toLowerCase())
+    team.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    team.managers?.some(manager => 
+      `${manager.first_name || ''} ${manager.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (manager.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    )
   );
 
   const formatDate = (dateString: string) => {
@@ -265,6 +308,11 @@ export function TeamManagement() {
       month: 'short',
       day: 'numeric'
     });
+  };
+
+  const getManagerDisplayName = (manager: TeamManager) => {
+    const name = [manager.first_name, manager.last_name].filter(Boolean).join(' ');
+    return name || manager.email || 'Unknown Manager';
   };
 
   if (!isAdmin) {
@@ -289,7 +337,7 @@ export function TeamManagement() {
               <div className="relative max-w-xs">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search teams..."
+                  placeholder="Search teams or managers..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -314,31 +362,72 @@ export function TeamManagement() {
                     <TableHead>Team Name</TableHead>
                     <TableHead>Created Date</TableHead>
                     <TableHead>Members</TableHead>
+                    <TableHead>Manager(s)</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredTeams.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
                         {searchTerm ? "No teams match your search" : "No teams found"}
                       </TableCell>
                     </TableRow>
                   ) : (
                     filteredTeams.map((team) => (
                       <TableRow key={team.id}>
-                        <TableCell className="font-medium">{team.name}</TableCell>
-                        <TableCell>{formatDate(team.created_at)}</TableCell>
-                        <TableCell>{team.memberCount}</TableCell>
-                        <TableCell className="text-right">
+                        <TableCell className="font-medium">
                           <Button
-                            variant="destructive" 
-                            size="sm"
-                            onClick={() => confirmDeleteTeam(team)}
+                            variant="link"
+                            className="p-0 h-auto font-medium text-left"
+                            onClick={() => viewTeamDetails(team)}
                           >
-                            <Trash2 className="h-4 w-4 mr-1" />
-                            Delete
+                            {team.name}
                           </Button>
+                        </TableCell>
+                        <TableCell>{formatDate(team.created_at)}</TableCell>
+                        <TableCell>
+                          <Badge variant="outline" className="flex items-center gap-1">
+                            <Users className="h-3.5 w-3.5" />
+                            {team.memberCount}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {team.managers && team.managers.length > 0 ? (
+                            <div className="flex flex-col gap-1">
+                              {team.managers.slice(0, 2).map((manager, idx) => (
+                                <Badge key={idx} variant="secondary" className="max-w-xs truncate flex gap-1 items-center">
+                                  <User className="h-3 w-3" />
+                                  {getManagerDisplayName(manager)}
+                                </Badge>
+                              ))}
+                              {team.managers.length > 2 && (
+                                <Badge variant="outline">+{team.managers.length - 2} more</Badge>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">No managers</span>
+                          )}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex justify-end gap-2">
+                            <Button
+                              variant="outline" 
+                              size="sm"
+                              onClick={() => viewTeamDetails(team)}
+                            >
+                              <Users className="h-4 w-4 mr-1" />
+                              Details
+                            </Button>
+                            <Button
+                              variant="destructive" 
+                              size="sm"
+                              onClick={() => confirmDeleteTeam(team)}
+                            >
+                              <Trash2 className="h-4 w-4 mr-1" />
+                              Delete
+                            </Button>
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))
@@ -411,6 +500,19 @@ export function TeamManagement() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Team details dialog */}
+      {selectedTeam && (
+        <TeamDetailsDialog 
+          open={showDetailsDialog} 
+          onOpenChange={setShowDetailsDialog} 
+          team={selectedTeam}
+          onTeamDeleted={() => {
+            setShowDetailsDialog(false);
+            fetchTeams();
+          }}
+        />
+      )}
     </div>
   );
 }
