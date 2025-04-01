@@ -39,6 +39,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { fetchTeamMembersByTeam } from "@/hooks/team/utils/teamMembers";
 
 interface TeamManager {
   id: string;
@@ -134,120 +135,82 @@ export function TeamDetailsDialog({
   const fetchTeamDetails = async () => {
     setIsLoading(true);
     try {
-      // Fetch team members - Using separate queries to avoid relationship errors
-      const { data: membersData, error: membersError } = await supabase
-        .from("team_members")
-        .select("*")
-        .eq("team_id", team.id);
-
-      if (membersError) {
-        console.error("Error fetching team members:", membersError);
-        toast({
-          title: "Error",
-          description: "Failed to load team members.",
-          variant: "destructive",
-        });
-      } else {
-        // Get member profiles separately
-        const userIds = membersData.map(member => member.user_id);
-        
-        const { data: profilesData, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, first_name, last_name, email, profile_image_url")
-          .in("id", userIds);
-        
-        if (profilesError) {
-          console.error("Error fetching member profiles:", profilesError);
-        } else {
-          // Join the data manually
-          const formattedMembers = membersData.map(member => {
-            const profile = profilesData?.find(p => p.id === member.user_id) || {
-              first_name: null,
-              last_name: null,
-              email: null,
-              profile_image_url: null
-            };
-            
-            return {
-              ...member,
-              first_name: profile.first_name,
-              last_name: profile.last_name,
-              email: profile.email,
-              profile_image_url: profile.profile_image_url
-            };
-          });
-          
-          setTeamMembers(formattedMembers);
-        }
-      }
+      // Use the fetchTeamMembersByTeam utility to avoid RLS recursion issues
+      const membersData = await fetchTeamMembersByTeam(team.id);
+      setTeamMembers(membersData);
 
       // Fetch related teams (parent teams) - Using explicit column specifications
-      const { data: parentRelations, error: parentError } = await supabase
-        .from("team_relationships")
-        .select("parent_team_id")
-        .eq("child_team_id", team.id);
+      try {
+        const { data: parentRelations, error: parentError } = await supabase
+          .from("team_relationships")
+          .select("parent_team_id")
+          .eq("child_team_id", team.id);
 
-      // Fetch parent team details separately
-      let parentTeams: {id: string, name: string, relationship: string}[] = [];
-      
-      if (parentRelations && !parentError && parentRelations.length > 0) {
-        const parentIds = parentRelations.map(relation => relation.parent_team_id);
+        // Fetch parent team details separately
+        let parentTeams: {id: string, name: string, relationship: string}[] = [];
         
-        const { data: parentTeamsData, error: parentTeamsError } = await supabase
-          .from("teams")
-          .select("id, name")
-          .in("id", parentIds);
+        if (parentRelations && !parentError && parentRelations.length > 0) {
+          const parentIds = parentRelations.map(relation => relation.parent_team_id);
           
-        if (parentTeamsData && !parentTeamsError) {
-          parentTeams = parentTeamsData.map(team => ({
-            id: team.id,
-            name: team.name,
-            relationship: 'Parent'
-          }));
-        } else if (parentTeamsError) {
-          console.error("Error fetching parent teams:", parentTeamsError);
+          const { data: parentTeamsData, error: parentTeamsError } = await supabase
+            .from("teams")
+            .select("id, name")
+            .in("id", parentIds);
+            
+          if (parentTeamsData && !parentTeamsError) {
+            parentTeams = parentTeamsData.map(team => ({
+              id: team.id,
+              name: team.name,
+              relationship: 'Parent'
+            }));
+          } else if (parentTeamsError) {
+            console.error("Error fetching parent teams:", parentTeamsError);
+          }
         }
-      }
 
-      // Fetch related teams (child teams) - Using explicit column specifications
-      const { data: childRelations, error: childError } = await supabase
-        .from("team_relationships")
-        .select("child_team_id")
-        .eq("parent_team_id", team.id);
+        // Fetch related teams (child teams) - Using explicit column specifications
+        const { data: childRelations, error: childError } = await supabase
+          .from("team_relationships")
+          .select("child_team_id")
+          .eq("parent_team_id", team.id);
 
-      // Fetch child team details separately
-      let childTeams: {id: string, name: string, relationship: string}[] = [];
-      
-      if (childRelations && !childError && childRelations.length > 0) {
-        const childIds = childRelations.map(relation => relation.child_team_id);
+        // Fetch child team details separately
+        let childTeams: {id: string, name: string, relationship: string}[] = [];
         
-        const { data: childTeamsData, error: childTeamsError } = await supabase
-          .from("teams")
-          .select("id, name")
-          .in("id", childIds);
+        if (childRelations && !childError && childRelations.length > 0) {
+          const childIds = childRelations.map(relation => relation.child_team_id);
           
-        if (childTeamsData && !childTeamsError) {
-          childTeams = childTeamsData.map(team => ({
-            id: team.id,
-            name: team.name,
-            relationship: 'Child'
-          }));
-        } else if (childTeamsError) {
-          console.error("Error fetching child teams:", childTeamsError);
+          const { data: childTeamsData, error: childTeamsError } = await supabase
+            .from("teams")
+            .select("id, name")
+            .in("id", childIds);
+            
+          if (childTeamsData && !childTeamsError) {
+            childTeams = childTeamsData.map(team => ({
+              id: team.id,
+              name: team.name,
+              relationship: 'Child'
+            }));
+          } else if (childTeamsError) {
+            console.error("Error fetching child teams:", childTeamsError);
+          }
         }
-      }
 
-      if (!parentError && !childError) {
-        // Combine both parent and child teams
-        setRelatedTeams([...parentTeams, ...childTeams]);
-      } else {
-        console.error("Error fetching related teams:", parentError || childError);
+        if (!parentError && !childError) {
+          // Combine both parent and child teams
+          setRelatedTeams([...parentTeams, ...childTeams]);
+        } else {
+          console.error("Error fetching related teams:", parentError || childError);
+        }
+      } catch (error) {
+        console.error("Error fetching related teams:", error);
       }
+      
     } catch (error) {
       console.error("Error in fetchTeamDetails:", error);
       toast({
         title: "Error",
-        description: "An unexpected error occurred.",
+        description: "An unexpected error occurred while loading team details.",
         variant: "destructive",
       });
     } finally {
