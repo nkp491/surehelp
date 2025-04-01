@@ -2,9 +2,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { TeamMember } from "@/types/team";
-import { toast } from "@/hooks/use-toast";
+import { useToast } from "@/hooks/use-toast";
 
 export const useManagerTeam = (managerId?: string) => {
+  const { toast } = useToast();
+
   // Get all team members where manager_id = managerId
   const { data: teamMembers, isLoading, error, refetch } = useQuery({
     queryKey: ['manager-team', managerId],

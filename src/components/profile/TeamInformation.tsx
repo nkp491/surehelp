@@ -28,6 +28,7 @@ const TeamInformation = ({
   const [managerEmail, setManagerEmail] = useState('');
   const [managerName, setManagerName] = useState('');
   const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
+  const [fixingTeamAssociation, setFixingTeamAssociation] = useState(false);
   
   const { language } = useLanguage();
   const { toast } = useToast();
@@ -161,63 +162,105 @@ const TeamInformation = ({
     }
   };
 
-  // New function to check and update team association when manager is assigned
+  // Function to check and update team association when manager is assigned
   const checkAndUpdateTeamAssociation = async (newManagerId: string) => {
     try {
+      setFixingTeamAssociation(true);
+      
       // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      // Get manager's teams
-      const { data: managerTeams, error: managerTeamsError } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', newManagerId)
-        .eq('role', 'manager_pro');
-        
-      if (managerTeamsError) throw managerTeamsError;
-      
-      if (!managerTeams || managerTeams.length === 0) {
-        console.log("Manager has no teams");
+      if (!user) {
+        setFixingTeamAssociation(false);
         return;
       }
       
-      // Get the first team the manager is part of
-      const managersTeamId = managerTeams[0].team_id;
+      console.log("Checking team association for user:", user.id, "with manager:", newManagerId);
       
-      // Check if user is already part of this team
-      const { data: existingMembership, error: membershipError } = await supabase
+      // Get manager's teams where they have a manager role
+      const { data: managerTeams, error: managerTeamsError } = await supabase
         .from('team_members')
-        .select('*')
-        .eq('team_id', managersTeamId)
-        .eq('user_id', user.id);
+        .select('team_id, role')
+        .eq('user_id', newManagerId)
+        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum');
         
-      if (membershipError) throw membershipError;
-      
-      // If not already a member, add to the team
-      if (!existingMembership || existingMembership.length === 0) {
-        const { error: addError } = await supabase
-          .from('team_members')
-          .insert([{ 
-            team_id: managersTeamId,
-            user_id: user.id,
-            role: 'agent' // Default role for team members
-          }]);
-          
-        if (addError) throw addError;
-        
-        console.log("User added to manager's team");
-        
-        // Refresh teams list
-        refetchTeams();
-        
-        toast({
-          title: "Team Association Updated",
-          description: "You've been added to your manager's team.",
-        });
+      if (managerTeamsError) {
+        console.error("Error fetching manager teams:", managerTeamsError);
+        setFixingTeamAssociation(false);
+        throw managerTeamsError;
       }
+      
+      if (!managerTeams || managerTeams.length === 0) {
+        console.log("Manager has no teams where they are a manager");
+        setFixingTeamAssociation(false);
+        return;
+      }
+      
+      console.log("Manager's teams:", managerTeams);
+      
+      // Process each team the manager is part of with a manager role
+      for (const teamMember of managerTeams) {
+        const managersTeamId = teamMember.team_id;
+        
+        // Check if user is already part of this team
+        const { data: existingMembership, error: membershipError } = await supabase
+          .from('team_members')
+          .select('*')
+          .eq('team_id', managersTeamId)
+          .eq('user_id', user.id);
+          
+        if (membershipError) {
+          console.error("Error checking team membership:", membershipError);
+          continue;
+        }
+        
+        // If not already a member, add to the team
+        if (!existingMembership || existingMembership.length === 0) {
+          const { error: addError } = await supabase
+            .from('team_members')
+            .insert([{ 
+              team_id: managersTeamId,
+              user_id: user.id,
+              role: 'agent' // Default role for team members
+            }]);
+            
+          if (addError) {
+            console.error("Error adding user to team:", addError);
+            continue;
+          }
+          
+          console.log("User added to manager's team:", managersTeamId);
+          
+          // Get the team name for a more informative toast
+          const { data: teamData } = await supabase
+            .from('teams')
+            .select('name')
+            .eq('id', managersTeamId)
+            .single();
+            
+          const teamName = teamData?.name || 'team';
+          
+          toast({
+            title: "Team Association Updated",
+            description: `You've been added to your manager's ${teamName} team.`,
+          });
+        } else {
+          console.log("User is already a member of the team:", managersTeamId);
+        }
+      }
+      
+      // Refresh teams list
+      await refetchTeams();
+      await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      
     } catch (error) {
       console.error("Error updating team association:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem updating your team associations.",
+        variant: "destructive",
+      });
+    } finally {
+      setFixingTeamAssociation(false);
     }
   };
 
@@ -230,25 +273,36 @@ const TeamInformation = ({
     }
   };
 
-  const handleRefreshTeams = () => {
-    refetchTeams();
-    queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+  const handleRefreshTeams = async () => {
+    await refetchTeams();
+    await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
     toast({
       title: "Teams Refreshed",
       description: "Your teams list has been refreshed.",
     });
   };
 
-  // Check for specific user and team - Momentum Capitol fix
+  // Special fix for Momentum Capitol team association
   useEffect(() => {
-    const checkSpecificTeam = async () => {
+    const fixMomentumCapitolAssociation = async () => {
       try {
         // Get the current user email
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
-        // Check if this is the specific user we're looking for
+        // Only proceed for the specific user
         if (user.email === 'nielsenaragon@gmail.com') {
+          console.log("Detected nielsenaragon@gmail.com, checking Momentum Capitol association");
+          
+          // First check if user is already on any teams
+          const { data: existingTeams } = await supabase
+            .from('team_members')
+            .select('team_id')
+            .eq('user_id', user.id);
+            
+          const isAlreadyOnAnyTeam = existingTeams && existingTeams.length > 0;
+          console.log("User already on teams:", isAlreadyOnAnyTeam, existingTeams);
+          
           // Look for the Momentum Capitol team
           const { data: teams } = await supabase
             .from('teams')
@@ -289,7 +343,7 @@ const TeamInformation = ({
               
               console.log("Successfully added user to Momentum Capitol team");
               // Refresh the teams list
-              refetchTeams();
+              await refetchTeams();
               
               toast({
                 title: "Team Association Fixed",
@@ -303,12 +357,12 @@ const TeamInformation = ({
           }
         }
       } catch (error) {
-        console.error("Error in checkSpecificTeam:", error);
+        console.error("Error in fixMomentumCapitolAssociation:", error);
       }
     };
     
-    // Run the check whenever the teams are loaded or refreshed
-    checkSpecificTeam();
+    // Run the fix when the component loads
+    fixMomentumCapitolAssociation();
   }, [refetchTeams, toast]);
 
   return (
@@ -322,6 +376,7 @@ const TeamInformation = ({
               size="sm"
               onClick={() => setShowCreateTeamDialog(true)}
               className="flex items-center gap-1"
+              disabled={fixingTeamAssociation}
             >
               <Plus className="h-4 w-4" />
               <span>Create Team</span>
@@ -332,6 +387,7 @@ const TeamInformation = ({
             size="sm"
             onClick={handleToggleEdit}
             className="px-4"
+            disabled={isLoading || fixingTeamAssociation}
           >
             {isEditing ? t.save : t.edit}
           </Button>
@@ -354,41 +410,43 @@ const TeamInformation = ({
             )}
           </div>
 
-          {isManager && (
-            <div className="space-y-2.5 mt-6 pt-6 border-t">
-              <div className="flex items-center justify-between">
-                <label className="text-sm font-medium text-gray-700">Your Teams</label>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  onClick={handleRefreshTeams}
-                  className="h-8 w-8"
-                >
-                  <RefreshCw className="h-4 w-4" />
-                </Button>
-              </div>
-              {isLoadingTeams ? (
-                <div className="text-sm text-gray-500">Loading teams...</div>
-              ) : userTeams.length > 0 ? (
-                <div className="space-y-2">
-                  {userTeams.map((team: Team) => (
-                    <div key={team.id} className="flex items-center p-2 border rounded-md">
-                      <Users className="h-4 w-4 mr-2 text-gray-500" />
-                      <span>{team.name}</span>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-sm text-gray-500">
-                  You don't have any teams yet. Create a team to get started.
-                </div>
-              )}
+          {/* Manager's Team Section */}
+          <div className="space-y-2.5 mt-6 pt-6 border-t">
+            <div className="flex items-center justify-between">
+              <label className="text-sm font-medium text-gray-700">Your Teams</label>
+              <Button 
+                variant="ghost" 
+                size="icon" 
+                onClick={handleRefreshTeams}
+                className="h-8 w-8"
+                disabled={fixingTeamAssociation}
+              >
+                <RefreshCw className={`h-4 w-4 ${fixingTeamAssociation ? 'animate-spin' : ''}`} />
+              </Button>
             </div>
-          )}
+            {isLoadingTeams || fixingTeamAssociation ? (
+              <div className="text-sm text-gray-500">
+                {fixingTeamAssociation ? "Updating team associations..." : "Loading teams..."}
+              </div>
+            ) : userTeams.length > 0 ? (
+              <div className="space-y-2">
+                {userTeams.map((team: Team) => (
+                  <div key={team.id} className="flex items-center p-2 border rounded-md">
+                    <Users className="h-4 w-4 mr-2 text-gray-500" />
+                    <span>{team.name}</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-sm text-gray-500">
+                You don't have any teams yet. Create a team to get started or have your manager add you to their team.
+              </div>
+            )}
+          </div>
           
           {isEditing && (
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isLoading}>
+              <Button type="submit" disabled={isLoading || fixingTeamAssociation}>
                 {isLoading ? "Saving..." : t.save}
               </Button>
             </div>
