@@ -38,7 +38,7 @@ export default function RealManagerDashboard() {
   };
 
   // Handle bulletin creation
-  const handleCreateBulletin = (title: string, content: string) => {
+  const handleCreateBulletin = (data: { title: string; content: string; pinned?: boolean }) => {
     if (!selectedTeamId) {
       toast({
         title: "Error",
@@ -49,9 +49,9 @@ export default function RealManagerDashboard() {
     }
 
     createBulletin.mutateAsync({
-      title,
-      content,
-      team_id: selectedTeamId,
+      title: data.title,
+      content: data.content,
+      pinned: data.pinned
     });
     
     setIsCreatingBulletin(false);
