@@ -46,8 +46,14 @@ export const navigationItems: NavigationItem[] = [
     requiredRoles: ["agent", "agent_pro", "manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },
   {
-    title: "Team Dashboard",
+    title: "Team Dashboard (Demo)",
     path: "/manager-dashboard",
+    icon: UserCog,
+    requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
+  },
+  {
+    title: "Team Dashboard",
+    path: "/team-dashboard",
     icon: UserCog,
     requiredRoles: ["manager_pro", "manager_pro_gold", "manager_pro_platinum", "beta_user"],
   },

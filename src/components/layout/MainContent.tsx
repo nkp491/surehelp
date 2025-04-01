@@ -2,7 +2,8 @@
 import { useLocation } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import SubmittedForms from "@/pages/SubmittedForms";
-import ManagerDashboard from "@/pages/ManagerDashboard";
+import ManagerDashboard from "@/pages/ManagerDashboard"; // Demo version
+import RealManagerDashboard from "@/pages/RealManagerDashboard"; // Real implementation
 import Profile from "@/pages/Profile";
 import FormContainer from "@/components/FormContainer";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -31,7 +32,9 @@ const MainContent = () => {
         case '/submitted-forms':
           return <SubmittedForms />;
         case '/manager-dashboard':
-          return <ManagerDashboard />;
+          return <ManagerDashboard />; // Keep the demo version
+        case '/team-dashboard': // New route for real implementation
+          return <RealManagerDashboard />;
         case '/profile':
           return <Profile />;
         case '/assessment':
@@ -63,8 +66,8 @@ const MainContent = () => {
       );
     }
 
-    // For the team page, manually add role protection if not already covered
-    if (location.pathname === '/team' && !requiredRoles) {
+    // For the team-related pages, manually add role protection if not already covered
+    if ((location.pathname === '/team' || location.pathname === '/team-dashboard') && !requiredRoles) {
       return (
         <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
           {Component}
