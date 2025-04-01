@@ -47,6 +47,24 @@ export const useRoleManagement = () => {
 
       if (rolesError) throw rolesError;
 
+      // Fetch account creation dates from the auth.users table via a function
+      const { data: authUsers, error: authError } = await supabase
+        .rpc('get_users_created_at')
+        .select('*');
+
+      if (authError) {
+        console.error("Error fetching auth users:", authError);
+        // Continue even if this fails, we'll fall back to profile.created_at
+      }
+
+      // Create a map for quick lookup of creation dates
+      const creationDatesMap = new Map();
+      if (authUsers && Array.isArray(authUsers)) {
+        authUsers.forEach((user: any) => {
+          creationDatesMap.set(user.id, user.created_at);
+        });
+      }
+
       // Get all managers for efficient lookup
       const managerIds = profiles
         .filter((profile: any) => profile.manager_id)
@@ -77,6 +95,9 @@ export const useRoleManagement = () => {
         // Get manager info if available
         const managerInfo = profile.manager_id ? managerMap.get(profile.manager_id) : null;
         
+        // Get the creation date, preferring the one from auth.users if available
+        const createdAt = creationDatesMap.get(profile.id) || profile.created_at;
+        
         return {
           id: profile.id,
           email: profile.email,
@@ -86,7 +107,7 @@ export const useRoleManagement = () => {
           manager_id: profile.manager_id,
           manager_name: managerInfo ? managerInfo.name : null,
           manager_email: managerInfo ? managerInfo.email : null,
-          created_at: profile.created_at
+          created_at: createdAt
         };
       });
 
