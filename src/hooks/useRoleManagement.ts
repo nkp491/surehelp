@@ -21,6 +21,7 @@ export type UserWithRoles = {
   manager_id: string | null;
   manager_name: string | null;
   manager_email: string | null;
+  created_at: string | null; // When user signed up
 };
 
 export const useRoleManagement = () => {
@@ -35,7 +36,7 @@ export const useRoleManagement = () => {
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, first_name, last_name, manager_id");
+        .select("id, email, first_name, last_name, manager_id, created_at");
 
       if (profilesError) throw profilesError;
 
@@ -84,7 +85,8 @@ export const useRoleManagement = () => {
           roles: userRoles.map((r: any) => r.role),
           manager_id: profile.manager_id,
           manager_name: managerInfo ? managerInfo.name : null,
-          manager_email: managerInfo ? managerInfo.email : null
+          manager_email: managerInfo ? managerInfo.email : null,
+          created_at: profile.created_at
         };
       });
 
