@@ -6,7 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 /**
  * Hook for team member management operations
  */
-export const useTeamMemberOperations = (onSuccess?: () => Promise<void>) => {
+export const useTeamMemberOperations = (onSuccess?: () => Promise<boolean | void>) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
