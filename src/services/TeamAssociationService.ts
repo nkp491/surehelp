@@ -1,259 +1,298 @@
 
+import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { useQueryClient } from "@tanstack/react-query";
 
 export const useTeamAssociationService = () => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const [isProcessing, setIsProcessing] = useState(false);
 
-  const checkAndUpdateTeamAssociation = async (newManagerId: string) => {
+  /**
+   * Check and update team associations for an agent with their manager's teams
+   */
+  const checkAndUpdateTeamAssociation = async (managerId: string) => {
+    if (!managerId) return false;
+    
+    setIsProcessing(true);
     try {
+      console.log("Checking team associations for manager:", managerId);
+      
+      // Get current user
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.error("No authenticated user found");
+        return false;
+      }
       
-      console.log("Checking team association for user:", user.id, "with manager:", newManagerId);
-      
-      // Direct query for all teams the manager manages
-      const { data: allTeams } = await supabase
-        .from('teams')
-        .select('*');
-      
-      // Get all team memberships for the manager
-      const { data: managerTeams, error: managerTeamsError } = await supabase
+      // Get manager's teams
+      const { data: managerTeams, error: teamsError } = await supabase
         .from('team_members')
-        .select('team_id, role')
-        .eq('user_id', newManagerId);
+        .select('team_id')
+        .eq('user_id', managerId);
         
-      if (managerTeamsError) {
-        console.error("Error fetching manager teams (trying alternative):", managerTeamsError);
-        
-        // Try an alternative direct approach specifically for Momentum Capitol
-        if (user.email === 'nielsenaragon@gmail.com') {
-          return handleMomentumCapitolSpecialCase(user, allTeams);
-        }
-        
-        return;
+      if (teamsError) {
+        console.error("Error fetching manager's teams:", teamsError);
+        return false;
       }
       
       if (!managerTeams || managerTeams.length === 0) {
-        console.log("Manager has no teams where they are a manager");
-        return;
+        console.log("Manager has no teams");
+        return false;
       }
       
-      console.log("Manager's teams:", managerTeams);
+      console.log(`Found ${managerTeams.length} teams for manager`);
       
-      for (const teamMember of managerTeams) {
-        const managersTeamId = teamMember.team_id;
-        
-        // Special handling for nielsenaragon@gmail.com
-        if (user.email === 'nielsenaragon@gmail.com') {
-          const teamDetails = allTeams?.find(t => t.id === managersTeamId);
-          if (teamDetails && (
-            teamDetails.name.includes('Momentum Capitol') || 
-            teamDetails.name.includes('Momentum Capital')
-          )) {
-            await handleMomentumTeam(user, teamDetails, managersTeamId);
-            continue;
-          }
-        }
-        
-        await addUserToTeamIfNotMember(user.id, managersTeamId);
-      }
-      
-      toast({
-        title: "Team Association Updated",
-        description: "Your team associations have been updated successfully.",
-      });
-      
-    } catch (error) {
-      console.error("Error updating team association:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem updating your team associations.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleMomentumCapitolSpecialCase = async (user: any, allTeams: any[] | null) => {
-    const momentumTeams = allTeams?.filter(team => 
-      team.name.includes('Momentum Capitol') || 
-      team.name.includes('Momentum Capital')
-    ) || [];
-    
-    if (momentumTeams.length > 0) {
-      console.log("Special handling: Found Momentum teams:", momentumTeams);
-      
-      // For each Momentum team, try to add user
-      for (const team of momentumTeams) {
-        const { error: addError } = await supabase
+      // For each team, check if user is already a member
+      let teamsAddedCount = 0;
+      for (const teamMembership of managerTeams) {
+        const { data: existingMembership } = await supabase
           .from('team_members')
-          .insert([{ 
-            team_id: team.id,
-            user_id: user.id,
-            role: 'manager_pro_platinum'
-          }])
-          .select();
+          .select('id')
+          .eq('team_id', teamMembership.team_id)
+          .eq('user_id', user.id)
+          .maybeSingle();
           
-        console.log(`Attempted to add user to ${team.name}:`, addError ? "Error" : "Success");
+        if (!existingMembership) {
+          // Add user to team with agent role
+          const { error: addError } = await supabase
+            .from('team_members')
+            .insert([{ 
+              team_id: teamMembership.team_id,
+              user_id: user.id,
+              role: 'agent'
+            }]);
+            
+          if (!addError) {
+            teamsAddedCount++;
+          } else {
+            console.error(`Error adding to team ${teamMembership.team_id}:`, addError);
+          }
+        } else {
+          console.log(`User already in team ${teamMembership.team_id}`);
+        }
       }
       
-      toast({
-        title: "Team Association Attempted",
-        description: "A special fix for Momentum Capitol/Capital teams was applied. Please refresh to see results.",
-      });
-    }
-  };
-
-  const handleMomentumTeam = async (user: any, teamDetails: any, managersTeamId: string) => {
-    console.log("Special handling for Momentum team:", teamDetails.name);
-    
-    // Force a new insertion for this user to this team
-    const { error: addError } = await supabase
-      .from('team_members')
-      .insert([{ 
-        team_id: managersTeamId,
-        user_id: user.id,
-        role: 'manager_pro_platinum'
-      }])
-      .select();
+      // Refresh team data in the UI
+      queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
       
-    if (addError) {
-      console.error("Error in special handling:", addError);
-      // Try another approach - first delete any existing entry
-      const { error: deleteError } = await supabase
-        .from('team_members')
-        .delete()
-        .eq('team_id', managersTeamId)
-        .eq('user_id', user.id);
-        
-      console.log("Deleted existing entry:", deleteError ? "Error" : "Success");
-      
-      // Then try insert again
-      const { error: reinsertError } = await supabase
-        .from('team_members')
-        .insert([{ 
-          team_id: managersTeamId,
-          user_id: user.id,
-          role: 'manager_pro_platinum'
-        }]);
-        
-      console.log("Re-inserted entry:", reinsertError ? "Error" : "Success");
-    } else {
-      console.log("Successfully added user to Momentum team");
-    }
-  };
-
-  const addUserToTeamIfNotMember = async (userId: string, teamId: string) => {
-    const { data: existingMembership, error: membershipError } = await supabase
-      .from('team_members')
-      .select('*')
-      .eq('team_id', teamId)
-      .eq('user_id', userId);
-      
-    if (membershipError) {
-      console.error("Error checking team membership:", membershipError);
-      return;
-    }
-    
-    if (!existingMembership || existingMembership.length === 0) {
-      const { error: addError } = await supabase
-        .from('team_members')
-        .insert([{ 
-          team_id: teamId,
-          user_id: userId,
-          role: 'agent'
-        }]);
-        
-      if (addError) {
-        console.error("Error adding user to team:", addError);
-        return;
+      if (teamsAddedCount > 0) {
+        toast({
+          title: "Teams Updated",
+          description: `You've been added to ${teamsAddedCount} of your manager's teams.`,
+        });
+        return true;
+      } else {
+        console.log("No new teams to add");
+        return false;
       }
-      
-      console.log("User added to manager's team:", teamId);
-      
-      const { data: teamData } = await supabase
-        .from('teams')
-        .select('name')
-        .eq('id', teamId)
-        .single();
-        
-      const teamName = teamData?.name || 'team';
-      
-      toast({
-        title: "Team Association Updated",
-        description: `You've been added to your manager's ${teamName} team.`,
-      });
-    } else {
-      console.log("User is already a member of the team:", teamId);
+    } catch (error) {
+      console.error("Error updating team associations:", error);
+      return false;
+    } finally {
+      setIsProcessing(false);
     }
   };
 
+  /**
+   * Special fix for Momentum Capitol association
+   */
   const fixMomentumCapitolAssociation = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
+      // Special case for nielsenaragon@gmail.com
       if (user.email === 'nielsenaragon@gmail.com') {
-        console.log("Detected nielsenaragon@gmail.com, checking Momentum Capitol association");
-        
-        // Get all teams in the system
-        const { data: allTeams } = await supabase
-          .from('teams')
-          .select('*');
-          
-        // Find Momentum teams
-        const momentumTeams = allTeams?.filter(team => 
-          team.name.includes('Momentum Capitol') || 
-          team.name.includes('Momentum Capital')
-        ) || [];
-        
-        if (momentumTeams.length > 0) {
-          console.log("Found Momentum teams:", momentumTeams);
-          
-          // For each Momentum team
-          for (const team of momentumTeams) {
-            // Check if user is already a member
-            const { data: existingMembership, error: membershipError } = await supabase
-              .from('team_members')
-              .select('id')
-              .eq('team_id', team.id)
-              .eq('user_id', user.id);
-            
-            if (membershipError) {
-              console.error("Error checking membership:", membershipError);
-              continue;
-            }
-            
-            if (!existingMembership || existingMembership.length === 0) {
-              console.log(`Adding user to ${team.name}`);
-              
-              // Add user to team
-              const { error: addError } = await supabase
-                .from('team_members')
-                .insert([{ 
-                  team_id: team.id,
-                  user_id: user.id,
-                  role: 'manager_pro_platinum'
-                }]);
-                
-              if (addError) {
-                console.error(`Error adding user to ${team.name}:`, addError);
-              } else {
-                console.log(`Successfully added user to ${team.name}`);
-              }
-            } else {
-              console.log(`User already member of ${team.name}`);
-            }
-          }
-        }
+        console.log("Checking and fixing Momentum Capitol association for", user.email);
+        await checkMomentumTeams(user.id);
       }
     } catch (error) {
       console.error("Error in fixMomentumCapitolAssociation:", error);
     }
   };
 
+  /**
+   * Check and fix Momentum Capitol teams for special users
+   */
+  const checkMomentumTeams = async (userId: string) => {
+    try {
+      // Find all Momentum teams
+      const { data: momentumTeams } = await supabase
+        .from('teams')
+        .select('*')
+        .or('name.ilike.%Momentum Capitol%,name.ilike.%Momentum Capital%');
+      
+      if (momentumTeams && momentumTeams.length > 0) {
+        console.log("Found Momentum teams:", momentumTeams);
+        
+        // For each Momentum team, ensure user is a member
+        for (const team of momentumTeams) {
+          // Check if user is already a member
+          const { data: existingMembership } = await supabase
+            .from('team_members')
+            .select('id')
+            .eq('team_id', team.id)
+            .eq('user_id', userId)
+            .maybeSingle();
+            
+          if (!existingMembership) {
+            // Add user to team with manager role
+            const { error: addError } = await supabase
+              .from('team_members')
+              .insert([{ 
+                team_id: team.id,
+                user_id: userId,
+                role: 'manager_pro_platinum'
+              }]);
+              
+            console.log(`Added user to ${team.name}:`, addError ? "Error" : "Success");
+          } else {
+            console.log(`User already member of ${team.name}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error checking Momentum teams:", error);
+    }
+  };
+
+  /**
+   * Advanced fix for agent team associations
+   */
+  const forceAgentTeamAssociation = async () => {
+    setIsProcessing(true);
+    try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      
+      // Get user's profile to check manager
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('manager_id, role')
+        .eq('id', user.id)
+        .maybeSingle();
+        
+      if (!profile || !profile.manager_id) {
+        console.log("User has no manager assigned");
+        return false;
+      }
+      
+      // Check if user has agent role
+      const isAgent = profile.role?.includes('agent') || await checkAgentRole(user.id);
+      
+      if (!isAgent) {
+        console.log("User is not an agent");
+        return false;
+      }
+      
+      // Call the function to associate with manager's teams
+      const result = await checkAndUpdateTeamAssociation(profile.manager_id);
+      
+      // If manager has no teams, create a default team for them
+      if (!result) {
+        const managerTeams = await ensureManagerHasTeam(profile.manager_id);
+        if (managerTeams && managerTeams.length > 0) {
+          // Try association again
+          await checkAndUpdateTeamAssociation(profile.manager_id);
+        }
+      }
+      
+      return true;
+    } catch (error) {
+      console.error("Error in forceAgentTeamAssociation:", error);
+      return false;
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  /**
+   * Check if user has agent role
+   */
+  const checkAgentRole = async (userId: string) => {
+    try {
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', userId);
+        
+      return roles?.some(r => r.role === 'agent' || r.role === 'agent_pro') || false;
+    } catch (error) {
+      console.error("Error checking agent role:", error);
+      return false;
+    }
+  };
+
+  /**
+   * Ensure manager has at least one team
+   */
+  const ensureManagerHasTeam = async (managerId: string) => {
+    try {
+      // Check if manager has any teams
+      const { data: existingTeams } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', managerId);
+        
+      if (existingTeams && existingTeams.length > 0) {
+        return existingTeams;
+      }
+      
+      // Get manager profile for team name
+      const { data: managerProfile } = await supabase
+        .from('profiles')
+        .select('first_name, last_name')
+        .eq('id', managerId)
+        .maybeSingle();
+        
+      if (!managerProfile) {
+        console.log("Manager profile not found");
+        return null;
+      }
+      
+      // Create a default team for the manager
+      const teamName = `${managerProfile.first_name || 'Manager'}'s Team`;
+      
+      // Create team
+      const { data: newTeam, error: teamError } = await supabase
+        .from('teams')
+        .insert([{ name: teamName }])
+        .select()
+        .single();
+        
+      if (teamError || !newTeam) {
+        console.error("Error creating team for manager:", teamError);
+        return null;
+      }
+      
+      // Add manager to the team
+      const { error: memberError } = await supabase
+        .from('team_members')
+        .insert([{ 
+          team_id: newTeam.id,
+          user_id: managerId,
+          role: 'manager_pro'
+        }]);
+        
+      if (memberError) {
+        console.error("Error adding manager to team:", memberError);
+      }
+      
+      return [{ team_id: newTeam.id }];
+    } catch (error) {
+      console.error("Error ensuring manager has team:", error);
+      return null;
+    }
+  };
+
   return {
     checkAndUpdateTeamAssociation,
-    fixMomentumCapitolAssociation
+    fixMomentumCapitolAssociation,
+    forceAgentTeamAssociation,
+    isProcessing
   };
 };

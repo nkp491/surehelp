@@ -30,15 +30,23 @@ export const useManagerTeam = (managerId?: string) => {
   // Combined refetch function
   const refetch = async () => {
     try {
-      await Promise.all([
+      const results = await Promise.allSettled([
         refetchTeamMembers(),
         refetchNested()
       ]);
       
-      // Also invalidate any other team-related queries
+      // Even if some refetches fail, continue with invalidating queries
+      
+      // Invalidate all team-related queries
       queryClient.invalidateQueries({ queryKey: ['team-members-by-team'] });
       queryClient.invalidateQueries({ queryKey: ['user-teams'] });
       queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+      
+      // Check if both or at least one refetch was successful
+      const allSuccessful = results.every(result => result.status === 'fulfilled');
+      if (!allSuccessful) {
+        console.warn("Some team data refetches were not successful");
+      }
       
       return true;
     } catch (error) {
