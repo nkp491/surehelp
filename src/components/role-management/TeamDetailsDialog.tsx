@@ -49,18 +49,6 @@ interface TeamManager {
   email: string | null;
 }
 
-interface TeamMember {
-  id: string;
-  user_id: string;
-  team_id: string;
-  role: string;
-  created_at: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-  profile_image_url: string | null;
-}
-
 interface Team {
   id: string;
   name: string;
