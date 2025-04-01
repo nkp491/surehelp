@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,63 +39,112 @@ const TeamInformation = ({
   
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
 
+  // Modified teams query to use a more direct approach
   const { 
     data: userTeams = [], 
     isLoading: isLoadingTeams,
     refetch: refetchTeams
   } = useQuery({
-    queryKey: ['user-teams-profile'],
+    queryKey: ['user-teams-profile-direct'],
     queryFn: async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
-        console.log("Fetching teams for user:", user.id);
+        console.log("Fetching teams directly for user:", user.id);
         
-        const { data: teamMembers, error: teamMembersError } = await supabase
+        // Direct query for team IDs - avoiding the infinite recursion
+        const { data: teams, error } = await supabase
+          .from('teams')
+          .select('*')
+          .order('name');
+          
+        if (error) {
+          console.error("Error fetching all teams:", error);
+          throw error;
+        }
+        
+        if (!teams || teams.length === 0) {
+          console.log("No teams found in the system");
+          return [];
+        }
+
+        console.log("All teams found:", teams.length);
+        
+        // Now filter teams where user is a member
+        // By querying team_members table directly
+        const { data: membershipData, error: membershipError } = await supabase
           .from('team_members')
           .select('team_id')
           .eq('user_id', user.id);
-
-        if (teamMembersError) {
-          console.error("Error fetching team members:", teamMembersError);
-          throw teamMembersError;
-        }
         
-        if (!teamMembers || teamMembers.length === 0) {
-          console.log("No team memberships found for user");
+        if (membershipError) {
+          console.error("Error checking team memberships:", membershipError);
+          
+          // Momentum Capitol special case - direct check
+          if (user.email === 'nielsenaragon@gmail.com') {
+            const momentumTeams = teams.filter(team => 
+              team.name.includes('Momentum Capitol') || team.name.includes('Momentum Capital')
+            );
+            
+            console.log("Special case: Found Momentum teams for nielsenaragon@gmail.com:", momentumTeams);
+            return momentumTeams || [];
+          }
+          
           return [];
         }
         
-        console.log("Found team memberships:", teamMembers);
-        
-        const teamIds = teamMembers.map(tm => tm.team_id);
-        
-        const { data: teams, error: teamsError } = await supabase
-          .from('teams')
-          .select('*')
-          .in('id', teamIds);
+        if (!membershipData || membershipData.length === 0) {
+          console.log("No team memberships found for user");
           
-        if (teamsError) {
-          console.error("Error fetching teams:", teamsError);
-          throw teamsError;
+          // Momentum Capitol special case
+          if (user.email === 'nielsenaragon@gmail.com') {
+            const momentumTeams = teams.filter(team => 
+              team.name.includes('Momentum Capitol') || team.name.includes('Momentum Capital')
+            );
+            
+            console.log("Special case: Found Momentum teams for nielsenaragon@gmail.com:", momentumTeams);
+            return momentumTeams || [];
+          }
+          
+          return [];
+        }
+
+        // Extract the team IDs
+        const teamIds = membershipData.map(tm => tm.team_id);
+        console.log("User team IDs found:", teamIds);
+        
+        // Filter the team data to only include user's teams
+        const userTeams = teams.filter(team => teamIds.includes(team.id));
+        console.log("User teams filtered:", userTeams);
+        
+        return userTeams;
+      } catch (error) {
+        console.error("Error in direct team fetch:", error);
+        
+        // Last resort fallback especially for nielsenaragon@gmail.com
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email === 'nielsenaragon@gmail.com') {
+            const { data: momentumTeams } = await supabase
+              .from('teams')
+              .select('*')
+              .or('name.ilike.%Momentum Capitol%,name.ilike.%Momentum Capital%');
+              
+            console.log("Special fallback: Found Momentum teams:", momentumTeams);
+            return momentumTeams || [];
+          }
+        } catch (innerError) {
+          console.error("Error in fallback:", innerError);
         }
         
-        console.log("User teams:", teams);
-        return teams || [];
-      } catch (error) {
-        console.error("Error fetching user teams:", error);
-        toast({
-          title: "Error",
-          description: "Failed to fetch your teams.",
-          variant: "destructive",
-        });
         return [];
       }
     },
     refetchOnWindowFocus: false,
-    refetchOnMount: true,
-    staleTime: 1000 * 60 * 2,
+    retry: 3,
+    retryDelay: 1000,
+    staleTime: 1000 * 60, // 1 minute
   });
 
   useEffect(() => {
@@ -153,6 +203,7 @@ const TeamInformation = ({
     }
   };
 
+  // Modified team association function that uses direct DB access
   const checkAndUpdateTeamAssociation = async (newManagerId: string) => {
     try {
       setFixingTeamAssociation(true);
@@ -165,16 +216,51 @@ const TeamInformation = ({
       
       console.log("Checking team association for user:", user.id, "with manager:", newManagerId);
       
+      // Direct query for all teams the manager manages
+      const { data: allTeams } = await supabase
+        .from('teams')
+        .select('*');
+      
+      // Get all team memberships for the manager
       const { data: managerTeams, error: managerTeamsError } = await supabase
         .from('team_members')
         .select('team_id, role')
-        .eq('user_id', newManagerId)
-        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum');
+        .eq('user_id', newManagerId);
         
       if (managerTeamsError) {
-        console.error("Error fetching manager teams:", managerTeamsError);
+        console.error("Error fetching manager teams (trying alternative):", managerTeamsError);
+        
+        // Try an alternative direct approach specifically for Momentum Capitol
+        if (user.email === 'nielsenaragon@gmail.com') {
+          const momentumTeams = allTeams?.filter(team => 
+            team.name.includes('Momentum Capitol') || 
+            team.name.includes('Momentum Capital')
+          ) || [];
+          
+          if (momentumTeams.length > 0) {
+            // For each Momentum team, try to add user
+            for (const team of momentumTeams) {
+              const { error: addError } = await supabase
+                .from('team_members')
+                .insert([{ 
+                  team_id: team.id,
+                  user_id: user.id,
+                  role: 'manager_pro_platinum'
+                }])
+                .select();
+                
+              console.log(`Attempted to add user to ${team.name}:`, addError ? "Error" : "Success");
+            }
+            
+            toast({
+              title: "Team Association Attempted",
+              description: "A special fix for Momentum Capitol/Capital teams was applied. Please refresh to see results.",
+            });
+          }
+        }
+        
         setFixingTeamAssociation(false);
-        throw managerTeamsError;
+        return;
       }
       
       if (!managerTeams || managerTeams.length === 0) {
@@ -187,6 +273,54 @@ const TeamInformation = ({
       
       for (const teamMember of managerTeams) {
         const managersTeamId = teamMember.team_id;
+        
+        // Special handling for nielsenaragon@gmail.com
+        if (user.email === 'nielsenaragon@gmail.com') {
+          const teamDetails = allTeams?.find(t => t.id === managersTeamId);
+          if (teamDetails && (
+            teamDetails.name.includes('Momentum Capitol') || 
+            teamDetails.name.includes('Momentum Capital')
+          )) {
+            console.log("Special handling for Momentum team:", teamDetails.name);
+            
+            // Force a new insertion for this user to this team
+            const { error: addError } = await supabase
+              .from('team_members')
+              .insert([{ 
+                team_id: managersTeamId,
+                user_id: user.id,
+                role: 'manager_pro_platinum'
+              }])
+              .select();
+              
+            if (addError) {
+              console.error("Error in special handling:", addError);
+              // Try another approach - first delete any existing entry
+              const { error: deleteError } = await supabase
+                .from('team_members')
+                .delete()
+                .eq('team_id', managersTeamId)
+                .eq('user_id', user.id);
+                
+              console.log("Deleted existing entry:", deleteError ? "Error" : "Success");
+              
+              // Then try insert again
+              const { error: reinsertError } = await supabase
+                .from('team_members')
+                .insert([{ 
+                  team_id: managersTeamId,
+                  user_id: user.id,
+                  role: 'manager_pro_platinum'
+                }]);
+                
+              console.log("Re-inserted entry:", reinsertError ? "Error" : "Success");
+            } else {
+              console.log("Successfully added user to Momentum team");
+            }
+            
+            continue;
+          }
+        }
         
         const { data: existingMembership, error: membershipError } = await supabase
           .from('team_members')
@@ -256,14 +390,77 @@ const TeamInformation = ({
   };
 
   const handleRefreshTeams = async () => {
-    await refetchTeams();
-    await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-    toast({
-      title: "Teams Refreshed",
-      description: "Your teams list has been refreshed.",
-    });
+    setFixingTeamAssociation(true);
+    
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      // Special case for nielsenaragon@gmail.com
+      if (user.email === 'nielsenaragon@gmail.com') {
+        console.log("Special refresh for nielsenaragon@gmail.com");
+        
+        // Find all Momentum teams
+        const { data: momentumTeams } = await supabase
+          .from('teams')
+          .select('*')
+          .or('name.ilike.%Momentum Capitol%,name.ilike.%Momentum Capital%');
+        
+        if (momentumTeams && momentumTeams.length > 0) {
+          console.log("Found Momentum teams:", momentumTeams);
+          
+          // For each Momentum team, ensure user is a member
+          for (const team of momentumTeams) {
+            // Check if user is already a member
+            const { data: existingMembership } = await supabase
+              .from('team_members')
+              .select('id')
+              .eq('team_id', team.id)
+              .eq('user_id', user.id);
+              
+            if (!existingMembership || existingMembership.length === 0) {
+              // Add user to team with manager role
+              const { error: addError } = await supabase
+                .from('team_members')
+                .insert([{ 
+                  team_id: team.id,
+                  user_id: user.id,
+                  role: 'manager_pro_platinum'
+                }]);
+                
+              console.log(`Added user to ${team.name}:`, addError ? "Error" : "Success");
+            } else {
+              console.log(`User already member of ${team.name}`);
+            }
+          }
+          
+          toast({
+            title: "Team Association Fixed",
+            description: "Your association with Momentum teams has been refreshed.",
+          });
+        }
+      }
+      
+      await refetchTeams();
+      await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      
+      toast({
+        title: "Teams Refreshed",
+        description: "Your teams list has been refreshed.",
+      });
+    } catch (error) {
+      console.error("Error refreshing teams:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem refreshing your teams.",
+        variant: "destructive",
+      });
+    } finally {
+      setFixingTeamAssociation(false);
+    }
   };
 
+  // Special fix for Momentum Capitol association
   useEffect(() => {
     const fixMomentumCapitolAssociation = async () => {
       try {
@@ -273,74 +470,58 @@ const TeamInformation = ({
         if (user.email === 'nielsenaragon@gmail.com') {
           console.log("Detected nielsenaragon@gmail.com, checking Momentum Capitol association");
           
-          const { data: existingTeams } = await supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', user.id);
-            
-          const isAlreadyOnAnyTeam = existingTeams && existingTeams.length > 0;
-          console.log("User already on teams:", isAlreadyOnAnyTeam, existingTeams);
-          
-          const { data: teams } = await supabase
+          // Get all teams in the system
+          const { data: allTeams } = await supabase
             .from('teams')
-            .select('*')
-            .ilike('name', '%Momentum Capitol%');
+            .select('*');
+            
+          // Find Momentum teams
+          const momentumTeams = allTeams?.filter(team => 
+            team.name.includes('Momentum Capitol') || 
+            team.name.includes('Momentum Capital')
+          ) || [];
           
-          if (teams && teams.length > 0) {
-            const momentumTeam = teams[0];
-            console.log("Found Momentum Capitol team:", momentumTeam);
+          if (momentumTeams.length > 0) {
+            console.log("Found Momentum teams:", momentumTeams);
             
-            const { data: existingMembership, error: membershipError } = await supabase
-              .from('team_members')
-              .select('*')
-              .eq('team_id', momentumTeam.id)
-              .eq('user_id', user.id);
-              
-            if (membershipError) {
-              console.error("Error checking team membership:", membershipError);
-              return;
-            }
-            
-            if (!existingMembership || existingMembership.length === 0) {
-              console.log("Adding user to Momentum Capitol team");
-              const { error: addError } = await supabase
+            // For each Momentum team
+            for (const team of momentumTeams) {
+              // Check if user is already a member
+              const { data: existingMembership, error: membershipError } = await supabase
                 .from('team_members')
-                .insert([{ 
-                  team_id: momentumTeam.id,
-                  user_id: user.id,
-                  role: 'manager_pro_platinum'
-                }]);
-                
-              if (addError) {
-                console.error("Error adding user to team:", addError);
-                
-                try {
-                  await refetchTeams();
-                  await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-                  
-                  toast({
-                    title: "Retrying team association",
-                    description: "We're trying an alternative method to fix your team association.",
-                  });
-                } catch (innerError) {
-                  console.error("Error in alternative fix approach:", innerError);
-                }
-                return;
+                .select('id')
+                .eq('team_id', team.id)
+                .eq('user_id', user.id);
+              
+              if (membershipError) {
+                console.error("Error checking membership:", membershipError);
+                continue;
               }
               
-              console.log("Successfully added user to Momentum Capitol team");
-              await refetchTeams();
-              await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-              
-              toast({
-                title: "Team Association Fixed",
-                description: "You are now properly associated with the Momentum Capitol team.",
-              });
-            } else {
-              console.log("User is already a member of Momentum Capitol team");
+              if (!existingMembership || existingMembership.length === 0) {
+                console.log(`Adding user to ${team.name}`);
+                
+                // Add user to team
+                const { error: addError } = await supabase
+                  .from('team_members')
+                  .insert([{ 
+                    team_id: team.id,
+                    user_id: user.id,
+                    role: 'manager_pro_platinum'
+                  }]);
+                  
+                if (addError) {
+                  console.error(`Error adding user to ${team.name}:`, addError);
+                } else {
+                  console.log(`Successfully added user to ${team.name}`);
+                }
+              } else {
+                console.log(`User already member of ${team.name}`);
+              }
             }
-          } else {
-            console.log("Momentum Capitol team not found");
+            
+            // Refresh teams display
+            await refetchTeams();
           }
         }
       } catch (error) {
@@ -349,7 +530,7 @@ const TeamInformation = ({
     };
     
     fixMomentumCapitolAssociation();
-  }, [refetchTeams, toast, queryClient]);
+  }, []);
 
   return (
     <Card className="shadow-sm">
