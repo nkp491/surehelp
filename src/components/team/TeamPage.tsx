@@ -1,13 +1,13 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
-import TeamSelector from "./TeamSelector";
-import TeamMembersList from "./TeamMembersList";
-import TeamCreationDialog from "./TeamCreationDialog";
-import AddTeamMemberDialog from "./AddTeamMemberDialog";
+import { TeamSelector } from "./TeamSelector";
+import { TeamMembersList } from "./TeamMembersList";
+import { TeamCreationDialog } from "./TeamCreationDialog";
+import { AddTeamMemberDialog } from "./AddTeamMemberDialog";
 import { TeamMetricsOverview } from "./TeamMetricsOverview";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
@@ -39,9 +39,9 @@ export function TeamPage() {
   };
 
   // Update permissions when team selection changes
-  useState(() => {
+  useEffect(() => {
     checkPermissions();
-  });
+  }, [selectedTeamId]);
 
   return (
     <div className="container py-6 space-y-6">
@@ -118,7 +118,7 @@ export function TeamPage() {
         open={isCreatingTeam}
         onOpenChange={setIsCreatingTeam}
         onCreateTeam={(name) => {
-          createTeam(name);
+          createTeam.mutate(name);
           setIsCreatingTeam(false);
         }}
       />
@@ -129,7 +129,11 @@ export function TeamPage() {
           onOpenChange={setIsAddingMember}
           teamId={selectedTeamId}
           onAddMember={(email, role) => {
-            addTeamMember(selectedTeamId, email, role);
+            addTeamMember.mutate({
+              teamId: selectedTeamId,
+              userId: email,
+              role
+            });
             setIsAddingMember(false);
           }}
         />
