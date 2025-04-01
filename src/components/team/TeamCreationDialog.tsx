@@ -60,12 +60,14 @@ export function TeamCreationDialog({
         const result = await createTeam.mutateAsync(teamName);
         console.log("Team creation result:", result);
         
-        // Invalidate queries to ensure fresh data is fetched
+        // Invalidate all related queries to ensure fresh data is fetched
         await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+        // Also invalidate manager-team queries which might contain this user
+        await queryClient.invalidateQueries({ queryKey: ['manager-team'] });
         
         toast({
           title: "Team Created",
-          description: "Your new team has been created successfully. You can manage it in the Teams Dashboard.",
+          description: "Your new team has been created successfully. You can now manage it from your profile.",
         });
       }
       

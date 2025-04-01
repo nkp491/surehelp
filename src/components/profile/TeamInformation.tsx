@@ -13,6 +13,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { TeamCreationDialog } from "@/components/team/TeamCreationDialog";
 import { Plus, Users, RefreshCw } from "lucide-react";
 import { Team } from "@/types/team";
+import { useQuery } from "@tanstack/react-query";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -27,8 +28,6 @@ const TeamInformation = ({
   const [managerEmail, setManagerEmail] = useState('');
   const [managerName, setManagerName] = useState('');
   const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
-  const [userTeams, setUserTeams] = useState<Team[]>([]);
-  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   
   const { language } = useLanguage();
   const { toast } = useToast();
@@ -38,6 +37,70 @@ const TeamInformation = ({
   
   // Check if user has manager role
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
+
+  // Use React Query to fetch teams
+  const { 
+    data: userTeams = [], 
+    isLoading: isLoadingTeams,
+    refetch: refetchTeams
+  } = useQuery({
+    queryKey: ['user-teams-profile'],
+    queryFn: async () => {
+      try {
+        // Get the user's ID
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+
+        console.log("Fetching teams for user:", user.id);
+        
+        // First get all team_members entries for the user
+        const { data: teamMembers, error: teamMembersError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id);
+
+        if (teamMembersError) {
+          console.error("Error fetching team members:", teamMembersError);
+          throw teamMembersError;
+        }
+        
+        if (!teamMembers || teamMembers.length === 0) {
+          console.log("No team memberships found for user");
+          return [];
+        }
+        
+        console.log("Found team memberships:", teamMembers);
+        
+        // Extract team IDs
+        const teamIds = teamMembers.map(tm => tm.team_id);
+        
+        // Get team details
+        const { data: teams, error: teamsError } = await supabase
+          .from('teams')
+          .select('*')
+          .in('id', teamIds);
+          
+        if (teamsError) {
+          console.error("Error fetching teams:", teamsError);
+          throw teamsError;
+        }
+        
+        console.log("User teams:", teams);
+        return teams || [];
+      } catch (error) {
+        console.error("Error fetching user teams:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch your teams.",
+          variant: "destructive",
+        });
+        return [];
+      }
+    },
+    refetchOnWindowFocus: false,
+    refetchOnMount: true,
+    staleTime: 1000 * 60 * 2, // 2 minutes
+  });
 
   // Fetch current manager details if managerId exists
   useEffect(() => {
@@ -68,86 +131,6 @@ const TeamInformation = ({
 
     fetchManagerDetails();
   }, [managerId]);
-
-  // Fetch user's teams
-  const fetchUserTeams = async () => {
-    setIsLoadingTeams(true);
-    try {
-      // Get the user's ID
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsLoadingTeams(false);
-        return;
-      }
-
-      console.log("Fetching teams for user:", user.id);
-      
-      // First get all team_members entries for the user
-      const { data: teamMembers, error: teamMembersError } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', user.id);
-
-      if (teamMembersError) {
-        console.error("Error fetching team members:", teamMembersError);
-        toast({
-          title: "Error",
-          description: "Failed to fetch your team memberships.",
-          variant: "destructive",
-        });
-        setIsLoadingTeams(false);
-        return;
-      }
-      
-      if (!teamMembers || teamMembers.length === 0) {
-        console.log("No team memberships found for user");
-        setUserTeams([]);
-        setIsLoadingTeams(false);
-        return;
-      }
-      
-      console.log("Found team memberships:", teamMembers);
-      
-      // Extract team IDs
-      const teamIds = teamMembers.map(tm => tm.team_id);
-      
-      // Get team details
-      const { data: teams, error: teamsError } = await supabase
-        .from('teams')
-        .select('*')
-        .in('id', teamIds);
-        
-      if (teamsError) {
-        console.error("Error fetching teams:", teamsError);
-        toast({
-          title: "Error",
-          description: "Failed to fetch your teams.",
-          variant: "destructive",
-        });
-        setIsLoadingTeams(false);
-        return;
-      }
-      
-      setUserTeams(teams || []);
-      console.log("User teams:", teams);
-    } catch (error) {
-      console.error("Error fetching user teams:", error);
-      toast({
-        title: "Error",
-        description: "Failed to fetch your teams.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoadingTeams(false);
-    }
-  };
-
-  // Load teams on component mount and when isManager changes
-  useEffect(() => {
-    if (isManager) {
-      fetchUserTeams();
-    }
-  }, [isManager]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -182,8 +165,85 @@ const TeamInformation = ({
   };
 
   const handleRefreshTeams = () => {
-    fetchUserTeams();
+    refetchTeams();
+    toast({
+      title: "Teams Refreshed",
+      description: "Your teams list has been refreshed.",
+    });
   };
+
+  // Check for specific user and team
+  useEffect(() => {
+    const checkSpecificTeam = async () => {
+      try {
+        // Get the current user email
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+        
+        // Check if this is the specific user we're looking for
+        if (user.email === 'nielsenaragon@gmail.com') {
+          // Look for the Momentum Capitol team
+          const { data: teams } = await supabase
+            .from('teams')
+            .select('*')
+            .ilike('name', '%Momentum Capitol%');
+          
+          if (teams && teams.length > 0) {
+            const momentumTeam = teams[0];
+            console.log("Found Momentum Capitol team:", momentumTeam);
+            
+            // Check if user is already a member of this team
+            const { data: existingMembership, error: membershipError } = await supabase
+              .from('team_members')
+              .select('*')
+              .eq('team_id', momentumTeam.id)
+              .eq('user_id', user.id);
+              
+            if (membershipError) {
+              console.error("Error checking team membership:", membershipError);
+              return;
+            }
+            
+            // If not already a member, add the user to the team
+            if (!existingMembership || existingMembership.length === 0) {
+              console.log("Adding user to Momentum Capitol team");
+              const { error: addError } = await supabase
+                .from('team_members')
+                .insert([{ 
+                  team_id: momentumTeam.id,
+                  user_id: user.id,
+                  role: 'manager_pro' 
+                }]);
+                
+              if (addError) {
+                console.error("Error adding user to team:", addError);
+                return;
+              }
+              
+              console.log("Successfully added user to Momentum Capitol team");
+              // Refresh the teams list
+              refetchTeams();
+              
+              toast({
+                title: "Team Association Fixed",
+                description: "You are now properly associated with the Momentum Capitol team.",
+              });
+            } else {
+              console.log("User is already a member of Momentum Capitol team");
+            }
+          } else {
+            console.log("Momentum Capitol team not found");
+          }
+        }
+      } catch (error) {
+        console.error("Error in checkSpecificTeam:", error);
+      }
+    };
+    
+    if (isManager) {
+      checkSpecificTeam();
+    }
+  }, [isManager, refetchTeams, toast]);
 
   return (
     <Card className="shadow-sm">
@@ -245,7 +305,7 @@ const TeamInformation = ({
                 <div className="text-sm text-gray-500">Loading teams...</div>
               ) : userTeams.length > 0 ? (
                 <div className="space-y-2">
-                  {userTeams.map(team => (
+                  {userTeams.map((team: Team) => (
                     <div key={team.id} className="flex items-center p-2 border rounded-md">
                       <Users className="h-4 w-4 mr-2 text-gray-500" />
                       <span>{team.name}</span>
@@ -274,7 +334,7 @@ const TeamInformation = ({
       <TeamCreationDialog
         open={showCreateTeamDialog}
         onOpenChange={setShowCreateTeamDialog}
-        onSuccess={handleRefreshTeams}
+        onSuccess={() => refetchTeams()}
       />
     </Card>
   );
