@@ -46,6 +46,8 @@ export function TeamCreationDialog({
     if (!teamName.trim()) return;
     
     try {
+      console.log("Attempting to " + (isEditMode ? "update" : "create") + " team with name:", teamName);
+      
       if (isEditMode && teamId) {
         await updateTeam.mutateAsync({ teamId, name: teamName });
         toast({
@@ -53,7 +55,9 @@ export function TeamCreationDialog({
           description: "Your team has been updated successfully.",
         });
       } else {
-        await createTeam.mutateAsync(teamName);
+        const result = await createTeam.mutateAsync(teamName);
+        console.log("Team creation result:", result);
+        
         // Invalidate queries to ensure fresh data is fetched
         await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
         

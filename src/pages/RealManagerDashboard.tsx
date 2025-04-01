@@ -16,6 +16,7 @@ export default function RealManagerDashboard() {
 
   // Fetch teams when dashboard loads
   useEffect(() => {
+    console.log("Dashboard mounted, fetching teams...");
     refetchTeams();
   }, [refetchTeams]);
 
@@ -24,6 +25,8 @@ export default function RealManagerDashboard() {
     if (teams && teams.length > 0 && !selectedTeamId) {
       setSelectedTeamId(teams[0].id);
       console.log("Selected first team:", teams[0].id, teams[0].name);
+    } else if (teams) {
+      console.log("Teams loaded:", teams.length, "Current selected team:", selectedTeamId);
     }
   }, [teams, selectedTeamId]);
 
@@ -35,7 +38,10 @@ export default function RealManagerDashboard() {
 
   // Handle refresh
   const handleRefresh = async () => {
-    await refetchTeams();
+    console.log("Refreshing teams...");
+    const result = await refetchTeams();
+    console.log("Teams refresh result:", result.data);
+    
     toast({
       title: "Teams Refreshed",
       description: "Your teams list has been refreshed.",

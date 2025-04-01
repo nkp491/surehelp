@@ -21,6 +21,12 @@ export function TeamsPanel({
   onTeamSelect,
   onRefresh
 }: TeamsPanelProps) {
+  useEffect(() => {
+    if (teams) {
+      console.log("TeamsPanel received teams:", teams.length);
+    }
+  }, [teams]);
+
   return (
     <Card className="p-4">
       <div className="flex items-center justify-between mb-4">

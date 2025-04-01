@@ -42,53 +42,32 @@ export const useTeams = () => {
       setIsLoading(true);
       console.log("Creating new team:", name);
       
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      // Insert the new team
-      const { data, error } = await supabase
-        .from('teams')
-        .insert([{ name }])
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error creating team:", error);
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) throw new Error('User not authenticated');
+  
+        // Use the Supabase function to create a team and add the user as a member
+        const { data, error } = await supabase.rpc('create_team_with_member', {
+          team_name: name
+        });
+  
+        if (error) {
+          console.error("Error creating team with RPC:", error);
+          throw error;
+        }
+  
+        console.log("Team created successfully:", data);
+        return data;
+      } catch (error) {
+        console.error("Error in createTeam mutation:", error);
         throw error;
       }
-
-      console.log("Team created:", data);
-
-      // Add the creator as a team manager
-      const { data: userRoles } = await supabase
-        .from('user_roles')
-        .select('role')
-        .eq('user_id', user.id);
-
-      // Find the highest manager role the user has
-      const managerRoles = userRoles
-        ?.filter(ur => ur.role.startsWith('manager_pro'))
-        .map(ur => ur.role) || ['manager_pro'];
-      
-      const highestRole = managerRoles.length > 0 ? managerRoles[0] : 'manager_pro';
-
-      const { error: memberError } = await supabase
-        .from('team_members')
-        .insert([{
-          team_id: data.id,
-          user_id: user.id,
-          role: highestRole
-        }]);
-
-      if (memberError) {
-        console.error("Error adding member to team:", memberError);
-        throw memberError;
-      }
-
-      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log("Team creation success:", data);
+      // Invalidate the teams query to refetch
       queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      
       toast({
         title: "Team created",
         description: "Your new team has been created successfully.",
@@ -142,6 +121,7 @@ export const useTeams = () => {
 
   // Expose the refetch function
   const refetchTeams = async () => {
+    console.log("Manually refetching teams...");
     return await fetchTeams.refetch();
   };
 
