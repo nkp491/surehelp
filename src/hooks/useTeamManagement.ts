@@ -39,7 +39,7 @@ export const useTeamManagement = () => {
     return fetchTeamMembers(teamId);
   };
 
-  // New function to fetch teams directly, bypassing RLS issues
+  // Function to fetch teams directly, bypassing RLS issues
   const getTeamsDirectQuery = (userId?: string) => {
     return useQuery({
       queryKey: ['direct-teams', userId],
