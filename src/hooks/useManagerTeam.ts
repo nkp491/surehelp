@@ -54,27 +54,47 @@ export const useManagerTeam = (managerId?: string) => {
       // First get the team members from the team_members table
       const { data: teamMembersData, error: teamMembersError } = await supabase
         .from('team_members')
-        .select('*, profiles:user_id(*)')
+        .select('*')
         .eq('team_id', teamId);
         
       if (teamMembersError) throw teamMembersError;
       
-      console.log(`Found ${teamMembersData?.length || 0} members in team:`, teamId);
+      if (!teamMembersData || teamMembersData.length === 0) {
+        console.log("No team members found for team:", teamId);
+        return [];
+      }
       
-      // Transform the data to match our TeamMember type
-      return teamMembersData.map(member => ({
-        id: member.id,
-        team_id: member.team_id,
-        user_id: member.user_id,
-        role: member.role,
-        created_at: member.created_at,
-        updated_at: member.updated_at,
-        // Add profile information
-        first_name: member.profiles?.first_name,
-        last_name: member.profiles?.last_name,
-        email: member.profiles?.email,
-        profile_image_url: member.profiles?.profile_image_url
-      })) as TeamMember[];
+      // Get the user IDs from the team members
+      const userIds = teamMembersData.map(member => member.user_id);
+      
+      // Fetch the profile information for those users
+      const { data: profilesData, error: profilesError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('id', userIds);
+        
+      if (profilesError) throw profilesError;
+      
+      // Combine the team members data with the profiles data
+      const result = teamMembersData.map(member => {
+        const profile = profilesData?.find(p => p.id === member.user_id);
+        return {
+          id: member.id,
+          team_id: member.team_id,
+          user_id: member.user_id,
+          role: member.role,
+          created_at: member.created_at,
+          updated_at: member.updated_at,
+          // Add profile information if available
+          first_name: profile?.first_name || null,
+          last_name: profile?.last_name || null,
+          email: profile?.email || null,
+          profile_image_url: profile?.profile_image_url || null
+        };
+      }) as TeamMember[];
+      
+      console.log(`Found ${result.length} members in team:`, teamId);
+      return result;
     } catch (error) {
       console.error("Error fetching team members by team:", error);
       return [];
