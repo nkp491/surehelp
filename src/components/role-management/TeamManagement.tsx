@@ -12,7 +12,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, Search } from "lucide-react";
+import { Trash2, Loader2, Search, PlusCircle } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -24,6 +24,8 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
+import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 
 interface Team {
   id: string;
@@ -39,11 +41,18 @@ export function TeamManagement() {
   const [teamToDelete, setTeamToDelete] = useState<Team | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [newTeamName, setNewTeamName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
   const { toast } = useToast();
+  const { hasRequiredRole } = useRoleCheck();
+  const isAdmin = hasRequiredRole(['system_admin']);
 
   useEffect(() => {
-    fetchTeams();
-  }, []);
+    if (isAdmin) {
+      fetchTeams();
+    }
+  }, [isAdmin]);
 
   const fetchTeams = async () => {
     setIsLoading(true);
@@ -147,6 +156,16 @@ export function TeamManagement() {
         console.error("Error deleting child team relationships:", relChildError);
       }
 
+      // Delete any team invitations
+      const { error: invitationsError } = await supabase
+        .from("team_invitations")
+        .delete()
+        .eq("team_id", deleteTeamId);
+
+      if (invitationsError) {
+        console.error("Error deleting team invitations:", invitationsError);
+      }
+
       // Finally, delete the team
       const { error: teamError } = await supabase
         .from("teams")
@@ -185,6 +204,56 @@ export function TeamManagement() {
     }
   };
 
+  const handleCreateTeam = async () => {
+    if (!newTeamName.trim()) {
+      toast({
+        title: "Error",
+        description: "Please enter a team name.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      const { data, error } = await supabase
+        .from("teams")
+        .insert([{ name: newTeamName.trim() }])
+        .select();
+
+      if (error) {
+        console.error("Error creating team:", error);
+        toast({
+          title: "Error",
+          description: "Failed to create team. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      toast({
+        title: "Success",
+        description: "Team created successfully.",
+      });
+
+      // Close dialog and reset form
+      setShowCreateDialog(false);
+      setNewTeamName("");
+      
+      // Refresh teams list
+      fetchTeams();
+    } catch (error) {
+      console.error("Error in handleCreateTeam:", error);
+      toast({
+        title: "Error",
+        description: "An unexpected error occurred while creating the team.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsCreating(false);
+    }
+  };
+
   const filteredTeams = teams.filter(team => 
     team.name.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -198,20 +267,38 @@ export function TeamManagement() {
     });
   };
 
+  if (!isAdmin) {
+    return (
+      <Card>
+        <CardContent className="pt-6">
+          <div className="text-center py-8">
+            <p className="text-muted-foreground">You don't have permission to access this area.</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <Card>
         <CardContent className="pt-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold">Team Management</h2>
-            <div className="relative max-w-xs">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search teams..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-8"
-              />
+            <div className="flex gap-3">
+              <div className="relative max-w-xs">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search teams..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-8"
+                />
+              </div>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <PlusCircle className="h-4 w-4 mr-2" />
+                Create Team
+              </Button>
             </div>
           </div>
 
@@ -263,6 +350,7 @@ export function TeamManagement() {
         </CardContent>
       </Card>
 
+      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTeamId} onOpenChange={(open) => !open && setDeleteTeamId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -291,6 +379,38 @@ export function TeamManagement() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Create team dialog */}
+      <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Create New Team</DialogTitle>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              placeholder="Team name"
+              value={newTeamName}
+              onChange={(e) => setNewTeamName(e.target.value)}
+              className="w-full"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowCreateDialog(false)} disabled={isCreating}>
+              Cancel
+            </Button>
+            <Button onClick={handleCreateTeam} disabled={isCreating || !newTeamName.trim()}>
+              {isCreating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create Team"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
