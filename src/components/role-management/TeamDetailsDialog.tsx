@@ -40,6 +40,7 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
 import { fetchTeamMembersByTeam } from "@/hooks/team/utils/teamMembers";
+import { TeamMember } from "@/types/team";
 
 interface TeamManager {
   id: string;
@@ -137,6 +138,7 @@ export function TeamDetailsDialog({
     try {
       // Use the fetchTeamMembersByTeam utility to avoid RLS recursion issues
       const membersData = await fetchTeamMembersByTeam(team.id);
+      // The fetchTeamMembersByTeam returns data in the expected TeamMember format
       setTeamMembers(membersData);
 
       // Fetch related teams (parent teams) - Using explicit column specifications
