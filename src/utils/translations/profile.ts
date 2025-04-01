@@ -1,3 +1,4 @@
+
 export const profileTranslations = {
   en: {
     profileSettings: "Profile Settings",
@@ -43,6 +44,7 @@ export const profileTranslations = {
     directLine: "Direct Line",
     residentLocation: "Resident Location",
     yearsOfService: "Years of Service",
+    years: "years",
     lineAuthority: "Line Authority",
     selectLineAuthority: "Select line authority",
     nationalProducerNumber: "National Producer Number",
@@ -103,6 +105,7 @@ export const profileTranslations = {
     directLine: "Línea Directa",
     residentLocation: "Ubicación de Residencia",
     yearsOfService: "Años de Servicio",
+    years: "años",
     lineAuthority: "Línea de Autoridad",
     selectLineAuthority: "Seleccionar línea de autoridad",
     nationalProducerNumber: "Número de Productor Nacional",

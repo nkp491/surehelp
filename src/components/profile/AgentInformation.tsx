@@ -28,10 +28,17 @@ const AgentInformation = ({
     formData,
     handleFieldChange,
     handleToggleEdit,
-    handleSubmit
+    handleSubmit,
+    calculateYearsOfService
   } = useAgentInformation(agentInfo, onUpdate);
 
   console.log("Agent Information Component - Current data:", formData);
+
+  // Calculate years of service for display
+  const yearsOfService = calculateYearsOfService(formData.years_of_service_date);
+  const serviceStartLabel = formData.years_of_service_date 
+    ? `${t.yearsOfService} (${yearsOfService} ${t.years})` 
+    : t.yearsOfService;
 
   return (
     <Card className="shadow-sm">
@@ -79,7 +86,7 @@ const AgentInformation = ({
             
             {/* Years of Service */}
             <FormField
-              label={t.yearsOfService}
+              label={serviceStartLabel}
               type="date"
               value={formData.years_of_service_date}
               onChange={(value) => handleFieldChange('years_of_service_date', value)}

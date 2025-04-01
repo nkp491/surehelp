@@ -132,11 +132,34 @@ export const useAgentInformation = (
     setIsEditing(false);
   };
 
+  // Calculate years of service based on start date
+  const calculateYearsOfService = (serviceDate: string | Date | null | undefined) => {
+    if (!serviceDate) return '';
+    
+    const startDate = new Date(serviceDate);
+    const currentDate = new Date();
+    
+    // Calculate the difference in years
+    let years = currentDate.getFullYear() - startDate.getFullYear();
+    
+    // Adjust for months and days
+    if (
+      currentDate.getMonth() < startDate.getMonth() || 
+      (currentDate.getMonth() === startDate.getMonth() && 
+       currentDate.getDate() < startDate.getDate())
+    ) {
+      years--;
+    }
+    
+    return years;
+  };
+
   return {
     isEditing,
     formData,
     handleFieldChange,
     handleToggleEdit,
-    handleSubmit
+    handleSubmit,
+    calculateYearsOfService
   };
 };
