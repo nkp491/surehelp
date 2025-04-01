@@ -1,42 +1,23 @@
 
 import { useState } from "react";
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogFooter 
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Loader2, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger
-} from "@/components/ui/tabs";
-
-// Import our extracted components
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { TeamSummaryTab } from "./team-details/TeamSummaryTab";
 import { TeamMembersTab } from "./team-details/TeamMembersTab";
 import { TeamRelationsTab } from "./team-details/TeamRelationsTab";
-import { TeamSummaryTab } from "./team-details/TeamSummaryTab";
 import { DeleteTeamDialog } from "./team-details/DeleteTeamDialog";
+import { Loader2 } from "lucide-react";
 import { useTeamDetailsData } from "./team-details/useTeamDetailsData";
-
-interface TeamManager {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  email: string | null;
-}
 
 interface Team {
   id: string;
   name: string;
   created_at: string;
-  memberCount?: number;
-  managers?: TeamManager[];
 }
 
 interface TeamDetailsDialogProps {
@@ -52,12 +33,16 @@ export function TeamDetailsDialog({
   team,
   onTeamDeleted
 }: TeamDetailsDialogProps) {
+  const [activeTab, setActiveTab] = useState("summary");
+  
   const {
     isLoading,
     teamMembers,
     relatedTeams,
+    teamCreator,
     showDeleteConfirm,
     setShowDeleteConfirm,
+    isDeleting,
     formatDate,
     handleDeleteTeam
   } = useTeamDetailsData(team, onTeamDeleted);
@@ -65,38 +50,24 @@ export function TeamDetailsDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl">
+        <DialogContent className="sm:max-w-[800px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl flex items-center justify-between">
-              <span>Team Details: {team.name}</span>
-              <Badge variant="outline">
-                Created {formatDate(team.created_at)}
-              </Badge>
-            </DialogTitle>
+            <DialogTitle>Team Details: {team.name}</DialogTitle>
           </DialogHeader>
-
+          
           {isLoading ? (
-            <div className="flex justify-center py-8">
+            <div className="flex justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <Tabs defaultValue="members">
+            <Tabs defaultValue="summary" value={activeTab} onValueChange={setActiveTab} className="mt-2">
               <TabsList className="mb-4">
-                <TabsTrigger value="members">Members ({teamMembers.length})</TabsTrigger>
-                <TabsTrigger value="relations">Related Teams ({relatedTeams.length})</TabsTrigger>
                 <TabsTrigger value="summary">Summary</TabsTrigger>
+                <TabsTrigger value="members">Members</TabsTrigger>
+                {relatedTeams.length > 0 && (
+                  <TabsTrigger value="relations">Related Teams</TabsTrigger>
+                )}
               </TabsList>
-              
-              <TabsContent value="members">
-                <TeamMembersTab 
-                  teamMembers={teamMembers} 
-                  formatDate={formatDate} 
-                />
-              </TabsContent>
-              
-              <TabsContent value="relations">
-                <TeamRelationsTab relatedTeams={relatedTeams} />
-              </TabsContent>
               
               <TabsContent value="summary">
                 <TeamSummaryTab 
@@ -105,35 +76,35 @@ export function TeamDetailsDialog({
                   teamMembers={teamMembers}
                   relatedTeams={relatedTeams}
                   formatDate={formatDate}
+                  teamCreator={teamCreator}
                 />
               </TabsContent>
+              
+              <TabsContent value="members">
+                <TeamMembersTab 
+                  teamMembers={teamMembers}
+                  onDeleteTeam={() => setShowDeleteConfirm(true)} 
+                />
+              </TabsContent>
+              
+              {relatedTeams.length > 0 && (
+                <TabsContent value="relations">
+                  <TeamRelationsTab 
+                    relatedTeams={relatedTeams}
+                  />
+                </TabsContent>
+              )}
             </Tabs>
           )}
-          
-          <DialogFooter className="gap-2">
-            <div className="flex-1 text-left">
-              <Button
-                variant="destructive"
-                onClick={() => setShowDeleteConfirm(true)}
-                disabled={isLoading}
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete Team
-              </Button>
-            </div>
-            <Button variant="outline" onClick={() => onOpenChange(false)}>
-              Close
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Delete confirmation dialog */}
+      
       <DeleteTeamDialog
         open={showDeleteConfirm}
         onOpenChange={setShowDeleteConfirm}
-        team={team}
-        onDelete={handleDeleteTeam}
+        teamName={team.name}
+        isDeleting={isDeleting}
+        onConfirm={handleDeleteTeam}
       />
     </>
   );

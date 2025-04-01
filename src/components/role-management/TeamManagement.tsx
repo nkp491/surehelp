@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { supabase } from "@/integrations/supabase/client";
@@ -12,7 +11,7 @@ import {
   TableRow 
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Trash2, Loader2, Search, PlusCircle, Users, User } from "lucide-react";
+import { Trash2, Loader2, Search, PlusCircle, Users, User, UserPlus } from "lucide-react";
 import { 
   AlertDialog,
   AlertDialogAction,
@@ -36,12 +35,20 @@ interface TeamManager {
   email: string | null;
 }
 
+interface TeamCreator {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  email: string | null;
+}
+
 interface Team {
   id: string;
   name: string;
   created_at: string;
   memberCount?: number;
   managers?: TeamManager[];
+  creator?: TeamCreator;
 }
 
 export function TeamManagement() {
@@ -85,7 +92,7 @@ export function TeamManagement() {
         return;
       }
 
-      // For each team, get the member count and managers
+      // For each team, get the member count, managers, and creator information
       const teamsWithDetails = await Promise.all(
         teamsData.map(async (team) => {
           // Get member count
@@ -119,10 +126,39 @@ export function TeamManagement() {
             }
           }
 
+          // Find the creator of the team (assuming the first person who joined or has longest membership)
+          let creator: TeamCreator | undefined;
+          
+          const { data: earliestMember, error: creatorError } = await supabase
+            .from("team_members")
+            .select("user_id, created_at")
+            .eq("team_id", team.id)
+            .order("created_at", { ascending: true })
+            .limit(1);
+            
+          if (earliestMember && earliestMember.length > 0 && !creatorError) {
+            const creatorId = earliestMember[0].user_id;
+            
+            const { data: creatorData, error: creatorProfileError } = await supabase
+              .from("profiles")
+              .select("id, first_name, last_name, email")
+              .eq("id", creatorId)
+              .single();
+              
+            if (creatorData && !creatorProfileError) {
+              creator = creatorData;
+            } else if (creatorProfileError) {
+              console.error("Error fetching creator profile:", creatorProfileError);
+            }
+          } else if (creatorError) {
+            console.error("Error finding team creator:", creatorError);
+          }
+
           return {
             ...team,
             memberCount: countError ? 0 : count || 0,
-            managers
+            managers,
+            creator
           };
         })
       );
@@ -303,7 +339,11 @@ export function TeamManagement() {
     team.managers?.some(manager => 
       `${manager.first_name || ''} ${manager.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
       (manager.email || '').toLowerCase().includes(searchTerm.toLowerCase())
-    )
+    ) ||
+    (team.creator && (
+      `${team.creator.first_name || ''} ${team.creator.last_name || ''}`.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (team.creator.email || '').toLowerCase().includes(searchTerm.toLowerCase())
+    ))
   );
 
   const formatDate = (dateString: string) => {
@@ -318,6 +358,12 @@ export function TeamManagement() {
   const getManagerDisplayName = (manager: TeamManager) => {
     const name = [manager.first_name, manager.last_name].filter(Boolean).join(' ');
     return name || manager.email || 'Unknown Manager';
+  };
+
+  const getDisplayName = (user?: { first_name: string | null; last_name: string | null; email: string | null }): string => {
+    if (!user) return 'Unknown';
+    const name = [user.first_name, user.last_name].filter(Boolean).join(' ');
+    return name || user.email || 'Unknown';
   };
 
   if (!isAdmin) {
@@ -342,7 +388,7 @@ export function TeamManagement() {
               <div className="relative max-w-xs">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search teams or managers..."
+                  placeholder="Search teams, managers, or creators..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-8"
@@ -368,13 +414,14 @@ export function TeamManagement() {
                     <TableHead>Created Date</TableHead>
                     <TableHead>Members</TableHead>
                     <TableHead>Manager(s)</TableHead>
+                    <TableHead>Created By</TableHead>
                     <TableHead className="text-right">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {filteredTeams.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center py-8 text-muted-foreground">
+                      <TableCell colSpan={6} className="text-center py-8 text-muted-foreground">
                         {searchTerm ? "No teams match your search" : "No teams found"}
                       </TableCell>
                     </TableRow>
@@ -414,6 +461,16 @@ export function TeamManagement() {
                             <span className="text-muted-foreground text-sm">No managers</span>
                           )}
                         </TableCell>
+                        <TableCell>
+                          {team.creator ? (
+                            <Badge variant="outline" className="flex items-center gap-1">
+                              <UserPlus className="h-3 w-3" />
+                              {getDisplayName(team.creator)}
+                            </Badge>
+                          ) : (
+                            <span className="text-muted-foreground text-sm">Unknown</span>
+                          )}
+                        </TableCell>
                         <TableCell className="text-right">
                           <div className="flex justify-end gap-2">
                             <Button
@@ -444,7 +501,6 @@ export function TeamManagement() {
         </CardContent>
       </Card>
 
-      {/* Delete confirmation dialog */}
       <AlertDialog open={!!deleteTeamId} onOpenChange={(open) => !open && setDeleteTeamId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -474,7 +530,6 @@ export function TeamManagement() {
         </AlertDialogContent>
       </AlertDialog>
 
-      {/* Create team dialog */}
       <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
         <DialogContent>
           <DialogHeader>
@@ -506,7 +561,6 @@ export function TeamManagement() {
         </DialogContent>
       </Dialog>
 
-      {/* Team details dialog */}
       {selectedTeam && (
         <TeamDetailsDialog 
           open={showDetailsDialog} 

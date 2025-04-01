@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { TeamMember } from "@/types/team";
+import { User, UserPlus } from "lucide-react";
 
 interface RelatedTeam {
   id: string;
@@ -16,6 +17,10 @@ interface TeamSummaryTabProps {
   teamMembers: TeamMember[];
   relatedTeams: RelatedTeam[];
   formatDate: (dateString: string) => string;
+  teamCreator?: {
+    name: string;
+    email?: string;
+  };
 }
 
 export function TeamSummaryTab({ 
@@ -23,7 +28,8 @@ export function TeamSummaryTab({
   createdAt, 
   teamMembers, 
   relatedTeams,
-  formatDate 
+  formatDate,
+  teamCreator
 }: TeamSummaryTabProps) {
   return (
     <Card>
@@ -41,6 +47,23 @@ export function TeamSummaryTab({
             <p className="text-lg font-semibold">{formatDate(createdAt)}</p>
           </div>
         </div>
+        
+        {teamCreator && (
+          <>
+            <Separator />
+            <div>
+              <h4 className="text-sm font-medium text-muted-foreground">Created By</h4>
+              <div className="flex items-center mt-1 space-x-2">
+                <UserPlus className="h-4 w-4 text-muted-foreground" />
+                <span className="font-medium">{teamCreator.name}</span>
+                {teamCreator.email && (
+                  <span className="text-sm text-muted-foreground">({teamCreator.email})</span>
+                )}
+              </div>
+            </div>
+          </>
+        )}
+        
         <Separator />
         <div>
           <h4 className="text-sm font-medium text-muted-foreground mb-2">Membership Summary</h4>

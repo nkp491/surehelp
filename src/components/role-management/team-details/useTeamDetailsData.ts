@@ -17,10 +17,16 @@ interface RelatedTeam {
   relationship: string;
 }
 
+interface TeamCreator {
+  name: string;
+  email?: string;
+}
+
 export function useTeamDetailsData(team: Team, onTeamDeleted: () => void) {
   const [isLoading, setIsLoading] = useState(true);
   const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
   const [relatedTeams, setRelatedTeams] = useState<RelatedTeam[]>([]);
+  const [teamCreator, setTeamCreator] = useState<TeamCreator | undefined>(undefined);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const { toast } = useToast();
@@ -49,6 +55,24 @@ export function useTeamDetailsData(team: Team, onTeamDeleted: () => void) {
       const membersData = await fetchTeamMembersByTeam(team.id);
       // The fetchTeamMembersByTeam returns data in the expected TeamMember format
       setTeamMembers(membersData);
+
+      // Find the team creator (the earliest member)
+      if (membersData.length > 0) {
+        // Sort by created_at date
+        const sortedMembers = [...membersData].sort((a, b) => 
+          new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        );
+        
+        const earliestMember = sortedMembers[0];
+        if (earliestMember) {
+          setTeamCreator({
+            name: [earliestMember.first_name, earliestMember.last_name]
+              .filter(Boolean)
+              .join(' ') || 'Unknown',
+            email: earliestMember.email || undefined
+          });
+        }
+      }
 
       // Fetch related teams (parent teams) - Using explicit column specifications
       try {
@@ -228,6 +252,7 @@ export function useTeamDetailsData(team: Team, onTeamDeleted: () => void) {
     isLoading,
     teamMembers,
     relatedTeams,
+    teamCreator,
     showDeleteConfirm,
     setShowDeleteConfirm,
     isDeleting,
