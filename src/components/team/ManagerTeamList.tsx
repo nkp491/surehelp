@@ -18,14 +18,22 @@ import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface ManagerTeamListProps {
   managerId?: string;
 }
 
 export function ManagerTeamList({ managerId }: ManagerTeamListProps) {
-  const { teamMembers, isLoading, updateTeamMemberManager, refetch } = useManagerTeam(managerId);
+  const { 
+    teamMembers, 
+    nestedTeamMembers, 
+    isLoading, 
+    updateTeamMemberManager, 
+    refetch 
+  } = useManagerTeam(managerId);
   const [searchQuery, setSearchQuery] = useState("");
+  const [activeTab, setActiveTab] = useState("direct");
   const { toast } = useToast();
 
   // Force refresh on component mount to ensure data is current
@@ -60,13 +68,20 @@ export function ManagerTeamList({ managerId }: ManagerTeamListProps) {
   };
 
   // Filter members based on search query
-  const filteredMembers = teamMembers?.filter(member => {
-    const fullName = `${member.first_name || ''} ${member.last_name || ''}`.toLowerCase();
-    const email = (member.email || '').toLowerCase();
-    const query = searchQuery.toLowerCase();
+  const filterMembers = (members: Profile[] | undefined) => {
+    if (!members) return [];
     
-    return fullName.includes(query) || email.includes(query);
-  });
+    return members.filter(member => {
+      const fullName = `${member.first_name || ''} ${member.last_name || ''}`.toLowerCase();
+      const email = (member.email || '').toLowerCase();
+      const query = searchQuery.toLowerCase();
+      
+      return fullName.includes(query) || email.includes(query);
+    });
+  };
+
+  const filteredDirectMembers = filterMembers(teamMembers);
+  const filteredNestedMembers = filterMembers(nestedTeamMembers);
 
   // Handle member removal
   const handleRemoveMember = (memberId: string) => {
@@ -100,69 +115,133 @@ export function ManagerTeamList({ managerId }: ManagerTeamListProps) {
             className="mb-4"
           />
 
-          {isLoading ? (
-            Array.from({ length: 3 }).map((_, index) => (
-              <div key={index} className="flex items-center space-x-4 p-3 border rounded-md">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="space-y-2 flex-1">
-                  <Skeleton className="h-4 w-32" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-                <Skeleton className="h-6 w-16" />
-              </div>
-            ))
-          ) : filteredMembers?.length === 0 ? (
-            <div className="text-center text-muted-foreground py-6">
-              {searchQuery.trim() 
-                ? "No members match your search" 
-                : managerId
-                  ? "No team members found. Agents need to set you as their manager in their profile."
-                  : "You need to be a manager to have team members."}
-            </div>
-          ) : (
-            filteredMembers?.map((member: Profile) => (
-              <div key={member.id} className="flex items-center justify-between border rounded-md p-3 hover:bg-muted/30">
-                <div className="flex items-center gap-3">
-                  <ProfileAvatar
-                    imageUrl={member.profile_image_url}
-                    firstName={member.first_name}
-                    className="h-10 w-10"
-                  />
-                  <div>
-                    <p className="font-medium">
-                      {member.first_name} {member.last_name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{member.email}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-2">
-                  <Badge variant={getBadgeVariant(member.role)}>
-                    {formatRoleName(member.role)}
+          <Tabs value={activeTab} onValueChange={setActiveTab}>
+            <TabsList className="mb-4">
+              <TabsTrigger value="direct">Direct Reports</TabsTrigger>
+              <TabsTrigger value="nested">
+                Nested Team Members
+                {nestedTeamMembers && nestedTeamMembers.length > 0 && (
+                  <Badge variant="outline" className="ml-2">
+                    {nestedTeamMembers.length}
                   </Badge>
-                  
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <MoreHorizontal className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                      <DropdownMenuSeparator />
-                      <DropdownMenuItem 
-                        onClick={() => handleRemoveMember(member.id)}
-                        className="text-destructive"
-                      >
-                        <UserX className="h-4 w-4 mr-2" />
-                        Remove from Team
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
+                )}
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="direct">
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-3 border rounded-md">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                ))
+              ) : filteredDirectMembers?.length === 0 ? (
+                <div className="text-center text-muted-foreground py-6">
+                  {searchQuery.trim() 
+                    ? "No members match your search" 
+                    : managerId
+                      ? "No team members found. Agents need to set you as their manager in their profile."
+                      : "You need to be a manager to have team members."}
                 </div>
-              </div>
-            ))
-          )}
+              ) : (
+                filteredDirectMembers?.map((member: Profile) => (
+                  <div key={member.id} className="flex items-center justify-between border rounded-md p-3 hover:bg-muted/30 mb-2">
+                    <div className="flex items-center gap-3">
+                      <ProfileAvatar
+                        imageUrl={member.profile_image_url}
+                        firstName={member.first_name}
+                        className="h-10 w-10"
+                      />
+                      <div>
+                        <p className="font-medium">
+                          {member.first_name} {member.last_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Badge variant={getBadgeVariant(member.role)}>
+                        {formatRoleName(member.role)}
+                      </Badge>
+                      
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem 
+                            onClick={() => handleRemoveMember(member.id)}
+                            className="text-destructive"
+                          >
+                            <UserX className="h-4 w-4 mr-2" />
+                            Remove from Team
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                  </div>
+                ))
+              )}
+            </TabsContent>
+            
+            <TabsContent value="nested">
+              {isLoading ? (
+                Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="flex items-center space-x-4 p-3 border rounded-md">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="space-y-2 flex-1">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-24" />
+                    </div>
+                    <Skeleton className="h-6 w-16" />
+                  </div>
+                ))
+              ) : filteredNestedMembers?.length === 0 ? (
+                <div className="text-center text-muted-foreground py-6">
+                  {searchQuery.trim() 
+                    ? "No nested members match your search" 
+                    : "No nested team members found. This section shows team members managed by managers who report to you."}
+                </div>
+              ) : (
+                filteredNestedMembers?.map((member: Profile) => (
+                  <div key={member.id} className="flex items-center justify-between border rounded-md p-3 hover:bg-muted/30 mb-2">
+                    <div className="flex items-center gap-3">
+                      <ProfileAvatar
+                        imageUrl={member.profile_image_url}
+                        firstName={member.first_name}
+                        className="h-10 w-10"
+                      />
+                      <div>
+                        <p className="font-medium">
+                          {member.first_name} {member.last_name}
+                        </p>
+                        <p className="text-sm text-muted-foreground">{member.email}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Manager: {member.manager_id ? "Set" : "None"}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <Badge variant={getBadgeVariant(member.role)}>
+                        {formatRoleName(member.role)}
+                      </Badge>
+                    </div>
+                  </div>
+                ))
+              )}
+            </TabsContent>
+          </Tabs>
         </div>
       </CardContent>
     </Card>

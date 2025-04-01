@@ -18,6 +18,12 @@ export default function TeamPage() {
 
   const isManager = profile?.role?.includes('manager_pro') || 
                     profile?.roles?.some(r => r.includes('manager_pro'));
+                    
+  const isHigherTierManager = 
+    profile?.role?.includes('manager_pro_gold') || 
+    profile?.role?.includes('manager_pro_platinum') ||
+    profile?.roles?.some(r => r.includes('manager_pro_gold')) ||
+    profile?.roles?.some(r => r.includes('manager_pro_platinum'));
 
   return (
     <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>

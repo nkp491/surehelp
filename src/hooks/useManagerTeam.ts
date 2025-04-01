@@ -72,11 +72,78 @@ export const useManagerTeam = (managerId?: string) => {
     }
   };
 
+  // Get team members under managers that have this manager as their manager
+  const getNestedTeamMembers = async () => {
+    if (!managerId) return [];
+    
+    try {
+      // First get managers who have this manager as their manager
+      const { data: subManagers, error: subManagerError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('manager_id', managerId)
+        .or(`role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum`);
+        
+      if (subManagerError) throw subManagerError;
+      
+      if (!subManagers || subManagers.length === 0) return [];
+      
+      console.log(`Found ${subManagers.length} sub-managers for manager:`, managerId);
+      
+      // Get the IDs of all sub-managers
+      const subManagerIds = subManagers.map(manager => manager.id);
+      
+      // Now get all team members who have any of these sub-managers as their manager
+      const { data: nestedMembers, error: membersError } = await supabase
+        .from('profiles')
+        .select('*')
+        .in('manager_id', subManagerIds);
+        
+      if (membersError) throw membersError;
+      
+      console.log(`Found ${nestedMembers?.length || 0} nested team members for sub-managers`);
+      
+      // Transform the data to match our Profile type
+      return nestedMembers.map(profile => ({
+        ...profile,
+        // Parse JSON fields properly if they're strings
+        privacy_settings: typeof profile.privacy_settings === 'string'
+          ? JSON.parse(profile.privacy_settings)
+          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
+        notification_preferences: typeof profile.notification_preferences === 'string'
+          ? JSON.parse(profile.notification_preferences)
+          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
+      })) as Profile[];
+    } catch (error) {
+      console.error("Error fetching nested team members:", error);
+      return [];
+    }
+  };
+  
+  // Get nested team members query
+  const { 
+    data: nestedTeamMembers, 
+    isLoading: isLoadingNested, 
+    refetch: refetchNested 
+  } = useQuery({
+    queryKey: ['nested-team-members', managerId],
+    queryFn: getNestedTeamMembers,
+    enabled: !!managerId && (managerId?.length > 0),
+    staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
+  });
+
+  // Combined refetch function
+  const refetchAll = async () => {
+    await refetch();
+    await refetchNested();
+  };
+
   return {
     teamMembers,
-    isLoading,
+    nestedTeamMembers,
+    isLoading: isLoading || isLoadingNested,
     error,
     updateTeamMemberManager,
-    refetch
+    refetch: refetchAll
   };
 };
