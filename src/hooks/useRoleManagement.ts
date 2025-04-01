@@ -48,8 +48,9 @@ export const useRoleManagement = () => {
       if (rolesError) throw rolesError;
 
       // Fetch account creation dates from the auth.users table via a function
+      // Using the generic .rpc method since the function isn't in the TypeScript definitions
       const { data: authUsers, error: authError } = await supabase
-        .rpc('get_users_created_at')
+        .rpc('get_users_created_at' as any)
         .select('*');
 
       if (authError) {
