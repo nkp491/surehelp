@@ -1,7 +1,6 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types/profile";
 import { TeamMember } from "@/types/team";
 import { toast } from "@/hooks/use-toast";
 
@@ -28,7 +27,6 @@ export const useManagerTeam = (managerId?: string) => {
       
       // Transform the data to match our TeamMember type instead of Profile
       // This ensures compatibility with the team filtering functionality
-      // We're creating a simplified version here since we don't have the actual team_id in profiles
       return data.map(profile => ({
         id: profile.id,
         user_id: profile.id,
@@ -37,8 +35,8 @@ export const useManagerTeam = (managerId?: string) => {
         email: profile.email,
         profile_image_url: profile.profile_image_url,
         // For other TeamMember fields, we set defaults
-        team_id: "", // This will be populated later if filtering by team
-        role: "",
+        team_id: "", // This will be populated from team_members table if needed
+        role: profile.role || "",
         created_at: profile.created_at,
         updated_at: profile.updated_at
       })) as TeamMember[];
@@ -47,6 +45,41 @@ export const useManagerTeam = (managerId?: string) => {
     staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes (reduced from default)
     refetchOnWindowFocus: true, // Refresh data when window regains focus
   });
+
+  // Get team members by team ID
+  const getTeamMembersByTeam = async (teamId: string) => {
+    try {
+      console.log("Fetching team members for team:", teamId);
+      
+      // First get the team members from the team_members table
+      const { data: teamMembersData, error: teamMembersError } = await supabase
+        .from('team_members')
+        .select('*, profiles:user_id(*)')
+        .eq('team_id', teamId);
+        
+      if (teamMembersError) throw teamMembersError;
+      
+      console.log(`Found ${teamMembersData?.length || 0} members in team:`, teamId);
+      
+      // Transform the data to match our TeamMember type
+      return teamMembersData.map(member => ({
+        id: member.id,
+        team_id: member.team_id,
+        user_id: member.user_id,
+        role: member.role,
+        created_at: member.created_at,
+        updated_at: member.updated_at,
+        // Add profile information
+        first_name: member.profiles?.first_name,
+        last_name: member.profiles?.last_name,
+        email: member.profiles?.email,
+        profile_image_url: member.profiles?.profile_image_url
+      })) as TeamMember[];
+    } catch (error) {
+      console.error("Error fetching team members by team:", error);
+      return [];
+    }
+  };
 
   // Update a team member's manager
   const updateTeamMemberManager = async (memberId: string, newManagerId: string | null) => {
@@ -118,7 +151,7 @@ export const useManagerTeam = (managerId?: string) => {
         email: profile.email,
         profile_image_url: profile.profile_image_url,
         team_id: "", // This would need to be joined from team_members table
-        role: "",
+        role: profile.role || "",
         created_at: profile.created_at,
         updated_at: profile.updated_at
       })) as TeamMember[];
@@ -140,6 +173,16 @@ export const useManagerTeam = (managerId?: string) => {
     staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
   });
 
+  // Get team members by team ID query
+  const getTeamMembersByTeamQuery = (teamId?: string) => {
+    return useQuery({
+      queryKey: ['team-members-by-team', teamId],
+      queryFn: () => getTeamMembersByTeam(teamId!),
+      enabled: !!teamId && teamId.length > 0,
+      staleTime: 1000 * 60 * 2,
+    });
+  };
+
   // Combined refetch function
   const refetchAll = async () => {
     await refetch();
@@ -152,6 +195,8 @@ export const useManagerTeam = (managerId?: string) => {
     isLoading: isLoading || isLoadingNested,
     error,
     updateTeamMemberManager,
-    refetch: refetchAll
+    refetch: refetchAll,
+    getTeamMembersByTeam,
+    getTeamMembersByTeamQuery
   };
 };

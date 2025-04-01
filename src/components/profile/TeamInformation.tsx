@@ -11,7 +11,8 @@ import ManagerEmailInput from "./team/ManagerEmailInput";
 import { useManagerValidation } from "./team/useManagerValidation";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { TeamCreationDialog } from "@/components/team/TeamCreationDialog";
-import { Plus } from "lucide-react";
+import { Plus, Users } from "lucide-react";
+import { Team } from "@/types/team";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -26,6 +27,8 @@ const TeamInformation = ({
   const [managerEmail, setManagerEmail] = useState('');
   const [managerName, setManagerName] = useState('');
   const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
+  const [userTeams, setUserTeams] = useState<Team[]>([]);
+  const [isLoadingTeams, setIsLoadingTeams] = useState(false);
   
   const { language } = useLanguage();
   const { toast } = useToast();
@@ -65,6 +68,57 @@ const TeamInformation = ({
 
     fetchManagerDetails();
   }, [managerId]);
+
+  // Fetch user's teams
+  useEffect(() => {
+    const fetchUserTeams = async () => {
+      setIsLoadingTeams(true);
+      try {
+        // Get the user's ID
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Get teams where the user is a member
+        const { data: teamMembers, error: teamMembersError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', user.id);
+
+        if (teamMembersError) throw teamMembersError;
+        
+        if (teamMembers && teamMembers.length > 0) {
+          // Extract team IDs
+          const teamIds = teamMembers.map(tm => tm.team_id);
+          
+          // Get team details
+          const { data: teams, error: teamsError } = await supabase
+            .from('teams')
+            .select('*')
+            .in('id', teamIds);
+            
+          if (teamsError) throw teamsError;
+          
+          setUserTeams(teams || []);
+          console.log("User teams:", teams);
+        } else {
+          setUserTeams([]);
+        }
+      } catch (error) {
+        console.error("Error fetching user teams:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch your teams.",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingTeams(false);
+      }
+    };
+
+    if (isManager) {
+      fetchUserTeams();
+    }
+  }, [isManager, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +194,29 @@ const TeamInformation = ({
               />
             )}
           </div>
+
+          {isManager && (
+            <div className="space-y-2.5 mt-6 pt-6 border-t">
+              <label className="text-sm font-medium text-gray-700">Your Teams</label>
+              {isLoadingTeams ? (
+                <div className="text-sm text-gray-500">Loading teams...</div>
+              ) : userTeams.length > 0 ? (
+                <div className="space-y-2">
+                  {userTeams.map(team => (
+                    <div key={team.id} className="flex items-center p-2 border rounded-md">
+                      <Users className="h-4 w-4 mr-2 text-gray-500" />
+                      <span>{team.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-gray-500">
+                  You don't have any teams yet. Create a team to get started.
+                </div>
+              )}
+            </div>
+          )}
+          
           {isEditing && (
             <div className="flex justify-end pt-2">
               <Button type="submit" disabled={isLoading}>
