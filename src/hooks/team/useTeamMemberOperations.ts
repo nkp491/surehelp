@@ -1,5 +1,5 @@
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
@@ -8,6 +8,7 @@ import { useToast } from "@/hooks/use-toast";
  */
 export const useTeamMemberOperations = (onSuccess?: () => Promise<void>) => {
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
   // Update a team member's manager
   const updateTeamMemberManager = useMutation({
@@ -38,6 +39,12 @@ export const useTeamMemberOperations = (onSuccess?: () => Promise<void>) => {
         });
         return false;
       }
+    },
+    onSettled: () => {
+      // Always invalidate relevant queries regardless of success or failure
+      queryClient.invalidateQueries({ queryKey: ['manager-team'] });
+      queryClient.invalidateQueries({ queryKey: ['nested-team-members'] });
+      queryClient.invalidateQueries({ queryKey: ['team-members-by-team'] });
     }
   });
 

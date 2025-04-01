@@ -4,6 +4,10 @@ import { useManagerTeam } from "@/hooks/useManagerTeam";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TeamMember } from "@/types/team";
+import { Button } from "@/components/ui/button";
+import { RefreshCw } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface ManagerTeamListProps {
   managerId?: string;
@@ -14,16 +18,21 @@ export function ManagerTeamList({ managerId, selectedTeamId }: ManagerTeamListPr
   const { 
     teamMembers, 
     isLoading: isLoadingDirectReports,
-    getTeamMembersByTeamQuery 
+    getTeamMembersByTeamQuery,
+    refetch
   } = useManagerTeam(managerId);
   
   const { 
     data: teamMembersByTeam, 
-    isLoading: isLoadingTeamMembers 
+    isLoading: isLoadingTeamMembers,
+    error: teamMembersError,
+    refetch: refetchTeamMembers
   } = getTeamMembersByTeamQuery(selectedTeamId);
   
   const [displayMembers, setDisplayMembers] = useState<TeamMember[]>([]);
-  const isLoading = isLoadingDirectReports || isLoadingTeamMembers;
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const isLoading = isLoadingDirectReports || isLoadingTeamMembers || isRefreshing;
+  const { toast } = useToast();
 
   useEffect(() => {
     // Determine which members to display based on whether a team is selected
@@ -38,15 +47,81 @@ export function ManagerTeamList({ managerId, selectedTeamId }: ManagerTeamListPr
     }
   }, [teamMembers, teamMembersByTeam, selectedTeamId, managerId]);
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true);
+    try {
+      console.log("Refreshing team members data...");
+      if (selectedTeamId) {
+        await refetchTeamMembers();
+      }
+      await refetch();
+      toast({
+        title: "Refreshed",
+        description: "Team members data has been refreshed.",
+      });
+    } catch (error) {
+      console.error("Error refreshing data:", error);
+      toast({
+        title: "Error",
+        description: "Failed to refresh team members data.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Team Members</CardTitle>
+          <Button variant="outline" size="sm" disabled>
+            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            Refreshing...
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {Array.from({ length: 3 }).map((_, index) => (
+              <div key={index} className="flex items-center p-3 rounded-md border border-gray-200">
+                <Skeleton className="h-10 w-10 rounded-full mr-4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-32" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // If there's an error fetching team members
+  if (teamMembersError && selectedTeamId) {
+    return (
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Team Members</CardTitle>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="text-center p-4">
-            <p className="text-muted-foreground">Loading team members...</p>
+            <p className="text-muted-foreground mb-2">
+              There was an issue loading team members. This may be due to a database configuration issue.
+            </p>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleRefresh}
+              className="mx-auto"
+            >
+              Try Again
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -56,14 +131,20 @@ export function ManagerTeamList({ managerId, selectedTeamId }: ManagerTeamListPr
   if (!displayMembers || displayMembers.length === 0) {
     return (
       <Card>
-        <CardHeader>
-          <CardTitle>Team Members</CardTitle>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>
+            {selectedTeamId ? "Team Members" : "Your Direct Reports"}
+          </CardTitle>
+          <Button variant="outline" size="sm" onClick={handleRefresh}>
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Refresh
+          </Button>
         </CardHeader>
         <CardContent>
           <div className="text-center p-4">
             <p className="text-muted-foreground">
               {selectedTeamId 
-                ? "No members found in this team." 
+                ? "No members found in this team. Try refreshing or adding members to the team." 
                 : "You don't have any team members yet."}
             </p>
           </div>
@@ -74,10 +155,14 @@ export function ManagerTeamList({ managerId, selectedTeamId }: ManagerTeamListPr
 
   return (
     <Card>
-      <CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle>
           {selectedTeamId ? "Team Members" : "Your Direct Reports"}
         </CardTitle>
+        <Button variant="outline" size="sm" onClick={handleRefresh}>
+          <RefreshCw className="h-4 w-4 mr-2" />
+          Refresh
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
