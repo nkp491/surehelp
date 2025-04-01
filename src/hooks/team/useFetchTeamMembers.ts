@@ -1,6 +1,10 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchManagerTeamMembers, fetchTeamMembersByTeam, fetchNestedTeamMembers } from "./utils/teamMemberUtils";
+import { 
+  fetchManagerTeamMembers, 
+  fetchTeamMembersByTeam, 
+  fetchNestedTeamMembers 
+} from "./utils/teamMembers";
 import { TeamMember } from "@/types/team";
 import { useToast } from "@/hooks/use-toast";
 
