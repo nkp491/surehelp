@@ -47,12 +47,17 @@ export const useTeamAssociationService = () => {
       // For each team, check if user is already a member
       let teamsAddedCount = 0;
       for (const teamMembership of managerTeams) {
-        const { data: existingMembership } = await supabase
+        const { data: existingMembership, error: membershipError } = await supabase
           .from('team_members')
           .select('id')
           .eq('team_id', teamMembership.team_id)
           .eq('user_id', user.id)
           .maybeSingle();
+          
+        if (membershipError) {
+          console.error(`Error checking existing membership for team ${teamMembership.team_id}:`, membershipError);
+          continue; // Skip this team and try the next one
+        }
           
         if (!existingMembership) {
           // Add user to team with agent role
@@ -86,7 +91,7 @@ export const useTeamAssociationService = () => {
         return true;
       } else {
         console.log("No new teams to add");
-        return false;
+        return managerTeams.length > 0; // Return true if the manager has teams, even if user was already in all of them
       }
     } catch (error) {
       console.error("Error updating team associations:", error);
@@ -170,11 +175,16 @@ export const useTeamAssociationService = () => {
       if (!user) return false;
       
       // Get user's profile to check manager
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('manager_id, role')
         .eq('id', user.id)
         .maybeSingle();
+        
+      if (profileError) {
+        console.error("Error fetching user profile:", profileError);
+        return false;
+      }
         
       if (!profile || !profile.manager_id) {
         console.log("User has no manager assigned");
@@ -194,11 +204,14 @@ export const useTeamAssociationService = () => {
       
       // If manager has no teams, create a default team for them
       if (!result) {
+        console.log("Manager has no teams, attempting to create a default team");
         const managerTeams = await ensureManagerHasTeam(profile.manager_id);
         if (managerTeams && managerTeams.length > 0) {
-          // Try association again
-          await checkAndUpdateTeamAssociation(profile.manager_id);
+          // Try association again with the newly created team
+          console.log("Manager now has a team, trying to associate again");
+          return await checkAndUpdateTeamAssociation(profile.manager_id);
         }
+        return false;
       }
       
       return true;
@@ -215,10 +228,15 @@ export const useTeamAssociationService = () => {
    */
   const checkAgentRole = async (userId: string) => {
     try {
-      const { data: roles } = await supabase
+      const { data: roles, error } = await supabase
         .from('user_roles')
         .select('role')
         .eq('user_id', userId);
+        
+      if (error) {
+        console.error("Error checking agent role:", error);
+        return false;
+      }
         
       return roles?.some(r => r.role === 'agent' || r.role === 'agent_pro') || false;
     } catch (error) {
@@ -233,21 +251,31 @@ export const useTeamAssociationService = () => {
   const ensureManagerHasTeam = async (managerId: string) => {
     try {
       // Check if manager has any teams
-      const { data: existingTeams } = await supabase
+      const { data: existingTeams, error: teamError } = await supabase
         .from('team_members')
         .select('team_id')
         .eq('user_id', managerId);
+        
+      if (teamError) {
+        console.error("Error checking manager teams:", teamError);
+        return null;
+      }
         
       if (existingTeams && existingTeams.length > 0) {
         return existingTeams;
       }
       
       // Get manager profile for team name
-      const { data: managerProfile } = await supabase
+      const { data: managerProfile, error: profileError } = await supabase
         .from('profiles')
         .select('first_name, last_name')
         .eq('id', managerId)
         .maybeSingle();
+        
+      if (profileError) {
+        console.error("Error fetching manager profile:", profileError);
+        return null;
+      }
         
       if (!managerProfile) {
         console.log("Manager profile not found");
@@ -258,14 +286,14 @@ export const useTeamAssociationService = () => {
       const teamName = `${managerProfile.first_name || 'Manager'}'s Team`;
       
       // Create team
-      const { data: newTeam, error: teamError } = await supabase
+      const { data: newTeam, error: createError } = await supabase
         .from('teams')
         .insert([{ name: teamName }])
         .select()
         .single();
         
-      if (teamError || !newTeam) {
-        console.error("Error creating team for manager:", teamError);
+      if (createError || !newTeam) {
+        console.error("Error creating team for manager:", createError);
         return null;
       }
       
