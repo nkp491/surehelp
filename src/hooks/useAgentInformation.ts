@@ -163,7 +163,8 @@ export const useAgentInformation = (
     if (!date) return baseLabel;
     
     const dateObj = new Date(date);
-    const month = dateObj.toLocaleString('default', { month: 'short' });
+    // Use numeric month format instead of abbreviated month name
+    const month = (dateObj.getMonth() + 1).toString(); // getMonth() is 0-indexed
     const year = dateObj.getFullYear();
     
     return `${baseLabel} - ${completedText} ${month}/${year}`;
