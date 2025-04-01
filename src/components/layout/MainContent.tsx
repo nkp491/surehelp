@@ -10,6 +10,7 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import CommissionTracker from "@/pages/CommissionTracker";
 import RoleManagement from "@/pages/RoleManagement";
 import TeamPage from "@/pages/Team";
+import BulletinsPage from "@/pages/Bulletins";
 import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
@@ -41,6 +42,8 @@ const MainContent = () => {
           return <RoleManagement />;
         case '/team':
           return <TeamPage />;
+        case '/bulletins':
+          return <BulletinsPage />;
         case '/terms':
           return <TermsOfUse />;
         case '/admin':

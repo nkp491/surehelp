@@ -33,6 +33,7 @@ function App() {
           <Route path="/commission-tracker" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/role-management" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/team" element={<AuthGuard><MainContent /></AuthGuard>} />
+          <Route path="/bulletins" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/terms" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/admin" element={<AuthGuard><MainContent /></AuthGuard>} />
           <Route path="/admin-actions" element={<AuthGuard><MainContent /></AuthGuard>} />
