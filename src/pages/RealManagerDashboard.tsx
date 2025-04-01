@@ -64,7 +64,10 @@ export default function RealManagerDashboard() {
 
         {/* Middle and Right Columns Combined */}
         <div className="col-span-12 md:col-span-9">
-          <TeamDashboardTabs managerId={profile?.id} />
+          <TeamDashboardTabs 
+            managerId={profile?.id} 
+            selectedTeamId={selectedTeamId}
+          />
         </div>
       </div>
     </div>

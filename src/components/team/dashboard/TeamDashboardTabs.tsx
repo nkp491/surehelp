@@ -6,9 +6,10 @@ import { PlaceholderContent } from "./PlaceholderContent";
 
 interface TeamDashboardTabsProps {
   managerId?: string;
+  selectedTeamId?: string;
 }
 
-export function TeamDashboardTabs({ managerId }: TeamDashboardTabsProps) {
+export function TeamDashboardTabs({ managerId, selectedTeamId }: TeamDashboardTabsProps) {
   return (
     <Tabs defaultValue="team" className="w-full">
       <TabsList className="mb-4">
@@ -23,7 +24,7 @@ export function TeamDashboardTabs({ managerId }: TeamDashboardTabsProps) {
             <CardTitle>Your Team Members</CardTitle>
           </CardHeader>
           <CardContent className="px-0 pb-0">
-            <ManagerTeamList managerId={managerId} />
+            <ManagerTeamList managerId={managerId} selectedTeamId={selectedTeamId} />
           </CardContent>
         </Card>
       </TabsContent>
