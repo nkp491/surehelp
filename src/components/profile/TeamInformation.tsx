@@ -13,7 +13,7 @@ import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { TeamCreationDialog } from "@/components/team/TeamCreationDialog";
 import { Plus, Users, RefreshCw } from "lucide-react";
 import { Team } from "@/types/team";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -34,6 +34,7 @@ const TeamInformation = ({
   const t = translations[language];
   const { validateManagerEmail, isLoading } = useManagerValidation();
   const { userRoles } = useRoleCheck();
+  const queryClient = useQueryClient();
   
   // Check if user has manager role
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
@@ -151,7 +152,72 @@ const TeamInformation = ({
           title: "Manager Updated",
           description: "Your manager has been updated successfully.",
         });
+
+        // If a manager was assigned, check if team association needs to be updated
+        if (validationResult.managerId) {
+          await checkAndUpdateTeamAssociation(validationResult.managerId);
+        }
       }
+    }
+  };
+
+  // New function to check and update team association when manager is assigned
+  const checkAndUpdateTeamAssociation = async (newManagerId: string) => {
+    try {
+      // Get the current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+      
+      // Get manager's teams
+      const { data: managerTeams, error: managerTeamsError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', newManagerId)
+        .eq('role', 'manager_pro');
+        
+      if (managerTeamsError) throw managerTeamsError;
+      
+      if (!managerTeams || managerTeams.length === 0) {
+        console.log("Manager has no teams");
+        return;
+      }
+      
+      // Get the first team the manager is part of
+      const managersTeamId = managerTeams[0].team_id;
+      
+      // Check if user is already part of this team
+      const { data: existingMembership, error: membershipError } = await supabase
+        .from('team_members')
+        .select('*')
+        .eq('team_id', managersTeamId)
+        .eq('user_id', user.id);
+        
+      if (membershipError) throw membershipError;
+      
+      // If not already a member, add to the team
+      if (!existingMembership || existingMembership.length === 0) {
+        const { error: addError } = await supabase
+          .from('team_members')
+          .insert([{ 
+            team_id: managersTeamId,
+            user_id: user.id,
+            role: 'agent' // Default role for team members
+          }]);
+          
+        if (addError) throw addError;
+        
+        console.log("User added to manager's team");
+        
+        // Refresh teams list
+        refetchTeams();
+        
+        toast({
+          title: "Team Association Updated",
+          description: "You've been added to your manager's team.",
+        });
+      }
+    } catch (error) {
+      console.error("Error updating team association:", error);
     }
   };
 
@@ -166,13 +232,14 @@ const TeamInformation = ({
 
   const handleRefreshTeams = () => {
     refetchTeams();
+    queryClient.invalidateQueries({ queryKey: ['user-teams'] });
     toast({
       title: "Teams Refreshed",
       description: "Your teams list has been refreshed.",
     });
   };
 
-  // Check for specific user and team
+  // Check for specific user and team - Momentum Capitol fix
   useEffect(() => {
     const checkSpecificTeam = async () => {
       try {
@@ -240,10 +307,9 @@ const TeamInformation = ({
       }
     };
     
-    if (isManager) {
-      checkSpecificTeam();
-    }
-  }, [isManager, refetchTeams, toast]);
+    // Run the check whenever the teams are loaded or refreshed
+    checkSpecificTeam();
+  }, [refetchTeams, toast]);
 
   return (
     <Card className="shadow-sm">

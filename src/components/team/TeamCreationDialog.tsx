@@ -62,6 +62,7 @@ export function TeamCreationDialog({
         
         // Invalidate all related queries to ensure fresh data is fetched
         await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+        await queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
         // Also invalidate manager-team queries which might contain this user
         await queryClient.invalidateQueries({ queryKey: ['manager-team'] });
         
