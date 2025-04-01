@@ -15,40 +15,47 @@ export const useManagerTeam = (managerId?: string) => {
 
       console.log("Fetching team members for manager:", managerId);
 
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('manager_id', managerId);
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('manager_id', managerId);
 
-      if (error) {
-        console.error("Error fetching team members:", error);
-        throw error;
+        if (error) {
+          console.error("Error fetching team members:", error);
+          throw error;
+        }
+        
+        console.log(`Found ${data?.length || 0} team members for manager:`, managerId);
+        
+        // Transform the data to match our TeamMember type instead of Profile
+        // This ensures compatibility with the team filtering functionality
+        return data.map(profile => ({
+          id: profile.id,
+          user_id: profile.id,
+          first_name: profile.first_name,
+          last_name: profile.last_name,
+          email: profile.email,
+          profile_image_url: profile.profile_image_url,
+          // For other TeamMember fields, we set defaults
+          team_id: "", // This will be populated from team_members table if needed
+          role: profile.role || "",
+          created_at: profile.created_at,
+          updated_at: profile.updated_at
+        })) as TeamMember[];
+      } catch (error) {
+        console.error("Error in fetchTeamMembers:", error);
+        // Return empty array instead of throwing to prevent app from breaking
+        return [];
       }
-      
-      console.log(`Found ${data?.length || 0} team members for manager:`, managerId);
-      
-      // Transform the data to match our TeamMember type instead of Profile
-      // This ensures compatibility with the team filtering functionality
-      return data.map(profile => ({
-        id: profile.id,
-        user_id: profile.id,
-        first_name: profile.first_name,
-        last_name: profile.last_name,
-        email: profile.email,
-        profile_image_url: profile.profile_image_url,
-        // For other TeamMember fields, we set defaults
-        team_id: "", // This will be populated from team_members table if needed
-        role: profile.role || "",
-        created_at: profile.created_at,
-        updated_at: profile.updated_at
-      })) as TeamMember[];
     },
     enabled: !!managerId,
     staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes (reduced from default)
     refetchOnWindowFocus: true, // Refresh data when window regains focus
+    retry: 2, // Retry twice on failure
   });
 
-  // Get team members by team ID
+  // Get team members by team ID - with better error handling
   const getTeamMembersByTeam = async (teamId: string) => {
     try {
       console.log("Fetching team members for team:", teamId);
@@ -59,7 +66,10 @@ export const useManagerTeam = (managerId?: string) => {
         .select('*')
         .eq('team_id', teamId);
         
-      if (teamMembersError) throw teamMembersError;
+      if (teamMembersError) {
+        console.error("Error fetching team members:", teamMembersError);
+        return [];
+      }
       
       if (!teamMembersData || teamMembersData.length === 0) {
         console.log("No team members found for team:", teamId);
@@ -75,7 +85,10 @@ export const useManagerTeam = (managerId?: string) => {
         .select('*')
         .in('id', userIds);
         
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+        return [];
+      }
       
       // Combine the team members data with the profiles data
       const result = teamMembersData.map(member => {
@@ -101,6 +114,17 @@ export const useManagerTeam = (managerId?: string) => {
       console.error("Error fetching team members by team:", error);
       return [];
     }
+  };
+
+  // Get team members by team ID query
+  const getTeamMembersByTeamQuery = (teamId?: string) => {
+    return useQuery({
+      queryKey: ['team-members-by-team', teamId],
+      queryFn: () => getTeamMembersByTeam(teamId!),
+      enabled: !!teamId && teamId.length > 0,
+      staleTime: 1000 * 60 * 2,
+      retry: 2, // Retry twice on failure
+    });
   };
 
   // Update a team member's manager
@@ -145,7 +169,10 @@ export const useManagerTeam = (managerId?: string) => {
         .eq('manager_id', managerId)
         .or(`role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum`);
         
-      if (subManagerError) throw subManagerError;
+      if (subManagerError) {
+        console.error("Error fetching sub-managers:", subManagerError);
+        return [];
+      }
       
       if (!subManagers || subManagers.length === 0) return [];
       
@@ -160,7 +187,10 @@ export const useManagerTeam = (managerId?: string) => {
         .select('*')
         .in('manager_id', subManagerIds);
         
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("Error fetching nested team members:", membersError);
+        return [];
+      }
       
       console.log(`Found ${nestedMembers?.length || 0} nested team members for sub-managers`);
       
@@ -193,17 +223,8 @@ export const useManagerTeam = (managerId?: string) => {
     queryFn: getNestedTeamMembers,
     enabled: !!managerId && (managerId?.length > 0),
     staleTime: 1000 * 60 * 2, // Consider data fresh for 2 minutes
+    retry: 2, // Retry twice on failure
   });
-
-  // Get team members by team ID query
-  const getTeamMembersByTeamQuery = (teamId?: string) => {
-    return useQuery({
-      queryKey: ['team-members-by-team', teamId],
-      queryFn: () => getTeamMembersByTeam(teamId!),
-      enabled: !!teamId && teamId.length > 0,
-      staleTime: 1000 * 60 * 2,
-    });
-  };
 
   // Combined refetch function
   const refetchAll = async () => {

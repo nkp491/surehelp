@@ -14,6 +14,7 @@ export const useTeamManagement = () => {
     createTeam, 
     updateTeam, 
     addUserToTeam,
+    refetchTeams,
     isLoading: isLoadingTeamOps 
   } = useTeams();
   
@@ -43,6 +44,7 @@ export const useTeamManagement = () => {
     createTeam,
     updateTeam,
     addUserToTeam,
+    refetchTeams,
     
     // Team members
     useTeamMembers: getTeamMembersQuery,

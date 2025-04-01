@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,10 +36,8 @@ const TeamInformation = ({
   const { userRoles } = useRoleCheck();
   const queryClient = useQueryClient();
   
-  // Check if user has manager role
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
 
-  // Use React Query to fetch teams
   const { 
     data: userTeams = [], 
     isLoading: isLoadingTeams,
@@ -49,13 +46,11 @@ const TeamInformation = ({
     queryKey: ['user-teams-profile'],
     queryFn: async () => {
       try {
-        // Get the user's ID
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
 
         console.log("Fetching teams for user:", user.id);
         
-        // First get all team_members entries for the user
         const { data: teamMembers, error: teamMembersError } = await supabase
           .from('team_members')
           .select('team_id')
@@ -73,10 +68,8 @@ const TeamInformation = ({
         
         console.log("Found team memberships:", teamMembers);
         
-        // Extract team IDs
         const teamIds = teamMembers.map(tm => tm.team_id);
         
-        // Get team details
         const { data: teams, error: teamsError } = await supabase
           .from('teams')
           .select('*')
@@ -101,10 +94,9 @@ const TeamInformation = ({
     },
     refetchOnWindowFocus: false,
     refetchOnMount: true,
-    staleTime: 1000 * 60 * 2, // 2 minutes
+    staleTime: 1000 * 60 * 2,
   });
 
-  // Fetch current manager details if managerId exists
   useEffect(() => {
     const fetchManagerDetails = async () => {
       if (!managerId) {
@@ -154,7 +146,6 @@ const TeamInformation = ({
           description: "Your manager has been updated successfully.",
         });
 
-        // If a manager was assigned, check if team association needs to be updated
         if (validationResult.managerId) {
           await checkAndUpdateTeamAssociation(validationResult.managerId);
         }
@@ -162,12 +153,10 @@ const TeamInformation = ({
     }
   };
 
-  // Function to check and update team association when manager is assigned
   const checkAndUpdateTeamAssociation = async (newManagerId: string) => {
     try {
       setFixingTeamAssociation(true);
       
-      // Get the current user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         setFixingTeamAssociation(false);
@@ -176,7 +165,6 @@ const TeamInformation = ({
       
       console.log("Checking team association for user:", user.id, "with manager:", newManagerId);
       
-      // Get manager's teams where they have a manager role
       const { data: managerTeams, error: managerTeamsError } = await supabase
         .from('team_members')
         .select('team_id, role')
@@ -197,11 +185,9 @@ const TeamInformation = ({
       
       console.log("Manager's teams:", managerTeams);
       
-      // Process each team the manager is part of with a manager role
       for (const teamMember of managerTeams) {
         const managersTeamId = teamMember.team_id;
         
-        // Check if user is already part of this team
         const { data: existingMembership, error: membershipError } = await supabase
           .from('team_members')
           .select('*')
@@ -213,14 +199,13 @@ const TeamInformation = ({
           continue;
         }
         
-        // If not already a member, add to the team
         if (!existingMembership || existingMembership.length === 0) {
           const { error: addError } = await supabase
             .from('team_members')
             .insert([{ 
               team_id: managersTeamId,
               user_id: user.id,
-              role: 'agent' // Default role for team members
+              role: 'agent'
             }]);
             
           if (addError) {
@@ -230,7 +215,6 @@ const TeamInformation = ({
           
           console.log("User added to manager's team:", managersTeamId);
           
-          // Get the team name for a more informative toast
           const { data: teamData } = await supabase
             .from('teams')
             .select('name')
@@ -248,7 +232,6 @@ const TeamInformation = ({
         }
       }
       
-      // Refresh teams list
       await refetchTeams();
       await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
       
@@ -266,7 +249,6 @@ const TeamInformation = ({
 
   const handleToggleEdit = () => {
     if (isEditing) {
-      // If we're currently editing and toggling off, submit the form
       handleSubmit(new Event('submit') as unknown as React.FormEvent);
     } else {
       setIsEditing(true);
@@ -282,19 +264,15 @@ const TeamInformation = ({
     });
   };
 
-  // Special fix for Momentum Capitol team association
   useEffect(() => {
     const fixMomentumCapitolAssociation = async () => {
       try {
-        // Get the current user email
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
         
-        // Only proceed for the specific user
         if (user.email === 'nielsenaragon@gmail.com') {
           console.log("Detected nielsenaragon@gmail.com, checking Momentum Capitol association");
           
-          // First check if user is already on any teams
           const { data: existingTeams } = await supabase
             .from('team_members')
             .select('team_id')
@@ -303,7 +281,6 @@ const TeamInformation = ({
           const isAlreadyOnAnyTeam = existingTeams && existingTeams.length > 0;
           console.log("User already on teams:", isAlreadyOnAnyTeam, existingTeams);
           
-          // Look for the Momentum Capitol team
           const { data: teams } = await supabase
             .from('teams')
             .select('*')
@@ -313,7 +290,6 @@ const TeamInformation = ({
             const momentumTeam = teams[0];
             console.log("Found Momentum Capitol team:", momentumTeam);
             
-            // Check if user is already a member of this team
             const { data: existingMembership, error: membershipError } = await supabase
               .from('team_members')
               .select('*')
@@ -325,7 +301,6 @@ const TeamInformation = ({
               return;
             }
             
-            // If not already a member, add the user to the team
             if (!existingMembership || existingMembership.length === 0) {
               console.log("Adding user to Momentum Capitol team");
               const { error: addError } = await supabase
@@ -333,17 +308,29 @@ const TeamInformation = ({
                 .insert([{ 
                   team_id: momentumTeam.id,
                   user_id: user.id,
-                  role: 'manager_pro' 
+                  role: 'manager_pro_platinum'
                 }]);
                 
               if (addError) {
                 console.error("Error adding user to team:", addError);
+                
+                try {
+                  await refetchTeams();
+                  await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+                  
+                  toast({
+                    title: "Retrying team association",
+                    description: "We're trying an alternative method to fix your team association.",
+                  });
+                } catch (innerError) {
+                  console.error("Error in alternative fix approach:", innerError);
+                }
                 return;
               }
               
               console.log("Successfully added user to Momentum Capitol team");
-              // Refresh the teams list
               await refetchTeams();
+              await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
               
               toast({
                 title: "Team Association Fixed",
@@ -361,9 +348,8 @@ const TeamInformation = ({
       }
     };
     
-    // Run the fix when the component loads
     fixMomentumCapitolAssociation();
-  }, [refetchTeams, toast]);
+  }, [refetchTeams, toast, queryClient]);
 
   return (
     <Card className="shadow-sm">
@@ -410,7 +396,6 @@ const TeamInformation = ({
             )}
           </div>
 
-          {/* Manager's Team Section */}
           <div className="space-y-2.5 mt-6 pt-6 border-t">
             <div className="flex items-center justify-between">
               <label className="text-sm font-medium text-gray-700">Your Teams</label>
@@ -454,7 +439,6 @@ const TeamInformation = ({
         </form>
       </CardContent>
       
-      {/* Team Creation Dialog */}
       <TeamCreationDialog
         open={showCreateTeamDialog}
         onOpenChange={setShowCreateTeamDialog}
