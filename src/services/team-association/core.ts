@@ -8,7 +8,27 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
   const queryClient = useQueryClient();
 
   /**
+   * Invalidate all team-related queries
+   */
+  const invalidateTeamQueries = () => {
+    queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+    queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+    queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+  };
+
+  /**
+   * Show success toast for team association
+   */
+  const showSuccessToast = () => {
+    toast({
+      title: "Team Association Updated",
+      description: "You've been added to your manager's teams.",
+    });
+  };
+
+  /**
    * Check if user has a manager and update team associations accordingly
+   * Legacy implementation kept for compatibility
    */
   const checkAndUpdateTeamAssociation = async (managerId?: string): Promise<boolean> => {
     setIsProcessing(true);
@@ -42,14 +62,9 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
           console.log("Successfully associated user with manager's teams via RPC");
           
           // Invalidate all team-related queries
-          queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-          queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-          queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+          invalidateTeamQueries();
           
-          toast({
-            title: "Team Association Updated",
-            description: "You've been added to your manager's teams.",
-          });
+          showSuccessToast();
           
           return true;
         } else {
@@ -73,11 +88,28 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
 
   /**
    * Add a user to their manager's teams
+   * Legacy implementation kept for compatibility
    */
-  const addUserToTeamsByManager = async (userId: string, managerId: string): Promise<boolean> => {
+  const addUserToTeamsByManager = async (userId: string, managerId: string | null): Promise<boolean> => {
     console.log("Manually checking and adding user to manager teams");
     
     try {
+      // If managerId is null, try to get it from the user's profile
+      if (!managerId) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('manager_id')
+          .eq('id', userId)
+          .single();
+          
+        managerId = profile?.manager_id || null;
+        
+        if (!managerId) {
+          console.log("No manager ID found for user");
+          return false;
+        }
+      }
+      
       // Try the RPC function first
       try {
         const { data: managerTeams, error: teamsError } = await supabase.rpc(
@@ -127,14 +159,8 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
           }
           
           if (addedToAnyTeam) {
-            queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-            queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-            queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
-            
-            toast({
-              title: "Team Association Updated",
-              description: "You've been added to your manager's teams.",
-            });
+            invalidateTeamQueries();
+            showSuccessToast();
           }
           
           return addedToAnyTeam;
@@ -145,192 +171,79 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
         console.log("Direct function call failed:", directError);
       }
       
-      // Fall back to a more direct approach
-      return await addUserToManagerTeamsAlternative(userId, managerId);
-    } catch (error) {
-      console.error("Error in addUserToTeamsByManager:", error);
-      return await addUserToManagerTeamsAlternative(userId, managerId);
-    }
-  };
-
-  /**
-   * Alternative implementation to avoid RLS recursion issues
-   */
-  const addUserToManagerTeamsAlternative = async (userId: string, managerId: string): Promise<boolean> => {
-    console.log("Using alternative approach to add user to manager teams");
-    
-    try {
-      // For Nielsen accounts, look directly for Momentum teams
-      const { data: managerProfile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', managerId)
-        .single();
-        
-      if (managerProfile && 
-         (managerProfile.email === 'nielsenaragon@gmail.com' || 
-          managerProfile.email === 'nielsenaragon@ymail.com')) {
-        console.log("Manager is Nielsen - looking for Momentum Capitol teams");
-        
-        const { data: momentumTeams } = await supabase
-          .from('teams')
-          .select('*')
-          .or('name.ilike.%Momentum Capitol%,name.ilike.%Momentum Capital%');
+      // Fall back to a more direct approach using team_managers
+      try {
+        // Try to get teams from team_managers table directly
+        const { data: managerTeams, error: tmError } = await supabase
+          .from('team_managers')
+          .select('team_id')
+          .eq('user_id', managerId);
           
-        if (momentumTeams && momentumTeams.length > 0) {
-          console.log("Found Momentum teams:", momentumTeams);
+        if (!tmError && managerTeams && managerTeams.length > 0) {
+          console.log("Successfully fetched manager teams from team_managers:", managerTeams);
           
-          // Add user to each Momentum team
+          // Add user to each team
           let addedToAnyTeam = false;
+          const teamIds = managerTeams.map(t => t.team_id);
           
-          for (const team of momentumTeams) {
-            // Check if user is already in team
-            const { data: existingMembership } = await supabase
+          for (const teamId of teamIds) {
+            // Check if user is already in this team
+            const { data: existingMembership, error: membershipError } = await supabase
               .from('team_members')
               .select('id')
-              .eq('team_id', team.id)
+              .eq('team_id', teamId)
               .eq('user_id', userId)
               .maybeSingle();
               
+            if (membershipError) {
+              console.error(`Error checking membership for team ${teamId}:`, membershipError);
+              continue;
+            }
+            
             if (!existingMembership) {
               // Add user to team
               const { error: addError } = await supabase
                 .from('team_members')
                 .insert([{
-                  team_id: team.id,
+                  team_id: teamId,
                   user_id: userId,
                   role: 'agent'
                 }]);
                 
-              if (!addError) {
-                console.log(`Added user to ${team.name}`);
-                addedToAnyTeam = true;
+              if (addError) {
+                console.error(`Error adding user to team ${teamId}:`, addError);
               } else {
-                console.error(`Error adding user to ${team.name}:`, addError);
+                console.log(`Added user to team ${teamId}`);
+                addedToAnyTeam = true;
               }
             } else {
-              console.log(`User already in team ${team.name}`);
+              console.log(`User already in team ${teamId}`);
             }
           }
           
           if (addedToAnyTeam) {
-            // Refresh queries
-            queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-            queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-            queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
-            
-            return true;
+            invalidateTeamQueries();
+            showSuccessToast();
           }
           
-          return momentumTeams.length > 0; // True if user is at least in one team
+          return addedToAnyTeam;
         }
+      } catch (error) {
+        console.error("Error in team_managers query:", error);
       }
       
-      // If not a Nielsen account or no Momentum teams found, try direct queries
-      console.log("No Nielsen special case detected or no Momentum teams found");
-      
-      // Get all teams in the system
-      const { data: allTeams } = await supabase
-        .from('teams')
-        .select('*');
-        
-      if (!allTeams || allTeams.length === 0) {
-        console.log("No teams found in the system");
-        return false;
-      }
-      
-      // Get all team memberships in the system
-      const { data: allMemberships } = await supabase
-        .from('team_members')
-        .select('team_id, user_id');
-        
-      if (!allMemberships) {
-        console.log("No team memberships found");
-        return false;
-      }
-      
-      // Find teams that the manager belongs to
-      const managerTeams = allMemberships
-        .filter(m => m.user_id === managerId)
-        .map(m => m.team_id);
-        
-      if (managerTeams.length === 0) {
-        console.log("Manager is not in any teams");
-        return false;
-      }
-      
-      console.log("Found manager's teams:", managerTeams);
-      
-      // Check which teams the user is already in
-      const userMemberships = allMemberships
-        .filter(m => m.user_id === userId)
-        .map(m => m.team_id);
-        
-      // Find manager teams that the user is not in yet
-      const teamsToAdd = managerTeams.filter(teamId => !userMemberships.includes(teamId));
-      
-      if (teamsToAdd.length === 0) {
-        console.log("User is already in all manager's teams");
-        return true;
-      }
-      
-      // Add user to each team
-      let addedToAnyTeam = false;
-      
-      for (const teamId of teamsToAdd) {
-        // Add user to team
-        const { error: addError } = await supabase
-          .from('team_members')
-          .insert([{
-            team_id: teamId,
-            user_id: userId,
-            role: 'agent'
-          }]);
-          
-        if (!addError) {
-          console.log(`Added user to team ${teamId}`);
-          addedToAnyTeam = true;
-        } else {
-          console.error(`Error adding user to team ${teamId}:`, addError);
-        }
-      }
-      
-      if (addedToAnyTeam) {
-        queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-        queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-        queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
-        
-        toast({
-          title: "Team Association Updated",
-          description: "You've been added to your manager's teams.",
-        });
-      }
-      
-      return addedToAnyTeam;
-    } catch (error) {
-      console.error("Error in addUserToManagerTeamsAlternative:", error);
       return false;
-    }
-  };
-
-  /**
-   * Add a user to their manager's teams
-   */
-  const addUserToManagerTeams = async (userId: string, managerId: string): Promise<boolean> => {
-    setIsProcessing(true);
-    
-    try {
-      return await addUserToTeamsByManager(userId, managerId);
     } catch (error) {
-      console.error("Error in addUserToManagerTeams:", error);
+      console.error("Error in addUserToTeamsByManager:", error);
       return false;
-    } finally {
-      setIsProcessing(false);
     }
   };
 
   return {
     checkAndUpdateTeamAssociation,
-    addUserToManagerTeams
+    addUserToTeamsByManager,
+    invalidateTeamQueries,
+    showSuccessToast,
+    supabase
   };
 };

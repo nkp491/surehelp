@@ -351,6 +351,38 @@ export type Database = {
         }
         Relationships: []
       }
+      manager_teams: {
+        Row: {
+          created_at: string | null
+          id: string
+          manager_id: string
+          team_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          manager_id: string
+          team_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          manager_id?: string
+          team_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manager_teams_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meeting_followups: {
         Row: {
           created_at: string | null
@@ -696,6 +728,41 @@ export type Database = {
           },
         ]
       }
+      team_managers: {
+        Row: {
+          created_at: string | null
+          id: string
+          role: string
+          team_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          role: string
+          team_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          role?: string
+          team_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_managers_team_id_fkey"
+            columns: ["team_id"]
+            isOneToOne: false
+            referencedRelation: "teams"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_members: {
         Row: {
           created_at: string
@@ -820,7 +887,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_user_to_manager_teams: {
+        Args: {
+          user_id: string
+          manager_id: string
+        }
+        Returns: boolean
+      }
+      can_access_team: {
+        Args: {
+          check_user_id: string
+          check_team_id: string
+        }
+        Returns: boolean
+      }
       create_team_for_manager: {
+        Args: {
+          team_name: string
+        }
+        Returns: Json
+      }
+      create_team_for_manager_secure: {
         Args: {
           team_name: string
         }
@@ -837,6 +924,12 @@ export type Database = {
         Args: {
           user_id: string
           manager_id: string
+        }
+        Returns: boolean
+      }
+      force_agent_team_association: {
+        Args: {
+          agent_id: string
         }
         Returns: boolean
       }
@@ -868,6 +961,12 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_user_teams_secure: {
+        Args: {
+          check_user_id: string
+        }
+        Returns: string[]
+      }
       get_user_teams_v2: {
         Args: Record<PropertyKey, never>
         Returns: string[]
@@ -886,8 +985,34 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_manager_of_user: {
+        Args: {
+          manager_id: string
+          user_id: string
+        }
+        Returns: boolean
+      }
+      is_momentum_team: {
+        Args: {
+          check_team_id: string
+        }
+        Returns: boolean
+      }
+      is_special_user: {
+        Args: {
+          check_user_id: string
+        }
+        Returns: boolean
+      }
       is_team_manager: {
         Args: {
+          check_team_id: string
+        }
+        Returns: boolean
+      }
+      is_team_manager_secure: {
+        Args: {
+          check_user_id: string
           check_team_id: string
         }
         Returns: boolean
