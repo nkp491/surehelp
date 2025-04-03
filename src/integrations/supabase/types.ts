@@ -820,6 +820,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      create_team_for_manager: {
+        Args: {
+          team_name: string
+        }
+        Returns: Json
+      }
       create_team_with_member: {
         Args: {
           team_name: string
@@ -866,6 +872,13 @@ export type Database = {
       is_team_member: {
         Args: {
           team_id: string
+        }
+        Returns: boolean
+      }
+      safe_is_team_manager: {
+        Args: {
+          check_team_id: string
+          check_user_id?: string
         }
         Returns: boolean
       }
