@@ -44,7 +44,37 @@ export const useAgentTeamAssociation = (
       
       console.log("Force team association with manager", profile.manager_id);
       
-      // Try direct association if the core method fails
+      // First, try using the database function directly
+      try {
+        console.log("Trying direct function call for team association");
+        const { data: result, error: funcError } = await supabase
+          .rpc('ensure_user_in_manager_teams', {
+            user_id: user.id,
+            manager_id: profile.manager_id
+          });
+          
+        if (funcError) {
+          console.error("Error calling ensure_user_in_manager_teams:", funcError);
+        } else if (result === true) {
+          console.log("Successfully associated user with manager's teams via function");
+          
+          // Refresh all team-related queries
+          queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+          queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+          queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+          
+          toast({
+            title: "Team Association Successful",
+            description: "You have been added to your manager's teams.",
+          });
+          
+          return true;
+        }
+      } catch (funcError) {
+        console.error("Function call error:", funcError);
+      }
+      
+      // Try the core method if function call fails
       const success = await checkAndUpdateTeamAssociation(profile.manager_id);
       
       if (success) {

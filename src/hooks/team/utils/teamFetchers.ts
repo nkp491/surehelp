@@ -78,22 +78,22 @@ export const fetchTeamsWithoutRLS = async (userId: string): Promise<Team[]> => {
       return [];
     }
     
-    // Then get this user's team memberships from the custom function
+    // Then get this user's team memberships directly
     try {
-      // Call custom function directly instead of using RPC
-      const { data, error } = await supabase
+      // Try direct query without RPC
+      const { data: memberships, error: membershipError } = await supabase
         .from('team_members')
         .select('team_id')
         .eq('user_id', userId);
       
-      if (!error && data && Array.isArray(data) && data.length > 0) {
+      if (!membershipError && memberships && Array.isArray(memberships) && memberships.length > 0) {
         console.log("Successfully fetched user teams directly");
         // Extract team IDs
-        const teamIds = data.map(item => item.team_id);
+        const teamIds = memberships.map(item => item.team_id);
         // Filter teams by IDs
         return allTeams.filter((team: Team) => teamIds.includes(team.id));
-      } else if (error) {
-        console.error("Error fetching team memberships:", error);
+      } else if (membershipError) {
+        console.error("Error fetching team memberships:", membershipError);
       }
     } catch (directError) {
       console.log("Direct function call failed, trying fallback:", directError);

@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -11,6 +12,7 @@ import TeamsSection from "./team/TeamsSection";
 import { useTeamInformationLogic } from "@/hooks/useTeamInformationLogic";
 import { useTeamAssociationService } from "@/services/team-association";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -28,6 +30,7 @@ const TeamInformation = ({
   const { validateManagerEmail, isLoading: isValidating } = useManagerValidation();
   const { userRoles } = useRoleCheck();
   const { addUserToManagerTeams } = useTeamAssociationService();
+  const { toast } = useToast();
   
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
   const isAgent = userRoles.some(role => role === 'agent' || role === 'agent_pro');
@@ -67,11 +70,34 @@ const TeamInformation = ({
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
           console.log("Manager changed, adding user to manager's teams");
-          await addUserToManagerTeams(user.id, newManagerId);
-          // Refresh teams to show the new teams
-          setTimeout(() => {
-            handleRefreshTeams();
-          }, 500);
+          try {
+            const success = await addUserToManagerTeams(user.id, newManagerId);
+            
+            if (success) {
+              toast({
+                title: "Teams Updated",
+                description: "You've been added to your manager's teams.",
+              });
+            } else {
+              console.log("No teams were added - manager might not have teams yet.");
+              toast({
+                title: "Team Information Updated",
+                description: "Manager updated successfully. You may need to refresh teams later when your manager creates teams.",
+              });
+            }
+            
+            // Refresh teams to show the new teams
+            setTimeout(() => {
+              handleRefreshTeams();
+            }, 500);
+          } catch (error) {
+            console.error("Error adding user to manager's teams:", error);
+            toast({
+              title: "Manager Updated",
+              description: "Manager was updated, but there was an issue adding you to their teams. Try using the refresh button.",
+              variant: "destructive"
+            });
+          }
         }
       }
       

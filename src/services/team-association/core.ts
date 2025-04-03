@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -26,47 +27,54 @@ export const useTeamAssociationCore = (
         return false;
       }
       
-      // Try a direct SQL query to bypass RLS recursion
+      // Try using the database function to ensure association
       try {
-        // Get manager's team memberships directly
-        const { data: managerTeamMembers, error: managerTeamsError } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('user_id', managerId);
-        
-        if (managerTeamsError) {
-          console.log("Direct query error:", managerTeamsError);
-          console.log("Falling back to standard query");
+        const { data: result, error: functionError } = await supabase
+          .from('profiles')
+          .select('id')
+          .eq('id', user.id)
+          .eq('manager_id', managerId)
+          .single();
           
-          // Fallback to standard query if direct query fails
-          const { data: teamData, error: teamsError } = await supabase
-            .from('team_members')
-            .select('team_id')
-            .eq('user_id', managerId);
+        if (functionError) {
+          console.error("Error checking profile:", functionError);
+        } else if (result) {
+          // Try to directly call the association function
+          console.log("Calling ensure_user_in_manager_teams function");
+          
+          const { data: ensureResult, error: ensureError } = await supabase
+            .rpc('ensure_user_in_manager_teams', {
+              user_id: user.id,
+              manager_id: managerId
+            });
             
-          if (teamsError) {
-            console.error("Error fetching manager's teams:", teamsError);
-            // Try alternative method
-            return await addUserToTeamsByManager(user.id, managerId);
+          if (ensureError) {
+            console.error("Error calling ensure_user_in_manager_teams:", ensureError);
+          } else {
+            console.log("Function result:", ensureResult);
+            // If the function reports success, refresh and return true
+            if (ensureResult === true) {
+              // Refresh team data in the UI
+              queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+              queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+              queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+              
+              toast({
+                title: "Teams Updated",
+                description: "You've been added to your manager's teams.",
+              });
+              
+              return true;
+            }
           }
-          
-          if (!teamData || teamData.length === 0) {
-            console.log("Manager has no teams");
-            return false;
-          }
-          
-          return await processTeamAssociations(user.id, teamData);
         }
         
-        if (!managerTeamMembers || !Array.isArray(managerTeamMembers) || managerTeamMembers.length === 0) {
-          console.log("Manager has no teams (from direct query)");
-          return false;
-        }
-        
-        return await processTeamAssociations(user.id, managerTeamMembers);
-      } catch (innerError) {
-        console.error("Error in team association process:", innerError);
-        return false;
+        // If the function approach failed, try the direct approach
+        return await addUserToTeamsByManager(user.id, managerId);
+      } catch (funcError) {
+        console.error("Error with function approach:", funcError);
+        // Try the manual approach as fallback
+        return await addUserToTeamsByManager(user.id, managerId);
       }
     } catch (error) {
       console.error("Error updating team associations:", error);
@@ -137,6 +145,53 @@ export const useTeamAssociationCore = (
    * Alternative method to add a user to their manager's teams
    */
   const addUserToTeamsByManager = async (userId: string, managerId: string) => {
+    try {
+      // Get manager's team memberships directly
+      const { data: managerTeamMembers, error: managerTeamsError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', managerId);
+      
+      if (managerTeamsError) {
+        console.log("Direct query error:", managerTeamsError);
+        console.log("Falling back to standard query");
+        
+        // Fallback to standard query if direct query fails
+        const { data: teamData, error: teamsError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', managerId);
+          
+        if (teamsError) {
+          console.error("Error fetching manager's teams:", teamsError);
+          // Try alternative method
+          return await addUserToManagerTeamsAlternative(userId, managerId);
+        }
+        
+        if (!teamData || teamData.length === 0) {
+          console.log("Manager has no teams");
+          return false;
+        }
+        
+        return await processTeamAssociations(userId, teamData);
+      }
+      
+      if (!managerTeamMembers || !Array.isArray(managerTeamMembers) || managerTeamMembers.length === 0) {
+        console.log("Manager has no teams (from direct query)");
+        return false;
+      }
+      
+      return await processTeamAssociations(userId, managerTeamMembers);
+    } catch (error) {
+      console.error("Error in team association process:", error);
+      return false;
+    }
+  };
+
+  /**
+   * Alternative method with a different approach to add a user to their manager's teams
+   */
+  const addUserToManagerTeamsAlternative = async (userId: string, managerId: string) => {
     try {
       // Get all teams
       const { data: allTeams, error: teamsError } = await supabase
@@ -223,8 +278,33 @@ export const useTeamAssociationCore = (
     try {
       console.log(`Adding user ${userId} to teams of manager ${managerId}`);
       
+      // First try using the database function
+      try {
+        const { data: ensureResult, error: ensureError } = await supabase
+          .rpc('ensure_user_in_manager_teams', {
+            user_id: userId,
+            manager_id: managerId
+          });
+          
+        if (ensureError) {
+          console.error("Error calling ensure_user_in_manager_teams:", ensureError);
+        } else {
+          console.log("Function result:", ensureResult);
+          if (ensureResult === true) {
+            // Refresh team data in the UI
+            queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+            queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+            queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+            
+            return true;
+          }
+        }
+      } catch (funcError) {
+        console.error("Error with function approach:", funcError);
+      }
+      
       // Try multiple approaches to ensure we can get the teams even with RLS issues
-      const result = await addUserToTeamsByManager(userId, managerId);
+      const result = await addUserToManagerTeamsAlternative(userId, managerId);
       
       return result;
     } catch (error) {
