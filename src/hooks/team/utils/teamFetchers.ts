@@ -8,19 +8,18 @@ export const fetchUserTeamsDirectly = async () => {
   console.log("Fetching user teams directly");
   
   try {
-    // Try to use the new secure function
+    // Try to use the new secure function - have to use any to bypass type checking
     const { data: secureTeams, error: secureError } = await supabase.rpc(
-      'get_user_teams_secure',
-      {}
+      'get_user_teams_secure' as any
     );
     
-    if (!secureError && secureTeams && secureTeams.length > 0) {
+    if (!secureError && secureTeams && Array.isArray(secureTeams) && secureTeams.length > 0) {
       console.log("Got user teams via secure function:", secureTeams);
       // Now fetch full team details
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('*')
-        .in('id', secureTeams);
+        .in('id', secureTeams as string[]);
         
       if (!teamsError && teams) {
         return teams;
@@ -80,18 +79,18 @@ export const fetchTeamsThroughManager = async (managerId: string) => {
   try {
     // Try to use the secure function
     const { data: managerTeams, error: rpcError } = await supabase.rpc(
-      'get_manager_teams',
+      'get_manager_teams' as any,
       { manager_id: managerId }
     );
     
-    if (!rpcError && managerTeams && managerTeams.length > 0) {
+    if (!rpcError && managerTeams && Array.isArray(managerTeams) && managerTeams.length > 0) {
       console.log("Got manager teams via secure function:", managerTeams);
       
       // Now fetch full team details
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('*')
-        .in('id', managerTeams);
+        .in('id', managerTeams as string[]);
         
       if (!teamsError && teams) {
         return teams;
@@ -126,7 +125,7 @@ export const checkSpecialUserCase = async () => {
   // Try to use the secure function
   try {
     const { data, error } = await supabase.rpc(
-      'is_special_user',
+      'is_special_user' as any,
       { check_user_id: user.id }
     );
     
@@ -164,18 +163,18 @@ export const fetchTeamsWithoutRLS = async (userId: string) => {
   try {
     // First try the new secure function added in the migration
     const { data: secureTeams, error: secureError } = await supabase.rpc(
-      'get_user_teams_secure',
+      'get_user_teams_secure' as any,
       { check_user_id: userId }
     );
     
-    if (!secureError && secureTeams && secureTeams.length > 0) {
+    if (!secureError && secureTeams && Array.isArray(secureTeams) && secureTeams.length > 0) {
       console.log("Got user teams via secure function:", secureTeams);
       
       // Now fetch full team details
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('*')
-        .in('id', secureTeams);
+        .in('id', secureTeams as string[]);
         
       if (!teamsError && teams) {
         return teams;
@@ -187,18 +186,18 @@ export const fetchTeamsWithoutRLS = async (userId: string) => {
     
     // Try to use a direct RPC call to bypass RLS
     const { data: userTeams, error: rpcError } = await supabase.rpc(
-      'get_user_team_memberships',
+      'get_user_team_memberships' as any,
       { user_id_param: userId }
     );
     
-    if (!rpcError && userTeams && userTeams.length > 0) {
+    if (!rpcError && userTeams && Array.isArray(userTeams) && userTeams.length > 0) {
       console.log("Got team IDs via RPC:", userTeams);
       
       // Fetch team details
       const { data: teams, error: teamsError } = await supabase
         .from('teams')
         .select('*')
-        .in('id', userTeams);
+        .in('id', userTeams as string[]);
         
       if (!teamsError && teams) {
         return teams;

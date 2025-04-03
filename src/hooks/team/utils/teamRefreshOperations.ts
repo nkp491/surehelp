@@ -1,10 +1,10 @@
 
-import { RefetchOptions, RefetchQueryFilters, QueryObserverResult } from "@tanstack/react-query";
+import { RefetchOptions, QueryObserverResult } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useTeamRefreshOperations = (
-  refetchTeams: <TPageData>(options?: RefetchOptions & RefetchQueryFilters<TPageData>) => Promise<QueryObserverResult>,
+  refetchTeams: <TPageData>(options?: RefetchOptions) => Promise<QueryObserverResult>,
   setShowAlert: React.Dispatch<React.SetStateAction<boolean>>,
   setAlertMessage: React.Dispatch<React.SetStateAction<string>>,
   setFixingTeamAssociation: React.Dispatch<React.SetStateAction<boolean>>
@@ -53,7 +53,7 @@ export const useTeamRefreshOperations = (
       // First, try to use our new secure function
       try {
         const { data, error } = await supabase.rpc(
-          'force_agent_team_association',
+          'force_agent_team_association' as any,
           { agent_id: user.id }
         );
         
@@ -153,8 +153,7 @@ export const useTeamRefreshOperations = (
                 user_id: user.id,
                 role: 'agent'
               }])
-              .onConflict(['team_id', 'user_id'])
-              .ignore();
+              .select(); // Using select() instead of onConflict which isn't in the types
               
             if (!addError) {
               addedToAnyTeam = true;

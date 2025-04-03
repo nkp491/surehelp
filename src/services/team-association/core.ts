@@ -117,13 +117,13 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
           { manager_id: managerId }
         );
         
-        if (!teamsError && managerTeams && managerTeams.length > 0) {
+        if (!teamsError && managerTeams && Array.isArray(managerTeams) && managerTeams.length > 0) {
           console.log("Successfully fetched manager teams via RPC:", managerTeams);
           
           // Add user to each team
           let addedToAnyTeam = false;
           
-          for (const teamId of managerTeams) {
+          for (const teamId of managerTeams as string[]) {
             // Check if user is already in this team
             const { data: existingMembership, error: membershipError } = await supabase
               .from('team_members')
@@ -171,16 +171,16 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
         console.log("Direct function call failed:", directError);
       }
       
-      // Fall back to a more direct approach using team_managers
+      // Fall back to a more direct approach using team_members table
       try {
-        // Try to get teams from team_managers table directly
+        // Try to get teams from team_members table directly
         const { data: managerTeams, error: tmError } = await supabase
-          .from('team_managers')
+          .from('team_members')
           .select('team_id')
           .eq('user_id', managerId);
           
         if (!tmError && managerTeams && managerTeams.length > 0) {
-          console.log("Successfully fetched manager teams from team_managers:", managerTeams);
+          console.log("Successfully fetched manager teams from team_members:", managerTeams);
           
           // Add user to each team
           let addedToAnyTeam = false;
@@ -229,7 +229,7 @@ export const useTeamAssociationCore = (setIsProcessing: React.Dispatch<React.Set
           return addedToAnyTeam;
         }
       } catch (error) {
-        console.error("Error in team_managers query:", error);
+        console.error("Error in team_members query:", error);
       }
       
       return false;

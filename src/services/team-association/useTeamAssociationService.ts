@@ -21,7 +21,7 @@ export const useTeamAssociationService = () => {
       
       // Use the new secure function we created
       const { data, error } = await coreService.supabase.rpc(
-        'force_agent_team_association',
+        'force_agent_team_association' as any,
         { agent_id: user.id }
       );
       
@@ -60,7 +60,7 @@ export const useTeamAssociationService = () => {
       
       // Use the new secure function we created
       const { data, error } = await coreService.supabase.rpc(
-        'add_user_to_manager_teams',
+        'add_user_to_manager_teams' as any,
         { user_id: user.id, manager_id: managerId }
       );
       
@@ -95,7 +95,7 @@ export const useTeamAssociationService = () => {
     try {
       // Use the new secure function
       const { data, error } = await coreService.supabase.rpc(
-        'add_user_to_manager_teams',
+        'add_user_to_manager_teams' as any,
         { user_id: userId, manager_id: managerId }
       );
       
