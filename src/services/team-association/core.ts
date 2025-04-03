@@ -28,17 +28,17 @@ export const useTeamAssociationCore = (
       
       // Try a direct SQL query to bypass RLS recursion
       try {
-        // First, get the manager's teams using the RPC function
-        const { data: managerTeamIds, error: managerTeamsError } = await supabase.rpc(
-          'get_manager_teams',
-          { manager_id: managerId }
-        );
+        // Get manager's team memberships directly
+        const { data: managerTeamMembers, error: managerTeamsError } = await supabase
+          .from('team_members')
+          .select('team_id')
+          .eq('user_id', managerId);
         
         if (managerTeamsError) {
-          console.log("RPC method error:", managerTeamsError);
+          console.log("Direct query error:", managerTeamsError);
           console.log("Falling back to standard query");
           
-          // Fallback to standard query if RPC is not set up
+          // Fallback to standard query if direct query fails
           const { data: teamData, error: teamsError } = await supabase
             .from('team_members')
             .select('team_id')
@@ -58,14 +58,12 @@ export const useTeamAssociationCore = (
           return await processTeamAssociations(user.id, teamData);
         }
         
-        if (!managerTeamIds || !Array.isArray(managerTeamIds) || managerTeamIds.length === 0) {
-          console.log("Manager has no teams (from RPC)");
+        if (!managerTeamMembers || !Array.isArray(managerTeamMembers) || managerTeamMembers.length === 0) {
+          console.log("Manager has no teams (from direct query)");
           return false;
         }
         
-        // Format the RPC result to match the expected structure
-        const teamData = managerTeamIds.map(teamId => ({ team_id: teamId }));
-        return await processTeamAssociations(user.id, teamData);
+        return await processTeamAssociations(user.id, managerTeamMembers);
       } catch (innerError) {
         console.error("Error in team association process:", innerError);
         return false;
