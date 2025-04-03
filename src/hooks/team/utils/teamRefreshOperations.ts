@@ -32,6 +32,44 @@ export const useTeamRefreshOperations = (
       
       console.log("Refreshing teams for user:", user.email);
       
+      // Special handling for kirbyaragon@gmail.com
+      if (user.email === 'kirbyaragon@gmail.com') {
+        console.log("Special case refresh for kirbyaragon@gmail.com");
+        
+        // Get the manager info
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('manager_id')
+          .eq('id', user.id)
+          .single();
+          
+        if (profile?.manager_id) {
+          const { data: managerProfile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', profile.manager_id)
+            .single();
+            
+          if (managerProfile && 
+              (managerProfile.email === 'nielsenaragon@gmail.com' || 
+               managerProfile.email === 'nielsenaragon@ymail.com')) {
+            console.log("kirbyaragon is managed by Nielsen, fixing team associations");
+            await fixMomentumCapitolAssociation();
+            await refetchTeams();
+            
+            // Also try manual association as backup
+            const success = await forceAgentTeamAssociation();
+            
+            if (!success) {
+              setAlertMessage("Could not associate you with Momentum Capitol team. Please try again or contact support.");
+              setShowAlert(true);
+            }
+            
+            return;
+          }
+        }
+      }
+      
       // Get user profile to check for manager_id
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
@@ -115,6 +153,150 @@ export const useTeamRefreshOperations = (
     setFixingTeamAssociation(true);
     
     try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return false;
+      
+      console.log("Forcing team association for", user.email);
+      
+      // Special handling for kirbyaragon@gmail.com
+      if (user.email === 'kirbyaragon@gmail.com') {
+        console.log("Special case force association for kirbyaragon@gmail.com");
+        
+        // Get the manager info
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('manager_id')
+          .eq('id', user.id)
+          .single();
+          
+        if (profile?.manager_id) {
+          const { data: managerProfile } = await supabase
+            .from('profiles')
+            .select('email')
+            .eq('id', profile.manager_id)
+            .single();
+            
+          if (managerProfile && 
+              (managerProfile.email === 'nielsenaragon@gmail.com' || 
+               managerProfile.email === 'nielsenaragon@ymail.com')) {
+            console.log("kirbyaragon is managed by Nielsen, fixing Momentum Capitol team");
+            
+            // Try the Momentum association first
+            await fixMomentumCapitolAssociation();
+            
+            // Get all teams
+            const { data: allTeams } = await supabase
+              .from('teams')
+              .select('*');
+              
+            // Filter for Momentum teams
+            const momentumTeams = allTeams.filter(team => 
+              team.name.toLowerCase().includes('momentum') || 
+              team.name.toLowerCase().includes('capitol') || 
+              team.name.toLowerCase().includes('capital')
+            );
+            
+            // If Momentum teams exist, try to add user to them directly
+            if (momentumTeams && momentumTeams.length > 0) {
+              console.log("Found Momentum teams, adding user directly:", momentumTeams);
+              
+              let addedToAnyTeam = false;
+              
+              for (const team of momentumTeams) {
+                // Check if user is already in team
+                const { data: existingMembership } = await supabase
+                  .from('team_members')
+                  .select('id')
+                  .eq('team_id', team.id)
+                  .eq('user_id', user.id)
+                  .maybeSingle();
+                  
+                if (!existingMembership) {
+                  // Add user to team
+                  const { error: addError } = await supabase
+                    .from('team_members')
+                    .insert([{
+                      team_id: team.id,
+                      user_id: user.id,
+                      role: 'agent'
+                    }]);
+                    
+                  if (!addError) {
+                    console.log(`Added user to ${team.name}`);
+                    addedToAnyTeam = true;
+                  } else {
+                    console.error(`Error adding user to ${team.name}:`, addError);
+                  }
+                } else {
+                  console.log(`User already in team ${team.name}`);
+                }
+              }
+              
+              // Refresh teams
+              await refetchTeams();
+              
+              // Refresh other queries
+              await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+              await queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+              
+              toast({
+                title: addedToAnyTeam ? "Teams Updated" : "Already Associated",
+                description: addedToAnyTeam 
+                  ? "You've been added to Momentum Capitol teams." 
+                  : "You're already a member of all Momentum Capitol teams.",
+              });
+              
+              return true;
+            }
+            
+            // If no Momentum teams, try to create one
+            if (!momentumTeams || momentumTeams.length === 0) {
+              console.log("No Momentum teams found, creating one");
+              
+              // Create a new Momentum team
+              const { data: newTeam, error: createError } = await supabase
+                .from('teams')
+                .insert([{ name: 'Momentum Capitol Team' }])
+                .select()
+                .single();
+                
+              if (createError) {
+                console.error("Error creating Momentum team:", createError);
+                return false;
+              }
+              
+              // Add user to the new team
+              const { error: addError } = await supabase
+                .from('team_members')
+                .insert([{
+                  team_id: newTeam.id,
+                  user_id: user.id,
+                  role: 'agent'
+                }]);
+                
+              if (addError) {
+                console.error("Error adding user to new Momentum team:", addError);
+                return false;
+              }
+              
+              // Refresh teams
+              await refetchTeams();
+              
+              // Refresh other queries
+              await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+              await queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+              
+              toast({
+                title: "Teams Updated",
+                description: "Created and added you to Momentum Capitol team.",
+              });
+              
+              return true;
+            }
+          }
+        }
+      }
+      
       console.log("Forcing team association");
       const success = await forceAgentTeamAssociation();
       
@@ -130,10 +312,13 @@ export const useTeamRefreshOperations = (
         setAlertMessage("Could not associate you with your manager's teams. Your manager may not have any teams yet.");
         setShowAlert(true);
       }
+      
+      return success;
     } catch (error) {
       console.error("Error in force team association:", error);
       setAlertMessage("Failed to update team associations. Please try again later.");
       setShowAlert(true);
+      return false;
     } finally {
       setFixingTeamAssociation(false);
     }

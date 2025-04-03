@@ -13,50 +13,80 @@ export const fetchUserTeamsDirectly = async (): Promise<Team[]> => {
     if (!user) return [];
 
     try {
-      // Try to get team memberships first
-      const { data: memberships, error: membershipError } = await supabase
-        .from('team_members')
-        .select('team_id')
-        .eq('user_id', user.id);
+      // Try to get all teams first - this avoids recursion
+      const { data: allTeams, error: teamsError } = await supabase
+        .from('teams')
+        .select('*');
         
-      if (membershipError) {
-        console.error("Error fetching team memberships:", membershipError);
-        
-        if (membershipError.message?.includes('infinite recursion')) {
-          // Try the second approach that doesn't rely on RLS
-          return await fetchTeamsWithoutRLS(user.id);
-        }
-        
+      if (teamsError) {
+        console.error("Error fetching all teams:", teamsError);
         return [];
       }
       
-      if (!memberships || memberships.length === 0) {
-        console.log("No team memberships found");
+      if (!allTeams || allTeams.length === 0) {
+        console.log("No teams found in the system");
         return [];
+      }
+      
+      // Try to get all team memberships
+      const { data: allMemberships, error: membershipsError } = await supabase
+        .from('team_members')
+        .select('team_id, user_id');
+        
+      if (membershipsError) {
+        if (membershipsError.message?.includes('infinite recursion')) {
+          console.error("Recursion error fetching all memberships:", membershipsError);
+          return await fetchTeamsForSpecialCase(user.id);
+        }
+        
+        console.error("Error fetching all memberships:", membershipsError);
+        return [];
+      }
+      
+      // Filter for this user's team memberships
+      const userMemberships = allMemberships.filter(m => m.user_id === user.id);
+      
+      if (userMemberships.length === 0) {
+        console.log("No team memberships found for user");
+        return await fetchTeamsForSpecialCase(user.id);
       }
       
       // Get the team IDs
-      const teamIds = memberships.map(m => m.team_id);
+      const teamIds = userMemberships.map(m => m.team_id);
       
-      // Get team details
-      const { data: teams, error: teamsError } = await supabase
-        .from('teams')
-        .select('*')
-        .in('id', teamIds);
-        
-      if (teamsError) {
-        console.error("Error fetching teams:", teamsError);
-        return [];
-      }
+      // Filter the teams
+      const userTeams = allTeams.filter(team => teamIds.includes(team.id));
       
-      console.log(`Found ${teams?.length || 0} teams for user`);
-      return teams as Team[];
+      console.log(`Found ${userTeams.length} teams for user`);
+      return userTeams as Team[];
     } catch (error) {
       console.error("Error in fetchUserTeamsDirectly:", error);
-      return await fetchTeamsWithoutRLS(user.id);
+      return await fetchTeamsForSpecialCase(user.id);
     }
   } catch (error) {
     console.error("Error in fetchUserTeamsDirectly:", error);
+    return [];
+  }
+};
+
+/**
+ * Fetch teams for special case users (Nielsen) or those managed by special users
+ */
+export const fetchTeamsForSpecialCase = async (userId: string): Promise<Team[]> => {
+  console.log("Trying special case fetch for user:", userId);
+  
+  try {
+    // Check if this is a special case user or is managed by one
+    const isSpecialCase = await checkSpecialUserCase();
+    
+    if (isSpecialCase) {
+      console.log("Confirmed special case, fetching Momentum teams");
+      return await fetchMomentumTeams();
+    }
+    
+    return [];
+  } catch (error) {
+    console.error("Error in fetchTeamsForSpecialCase:", error);
     return [];
   }
 };
@@ -68,6 +98,14 @@ export const fetchTeamsWithoutRLS = async (userId: string): Promise<Team[]> => {
   console.log("Attempting to fetch teams without RLS for user:", userId);
   
   try {
+    // Check if this is a special user or managed by a special user
+    const isSpecialCase = await checkSpecialUserCase();
+    
+    if (isSpecialCase) {
+      console.log("Special case detected, fetching Momentum teams");
+      return await fetchMomentumTeams();
+    }
+    
     // First get all teams (this query should not use RLS)
     const { data: allTeams, error: teamsError } = await supabase
       .from('teams')
@@ -78,53 +116,37 @@ export const fetchTeamsWithoutRLS = async (userId: string): Promise<Team[]> => {
       return [];
     }
     
-    // Then get this user's team memberships directly
+    // Then try to get all team memberships
     try {
-      // Try direct query without RPC
-      const { data: memberships, error: membershipError } = await supabase
+      const { data: allMemberships, error: membershipsError } = await supabase
         .from('team_members')
-        .select('team_id')
-        .eq('user_id', userId);
-      
-      if (!membershipError && memberships && Array.isArray(memberships) && memberships.length > 0) {
-        console.log("Successfully fetched user teams directly");
-        // Extract team IDs
-        const teamIds = memberships.map(item => item.team_id);
-        // Filter teams by IDs
-        return allTeams.filter((team: Team) => teamIds.includes(team.id));
-      } else if (membershipError) {
-        console.error("Error fetching team memberships:", membershipError);
+        .select('team_id, user_id');
+        
+      if (membershipsError) {
+        console.error("Error fetching all memberships:", membershipsError);
+        return [];
       }
-    } catch (directError) {
-      console.log("Direct function call failed, trying fallback:", directError);
-    }
-    
-    // Fallback to direct SQL if previous method not available
-    // This is a simplified approach - we fetch all team_members and filter client-side
-    const { data: allMemberships, error: membershipsError } = await supabase
-      .from('team_members')
-      .select('team_id, user_id');
       
-    if (membershipsError) {
-      console.error("Error fetching all memberships:", membershipsError);
+      // Filter for this user's team memberships
+      const userMemberships = allMemberships.filter(m => m.user_id === userId);
+      
+      if (userMemberships.length === 0) {
+        console.log("No team memberships found for user");
+        return [];
+      }
+      
+      // Get the team IDs
+      const teamIds = userMemberships.map(m => m.team_id);
+      
+      // Filter the teams
+      const userTeams = allTeams.filter(team => teamIds.includes(team.id));
+      
+      console.log(`Found ${userTeams.length} teams for user through fallback method`);
+      return userTeams as Team[];
+    } catch (error) {
+      console.error("Error in fallback method:", error);
       return [];
     }
-    
-    // Filter memberships for this user
-    const userMemberships = allMemberships.filter(m => m.user_id === userId);
-    if (userMemberships.length === 0) {
-      console.log("No team memberships found for user");
-      return [];
-    }
-    
-    // Get the team IDs
-    const teamIds = userMemberships.map(m => m.team_id);
-    
-    // Filter the teams
-    const userTeams = allTeams.filter((team: Team) => teamIds.includes(team.id));
-    
-    console.log(`Found ${userTeams.length} teams for user through fallback method`);
-    return userTeams;
   } catch (error) {
     console.error("Error in fetchTeamsWithoutRLS:", error);
     return [];
@@ -184,6 +206,7 @@ export const fetchMomentumTeams = async (): Promise<Team[]> => {
   try {
     console.log("Fetching Momentum teams for special user case");
     
+    // Get all teams first
     const { data: allTeams, error: teamsError } = await supabase
       .from('teams')
       .select('*');
@@ -208,46 +231,42 @@ export const fetchMomentumTeams = async (): Promise<Team[]> => {
     
     // If Momentum teams found, make sure user is a member
     if (momentumTeams.length > 0) {
-      let teamsUpdated = false;
-      
-      for (const team of momentumTeams) {
-        // Check if user is already a member
-        const { data: membership, error: membershipError } = await supabase
-          .from('team_members')
-          .select('id')
-          .eq('team_id', team.id)
-          .eq('user_id', user.id)
-          .maybeSingle();
-          
-        if (membershipError && !membershipError.message.includes('No rows')) {
-          console.error(`Error checking membership for ${team.name}:`, membershipError);
-          continue;
-        }
+      // Get all team memberships
+      const { data: allMemberships, error: membershipsError } = await supabase
+        .from('team_members')
+        .select('team_id, user_id');
         
-        if (!membership) {
-          console.log(`User not in team ${team.name}, adding...`);
+      if (!membershipsError && allMemberships) {
+        for (const team of momentumTeams) {
+          // Check if user is already a member using our client-side data
+          const existingMembership = allMemberships.find(
+            m => m.team_id === team.id && m.user_id === user.id
+          );
           
-          // Determine role based on email
-          const isNielsen = user.email === 'nielsenaragon@gmail.com' || user.email === 'nielsenaragon@ymail.com';
-          const role = isNielsen ? 'manager_pro_platinum' : 'agent';
-          
-          // Add user to team
-          const { error: insertError } = await supabase
-            .from('team_members')
-            .insert([{
-              team_id: team.id,
-              user_id: user.id,
-              role: role
-            }]);
+          if (!existingMembership) {
+            console.log(`User not in team ${team.name}, adding...`);
             
-          if (insertError) {
-            console.error(`Error adding user to ${team.name}:`, insertError);
+            // Determine role based on email
+            const isNielsen = user.email === 'nielsenaragon@gmail.com' || user.email === 'nielsenaragon@ymail.com';
+            const role = isNielsen ? 'manager_pro_platinum' : 'agent';
+            
+            // Add user to team
+            const { error: insertError } = await supabase
+              .from('team_members')
+              .insert([{
+                team_id: team.id,
+                user_id: user.id,
+                role: role
+              }]);
+              
+            if (insertError) {
+              console.error(`Error adding user to ${team.name}:`, insertError);
+            } else {
+              console.log(`Added user to ${team.name} with role ${role}`);
+            }
           } else {
-            console.log(`Added user to ${team.name} with role ${role}`);
-            teamsUpdated = true;
+            console.log(`User already in team ${team.name}`);
           }
-        } else {
-          console.log(`User already in team ${team.name}`);
         }
       }
     }
@@ -305,47 +324,67 @@ export const fetchTeamsThroughManager = async (managerId: string): Promise<Team[
   try {
     console.log("Fetching teams through manager:", managerId);
     
-    // Get manager's team memberships
-    const { data: managerTeams, error: managerError } = await supabase
-      .from('team_members')
-      .select('team_id')
-      .eq('user_id', managerId);
+    // Check if manager is Nielsen
+    const { data: managerProfile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', managerId)
+      .single();
       
-    if (managerError || !managerTeams || managerTeams.length === 0) {
-      console.log("Manager has no teams or error fetching manager teams");
+    if (managerProfile && 
+        (managerProfile.email === 'nielsenaragon@gmail.com' || 
+         managerProfile.email === 'nielsenaragon@ymail.com')) {
+      console.log("Manager is Nielsen, fetching Momentum teams");
+      return await fetchMomentumTeams();
+    }
+    
+    // Get all teams first
+    const { data: allTeams, error: teamsError } = await supabase
+      .from('teams')
+      .select('*');
+      
+    if (teamsError) {
+      console.error("Error fetching all teams:", teamsError);
+      return [];
+    }
+    
+    // Get all team memberships
+    const { data: allMemberships, error: membershipsError } = await supabase
+      .from('team_members')
+      .select('team_id, user_id');
+      
+    if (membershipsError) {
+      console.error("Error fetching all memberships:", membershipsError);
+      return [];
+    }
+    
+    // Filter for manager's team memberships
+    const managerMemberships = allMemberships.filter(m => m.user_id === managerId);
+    
+    if (managerMemberships.length === 0) {
+      console.log("Manager has no teams");
       return [];
     }
     
     // Get the team IDs
-    const teamIds = managerTeams.map(m => m.team_id);
+    const teamIds = managerMemberships.map(m => m.team_id);
     
-    // Get team details
-    const { data: teams, error: teamsError } = await supabase
-      .from('teams')
-      .select('*')
-      .in('id', teamIds);
-      
-    if (teamsError) {
-      console.error("Error fetching manager's teams:", teamsError);
-      return [];
-    }
+    // Filter the teams
+    const managerTeams = allTeams.filter(team => teamIds.includes(team.id));
     
     // If teams are found, ensure the current user is a member
-    if (teams && teams.length > 0) {
+    if (managerTeams && managerTeams.length > 0) {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
         console.log("Ensuring user is a member of manager's teams");
         
-        for (const team of teams) {
+        for (const team of managerTeams) {
           // Check if user is already a member
-          const { data: membership } = await supabase
-            .from('team_members')
-            .select('id')
-            .eq('team_id', team.id)
-            .eq('user_id', user.id)
-            .maybeSingle();
-            
-          if (!membership) {
+          const existingMembership = allMemberships.find(
+            m => m.team_id === team.id && m.user_id === user.id
+          );
+          
+          if (!existingMembership) {
             console.log(`Adding user to team ${team.name}`);
             
             // Add user to team
@@ -365,8 +404,8 @@ export const fetchTeamsThroughManager = async (managerId: string): Promise<Team[
       }
     }
     
-    console.log(`Found ${teams?.length || 0} teams through manager`);
-    return teams as Team[];
+    console.log(`Found ${managerTeams.length} teams through manager`);
+    return managerTeams as Team[];
   } catch (error) {
     console.error("Error in fetchTeamsThroughManager:", error);
     return [];
