@@ -78,24 +78,28 @@ export const fetchTeamsWithoutRLS = async (userId: string): Promise<Team[]> => {
       return [];
     }
     
-    // Then get this user's team memberships from the custom RPC function
+    // Then get this user's team memberships from the custom function
     try {
-      // Use the custom RPC function
-      const { data: userTeamIds, error: rpcError } = await supabase
-        .rpc('get_user_team_memberships', { user_id_param: userId });
+      // Call custom function directly instead of using RPC
+      const { data, error } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', userId);
       
-      if (!rpcError && userTeamIds && Array.isArray(userTeamIds) && userTeamIds.length > 0) {
-        console.log("Successfully fetched user teams through RPC function");
-        // Filter teams by IDs returned from RPC
-        return allTeams.filter((team: Team) => userTeamIds.includes(team.id));
-      } else if (rpcError) {
-        console.error("Error using RPC function:", rpcError);
+      if (!error && data && Array.isArray(data) && data.length > 0) {
+        console.log("Successfully fetched user teams directly");
+        // Extract team IDs
+        const teamIds = data.map(item => item.team_id);
+        // Filter teams by IDs
+        return allTeams.filter((team: Team) => teamIds.includes(team.id));
+      } else if (error) {
+        console.error("Error fetching team memberships:", error);
       }
-    } catch (rpcError) {
-      console.log("RPC function call failed, trying direct query:", rpcError);
+    } catch (directError) {
+      console.log("Direct function call failed, trying fallback:", directError);
     }
     
-    // Fallback to direct SQL if RPC not available
+    // Fallback to direct SQL if previous method not available
     // This is a simplified approach - we fetch all team_members and filter client-side
     const { data: allMemberships, error: membershipsError } = await supabase
       .from('team_members')
