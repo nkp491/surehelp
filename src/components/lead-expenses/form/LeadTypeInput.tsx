@@ -36,8 +36,11 @@ const LeadTypeInput = ({ leadTypes, setLeadTypes, newLeadType, setNewLeadType }:
 
       // Flatten and get unique lead types
       const uniqueTypes = Array.from(new Set(
-        data.flatMap(expense => expense.lead_type as string[])
-      )).sort();
+        data.flatMap(expense => {
+          const leadType = expense.lead_type;
+          return Array.isArray(leadType) ? leadType : [];
+        })
+      )).sort() as string[];
 
       setExistingTypes(uniqueTypes);
     };

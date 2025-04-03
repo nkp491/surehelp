@@ -43,8 +43,11 @@ const ExpenseSearch = ({ onSearch }: ExpenseSearchProps) => {
 
       // Flatten and get unique tags
       const uniqueTags = Array.from(new Set(
-        data.flatMap(expense => expense.lead_type as string[])
-      )).sort();
+        data.flatMap(expense => {
+          const leadType = expense.lead_type;
+          return Array.isArray(leadType) ? leadType : [];
+        })
+      )).sort() as string[];
 
       setAvailableTags(uniqueTags);
     };
