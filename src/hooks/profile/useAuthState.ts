@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 /**
  * Hook to manage authentication state changes
+ * This version is for use within components that have access to the Router context
  */
 export const useAuthState = () => {
   const navigate = useNavigate();
