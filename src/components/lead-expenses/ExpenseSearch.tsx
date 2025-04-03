@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -42,7 +43,7 @@ const ExpenseSearch = ({ onSearch }: ExpenseSearchProps) => {
 
       // Flatten and get unique tags
       const uniqueTags = Array.from(new Set(
-        data.flatMap(expense => expense.lead_type)
+        data.flatMap(expense => expense.lead_type as string[])
       )).sort();
 
       setAvailableTags(uniqueTags);

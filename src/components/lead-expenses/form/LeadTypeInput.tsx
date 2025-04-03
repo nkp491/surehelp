@@ -1,3 +1,4 @@
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -35,7 +36,7 @@ const LeadTypeInput = ({ leadTypes, setLeadTypes, newLeadType, setNewLeadType }:
 
       // Flatten and get unique lead types
       const uniqueTypes = Array.from(new Set(
-        data.flatMap(expense => expense.lead_type)
+        data.flatMap(expense => expense.lead_type as string[])
       )).sort();
 
       setExistingTypes(uniqueTypes);

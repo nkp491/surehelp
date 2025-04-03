@@ -1,3 +1,4 @@
+
 import interact from "interactjs";
 import { snapToGrid, constrainPosition, GRID_SIZE } from "@/utils/gridUtils";
 import { useCallback, useRef, useEffect } from "react";
@@ -50,7 +51,7 @@ export const useDragConfig = (
     }
   }, [fieldId]);
 
-  const handleDragMove = useCallback((event: Interact.InteractEvent) => {
+  const handleDragMove = useCallback((event: any) => {
     const target = event.target as HTMLElement;
     const x = parseFloat(target.getAttribute('data-x') || '0') + event.dx;
     const y = parseFloat(target.getAttribute('data-y') || '0') + event.dy;
@@ -66,7 +67,7 @@ export const useDragConfig = (
     savePosition(fieldId, constrained.x, constrained.y, width, height);
   }, [fieldId, savePosition]);
 
-  const handleResizeMove = useCallback((event: Interact.ResizeEvent) => {
+  const handleResizeMove = useCallback((event: any) => {
     const target = event.target as HTMLElement;
     const x = parseFloat(target.getAttribute('data-x') || '0');
     const y = parseFloat(target.getAttribute('data-y') || '0');
