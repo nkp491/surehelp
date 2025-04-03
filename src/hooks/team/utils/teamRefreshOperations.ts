@@ -18,7 +18,8 @@ export const useTeamRefreshOperations = (
   const { 
     checkAndUpdateTeamAssociation, 
     fixMomentumCapitolAssociation,
-    forceAgentTeamAssociation 
+    forceAgentTeamAssociation,
+    checkMomentumManagerAssociations
   } = useTeamAssociationService();
 
   const handleRefreshTeams = async () => {
@@ -28,6 +29,8 @@ export const useTeamRefreshOperations = (
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
+      
+      console.log("Refreshing teams for user:", user.email);
       
       // Get user profile to check for manager_id
       const { data: profile, error: profileError } = await supabase
@@ -42,17 +45,39 @@ export const useTeamRefreshOperations = (
         return;
       }
       
-      if (profile.email === 'nielsenaragon@gmail.com' || user.email === 'nielsenaragon@gmail.com') {
-        console.log("Special refresh for nielsenaragon@gmail.com");
+      // Special case for Nielsen accounts
+      const specialEmails = ['nielsenaragon@gmail.com', 'nielsenaragon@ymail.com'];
+      
+      if (specialEmails.includes(profile.email) || specialEmails.includes(user.email || '')) {
+        console.log("Special refresh for Nielsen");
         await fixMomentumCapitolAssociation();
       } 
       else if (profile.manager_id) {
-        console.log("Agent refresh - associating with manager's teams");
-        const success = await checkAndUpdateTeamAssociation(profile.manager_id);
-        
-        if (!success) {
-          setAlertMessage("Could not find any teams associated with your manager. Please contact your manager.");
-          setShowAlert(true);
+        // Check if the manager is Nielsen
+        const { data: managerProfile } = await supabase
+          .from('profiles')
+          .select('email')
+          .eq('id', profile.manager_id)
+          .single();
+          
+        if (managerProfile && specialEmails.includes(managerProfile.email)) {
+          console.log("Special refresh for user managed by Nielsen");
+          // First try Momentum team association
+          const momentumSuccess = await checkMomentumManagerAssociations(user.id);
+          
+          if (!momentumSuccess) {
+            // Fall back to standard association
+            await fixMomentumCapitolAssociation();
+          }
+        } else {
+          // Standard agent refresh
+          console.log("Agent refresh - associating with manager's teams");
+          const success = await checkAndUpdateTeamAssociation(profile.manager_id);
+          
+          if (!success) {
+            setAlertMessage("Could not find any teams associated with your manager. Please contact your manager.");
+            setShowAlert(true);
+          }
         }
       }
       
@@ -90,6 +115,7 @@ export const useTeamRefreshOperations = (
     setFixingTeamAssociation(true);
     
     try {
+      console.log("Forcing team association");
       const success = await forceAgentTeamAssociation();
       
       if (success) {

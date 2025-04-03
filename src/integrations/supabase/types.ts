@@ -833,6 +833,13 @@ export type Database = {
         }
         Returns: Json
       }
+      ensure_user_in_manager_teams: {
+        Args: {
+          user_id: string
+          manager_id: string
+        }
+        Returns: boolean
+      }
       get_manager_teams: {
         Args: {
           manager_id: string
@@ -861,6 +868,10 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
+      get_user_teams_v2: {
+        Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
       has_role: {
         Args: {
           check_user_id: string
@@ -881,13 +892,32 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_team_manager_v2: {
+        Args: {
+          check_team_id: string
+        }
+        Returns: boolean
+      }
       is_team_member: {
         Args: {
           team_id: string
         }
         Returns: boolean
       }
+      is_team_member_v2: {
+        Args: {
+          check_team_id: string
+        }
+        Returns: boolean
+      }
       safe_is_team_manager: {
+        Args: {
+          check_team_id: string
+          check_user_id?: string
+        }
+        Returns: boolean
+      }
+      safe_is_team_manager_v2: {
         Args: {
           check_team_id: string
           check_user_id?: string

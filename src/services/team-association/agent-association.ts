@@ -24,14 +24,31 @@ export const useAgentTeamAssociation = (
         return false;
       }
       
+      console.log("Starting team association for user:", user.email);
+      
+      // Special case for users managed by nielsenaragon@gmail.com
+      // Add them directly to Momentum Capitol team if their manager is Nielsen
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
-        .select('manager_id')
+        .select('manager_id, email')
         .eq('id', user.id)
         .single();
         
-      if (profileError || !profile?.manager_id) {
-        console.error("No manager associated with this user", profileError);
+      if (profileError) {
+        console.error("Error fetching profile for team association:", profileError);
+        
+        toast({
+          title: "Association Failed",
+          description: "Could not retrieve your profile information.",
+          variant: "destructive",
+        });
+        
+        return false;
+      }
+      
+      // If manager ID is missing but we have a user, show appropriate message
+      if (!profile?.manager_id) {
+        console.error("No manager associated with this user");
         
         toast({
           title: "Association Failed",
@@ -44,7 +61,90 @@ export const useAgentTeamAssociation = (
       
       console.log("Force team association with manager", profile.manager_id);
       
-      // First, try manual association approach
+      // Check if user is managed by nielsenaragon
+      const { data: managerProfile, error: managerError } = await supabase
+        .from('profiles')
+        .select('email')
+        .eq('id', profile.manager_id)
+        .single();
+        
+      if (!managerError && managerProfile && 
+          (managerProfile.email === 'nielsenaragon@gmail.com' || 
+           managerProfile.email === 'nielsenaragon@ymail.com')) {
+        
+        console.log("Special case: Manager is Nielsen Aragon");
+        
+        // First, try to find the Momentum Capitol team
+        const { data: momentumTeams, error: teamsError } = await supabase
+          .from('teams')
+          .select('*')
+          .or('name.ilike.%Momentum Capitol%,name.ilike.%Momentum Capital%');
+          
+        if (teamsError) {
+          console.error("Error finding Momentum teams:", teamsError);
+        } else if (momentumTeams && momentumTeams.length > 0) {
+          console.log(`Found ${momentumTeams.length} Momentum teams:`, momentumTeams);
+          
+          // For each Momentum team, ensure user is a member
+          let addedToAnyTeam = false;
+          for (const team of momentumTeams) {
+            // Check if user is already in team
+            const { data: existingMembership } = await supabase
+              .from('team_members')
+              .select('id')
+              .eq('team_id', team.id)
+              .eq('user_id', user.id)
+              .maybeSingle();
+              
+            if (!existingMembership) {
+              // Add user to team
+              const { error: addError } = await supabase
+                .from('team_members')
+                .insert([{
+                  team_id: team.id,
+                  user_id: user.id,
+                  role: 'agent'
+                }]);
+                
+              if (!addError) {
+                addedToAnyTeam = true;
+                console.log(`Successfully added user to ${team.name}`);
+              } else {
+                console.error(`Error adding user to ${team.name}:`, addError);
+              }
+            } else {
+              console.log(`User already in team ${team.name}`);
+            }
+          }
+          
+          if (addedToAnyTeam) {
+            // Refresh all team-related queries
+            queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+            queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+            queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
+            
+            toast({
+              title: "Team Association Successful",
+              description: "You have been added to Momentum Capitol team(s).",
+            });
+            
+            return true;
+          } else {
+            console.log("User was already in all Momentum teams");
+            
+            toast({
+              title: "Already Associated",
+              description: "You're already a member of all Momentum Capitol teams.",
+            });
+            
+            return true;
+          }
+        } else {
+          console.log("No Momentum teams found, will try standard association");
+        }
+      }
+      
+      // If the special case didn't work or doesn't apply, try manual association approach
       try {
         console.log("Associating user with manager's teams");
         

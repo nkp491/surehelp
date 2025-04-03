@@ -135,12 +135,46 @@ export const fetchTeamsWithoutRLS = async (userId: string): Promise<Team[]> => {
  * Checks if this is a special user case that needs custom handling
  */
 export const checkSpecialUserCase = async (): Promise<boolean> => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  
-  // Check if this is the special case user
-  return user.email === 'nielsenaragon@gmail.com' || 
-         user.email === 'nielsenaragon@ymail.com';
+  try {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return false;
+    
+    // Check if this is the special case user
+    const specialEmails = ['nielsenaragon@gmail.com', 'nielsenaragon@ymail.com'];
+    
+    if (specialEmails.includes(user.email || '')) {
+      console.log("Detected special case user:", user.email);
+      return true;
+    }
+    
+    // Check if the user is managed by a special user
+    const { data: profile, error } = await supabase
+      .from('profiles')
+      .select('manager_id')
+      .eq('id', user.id)
+      .single();
+      
+    if (error || !profile?.manager_id) {
+      return false;
+    }
+    
+    // Check if the manager is special
+    const { data: managerProfile } = await supabase
+      .from('profiles')
+      .select('email')
+      .eq('id', profile.manager_id)
+      .single();
+      
+    if (managerProfile && specialEmails.includes(managerProfile.email || '')) {
+      console.log("User is managed by special case user:", managerProfile.email);
+      return true;
+    }
+    
+    return false;
+  } catch (error) {
+    console.error("Error in checkSpecialUserCase:", error);
+    return false;
+  }
 };
 
 /**
@@ -161,17 +195,72 @@ export const fetchMomentumTeams = async (): Promise<Team[]> => {
     
     // Filter for Momentum teams
     const momentumTeams = allTeams.filter((team: Team) => 
-      team.name.includes('Momentum Capitol') || 
-      team.name.includes('Momentum Capital')
+      team.name.toLowerCase().includes('momentum') || 
+      team.name.toLowerCase().includes('capitol') || 
+      team.name.toLowerCase().includes('capital')
     );
     
     console.log("Special case: Found Momentum teams:", momentumTeams);
     
-    // If not found, create the team as a fallback
+    // Get current user to check team membership
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return momentumTeams;
+    
+    // If Momentum teams found, make sure user is a member
+    if (momentumTeams.length > 0) {
+      let teamsUpdated = false;
+      
+      for (const team of momentumTeams) {
+        // Check if user is already a member
+        const { data: membership, error: membershipError } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('team_id', team.id)
+          .eq('user_id', user.id)
+          .maybeSingle();
+          
+        if (membershipError && !membershipError.message.includes('No rows')) {
+          console.error(`Error checking membership for ${team.name}:`, membershipError);
+          continue;
+        }
+        
+        if (!membership) {
+          console.log(`User not in team ${team.name}, adding...`);
+          
+          // Determine role based on email
+          const isNielsen = user.email === 'nielsenaragon@gmail.com' || user.email === 'nielsenaragon@ymail.com';
+          const role = isNielsen ? 'manager_pro_platinum' : 'agent';
+          
+          // Add user to team
+          const { error: insertError } = await supabase
+            .from('team_members')
+            .insert([{
+              team_id: team.id,
+              user_id: user.id,
+              role: role
+            }]);
+            
+          if (insertError) {
+            console.error(`Error adding user to ${team.name}:`, insertError);
+          } else {
+            console.log(`Added user to ${team.name} with role ${role}`);
+            teamsUpdated = true;
+          }
+        } else {
+          console.log(`User already in team ${team.name}`);
+        }
+      }
+    }
+    
+    // If not found or failed to join, create the team as a fallback
     if (momentumTeams.length === 0) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return [];
+        
+        // Determine role based on email
+        const isNielsen = user.email === 'nielsenaragon@gmail.com' || user.email === 'nielsenaragon@ymail.com';
+        const role = isNielsen ? 'manager_pro_platinum' : 'agent';
         
         // Create new Momentum Capitol team
         const { data: newTeam, error: createError } = await supabase
@@ -191,7 +280,7 @@ export const fetchMomentumTeams = async (): Promise<Team[]> => {
           .insert([{
             team_id: newTeam.id,
             user_id: user.id,
-            role: 'manager_pro_platinum'
+            role: role
           }]);
           
         console.log("Created new Momentum team for special user");
@@ -239,6 +328,41 @@ export const fetchTeamsThroughManager = async (managerId: string): Promise<Team[
     if (teamsError) {
       console.error("Error fetching manager's teams:", teamsError);
       return [];
+    }
+    
+    // If teams are found, ensure the current user is a member
+    if (teams && teams.length > 0) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        console.log("Ensuring user is a member of manager's teams");
+        
+        for (const team of teams) {
+          // Check if user is already a member
+          const { data: membership } = await supabase
+            .from('team_members')
+            .select('id')
+            .eq('team_id', team.id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+            
+          if (!membership) {
+            console.log(`Adding user to team ${team.name}`);
+            
+            // Add user to team
+            const { error: insertError } = await supabase
+              .from('team_members')
+              .insert([{
+                team_id: team.id,
+                user_id: user.id,
+                role: 'agent'
+              }]);
+              
+            if (insertError) {
+              console.error(`Error adding user to ${team.name}:`, insertError);
+            }
+          }
+        }
+      }
     }
     
     console.log(`Found ${teams?.length || 0} teams through manager`);
