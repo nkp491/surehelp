@@ -1,10 +1,15 @@
 
 import { useState, useEffect } from "react";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { useTeamAssociationService } from "@/services/team-association";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { Team } from "@/types/team";
+import { useTeamAssociationService } from "@/services/team-association";
+import { 
+  fetchUserTeamsDirectly, 
+  fetchMomentumTeams, 
+  fetchTeamsThroughManager, 
+  checkSpecialUserCase 
+} from "./team/utils/teamFetchers";
+import { useTeamRefreshOperations } from "./team/utils/teamRefreshOperations";
+import { fetchManagerDetails } from "./team/utils/managerDetails";
 
 export const useTeamInformationLogic = (managerId?: string | null) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -14,72 +19,36 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   
-  const { toast } = useToast();
+  const { isProcessing, fixMomentumCapitolAssociation } = useTeamAssociationService();
   const queryClient = useQueryClient();
-  const { 
-    checkAndUpdateTeamAssociation, 
-    fixMomentumCapitolAssociation,
-    forceAgentTeamAssociation,
-    isProcessing 
-  } = useTeamAssociationService();
 
   // Fetch user teams
   const { 
     data: userTeams = [], 
     isLoading: isLoadingTeams,
     refetch: refetchTeams,
-    error: teamsError
   } = useQuery({
     queryKey: ['user-teams-profile-direct'],
     queryFn: async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return [];
-
-        console.log("Fetching teams directly for user:", user.id);
+        // Try to fetch teams directly first
+        const teams = await fetchUserTeamsDirectly();
         
-        // Get the team memberships
-        const { data: teamMemberships, error: membershipError } = await supabase
-          .from('team_members')
-          .select('team_id')
-          .eq('user_id', user.id);
-          
-        if (membershipError) {
-          console.error("Error fetching team memberships:", membershipError);
-          throw membershipError;
+        if (teams.length > 0) {
+          return teams;
         }
         
-        if (!teamMemberships || teamMemberships.length === 0) {
-          console.log("No direct team memberships found for user");
-          
-          if (user.email === 'nielsenaragon@gmail.com') {
-            return await fetchMomentumTeams();
-          }
-          
-          if (managerId) {
-            return await fetchTeamsThroughManager(managerId);
-          }
-          
-          return [];
+        // If no teams were found, try special cases
+        if (await checkSpecialUserCase()) {
+          return await fetchMomentumTeams();
         }
         
-        const teamIds = teamMemberships.map(tm => tm.team_id);
-        console.log("Found team IDs:", teamIds);
-        
-        // Get the team details
-        const { data: teams, error: teamsError } = await supabase
-          .from('teams')
-          .select('*')
-          .in('id', teamIds)
-          .order('name');
-          
-        if (teamsError) {
-          console.error("Error fetching teams:", teamsError);
-          throw teamsError;
+        // Try to find teams through the manager
+        if (managerId) {
+          return await fetchTeamsThroughManager(managerId);
         }
         
-        console.log("Found teams:", teams?.length || 0, teams);
-        return teams || [];
+        return [];
       } catch (error) {
         console.error("Error in fetchTeams:", error);
         
@@ -107,170 +76,23 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
     enabled: true
   });
 
-  const checkSpecialUserCase = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      return user?.email === 'nielsenaragon@gmail.com';
-    } catch (error) {
-      return false;
-    }
-  };
-
-  const fetchMomentumTeams = async () => {
-    console.log("Fetching Momentum teams");
-    
-    const { data: momentumTeams } = await supabase
-      .from('teams')
-      .select('*')
-      .or('name.ilike.%Momentum Capitol%,name.ilike.%Momentum Capital%');
-      
-    console.log("Found Momentum teams:", momentumTeams);
-    return momentumTeams || [];
-  };
-
-  const fetchTeamsThroughManager = async (managerId: string) => {
-    console.log("Trying to fetch teams through manager:", managerId);
-    
-    const { data: managerTeams, error } = await supabase
-      .from('team_members')
-      .select('team_id')
-      .eq('user_id', managerId);
-      
-    if (error || !managerTeams || managerTeams.length === 0) {
-      console.log("Manager has no teams or error fetching manager teams");
-      return [];
-    }
-    
-    const teamIds = managerTeams.map(tm => tm.team_id);
-    
-    const { data: teams, error: teamsError } = await supabase
-      .from('teams')
-      .select('*')
-      .in('id', teamIds)
-      .order('name');
-      
-    if (teamsError) {
-      console.error("Error fetching teams through manager:", teamsError);
-      return [];
-    }
-    
-    console.log("Found teams through manager:", teams?.length || 0);
-    return teams || [];
-  };
+  // Setup refresh operations
+  const { handleRefreshTeams, handleForceTeamAssociation } = useTeamRefreshOperations(
+    refetchTeams,
+    setShowAlert,
+    setAlertMessage,
+    setFixingTeamAssociation
+  );
 
   // Fetch manager details
   useEffect(() => {
-    const fetchManagerDetails = async () => {
-      if (!managerId) {
-        setManagerName('');
-        setManagerEmail('');
-        return;
-      }
-
-      try {
-        const { data, error } = await supabase
-          .from('profiles')
-          .select('first_name, last_name, email')
-          .eq('id', managerId)
-          .single();
-
-        if (error) throw error;
-        
-        if (data) {
-          setManagerName(`${data.first_name || ''} ${data.last_name || ''}`.trim());
-          setManagerEmail(data.email || '');
-        }
-      } catch (error) {
-        console.error("Error fetching manager details:", error);
-      }
-    };
-
-    fetchManagerDetails();
+    fetchManagerDetails(managerId, setManagerName, setManagerEmail);
   }, [managerId]);
 
   // Init special case fix
   useEffect(() => {
     fixMomentumCapitolAssociation();
   }, []);
-
-  const handleRefreshTeams = async () => {
-    setShowAlert(false);
-    setFixingTeamAssociation(true);
-    
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-      
-      if (user.email === 'nielsenaragon@gmail.com') {
-        console.log("Special refresh for nielsenaragon@gmail.com");
-        await fixMomentumCapitolAssociation();
-      } 
-      else if (managerId) {
-        console.log("Agent refresh - associating with manager's teams");
-        const success = await checkAndUpdateTeamAssociation(managerId);
-        
-        if (!success) {
-          setAlertMessage("Could not find any teams associated with your manager. Please contact your manager.");
-          setShowAlert(true);
-        }
-      }
-      
-      // Invalidate and refetch all team-related queries
-      await refetchTeams();
-      
-      // Also invalidate other team-related queries to ensure consistency
-      await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-      await queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-      await queryClient.invalidateQueries({ queryKey: ['team-members'] });
-      
-      console.log("Teams refreshed successfully");
-      
-      toast({
-        title: "Teams Refreshed",
-        description: "Your teams list has been refreshed.",
-      });
-    } catch (error) {
-      console.error("Error refreshing teams:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem refreshing your teams.",
-        variant: "destructive",
-      });
-      
-      setAlertMessage("Failed to refresh teams. Please try again later.");
-      setShowAlert(true);
-    } finally {
-      setFixingTeamAssociation(false);
-    }
-  };
-
-  const handleForceTeamAssociation = async () => {
-    setShowAlert(false);
-    setFixingTeamAssociation(true);
-    
-    try {
-      const success = await forceAgentTeamAssociation();
-      
-      if (success) {
-        await refetchTeams();
-        await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-        
-        toast({
-          title: "Teams Updated",
-          description: "Your team associations have been updated.",
-        });
-      } else {
-        setAlertMessage("Could not associate you with your manager's teams. Your manager may not have any teams yet.");
-        setShowAlert(true);
-      }
-    } catch (error) {
-      console.error("Error in force team association:", error);
-      setAlertMessage("Failed to update team associations. Please try again later.");
-      setShowAlert(true);
-    } finally {
-      setFixingTeamAssociation(false);
-    }
-  };
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
