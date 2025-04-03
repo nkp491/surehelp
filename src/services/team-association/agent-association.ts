@@ -44,20 +44,63 @@ export const useAgentTeamAssociation = (
       
       console.log("Force team association with manager", profile.manager_id);
       
-      // First, try using the database function directly
+      // First, try manual association approach
       try {
-        console.log("Trying direct function call for team association");
-        const { data: result, error: funcError } = await supabase
-          .rpc('ensure_user_in_manager_teams', {
-            user_id: user.id,
-            manager_id: profile.manager_id
+        console.log("Associating user with manager's teams");
+        
+        // Get manager's teams
+        const { data: managerTeams, error: teamError } = await supabase
+          .from('team_members')
+          .select('team_id, teams:team_id(name)')
+          .eq('user_id', profile.manager_id);
+          
+        if (teamError) {
+          console.error("Error getting manager's teams:", teamError);
+          // Fall back to the core method
+          return await checkAndUpdateTeamAssociation(profile.manager_id);
+        }
+        
+        if (!managerTeams || managerTeams.length === 0) {
+          console.log("Manager has no teams");
+          
+          toast({
+            title: "Association Failed",
+            description: "Your manager doesn't have any teams yet. Ask them to create a team first.",
+            variant: "destructive",
           });
           
-        if (funcError) {
-          console.error("Error calling ensure_user_in_manager_teams:", funcError);
-        } else if (result === true) {
-          console.log("Successfully associated user with manager's teams via function");
+          return false;
+        }
           
+        // Add user to each team
+        let addedCount = 0;
+        for (const team of managerTeams) {
+          // Check if user is already in team
+          const { data: existing } = await supabase
+            .from('team_members')
+            .select('id')
+            .eq('team_id', team.team_id)
+            .eq('user_id', user.id)
+            .maybeSingle();
+            
+          if (!existing) {
+            // Add user to team
+            const { error: insertError } = await supabase
+              .from('team_members')
+              .insert([{
+                team_id: team.team_id,
+                user_id: user.id,
+                role: 'agent'
+              }]);
+              
+            if (!insertError) {
+              addedCount++;
+              console.log(`Added user to team: ${team.teams?.name || team.team_id}`);
+            }
+          }
+        }
+        
+        if (addedCount > 0) {
           // Refresh all team-related queries
           queryClient.invalidateQueries({ queryKey: ['user-teams'] });
           queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
@@ -65,110 +108,24 @@ export const useAgentTeamAssociation = (
           
           toast({
             title: "Team Association Successful",
-            description: "You have been added to your manager's teams.",
+            description: `You have been added to ${addedCount} team(s).`,
           });
           
           return true;
-        }
-      } catch (funcError) {
-        console.error("Function call error:", funcError);
-      }
-      
-      // Try the core method if function call fails
-      const success = await checkAndUpdateTeamAssociation(profile.manager_id);
-      
-      if (success) {
-        // Refresh all team-related queries
-        queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-        queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-        queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
-        
-        toast({
-          title: "Team Association Successful",
-          description: "You have been added to your manager's teams.",
-        });
-        
-        return true;
-      } else {
-        // Try a direct approach for association
-        try {
-          // Get all teams first
-          const { data: allTeams } = await supabase
-            .from('teams')
-            .select('*');
-            
-          // Find the manager's teams
-          const { data: managerTeams } = await supabase
-            .from('team_members')
-            .select('team_id, teams:team_id(name)')
-            .eq('user_id', profile.manager_id);
-            
-          if (!managerTeams || managerTeams.length === 0) {
-            console.log("Manager has no teams");
-            
-            toast({
-              title: "Association Failed",
-              description: "Your manager doesn't have any teams yet. Ask them to create a team first.",
-              variant: "destructive",
-            });
-            
-            return false;
-          }
+        } else {
+          console.log("User was already in all manager's teams");
           
-          // Add user to each team
-          let addedCount = 0;
-          for (const team of managerTeams) {
-            // Check if user is already in team
-            const { data: existing } = await supabase
-              .from('team_members')
-              .select('id')
-              .eq('team_id', team.team_id)
-              .eq('user_id', user.id)
-              .maybeSingle();
-              
-            if (!existing) {
-              // Add user to team
-              const { error: insertError } = await supabase
-                .from('team_members')
-                .insert([{
-                  team_id: team.team_id,
-                  user_id: user.id,
-                  role: 'agent'
-                }]);
-                
-              if (!insertError) {
-                addedCount++;
-                console.log(`Added user to team: ${team.teams?.name || team.team_id}`);
-              }
-            }
-          }
+          toast({
+            title: "Already Associated",
+            description: "You're already a member of all your manager's teams.",
+          });
           
-          if (addedCount > 0) {
-            // Refresh all team-related queries
-            queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-            queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-            queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
-            
-            toast({
-              title: "Team Association Successful",
-              description: `You have been added to ${addedCount} team(s).`,
-            });
-            
-            return true;
-          } else {
-            console.log("User was already in all manager's teams");
-            
-            toast({
-              title: "Already Associated",
-              description: "You're already a member of all your manager's teams.",
-            });
-            
-            return true; // Still return true as the user is properly associated
-          }
-        } catch (directError) {
-          console.error("Error in direct team association:", directError);
-          return false;
+          return true; // Still return true as the user is properly associated
         }
+      } catch (directError) {
+        console.error("Error in direct team association:", directError);
+        // Try the core method if direct approach fails
+        return await checkAndUpdateTeamAssociation(profile.manager_id);
       }
     } catch (error) {
       console.error("Error in forceAgentTeamAssociation:", error);
