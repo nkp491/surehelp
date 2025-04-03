@@ -66,6 +66,13 @@ const TeamInformation = ({
     }
   };
 
+  const handleTeamCreationSuccess = async () => {
+    // Wait a moment for the database to update
+    setTimeout(async () => {
+      await handleRefreshTeams();
+    }, 500);
+  };
+
   return (
     <Card className="shadow-sm">
       <TeamHeader 
@@ -110,7 +117,7 @@ const TeamInformation = ({
       <TeamCreationDialog
         open={showCreateTeamDialog}
         onOpenChange={setShowCreateTeamDialog}
-        onSuccess={() => handleRefreshTeams()}
+        onSuccess={handleTeamCreationSuccess}
       />
     </Card>
   );

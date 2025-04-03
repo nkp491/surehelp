@@ -126,9 +126,10 @@ export const useCreateTeam = () => {
     },
     onSuccess: (data) => {
       console.log("Team creation success:", data);
-      // Invalidate the teams query to refetch
+      // Invalidate all related team queries to ensure consistency
       queryClient.invalidateQueries({ queryKey: ['user-teams'] });
       queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+      queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
       
       toast({
         title: "Team created",

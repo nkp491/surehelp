@@ -38,6 +38,7 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
 
         console.log("Fetching teams directly for user:", user.id);
         
+        // Get the team memberships
         const { data: teamMemberships, error: membershipError } = await supabase
           .from('team_members')
           .select('team_id')
@@ -63,7 +64,9 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
         }
         
         const teamIds = teamMemberships.map(tm => tm.team_id);
+        console.log("Found team IDs:", teamIds);
         
+        // Get the team details
         const { data: teams, error: teamsError } = await supabase
           .from('teams')
           .select('*')
@@ -75,7 +78,7 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
           throw teamsError;
         }
         
-        console.log("Found teams:", teams?.length || 0);
+        console.log("Found teams:", teams?.length || 0, teams);
         return teams || [];
       } catch (error) {
         console.error("Error in fetchTeams:", error);
@@ -212,8 +215,15 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
         }
       }
       
+      // Invalidate and refetch all team-related queries
       await refetchTeams();
+      
+      // Also invalidate other team-related queries to ensure consistency
       await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      await queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
+      await queryClient.invalidateQueries({ queryKey: ['team-members'] });
+      
+      console.log("Teams refreshed successfully");
       
       toast({
         title: "Teams Refreshed",
@@ -243,6 +253,7 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
       
       if (success) {
         await refetchTeams();
+        await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
         
         toast({
           title: "Teams Updated",
