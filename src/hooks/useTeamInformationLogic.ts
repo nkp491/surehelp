@@ -6,10 +6,12 @@ import {
   fetchUserTeamsDirectly, 
   fetchMomentumTeams, 
   fetchTeamsThroughManager, 
-  checkSpecialUserCase 
+  checkSpecialUserCase,
+  fetchTeamsWithoutRLS
 } from "./team/utils/teamFetchers";
 import { useTeamRefreshOperations } from "./team/utils/teamRefreshOperations";
 import { fetchManagerDetails } from "./team/utils/managerDetails";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useTeamInformationLogic = (managerId?: string | null) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -19,10 +21,10 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
   const [showAlert, setShowAlert] = useState(false);
   const [alertMessage, setAlertMessage] = useState("");
   
-  const { isProcessing, fixMomentumCapitolAssociation } = useTeamAssociationService();
+  const { isProcessing, fixMomentumCapitolAssociation, forceAgentTeamAssociation } = useTeamAssociationService();
   const queryClient = useQueryClient();
 
-  // Fetch user teams
+  // Fetch user teams with improved error handling
   const { 
     data: userTeams = [], 
     isLoading: isLoadingTeams,
@@ -31,42 +33,72 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
     queryKey: ['user-teams-profile-direct'],
     queryFn: async () => {
       try {
-        // Try to fetch teams directly first
-        const teams = await fetchUserTeamsDirectly();
+        // Get current user
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
         
+        // Try various methods to get the teams
+        let teams: any[] = [];
+        
+        // Method 1: Direct fetch
+        teams = await fetchUserTeamsDirectly();
         if (teams.length > 0) {
+          console.log("Successfully fetched teams directly", teams);
           return teams;
         }
         
-        // If no teams were found, try special cases
+        // Method 2: Check for special case
         if (await checkSpecialUserCase()) {
-          return await fetchMomentumTeams();
+          teams = await fetchMomentumTeams();
+          if (teams.length > 0) {
+            console.log("Successfully fetched special case teams", teams);
+            return teams;
+          }
         }
         
-        // Try to find teams through the manager
+        // Method 3: Fetch through manager
         if (managerId) {
-          return await fetchTeamsThroughManager(managerId);
+          teams = await fetchTeamsThroughManager(managerId);
+          if (teams.length > 0) {
+            console.log("Successfully fetched teams through manager", teams);
+            return teams;
+          }
+        }
+        
+        // Method 4: Try with no RLS
+        teams = await fetchTeamsWithoutRLS(user.id);
+        if (teams.length > 0) {
+          console.log("Successfully fetched teams without RLS", teams);
+          return teams;
+        }
+        
+        // If all methods failed, show an alert
+        if (managerId) {
+          setAlertMessage("Could not find any teams associated with your manager. Please contact your manager or try the Force Team Association button.");
+          setShowAlert(true);
         }
         
         return [];
       } catch (error) {
-        console.error("Error in fetchTeams:", error);
+        console.error("Error in team fetching process:", error);
         
+        // Check if user is logged in
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return [];
+        
+        // Show alert about team association issue
         if (managerId) {
-          try {
-            return await fetchTeamsThroughManager(managerId);
-          } catch (innerError) {
-            console.error("Failed to fetch teams through manager:", innerError);
-            setAlertMessage("There was a problem loading your teams. Try using the refresh button.");
-            setShowAlert(true);
-          }
+          setAlertMessage("There was a problem loading your teams. Try using the refresh button or Force Team Association.");
+          setShowAlert(true);
         }
         
-        if (await checkSpecialUserCase()) {
-          return await fetchMomentumTeams();
+        // Make one more attempt with the no-RLS method
+        try {
+          return await fetchTeamsWithoutRLS(user.id);
+        } catch (finalError) {
+          console.error("Final attempt to fetch teams failed:", finalError);
+          return [];
         }
-        
-        return [];
       }
     },
     refetchOnWindowFocus: false,
@@ -91,8 +123,29 @@ export const useTeamInformationLogic = (managerId?: string | null) => {
 
   // Init special case fix
   useEffect(() => {
-    fixMomentumCapitolAssociation();
+    const initSpecialCase = async () => {
+      const isSpecialCase = await checkSpecialUserCase();
+      if (isSpecialCase) {
+        await fixMomentumCapitolAssociation();
+        await refetchTeams();
+      }
+    };
+    
+    initSpecialCase();
   }, []);
+
+  // Check for team visibility issues and automatically try to fix them
+  useEffect(() => {
+    const checkTeamVisibility = async () => {
+      // Only run this check if we have a manager but no teams
+      if (managerId && userTeams.length === 0 && !isLoadingTeams && !fixingTeamAssociation && !isProcessing) {
+        console.log("Detected potential team visibility issue - automatic fix attempt");
+        await handleForceTeamAssociation();
+      }
+    };
+    
+    checkTeamVisibility();
+  }, [managerId, userTeams, isLoadingTeams]);
 
   const toggleEditing = () => {
     setIsEditing(!isEditing);
