@@ -1,4 +1,3 @@
-
 import interact from "interactjs";
 import { snapToGrid, constrainPosition, GRID_SIZE } from "@/utils/gridUtils";
 import { useCallback, useRef, useEffect } from "react";
@@ -43,13 +42,14 @@ export const useDragConfig = ({
     const x = parseFloat(target.getAttribute('data-x') || '0') + event.dx;
     const y = parseFloat(target.getAttribute('data-y') || '0') + event.dy;
     
-    // Snap to grid
-    const snapped = snapToGrid(x, y);
+    // Snap to grid - use the correct signature for snapToGrid
+    const snappedX = snapToGrid(x);
+    const snappedY = snapToGrid(y);
     
     // Apply constraint to keep within container
     const width = parseFloat(target.style.width || target.offsetWidth.toString());
     const height = parseFloat(target.style.height || target.offsetHeight.toString());
-    const constrained = constrainPosition(snapped.x, snapped.y, width, height, containerRef);
+    const constrained = constrainPosition(snappedX, snappedY);
     
     // Update element style and position attributes
     target.style.transform = `translate(${constrained.x}px, ${constrained.y}px)`;

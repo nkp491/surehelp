@@ -4,6 +4,14 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
+// Define an interface for the RPC response
+interface CreateTeamRpcResponse {
+  success: boolean;
+  error?: string;
+  team_id?: string;
+  team_name?: string;
+}
+
 /**
  * Hook to create a new team
  */
@@ -94,17 +102,20 @@ export const useCreateTeam = () => {
             throw rpcError;
           }
           
-          if (!rpcResult.success) {
-            console.error("RPC returned failure:", rpcResult.error);
-            throw new Error(rpcResult.error || 'Failed to create team');
+          // Explicitly cast the rpcResult to the proper type
+          const typedResult = rpcResult as unknown as CreateTeamRpcResponse;
+          
+          if (!typedResult.success) {
+            console.error("RPC returned failure:", typedResult.error);
+            throw new Error(typedResult.error || 'Failed to create team');
           }
           
-          console.log("Team created via RPC:", rpcResult);
+          console.log("Team created via RPC:", typedResult);
           
           // Return team data in the expected format
           return {
-            id: rpcResult.team_id,
-            name: rpcResult.team_name,
+            id: typedResult.team_id,
+            name: typedResult.team_name,
             created_at: new Date().toISOString()
           };
         }
