@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -29,14 +28,15 @@ export const useTeamAssociationCore = (
       
       // Try a direct SQL query to bypass RLS recursion
       try {
-        // First, get the manager's teams using a direct query
-        const { data: managerTeams, error: managerTeamsError } = await supabase.rpc(
+        // First, get the manager's teams using the RPC function
+        const { data: managerTeamIds, error: managerTeamsError } = await supabase.rpc(
           'get_manager_teams',
           { manager_id: managerId }
         );
         
         if (managerTeamsError) {
-          console.log("RPC method not found, falling back to standard query");
+          console.log("RPC method error:", managerTeamsError);
+          console.log("Falling back to standard query");
           
           // Fallback to standard query if RPC is not set up
           const { data: teamData, error: teamsError } = await supabase
@@ -58,13 +58,13 @@ export const useTeamAssociationCore = (
           return await processTeamAssociations(user.id, teamData);
         }
         
-        if (!managerTeams || managerTeams.length === 0) {
+        if (!managerTeamIds || !Array.isArray(managerTeamIds) || managerTeamIds.length === 0) {
           console.log("Manager has no teams (from RPC)");
           return false;
         }
         
         // Format the RPC result to match the expected structure
-        const teamData = managerTeams.map(teamId => ({ team_id: teamId }));
+        const teamData = managerTeamIds.map(teamId => ({ team_id: teamId }));
         return await processTeamAssociations(user.id, teamData);
       } catch (innerError) {
         console.error("Error in team association process:", innerError);

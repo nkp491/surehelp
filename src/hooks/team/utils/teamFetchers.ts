@@ -78,18 +78,21 @@ export const fetchTeamsWithoutRLS = async (userId: string): Promise<Team[]> => {
       return [];
     }
     
-    // Then get this user's team memberships from a special view or direct query if available
+    // Then get this user's team memberships from the custom RPC function
     try {
-      const { data: userTeams, error: viewError } = await supabase
+      // Use the custom RPC function
+      const { data: userTeamIds, error: rpcError } = await supabase
         .rpc('get_user_team_memberships', { user_id_param: userId });
       
-      if (!viewError && userTeams && userTeams.length > 0) {
+      if (!rpcError && userTeamIds && Array.isArray(userTeamIds) && userTeamIds.length > 0) {
         console.log("Successfully fetched user teams through RPC function");
         // Filter teams by IDs returned from RPC
-        return allTeams.filter((team: Team) => userTeams.includes(team.id));
+        return allTeams.filter((team: Team) => userTeamIds.includes(team.id));
+      } else if (rpcError) {
+        console.error("Error using RPC function:", rpcError);
       }
     } catch (rpcError) {
-      console.log("RPC function not available, trying direct query");
+      console.log("RPC function call failed, trying direct query:", rpcError);
     }
     
     // Fallback to direct SQL if RPC not available

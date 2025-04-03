@@ -833,6 +833,12 @@ export type Database = {
         }
         Returns: Json
       }
+      get_manager_teams: {
+        Args: {
+          manager_id: string
+        }
+        Returns: string[]
+      }
       get_user_role: {
         Args: {
           user_id: string
@@ -842,6 +848,12 @@ export type Database = {
       get_user_roles: {
         Args: {
           check_user_id: string
+        }
+        Returns: string[]
+      }
+      get_user_team_memberships: {
+        Args: {
+          user_id_param: string
         }
         Returns: string[]
       }
