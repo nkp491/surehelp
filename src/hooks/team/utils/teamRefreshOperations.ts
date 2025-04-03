@@ -29,13 +29,26 @@ export const useTeamRefreshOperations = (
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
       
-      if (user.email === 'nielsenaragon@gmail.com') {
+      // Get user profile to check for manager_id
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('manager_id, email')
+        .eq('id', user.id)
+        .single();
+        
+      if (profileError) {
+        console.error("Error fetching profile:", profileError);
+        setFixingTeamAssociation(false);
+        return;
+      }
+      
+      if (profile.email === 'nielsenaragon@gmail.com' || user.email === 'nielsenaragon@gmail.com') {
         console.log("Special refresh for nielsenaragon@gmail.com");
         await fixMomentumCapitolAssociation();
       } 
-      else if (user.manager_id) {
+      else if (profile.manager_id) {
         console.log("Agent refresh - associating with manager's teams");
-        const success = await checkAndUpdateTeamAssociation(user.manager_id);
+        const success = await checkAndUpdateTeamAssociation(profile.manager_id);
         
         if (!success) {
           setAlertMessage("Could not find any teams associated with your manager. Please contact your manager.");
