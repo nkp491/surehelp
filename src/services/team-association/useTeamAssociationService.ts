@@ -7,7 +7,7 @@ import { useAgentTeamAssociation } from './agent-association';
 export const useTeamAssociationService = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   
-  const { checkAndUpdateTeamAssociation } = useTeamAssociationCore(setIsProcessing);
+  const { checkAndUpdateTeamAssociation, addUserToManagerTeams } = useTeamAssociationCore(setIsProcessing);
   const { fixMomentumCapitolAssociation } = useSpecialTeamAssociations();
   const { forceAgentTeamAssociation } = useAgentTeamAssociation(setIsProcessing, checkAndUpdateTeamAssociation);
 
@@ -15,6 +15,7 @@ export const useTeamAssociationService = () => {
     checkAndUpdateTeamAssociation,
     fixMomentumCapitolAssociation,
     forceAgentTeamAssociation,
+    addUserToManagerTeams,
     isProcessing
   };
 };

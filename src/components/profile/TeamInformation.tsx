@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { useLanguage } from "@/contexts/LanguageContext";
@@ -10,6 +9,8 @@ import TeamHeader from "./team/TeamHeader";
 import ManagerSection from "./team/ManagerSection";
 import TeamsSection from "./team/TeamsSection";
 import { useTeamInformationLogic } from "@/hooks/useTeamInformationLogic";
+import { useTeamAssociationService } from "@/services/team-association";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -24,8 +25,9 @@ const TeamInformation = ({
   
   const { language } = useLanguage();
   const t = translations[language];
-  const { validateManagerEmail, isLoading } = useManagerValidation();
+  const { validateManagerEmail, isLoading: isValidating } = useManagerValidation();
   const { userRoles } = useRoleCheck();
+  const { addUserToManagerTeams } = useTeamAssociationService();
   
   const isManager = userRoles.some(role => role.startsWith('manager_pro'));
   const isAgent = userRoles.some(role => role === 'agent' || role === 'agent_pro');
@@ -53,7 +55,26 @@ const TeamInformation = ({
     const validationResult = await validateManagerEmail(managerEmail);
     
     if (validationResult.valid) {
-      await onUpdate({ manager_id: validationResult.managerId });
+      // Store previous manager ID for comparison
+      const prevManagerId = managerId;
+      const newManagerId = validationResult.managerId;
+      
+      // Update profile with new manager
+      await onUpdate({ manager_id: newManagerId });
+      
+      // If manager has changed and we have a new manager, try to add user to manager's teams
+      if (newManagerId && newManagerId !== prevManagerId) {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+          console.log("Manager changed, adding user to manager's teams");
+          await addUserToManagerTeams(user.id, newManagerId);
+          // Refresh teams to show the new teams
+          setTimeout(() => {
+            handleRefreshTeams();
+          }, 500);
+        }
+      }
+      
       setIsEditing(false);
     }
   };
@@ -80,7 +101,7 @@ const TeamInformation = ({
         onCreateTeamClick={() => setShowCreateTeamDialog(true)}
         onEditClick={handleToggleEdit}
         isEditing={isEditing}
-        isLoading={isLoading}
+        isLoading={isValidating}
         isFixing={fixingTeamAssociation || isProcessing}
       />
       
@@ -106,8 +127,8 @@ const TeamInformation = ({
           
           {isEditing && (
             <div className="flex justify-end pt-2">
-              <button type="submit" className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors" disabled={isLoading || fixingTeamAssociation || isProcessing}>
-                {isLoading ? "Saving..." : t.save}
+              <button type="submit" className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors" disabled={isValidating || fixingTeamAssociation || isProcessing}>
+                {isValidating ? "Saving..." : t.save}
               </button>
             </div>
           )}

@@ -153,6 +153,30 @@ export const useAgentTeamAssociation = (
         console.error("Error adding manager to team:", memberError);
       }
       
+      // Find and add all managed users to the team
+      const { data: managedUsers, error: managedError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('manager_id', managerId);
+      
+      if (!managedError && managedUsers && managedUsers.length > 0) {
+        const teamMembers = managedUsers.map(u => ({
+          team_id: newTeam.id,
+          user_id: u.id,
+          role: 'agent'
+        }));
+        
+        const { error: bulkAddError } = await supabase
+          .from('team_members')
+          .insert(teamMembers);
+          
+        if (bulkAddError) {
+          console.error("Error adding managed users to team:", bulkAddError);
+        } else {
+          console.log(`Added ${managedUsers.length} managed users to new team ${newTeam.id}`);
+        }
+      }
+      
       return [{ team_id: newTeam.id }];
     } catch (error) {
       console.error("Error ensuring manager has team:", error);

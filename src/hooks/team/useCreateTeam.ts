@@ -72,21 +72,29 @@ export const useCreateTeam = () => {
           }
           
           // Also add managed users to team
-          const { data: managedUsers } = await supabase
+          const { data: managedUsers, error: managedUsersError } = await supabase
             .from('profiles')
             .select('id')
             .eq('manager_id', user.id);
             
-          if (managedUsers && managedUsers.length > 0) {
+          if (managedUsersError) {
+            console.error("Error fetching managed users:", managedUsersError);
+          } else if (managedUsers && managedUsers.length > 0) {
             const teamMembers = managedUsers.map(u => ({
               team_id: teamData.id,
               user_id: u.id,
               role: 'agent'
             }));
             
-            await supabase
+            const { error: addMembersError } = await supabase
               .from('team_members')
               .insert(teamMembers);
+              
+            if (addMembersError) {
+              console.error("Error adding managed users to team:", addMembersError);
+            } else {
+              console.log(`Added ${managedUsers.length} managed users to team ${teamData.id}`);
+            }
           }
           
           return teamData;

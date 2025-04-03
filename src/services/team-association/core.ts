@@ -72,6 +72,7 @@ export const useTeamAssociationCore = (
             
           if (!addError) {
             teamsAddedCount++;
+            console.log(`Successfully added user to team ${teamMembership.team_id}`);
           } else {
             console.error(`Error adding to team ${teamMembership.team_id}:`, addError);
           }
@@ -102,7 +103,78 @@ export const useTeamAssociationCore = (
     }
   };
 
+  /**
+   * Add user to manager's teams
+   */
+  const addUserToManagerTeams = async (userId: string, managerId: string) => {
+    if (!userId || !managerId) return false;
+    
+    try {
+      console.log(`Adding user ${userId} to teams of manager ${managerId}`);
+      
+      // Get manager's teams
+      const { data: managerTeams, error: teamsError } = await supabase
+        .from('team_members')
+        .select('team_id')
+        .eq('user_id', managerId);
+        
+      if (teamsError) {
+        console.error("Error fetching manager's teams:", teamsError);
+        return false;
+      }
+      
+      if (!managerTeams || managerTeams.length === 0) {
+        console.log("Manager has no teams");
+        return false;
+      }
+      
+      console.log(`Found ${managerTeams.length} teams for manager ${managerId}`);
+      
+      // For each team, check if user is already a member
+      let teamsAddedCount = 0;
+      for (const teamMembership of managerTeams) {
+        const { data: existingMembership, error: membershipError } = await supabase
+          .from('team_members')
+          .select('id')
+          .eq('team_id', teamMembership.team_id)
+          .eq('user_id', userId)
+          .maybeSingle();
+          
+        if (membershipError) {
+          console.error(`Error checking existing membership for team ${teamMembership.team_id}:`, membershipError);
+          continue; // Skip this team and try the next one
+        }
+          
+        if (!existingMembership) {
+          // Add user to team with agent role
+          const { error: addError } = await supabase
+            .from('team_members')
+            .insert([{ 
+              team_id: teamMembership.team_id,
+              user_id: userId,
+              role: 'agent'
+            }]);
+            
+          if (!addError) {
+            teamsAddedCount++;
+            console.log(`Successfully added user ${userId} to team ${teamMembership.team_id}`);
+          } else {
+            console.error(`Error adding to team ${teamMembership.team_id}:`, addError);
+          }
+        } else {
+          console.log(`User ${userId} already in team ${teamMembership.team_id}`);
+        }
+      }
+      
+      return teamsAddedCount > 0;
+    } catch (error) {
+      console.error(`Error adding user ${userId} to manager's teams:`, error);
+      return false;
+    }
+  };
+
   return {
-    checkAndUpdateTeamAssociation
+    checkAndUpdateTeamAssociation,
+    addUserToManagerTeams
   };
 };
