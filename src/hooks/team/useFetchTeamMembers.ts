@@ -17,8 +17,11 @@ export const useFetchTeamMembers = (teamId?: string) => {
           .from('team_members')
           .select(`
             id,
+            team_id,
             user_id,
             role,
+            created_at,
+            updated_at,
             profiles:user_id (
               id,
               first_name,
@@ -33,9 +36,16 @@ export const useFetchTeamMembers = (teamId?: string) => {
         
         return data.map((member: any) => ({
           id: member.id,
-          userId: member.user_id,
+          team_id: member.team_id,
+          user_id: member.user_id,
           role: member.role,
-          profile: member.profiles
+          created_at: member.created_at,
+          updated_at: member.updated_at,
+          // Add profile information as extended properties
+          first_name: member.profiles?.first_name,
+          last_name: member.profiles?.last_name,
+          email: member.profiles?.email,
+          profile_image_url: member.profiles?.profile_image_url
         })) as TeamMember[];
       } catch (error) {
         console.error("Error fetching team members:", error);
