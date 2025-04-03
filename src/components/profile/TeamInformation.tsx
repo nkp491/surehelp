@@ -120,6 +120,12 @@ const TeamInformation = ({
     }, 500);
   };
 
+  // Create a wrapper function that returns void instead of boolean
+  const handleForceAssociation = async () => {
+    await handleForceTeamAssociation();
+    // No return value needed (returns void)
+  };
+
   return (
     <Card className="shadow-sm">
       <TeamHeader 
@@ -147,7 +153,7 @@ const TeamInformation = ({
             showAlert={showAlert}
             alertMessage={alertMessage}
             onRefresh={handleRefreshTeams}
-            onForceTeamAssociation={handleForceTeamAssociation}
+            onForceTeamAssociation={handleForceAssociation}
             managerId={managerId}
           />
           
