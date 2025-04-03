@@ -1,3 +1,4 @@
+
 import interact from "interactjs";
 import { snapToGrid, constrainPosition, GRID_SIZE } from "@/utils/gridUtils";
 import { useCallback, useRef, useEffect } from "react";
@@ -124,16 +125,16 @@ export const useDragConfig = ({
     if (resizable) {
       draggableElement.resizable({
         edges: { left: false, right: true, bottom: true, top: false },
-        restrictSize: {
-          min: { width: minWidth, height: minHeight },
-          max: { width: maxWidth, height: maxHeight },
-        },
-        inertia: false,
         modifiers: [
+          interact.modifiers.restrictSize({
+            min: { width: minWidth, height: minHeight },
+            max: { width: maxWidth, height: maxHeight }
+          }),
           interact.modifiers.restrictRect({
             restriction: containerRef.current || 'parent'
           })
         ],
+        inertia: false,
         listeners: {
           move: handleResizeMove
         }

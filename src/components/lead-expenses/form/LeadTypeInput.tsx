@@ -34,13 +34,14 @@ const LeadTypeInput = ({ leadTypes, setLeadTypes, newLeadType, setNewLeadType }:
         return;
       }
 
-      // Flatten and get unique lead types
+      // Flatten and get unique lead types with type safety
       const uniqueTypes = Array.from(new Set(
         data.flatMap(expense => {
           const leadType = expense.lead_type;
-          return Array.isArray(leadType) ? leadType : [];
+          // Ensure leadType is treated as string array
+          return Array.isArray(leadType) ? leadType as string[] : [];
         })
-      )).sort() as string[];
+      )).sort();
 
       setExistingTypes(uniqueTypes);
     };
