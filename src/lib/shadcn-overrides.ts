@@ -23,89 +23,112 @@ import * as TabsPrimitive from "@radix-ui/react-tabs";
 import * as ToastPrimitive from "@radix-ui/react-toast";
 import * as ToggleGroupPrimitive from "@radix-ui/react-toggle-group";
 import * as TogglePrimitive from "@radix-ui/react-toggle";
-import { ExtendedProps } from "./component-props";
 
-// Re-export modified types to allow for className and children
+// Fix the module augmentation to avoid recursive type references
 declare module "@radix-ui/react-accordion" {
-  interface AccordionItemProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item> {
+  interface AccordionItemProps extends React.ComponentPropsWithoutRef<"div"> {
     className?: string;
   }
-
-  interface AccordionTriggerProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Trigger> {
+  
+  interface AccordionTriggerProps extends React.ComponentPropsWithoutRef<"button"> {
     className?: string;
     children?: React.ReactNode;
   }
-
-  interface AccordionContentProps extends React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Content> {
+  
+  interface AccordionContentProps extends React.ComponentPropsWithoutRef<"div"> {
     className?: string;
     children?: React.ReactNode;
   }
 }
 
 declare module "@radix-ui/react-alert-dialog" {
-  interface AlertDialogOverlayProps extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Overlay> {
+  interface AlertDialogOverlayProps extends React.ComponentPropsWithoutRef<"div"> {
     className?: string;
   }
-
-  interface AlertDialogTitleProps extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Title> {
-    className?: string;
-    children?: React.ReactNode;
-  }
-
-  interface AlertDialogDescriptionProps extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Description> {
+  
+  interface AlertDialogTitleProps extends React.ComponentPropsWithoutRef<"h2"> {
     className?: string;
     children?: React.ReactNode;
   }
-
-  interface AlertDialogActionProps extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Action> {
+  
+  interface AlertDialogDescriptionProps extends React.ComponentPropsWithoutRef<"div"> {
     className?: string;
     children?: React.ReactNode;
   }
-
-  interface AlertDialogCancelProps extends React.ComponentPropsWithoutRef<typeof AlertDialogPrimitive.Cancel> {
+  
+  interface AlertDialogActionProps extends React.ComponentPropsWithoutRef<"button"> {
+    className?: string;
+    children?: React.ReactNode;
+  }
+  
+  interface AlertDialogCancelProps extends React.ComponentPropsWithoutRef<"button"> {
     className?: string;
     children?: React.ReactNode;
   }
 }
 
 declare module "@radix-ui/react-avatar" {
-  interface AvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
+  interface AvatarProps extends React.ComponentPropsWithoutRef<"div"> {
     className?: string;
     children?: React.ReactNode;
   }
-
-  interface AvatarImageProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image> {
+  
+  interface AvatarImageProps extends React.ComponentPropsWithoutRef<"img"> {
     className?: string;
     src?: string;
   }
-
-  interface AvatarFallbackProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback> {
+  
+  interface AvatarFallbackProps extends React.ComponentPropsWithoutRef<"div"> {
     className?: string;
     children?: React.ReactNode;
   }
 }
 
 declare module "@radix-ui/react-checkbox" {
-  interface CheckboxIndicatorProps extends React.ComponentPropsWithoutRef<typeof CheckboxPrimitive.Indicator> {
+  interface CheckboxProps extends React.ComponentPropsWithoutRef<"button"> {
+    className?: string;
+  }
+  
+  interface CheckboxIndicatorProps extends React.ComponentPropsWithoutRef<"span"> {
     className?: string;
     children?: React.ReactNode;
   }
 }
 
 declare module "@radix-ui/react-collapsible" {
-  interface CollapsibleProps extends React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.Root> {
+  interface CollapsibleProps extends React.ComponentPropsWithoutRef<"div"> {
     children?: React.ReactNode;
   }
-
-  interface CollapsibleTriggerProps extends React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.CollapsibleTrigger> {
+  
+  interface CollapsibleTriggerProps extends React.ComponentPropsWithoutRef<"button"> {
     children?: React.ReactNode;
   }
-
-  interface CollapsibleContentProps extends React.ComponentPropsWithoutRef<typeof CollapsiblePrimitive.CollapsibleContent> {
+  
+  interface CollapsibleContentProps extends React.ComponentPropsWithoutRef<"div"> {
     children?: React.ReactNode;
     className?: string;
   }
 }
 
-// Export additional module declarations for other Radix UI components causing issues
-// This is a more concise approach to export modified types
+// Additional modules can be added here following the same pattern
+
+// Adding overrides for button variant and size for shadcn components
+declare module "@/components/ui/button" {
+  interface ButtonProps {
+    variant?: "default" | "destructive" | "outline" | "secondary" | "ghost" | "link";
+    size?: "default" | "sm" | "lg" | "icon";
+  }
+}
+
+// Adding overrides for badge variant for shadcn components
+declare module "@/components/ui/badge" {
+  interface BadgeProps {
+    variant?: "default" | "secondary" | "destructive" | "outline";
+  }
+}
+
+// Export any utility types needed elsewhere
+export interface ExtendedComponentProps {
+  className?: string;
+  children?: React.ReactNode;
+}
