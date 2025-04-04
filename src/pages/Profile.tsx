@@ -1,4 +1,3 @@
-
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -69,10 +68,7 @@ const ProfileContent = () => {
           onUpdate={updateProfile}
         />
 
-        <TeamInformation 
-          managerId={profile?.manager_id}
-          onUpdate={updateProfile}
-        />
+        <TeamInformation />
 
         {isAgent && (
           <AgentInformation 
