@@ -9,7 +9,7 @@ import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
-import TeamInformation from "@/components/profile/TeamInformation";
+import { TeamInformation } from "@/components/profile/TeamInformation";
 import AgentInformation from "@/components/profile/AgentInformation";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";

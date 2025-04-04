@@ -3,8 +3,8 @@ import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ManagerSection } from "./team/ManagerSection";
-import { TeamsSection } from "./team/TeamsSection";
+import ManagerSection from "./team/ManagerSection";
+import TeamsSection from "./team/TeamsSection";
 import { useProfileData } from "@/hooks/profile/useProfileData";
 import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types/team";
@@ -15,7 +15,7 @@ import { useQueryClient } from "@tanstack/react-query";
  * Component that displays team information in the user profile
  */
 export const TeamInformation = () => {
-  const { profile, isLoading } = useProfileData();
+  const { data: profile, isLoading } = useProfileData();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isUpdating, setIsUpdating] = useState(false);
@@ -169,7 +169,7 @@ export const TeamInformation = () => {
             id: item.team.id,
             name: item.team.name,
             created_at: item.team.created_at,
-            updated_at: item.team.updated_at || item.team.created_at // Fallback to created_at if updated_at is not available
+            updated_at: item.team.updated_at || item.team.created_at // Ensure updated_at is always present
           }));
 
         setTeams(formattedTeams);
@@ -227,4 +227,3 @@ export const TeamInformation = () => {
     </Card>
   );
 };
-
