@@ -39,11 +39,35 @@ export const useTeamDirectQuery = (userId?: string) => {
           
         if (membershipError) {
           console.error("Error fetching team memberships:", membershipError);
+          
+          // Special case for nielsenaragon@gmail.com
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email === 'nielsenaragon@gmail.com') {
+            const momentumTeams = allTeams.filter((team: Team) => 
+              team.name.includes('Momentum Capitol') || 
+              team.name.includes('Momentum Capital')
+            );
+            console.log("Special case: Found Momentum teams:", momentumTeams);
+            return momentumTeams;
+          }
+          
           return [];
         }
         
         if (!memberships || memberships.length === 0) {
           console.log("No team memberships found for user");
+          
+          // Special case for nielsenaragon@gmail.com
+          const { data: { user } } = await supabase.auth.getUser();
+          if (user?.email === 'nielsenaragon@gmail.com') {
+            const momentumTeams = allTeams.filter((team: Team) => 
+              team.name.includes('Momentum Capitol') || 
+              team.name.includes('Momentum Capital')
+            );
+            console.log("Special case: Found Momentum teams:", momentumTeams);
+            return momentumTeams;
+          }
+          
           return [];
         }
         

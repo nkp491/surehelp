@@ -1,64 +1,149 @@
 
-"use client"
-
-import * as React from "react"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { Calendar } from "@/components/ui/calendar"
+import * as React from "react";
+import { format } from "date-fns";
+import { Calendar as CalendarIcon } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@/components/ui/popover"
+} from "@/components/ui/popover";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface DatePickerProps {
-  selected?: Date
-  onSelect?: (date: Date | undefined) => void
-  disabled?: (date: Date) => boolean
-  initialFocus?: boolean
-  className?: string
-  maxDate?: Date
+  selected: Date | null;
+  onSelect: (date: Date | null) => void;
+  maxDate?: Date;
 }
 
 export function DatePicker({
   selected,
   onSelect,
-  disabled,
-  initialFocus,
-  className,
-  maxDate
+  maxDate,
 }: DatePickerProps) {
+  const [open, setOpen] = React.useState(false);
+  const [inputValue, setInputValue] = React.useState("");
+  const [year, setYear] = React.useState<number>(selected?.getFullYear() || new Date().getFullYear());
+  const [month, setMonth] = React.useState<Date>(
+    selected || new Date(year, new Date().getMonth())
+  );
+
+  React.useEffect(() => {
+    if (selected) {
+      setInputValue(format(selected, "MM/dd/yyyy"));
+      setYear(selected.getFullYear());
+      setMonth(selected);
+    }
+  }, [selected]);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    // Try to parse the date in MM/DD/YYYY format
+    const parts = value.split('/');
+    if (parts.length === 3) {
+      const month = parseInt(parts[0]) - 1; // months are 0-based
+      const day = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
+      
+      const date = new Date(year, month, day);
+      
+      // Check if it's a valid date and within the allowed range
+      if (
+        !isNaN(date.getTime()) && 
+        (!maxDate || date <= maxDate)
+      ) {
+        onSelect(date);
+      }
+    }
+  };
+
+  // Generate array of years from 120 years ago to current year
+  const currentYear = new Date().getFullYear();
+  const years = Array.from({ length: 121 }, (_, i) => currentYear - 120 + i);
+
+  const handleYearChange = (value: string) => {
+    const newYear = parseInt(value);
+    setYear(newYear);
+    
+    // Update the month view to show the same month in the new year
+    const newMonth = new Date(month);
+    newMonth.setFullYear(newYear);
+    setMonth(newMonth);
+    
+    if (selected) {
+      const newDate = new Date(selected);
+      newDate.setFullYear(newYear);
+      onSelect(newDate);
+    }
+  };
+
+  const handleMonthChange = (newMonth: Date) => {
+    setMonth(newMonth);
+  };
+
   return (
-    <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant={"outline"}
-          className={cn(
-            "w-full justify-start text-left font-normal",
-            !selected && "text-muted-foreground",
-            className
-          )}
-        >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {selected ? format(selected, "PPP") : <span>Pick a date</span>}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="start">
-        <Calendar
-          mode="single"
-          selected={selected}
-          onSelect={onSelect}
-          disabled={(date) => {
-            if (maxDate && date > maxDate) return true;
-            return disabled ? disabled(date) : false;
-          }}
-          initialFocus={initialFocus}
-          className={cn("p-3 pointer-events-auto")}
-        />
-      </PopoverContent>
-    </Popover>
-  )
+    <div className="relative">
+      <Input
+        type="text"
+        value={inputValue}
+        onChange={handleInputChange}
+        placeholder="MM/DD/YYYY"
+        className="pr-10"
+      />
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant={"ghost"}
+            className={cn(
+              "absolute right-0 top-0 h-full px-2 hover:bg-transparent"
+            )}
+          >
+            <CalendarIcon className="h-4 w-4" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0 z-50 bg-white" align="start">
+          <div className="p-3 border-b">
+            <Select
+              value={year.toString()}
+              onValueChange={handleYearChange}
+            >
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Select year" />
+              </SelectTrigger>
+              <SelectContent>
+                {years.map((year) => (
+                  <SelectItem key={year} value={year.toString()}>
+                    {year}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <Calendar
+            mode="single"
+            selected={selected}
+            onSelect={(date) => {
+              onSelect(date);
+              setOpen(false);
+            }}
+            disabled={(date) => maxDate ? date > maxDate : false}
+            initialFocus
+            month={month}
+            onMonthChange={handleMonthChange}
+          />
+        </PopoverContent>
+      </Popover>
+    </div>
+  );
 }
