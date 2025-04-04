@@ -50,7 +50,7 @@ export const useTeamRefreshOperations = (
       
       console.log("Forcing team association for user:", user.id);
       
-      // First, try to use our new secure function
+      // First, try to use the secure function
       try {
         const { data, error } = await supabase.rpc(
           'force_agent_team_association' as any,

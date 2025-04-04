@@ -19,7 +19,7 @@ export const useTeamAssociationService = () => {
       
       console.log("Forcing team association for user:", user.id);
       
-      // Use the new secure function we created
+      // Use the secure function
       const { data, error } = await coreService.supabase.rpc(
         'force_agent_team_association' as any,
         { agent_id: user.id }
@@ -27,7 +27,7 @@ export const useTeamAssociationService = () => {
       
       if (error) {
         console.error("Error in force_agent_team_association:", error);
-        // Fall back to older methods if the new function fails
+        // Fall back to older methods if the secure function fails
         return await coreService.addUserToTeamsByManager(user.id, null);
       }
       
@@ -58,7 +58,7 @@ export const useTeamAssociationService = () => {
       const { data: { user } } = await coreService.supabase.auth.getUser();
       if (!user) return false;
       
-      // Use the new secure function we created
+      // Use the secure function
       const { data, error } = await coreService.supabase.rpc(
         'add_user_to_manager_teams' as any,
         { user_id: user.id, manager_id: managerId }
@@ -93,7 +93,7 @@ export const useTeamAssociationService = () => {
   const addUserToManagerTeams = async (userId: string, managerId: string): Promise<boolean> => {
     setIsProcessing(true);
     try {
-      // Use the new secure function
+      // Use the secure function
       const { data, error } = await coreService.supabase.rpc(
         'add_user_to_manager_teams' as any,
         { user_id: userId, manager_id: managerId }
