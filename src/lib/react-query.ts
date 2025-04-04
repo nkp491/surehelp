@@ -24,3 +24,6 @@ export const defaultQueryClientConfig = {
     },
   },
 };
+
+// Create a queryClient instance
+export const queryClient = new QueryClient(defaultQueryClientConfig);
