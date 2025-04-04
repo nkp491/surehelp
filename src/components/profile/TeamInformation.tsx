@@ -1,179 +1,230 @@
 
-import { useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { translations } from "@/utils/translations";
-import { useManagerValidation } from "./team/useManagerValidation";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { TeamCreationDialog } from "@/components/team/TeamCreationDialog";
-import TeamHeader from "./team/TeamHeader";
-import ManagerSection from "./team/ManagerSection";
-import TeamsSection from "./team/TeamsSection";
-import { useTeamInformationLogic } from "@/hooks/useTeamInformationLogic";
-import { useTeamAssociationService } from "@/services/team-association";
-import { supabase } from "@/integrations/supabase/client";
+import React, { useEffect, useState } from 'react';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
+import { ManagerSection } from "./team/ManagerSection";
+import { TeamsSection } from "./team/TeamsSection";
+import { useProfileData } from "@/hooks/profile/useProfileData";
 import { useToast } from "@/hooks/use-toast";
+import { Team } from "@/types/team";
+import { supabase } from "@/integrations/supabase/client";
+import { useQueryClient } from "@tanstack/react-query";
 
-interface TeamInformationProps {
-  managerId?: string | null;
-  onUpdate: (data: any) => void;
-}
-
-const TeamInformation = ({
-  managerId,
-  onUpdate
-}: TeamInformationProps) => {
-  const [showCreateTeamDialog, setShowCreateTeamDialog] = useState(false);
-  
-  const { language } = useLanguage();
-  const t = translations[language];
-  const { validateManagerEmail, isLoading: isValidating } = useManagerValidation();
-  const { userRoles } = useRoleCheck();
-  const { addUserToManagerTeams } = useTeamAssociationService();
+/**
+ * Component that displays team information in the user profile
+ */
+export const TeamInformation = () => {
+  const { profile, isLoading } = useProfileData();
   const { toast } = useToast();
-  
-  const isManager = userRoles.some(role => role.startsWith('manager_pro'));
-  const isAgent = userRoles.some(role => role === 'agent' || role === 'agent_pro');
+  const queryClient = useQueryClient();
+  const [isUpdating, setIsUpdating] = useState(false);
 
-  const {
-    isEditing,
-    setIsEditing,
-    managerEmail,
-    setManagerEmail,
-    managerName,
-    userTeams,
-    isLoadingTeams,
-    fixingTeamAssociation,
-    isProcessing,
-    showAlert,
-    alertMessage,
-    handleRefreshTeams,
-    handleForceTeamAssociation,
-    toggleEditing
-  } = useTeamInformationLogic(managerId);
+  // Only used for manager email input temporarily during update
+  const [managerEmail, setManagerEmail] = useState<string>('');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    const validationResult = await validateManagerEmail(managerEmail);
-    
-    if (validationResult.valid) {
-      // Store previous manager ID for comparison
-      const prevManagerId = managerId;
-      const newManagerId = validationResult.managerId;
+  // Get teams and setup team state
+  const [teams, setTeams] = useState<Team[]>([]);
+
+  // Force refresh team associations (used after updating manager)
+  const refreshTeamAssociations = async () => {
+    setIsUpdating(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
       
-      // Update profile with new manager
-      await onUpdate({ manager_id: newManagerId });
+      // Force team association with manager's teams
+      const { data, error } = await supabase.rpc(
+        'force_agent_team_association' as any,
+        { agent_id: user.id }
+      );
       
-      // If manager has changed and we have a new manager, try to add user to manager's teams
-      if (newManagerId && newManagerId !== prevManagerId) {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-          console.log("Manager changed, adding user to manager's teams");
-          try {
-            const success = await addUserToManagerTeams(user.id, newManagerId);
-            
-            if (success) {
-              toast({
-                title: "Teams Updated",
-                description: "You've been added to your manager's teams.",
-              });
-            } else {
-              console.log("No teams were added - manager might not have teams yet.");
-              toast({
-                title: "Team Information Updated",
-                description: "Manager updated successfully. You may need to refresh teams later when your manager creates teams.",
-              });
-            }
-            
-            // Refresh teams to show the new teams
-            setTimeout(() => {
-              handleRefreshTeams();
-            }, 500);
-          } catch (error) {
-            console.error("Error adding user to manager's teams:", error);
-            toast({
-              title: "Manager Updated",
-              description: "Manager was updated, but there was an issue adding you to their teams. Try using the refresh button.",
-              variant: "destructive"
-            });
-          }
-        }
+      if (error) {
+        console.error("Error in force_agent_team_association:", error);
+        toast({ 
+          title: "Error updating team information",
+          description: error.message,
+          variant: "destructive"
+        });
+        return;
       }
+
+      // If successful, invalidate queries to refetch data
+      queryClient.invalidateQueries({ queryKey: ['user-teams'] });
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
       
-      setIsEditing(false);
+      if (data) {
+        toast({
+          title: "Team Information Updated",
+          description: "Your team information has been updated successfully.",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error updating team information:", error);
+      toast({
+        title: "Error updating team information",
+        description: error?.message || "An unknown error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleToggleEdit = () => {
-    if (isEditing) {
-      handleSubmit(new Event('submit') as unknown as React.FormEvent);
-    } else {
-      toggleEditing();
+  // Update user's manager
+  const updateManager = async (managerEmailToUpdate: string) => {
+    setIsUpdating(true);
+    try {
+      // Step 1: Find the manager's ID from their email
+      const { data: managerData, error: managerError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('email', managerEmailToUpdate)
+        .single();
+
+      if (managerError || !managerData) {
+        toast({
+          title: "Manager not found",
+          description: "No user found with that email address.",
+          variant: "destructive"
+        });
+        setIsUpdating(false);
+        return;
+      }
+
+      // Step 2: Update the user's profile with the new manager ID
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Authentication error",
+          description: "Could not authenticate user.",
+          variant: "destructive"
+        });
+        setIsUpdating(false);
+        return;
+      }
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ manager_id: managerData.id })
+        .eq('id', user.id);
+
+      if (updateError) {
+        toast({
+          title: "Update failed",
+          description: updateError.message,
+          variant: "destructive"
+        });
+        setIsUpdating(false);
+        return;
+      }
+
+      // Step 3: Refresh team associations based on the new manager
+      await refreshTeamAssociations();
+
+      // Step 4: Clear the input field and refresh profile data
+      setManagerEmail('');
+      queryClient.invalidateQueries({ queryKey: ['user-profile'] });
+      
+      toast({
+        title: "Manager updated",
+        description: "Your manager has been updated successfully.",
+      });
+    } catch (error: any) {
+      console.error("Error updating manager:", error);
+      toast({
+        title: "Update failed",
+        description: error?.message || "An unknown error occurred",
+        variant: "destructive"
+      });
+    } finally {
+      setIsUpdating(false);
     }
   };
 
-  const handleTeamCreationSuccess = async () => {
-    // Wait a moment for the database to update
-    setTimeout(async () => {
-      await handleRefreshTeams();
-    }, 500);
-  };
+  // Fetch teams
+  useEffect(() => {
+    const fetchTeams = async () => {
+      if (!profile?.id) return;
 
-  // Create a wrapper function that returns void instead of boolean
-  const handleForceAssociation = async () => {
-    await handleForceTeamAssociation();
-    // No return value needed (returns void)
-  };
+      try {
+        const { data, error } = await supabase
+          .from('team_members')
+          .select(`
+            team:teams (
+              id,
+              name,
+              created_at,
+              updated_at
+            )
+          `)
+          .eq('user_id', profile.id);
+
+        if (error) throw error;
+
+        // Extract team data from the nested structure and ensure all required properties are present
+        const formattedTeams: Team[] = data
+          .filter(item => item.team)
+          .map(item => ({
+            id: item.team.id,
+            name: item.team.name,
+            created_at: item.team.created_at,
+            updated_at: item.team.updated_at || item.team.created_at // Fallback to created_at if updated_at is not available
+          }));
+
+        setTeams(formattedTeams);
+      } catch (error) {
+        console.error("Error fetching teams:", error);
+      }
+    };
+
+    if (!isLoading) {
+      fetchTeams();
+    }
+  }, [profile?.id, isLoading]);
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>Team Information</CardTitle>
+          <CardDescription>Loading team information...</CardDescription>
+        </CardHeader>
+      </Card>
+    );
+  }
 
   return (
-    <Card className="shadow-sm">
-      <TeamHeader 
-        isManager={isManager}
-        onCreateTeamClick={() => setShowCreateTeamDialog(true)}
-        onEditClick={handleToggleEdit}
-        isEditing={isEditing}
-        isLoading={isValidating}
-        isFixing={fixingTeamAssociation || isProcessing}
-      />
-      
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <ManagerSection 
-            isEditing={isEditing}
-            managerName={managerName}
-            managerEmail={managerEmail}
-            onManagerEmailChange={setManagerEmail}
-          />
-
-          <TeamsSection 
-            teams={userTeams}
-            isLoadingTeams={isLoadingTeams}
-            isFixing={fixingTeamAssociation || isProcessing}
-            showAlert={showAlert}
-            alertMessage={alertMessage}
-            onRefresh={handleRefreshTeams}
-            onForceTeamAssociation={handleForceAssociation}
-            managerId={managerId}
-          />
-          
-          {isEditing && (
-            <div className="flex justify-end pt-2">
-              <button type="submit" className="px-4 py-2 bg-primary text-white rounded hover:bg-primary/90 transition-colors" disabled={isValidating || fixingTeamAssociation || isProcessing}>
-                {isValidating ? "Saving..." : t.save}
-              </button>
-            </div>
-          )}
-        </form>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center justify-between">
+          <span>Team Information</span>
+          <Badge variant={profile?.manager_id ? "outline" : "destructive"}>
+            {profile?.manager_id ? "Manager Assigned" : "No Manager"}
+          </Badge>
+        </CardTitle>
+        <CardDescription>
+          Manage your team affiliations and manager relationship
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <ManagerSection 
+          profile={profile} 
+          managerEmail={managerEmail}
+          setManagerEmail={setManagerEmail}
+          updateManager={updateManager}
+          isUpdating={isUpdating}
+        />
+        
+        <Separator />
+        
+        <TeamsSection 
+          teams={teams}
+          refreshTeamAssociations={refreshTeamAssociations}
+          isUpdating={isUpdating}
+        />
       </CardContent>
-      
-      <TeamCreationDialog
-        open={showCreateTeamDialog}
-        onOpenChange={setShowCreateTeamDialog}
-        onSuccess={handleTeamCreationSuccess}
-      />
     </Card>
   );
 };
 
-export default TeamInformation;
