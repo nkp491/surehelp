@@ -88,3 +88,46 @@ AS $$
   FROM public.team_members 
   WHERE user_id = check_user_id;
 $$;
+
+-- Add the user_has_role function
+CREATE OR REPLACE FUNCTION public.user_has_role(check_user_id UUID, check_role TEXT)
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path TO ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.user_roles
+    WHERE user_id = check_user_id
+      AND role = check_role
+  )
+$$;
+
+-- Add the get_user_manager_status function
+CREATE OR REPLACE FUNCTION public.get_user_manager_status(check_user_id UUID, check_team_id UUID)
+RETURNS BOOLEAN
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path TO ''
+AS $$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.team_members
+    WHERE team_id = check_team_id 
+      AND user_id = check_user_id 
+      AND role::text LIKE 'manager%'
+  );
+$$;
+
+-- Create function to get user teams by ID
+CREATE OR REPLACE FUNCTION public.get_user_teams_by_id(user_id_param UUID)
+RETURNS SETOF UUID
+LANGUAGE SQL
+SECURITY DEFINER
+SET search_path TO ''
+AS $$
+  SELECT DISTINCT team_id 
+  FROM public.team_members 
+  WHERE user_id = user_id_param;
+$$;

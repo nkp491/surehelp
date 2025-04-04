@@ -14,18 +14,23 @@ export const useTeamPermissions = () => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    // Use our new security definer function to prevent recursion
-    const { data, error } = await supabase.rpc(
-      'get_user_manager_status',
-      { check_user_id: user.id, check_team_id: teamId }
-    );
+    try {
+      // Use security definer function to prevent recursion
+      const { data, error } = await supabase.rpc(
+        'get_user_manager_status',
+        { check_user_id: user.id, check_team_id: teamId }
+      );
 
-    if (error || data === null) {
-      console.error("Error checking team manager status:", error);
+      if (error || data === null) {
+        console.error("Error checking team manager status:", error);
+        return false;
+      }
+      
+      return !!data;
+    } catch (error) {
+      console.error("Error in isTeamManager:", error);
       return false;
     }
-    
-    return !!data;
   };
 
   // Check if user has system admin role using the cached roles instead of a new query

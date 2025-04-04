@@ -15,7 +15,7 @@ export const useSpecialTeamAssociations = () => {
   const fixMomentumCapitolAssociation = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) return false;
       
       console.log("Forcing team association for", user.email);
       
