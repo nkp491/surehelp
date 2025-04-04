@@ -10,6 +10,7 @@ export const useSpecialTeamAssociations = () => {
   /**
    * Legacy method kept for backward compatibility
    * This now simply forces team association with the user's manager
+   * Using security definer functions to avoid RLS recursion
    */
   const fixMomentumCapitolAssociation = async () => {
     try {
@@ -20,7 +21,7 @@ export const useSpecialTeamAssociations = () => {
       
       // Use the standard function for team association
       const { data, error } = await supabase.rpc(
-        'force_agent_team_association' as any,
+        'force_agent_team_association',
         { agent_id: user.id }
       );
       
