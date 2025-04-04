@@ -939,6 +939,13 @@ export type Database = {
         }
         Returns: string[]
       }
+      get_user_manager_status: {
+        Args: {
+          check_user_id: string
+          check_team_id: string
+        }
+        Returns: boolean
+      }
       get_user_role: {
         Args: {
           user_id: string
@@ -959,6 +966,12 @@ export type Database = {
       }
       get_user_teams: {
         Args: Record<PropertyKey, never>
+        Returns: string[]
+      }
+      get_user_teams_by_id: {
+        Args: {
+          user_id_param: string
+        }
         Returns: string[]
       }
       get_user_teams_secure: {
@@ -1046,6 +1059,13 @@ export type Database = {
         Args: {
           check_team_id: string
           check_user_id?: string
+        }
+        Returns: boolean
+      }
+      user_has_role: {
+        Args: {
+          check_user_id: string
+          check_role: string
         }
         Returns: boolean
       }

@@ -1,7 +1,21 @@
 
-import { QueryClient } from "@tanstack/react-query";
+import { 
+  QueryClient as QueryClientOriginal,
+  QueryClientProvider,
+  useQuery,
+  useMutation
+} from "@tanstack/react-query";
 
-export const queryClient = new QueryClient({
+// Re-export with the correct name
+export const QueryClient = QueryClientOriginal;
+export { 
+  QueryClientProvider,
+  useQuery,
+  useMutation
+};
+
+// Default query client config
+export const defaultQueryClientConfig = {
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
@@ -9,4 +23,4 @@ export const queryClient = new QueryClient({
       staleTime: 5 * 60 * 1000, // 5 minutes
     },
   },
-});
+};
