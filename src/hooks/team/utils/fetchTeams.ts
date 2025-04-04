@@ -1,6 +1,5 @@
 
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types/team";
 
 /**
@@ -55,7 +54,7 @@ export const fetchUserTeams = async (): Promise<Team[]> => {
 /**
  * Alternative method to fetch teams when the standard approach fails
  */
-const fetchTeamsAlternativeMethod = async (userId: string): Promise<Team[]> => {
+export const fetchTeamsAlternativeMethod = async (userId: string): Promise<Team[]> => {
   console.log("Using alternative method to fetch teams for user:", userId);
   
   try {
@@ -95,71 +94,5 @@ const fetchTeamsAlternativeMethod = async (userId: string): Promise<Team[]> => {
   } catch (error) {
     console.error("Error in alternative teams query:", error);
     return [];
-  }
-};
-
-/**
- * Get a manager role for a user based on their existing roles
- */
-export const getManagerRole = async (userId: string): Promise<string> => {
-  // Get user roles to determine the manager role to use
-  const { data: userRoles } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('user_id', userId)
-    .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum');
-  
-  // Determine the manager role to use - use the first manager role found or default to manager_pro
-  let managerRole = 'manager_pro';
-  if (userRoles && userRoles.length > 0) {
-    const managerRoles = userRoles.filter(r => 
-      r.role === 'manager_pro' || 
-      r.role === 'manager_pro_gold' || 
-      r.role === 'manager_pro_platinum'
-    );
-    if (managerRoles.length > 0) {
-      managerRole = managerRoles[0].role;
-    }
-  }
-  
-  return managerRole;
-};
-
-/**
- * Add managed users to a team
- */
-export const addManagedUsersToTeam = async (managerId: string, teamId: string): Promise<void> => {
-  try {
-    // Get all users who have this manager as their manager
-    const { data: managedUsers, error: managedError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('manager_id', managerId);
-      
-    if (managedError) {
-      console.error("Error fetching managed users:", managedError);
-      return; // Non-critical error, continue
-    } 
-    
-    if (managedUsers && managedUsers.length > 0) {
-      // Add each managed user to the team
-      const teamMembers = managedUsers.map(u => ({
-        team_id: teamId,
-        user_id: u.id,
-        role: 'agent' // Default role for team members
-      }));
-      
-      const { error: bulkAddError } = await supabase
-        .from('team_members')
-        .insert(teamMembers);
-        
-      if (bulkAddError) {
-        console.error("Error adding managed users to team:", bulkAddError);
-      } else {
-        console.log(`Added ${managedUsers.length} managed users to team`);
-      }
-    }
-  } catch (error) {
-    console.error("Error adding managed users to team:", error);
   }
 };
