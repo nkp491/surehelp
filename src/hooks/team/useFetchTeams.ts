@@ -1,7 +1,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { Team } from "@/types/team";
-import { fetchUserTeams } from "./utils/fetchTeams";
+import { fetchUserTeams } from "./utils/teamUtils";
 
 /**
  * Hook to fetch teams the current user belongs to
