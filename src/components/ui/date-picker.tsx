@@ -16,10 +16,11 @@ import {
 
 interface DatePickerProps {
   selected?: Date
-  onSelect?: (date: Date | null) => void
+  onSelect?: (date: Date | undefined) => void
   disabled?: (date: Date) => boolean
   initialFocus?: boolean
   className?: string
+  maxDate?: Date
 }
 
 export function DatePicker({
@@ -27,7 +28,8 @@ export function DatePicker({
   onSelect,
   disabled,
   initialFocus,
-  className
+  className,
+  maxDate
 }: DatePickerProps) {
   return (
     <Popover>
@@ -49,7 +51,10 @@ export function DatePicker({
           mode="single"
           selected={selected}
           onSelect={onSelect}
-          disabled={disabled}
+          disabled={(date) => {
+            if (maxDate && date > maxDate) return true;
+            return disabled ? disabled(date) : false;
+          }}
           initialFocus={initialFocus}
           className={cn("p-3 pointer-events-auto")}
         />

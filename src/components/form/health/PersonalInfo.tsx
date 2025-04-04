@@ -20,7 +20,7 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
     setFormData((prev: any) => ({ ...prev, [field]: value }));
   };
 
-  const handleDateSelect = (date: Date | null) => {
+  const handleDateSelect = (date: Date | undefined) => {
     if (date) {
       // Store date as ISO string to maintain compatibility with existing data structure
       handleInputChange('dob', date.toISOString().split('T')[0]);
@@ -62,7 +62,7 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
             {t.dateOfBirth} <span className="text-red-500">*</span>
           </Label>
           <DatePicker
-            selected={formData.dob ? new Date(formData.dob) : null}
+            selected={formData.dob ? new Date(formData.dob) : undefined}
             onSelect={handleDateSelect}
             maxDate={today}
           />

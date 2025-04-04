@@ -1,12 +1,12 @@
 
-import { UseQueryResult } from "@tanstack/react-query";
+import { QueryObserverResult } from "@tanstack/react-query";
 import { Team } from "@/types/team";
 
 /**
  * Refreshes team data
  */
 export const refreshTeams = async (
-  refetchTeams: () => Promise<UseQueryResult<Team[], unknown>>
+  refetchTeams: () => Promise<QueryObserverResult<Team[], unknown>>
 ): Promise<void> => {
   try {
     await refetchTeams();
