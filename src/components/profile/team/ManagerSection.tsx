@@ -19,7 +19,10 @@ const ManagerSection = ({
   updateManager,
   isUpdating
 }: ManagerSectionProps) => {
-  const managerName = profile?.manager_name || '';
+  // Use first_name and last_name from manager info if available, otherwise empty string
+  const managerName = profile?.manager_id 
+    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() 
+    : '';
   
   return (
     <div className="space-y-2.5">
