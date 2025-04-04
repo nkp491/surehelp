@@ -12,48 +12,6 @@ export const fetchUserTeams = async (): Promise<Team[]> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) throw new Error('User not authenticated');
     
-    // Special handling for specific user
-    if (user.email === 'nielsenaragon@gmail.com') {
-      console.log("Special handling for nielsenaragon@gmail.com");
-      
-      // First try direct method - get Momentum Capitol team
-      const { data: mcTeams } = await supabase
-        .from('teams')
-        .select('*')
-        .ilike('name', '%Momentum%');
-        
-      if (mcTeams && mcTeams.length > 0) {
-        console.log("Found Momentum teams:", mcTeams);
-        
-        // Now check if user is already associated with these teams
-        for (const team of mcTeams) {
-          const { data: membership } = await supabase
-            .from('team_members')
-            .select('*')
-            .eq('team_id', team.id)
-            .eq('user_id', user.id);
-            
-          if (!membership || membership.length === 0) {
-            console.log(`User not associated with ${team.name}, fixing...`);
-            
-            // Attempt to add user to team
-            await supabase
-              .from('team_members')
-              .insert([{
-                team_id: team.id,
-                user_id: user.id,
-                role: 'manager_pro_platinum'
-              }])
-              .select();
-              
-            console.log(`Added user to ${team.name}`);
-          } else {
-            console.log(`User already associated with ${team.name}`);
-          }
-        }
-      }
-    }
-    
     // Standard approach for all users - first get team memberships
     const { data: teamMembers, error: membersError } = await supabase
       .from('team_members')

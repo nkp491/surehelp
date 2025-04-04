@@ -1,12 +1,10 @@
 
 import { useState } from "react";
 import { useTeamAssociationCore } from "./core";
-import { useSpecialTeamAssociations } from "./special-cases";
 
 export const useTeamAssociationService = () => {
   const [isProcessing, setIsProcessing] = useState(false);
   const coreService = useTeamAssociationCore(setIsProcessing);
-  const specialService = useSpecialTeamAssociations();
 
   /**
    * Forces a team association check for the current user with their manager
@@ -126,7 +124,6 @@ export const useTeamAssociationService = () => {
     isProcessing,
     addUserToManagerTeams,
     checkAndUpdateTeamAssociation,
-    forceAgentTeamAssociation,
-    fixMomentumCapitolAssociation: specialService.fixMomentumCapitolAssociation
+    forceAgentTeamAssociation
   };
 };
