@@ -2,35 +2,27 @@
 import React from "react";
 import ManagerEmailInput from "./ManagerEmailInput";
 import ManagerDisplay from "./ManagerDisplay";
-import { Profile } from "@/types/profile";
 
 interface ManagerSectionProps {
-  profile?: Profile | null;
+  isEditing: boolean;
+  managerName: string;
   managerEmail: string;
-  setManagerEmail: (email: string) => void;
-  updateManager: (managerEmail: string) => Promise<void>;
-  isUpdating: boolean;
+  onManagerEmailChange: (email: string) => void;
 }
 
 const ManagerSection = ({
-  profile,
+  isEditing,
+  managerName,
   managerEmail,
-  setManagerEmail,
-  updateManager,
-  isUpdating
+  onManagerEmailChange
 }: ManagerSectionProps) => {
-  // Use first_name and last_name from manager info if available, otherwise empty string
-  const managerName = profile?.manager_id 
-    ? `${profile.first_name || ''} ${profile.last_name || ''}`.trim() 
-    : '';
-  
   return (
     <div className="space-y-2.5">
       <label className="text-sm font-medium text-gray-700">Your Manager</label>
-      {isUpdating ? (
+      {isEditing ? (
         <ManagerEmailInput 
           managerEmail={managerEmail}
-          onChange={setManagerEmail}
+          onChange={onManagerEmailChange}
         />
       ) : (
         <ManagerDisplay 

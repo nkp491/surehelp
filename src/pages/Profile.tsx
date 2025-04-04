@@ -1,3 +1,4 @@
+
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -8,7 +9,7 @@ import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
-import { TeamInformation } from "@/components/profile/TeamInformation";
+import TeamInformation from "@/components/profile/TeamInformation";
 import AgentInformation from "@/components/profile/AgentInformation";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
@@ -68,7 +69,10 @@ const ProfileContent = () => {
           onUpdate={updateProfile}
         />
 
-        <TeamInformation />
+        <TeamInformation 
+          managerId={profile?.manager_id}
+          onUpdate={updateProfile}
+        />
 
         {isAgent && (
           <AgentInformation 

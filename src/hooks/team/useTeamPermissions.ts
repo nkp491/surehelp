@@ -4,33 +4,24 @@ import { useRolesCache } from "@/hooks/useRolesCache";
 
 /**
  * Hook for checking team permissions
- * Uses security definer functions to prevent RLS recursion issues
  */
 export const useTeamPermissions = () => {
   const { userRoles } = useRolesCache();
 
-  // Check if user is team manager using security definer function
+  // Check if user is team manager
   const isTeamManager = async (teamId: string) => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
 
-    try {
-      // Use security definer function to prevent recursion
-      const { data, error } = await supabase.rpc(
-        'get_user_manager_status',
-        { check_user_id: user.id, check_team_id: teamId }
-      );
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('role')
+      .eq('team_id', teamId)
+      .eq('user_id', user.id)
+      .single();
 
-      if (error || data === null) {
-        console.error("Error checking team manager status:", error);
-        return false;
-      }
-      
-      return !!data;
-    } catch (error) {
-      console.error("Error in isTeamManager:", error);
-      return false;
-    }
+    if (error || !data) return false;
+    return data.role.startsWith('manager_pro');
   };
 
   // Check if user has system admin role using the cached roles instead of a new query

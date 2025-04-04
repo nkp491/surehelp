@@ -4,7 +4,7 @@ import { TeamMember } from "@/types/team";
 import { fetchTeamMembersAlternative } from "./fetchTeamMembersAlternative";
 
 /**
- * Fetch team members for a specific team - using a security definer function approach to avoid RLS recursion
+ * Fetch team members for a specific team - using a direct approach to avoid RLS recursion
  */
 export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember[]> => {
   if (!teamId) return [];
@@ -12,14 +12,11 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
   console.log("Fetching team members for team:", teamId);
   
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return [];
-
-    // First, try to get all user IDs associated with this team using the security definer function
+    // First, try to get all user IDs associated with this team using a direct approach
     // This helps avoid the recursive RLS policy issue
     const { data: teamMemberships, error: membershipError } = await supabase
       .from('team_members')
-      .select('user_id, role')
+      .select('user_id')
       .eq('team_id', teamId);
       
     if (membershipError) {
@@ -42,12 +39,6 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
     // Get the user IDs from the memberships
     const userIds = teamMemberships.map(member => member.user_id);
     
-    // Create a map of user IDs to roles
-    const userRoleMap = new Map();
-    teamMemberships.forEach(member => {
-      userRoleMap.set(member.user_id, member.role);
-    });
-    
     // Fetch profiles for these users
     const { data: profiles, error: profilesError } = await supabase
       .from('profiles')
@@ -68,7 +59,7 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
       last_name: profile.last_name,
       email: profile.email,
       profile_image_url: profile.profile_image_url,
-      role: userRoleMap.get(profile.id) || "",
+      role: profile.role || "",
       created_at: profile.created_at,
       updated_at: profile.updated_at
     })) as TeamMember[];

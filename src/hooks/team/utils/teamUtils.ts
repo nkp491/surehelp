@@ -1,10 +1,10 @@
 
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 import { Team } from "@/types/team";
 
 /**
- * Fetch teams for the current user using security definer function
- * to avoid RLS recursion issues
+ * Fetch teams for the current user
  */
 export const fetchUserTeams = async (): Promise<Team[]> => {
   console.log("Fetching user teams...");
@@ -51,38 +51,10 @@ export const fetchUserTeams = async (): Promise<Team[]> => {
             console.log(`User already associated with ${team.name}`);
           }
         }
-        
-        return mcTeams;
       }
     }
     
-    // Use our new security definer function to get team IDs
-    const { data: teamIds, error: rpcError } = await supabase.rpc(
-      'get_user_teams_by_id',
-      { user_id_param: user.id }
-    );
-    
-    if (!rpcError && teamIds && Array.isArray(teamIds) && teamIds.length > 0) {
-      console.log("Successfully fetched team IDs via security definer function:", teamIds);
-      
-      // Now fetch full team details
-      const { data: teams, error: teamsError } = await supabase
-        .from('teams')
-        .select('*')
-        .in('id', teamIds)
-        .order('name');
-        
-      if (!teamsError && teams) {
-        console.log("Teams fetched:", teams.length);
-        return teams as Team[];
-      } else {
-        console.error("Error fetching teams:", teamsError);
-      }
-    } else {
-      console.log("No teams found via security definer function or error:", rpcError);
-    }
-    
-    // Fall back to standard approach if the RPC call fails
+    // Standard approach for all users - first get team memberships
     const { data: teamMembers, error: membersError } = await supabase
       .from('team_members')
       .select('team_id')
@@ -99,14 +71,14 @@ export const fetchUserTeams = async (): Promise<Team[]> => {
     }
     
     // Get the team IDs
-    const directTeamIds = teamMembers.map(tm => tm.team_id);
-    console.log("Team IDs found:", directTeamIds);
+    const teamIds = teamMembers.map(tm => tm.team_id);
+    console.log("Team IDs found:", teamIds);
     
     // Get the team details
     const { data: teams, error: teamsError } = await supabase
       .from('teams')
       .select('*')
-      .in('id', directTeamIds)
+      .in('id', teamIds)
       .order('name');
       
     if (teamsError) {
