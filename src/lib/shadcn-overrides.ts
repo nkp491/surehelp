@@ -26,88 +26,45 @@ import * as TogglePrimitive from "@radix-ui/react-toggle";
 
 // Fix the module augmentation to avoid recursive type references
 declare module "@radix-ui/react-accordion" {
-  interface AccordionItemProps extends React.ComponentPropsWithoutRef<"div"> {
-    className?: string;
-  }
+  interface AccordionItemProps extends React.ComponentPropsWithoutRef<"div"> {}
   
-  interface AccordionTriggerProps extends React.ComponentPropsWithoutRef<"button"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AccordionTriggerProps extends React.ComponentPropsWithoutRef<"button"> {}
   
-  interface AccordionContentProps extends React.ComponentPropsWithoutRef<"div"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AccordionContentProps extends React.ComponentPropsWithoutRef<"div"> {}
 }
 
 declare module "@radix-ui/react-alert-dialog" {
-  interface AlertDialogOverlayProps extends React.ComponentPropsWithoutRef<"div"> {
-    className?: string;
-  }
+  interface AlertDialogOverlayProps extends React.ComponentPropsWithoutRef<"div"> {}
   
-  interface AlertDialogTitleProps extends React.ComponentPropsWithoutRef<"h2"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AlertDialogTitleProps extends React.ComponentPropsWithoutRef<"h2"> {}
   
-  interface AlertDialogDescriptionProps extends React.ComponentPropsWithoutRef<"div"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AlertDialogDescriptionProps extends React.ComponentPropsWithoutRef<"div"> {}
   
-  interface AlertDialogActionProps extends React.ComponentPropsWithoutRef<"button"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AlertDialogActionProps extends React.ComponentPropsWithoutRef<"button"> {}
   
-  interface AlertDialogCancelProps extends React.ComponentPropsWithoutRef<"button"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AlertDialogCancelProps extends React.ComponentPropsWithoutRef<"button"> {}
 }
 
 declare module "@radix-ui/react-avatar" {
-  interface AvatarProps extends React.ComponentPropsWithoutRef<"div"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AvatarProps extends React.ComponentPropsWithoutRef<"div"> {}
   
-  interface AvatarImageProps extends React.ComponentPropsWithoutRef<"img"> {
-    className?: string;
-    src?: string;
-  }
+  interface AvatarImageProps extends React.ComponentPropsWithoutRef<"img"> {}
   
-  interface AvatarFallbackProps extends React.ComponentPropsWithoutRef<"div"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface AvatarFallbackProps extends React.ComponentPropsWithoutRef<"div"> {}
 }
 
 declare module "@radix-ui/react-checkbox" {
-  interface CheckboxProps extends React.ComponentPropsWithoutRef<"button"> {
-    className?: string;
-  }
+  interface CheckboxProps extends React.ComponentPropsWithoutRef<"button"> {}
   
-  interface CheckboxIndicatorProps extends React.ComponentPropsWithoutRef<"span"> {
-    className?: string;
-    children?: React.ReactNode;
-  }
+  interface CheckboxIndicatorProps extends React.ComponentPropsWithoutRef<"span"> {}
 }
 
 declare module "@radix-ui/react-collapsible" {
-  interface CollapsibleProps extends React.ComponentPropsWithoutRef<"div"> {
-    children?: React.ReactNode;
-  }
+  interface CollapsibleProps extends React.ComponentPropsWithoutRef<"div"> {}
   
-  interface CollapsibleTriggerProps extends React.ComponentPropsWithoutRef<"button"> {
-    children?: React.ReactNode;
-  }
+  interface CollapsibleTriggerProps extends React.ComponentPropsWithoutRef<"button"> {}
   
-  interface CollapsibleContentProps extends React.ComponentPropsWithoutRef<"div"> {
-    children?: React.ReactNode;
-    className?: string;
-  }
+  interface CollapsibleContentProps extends React.ComponentPropsWithoutRef<"div"> {}
 }
 
 // Additional modules can be added here following the same pattern
@@ -123,7 +80,7 @@ declare module "@/components/ui/button" {
 // Adding overrides for badge variant for shadcn components
 declare module "@/components/ui/badge" {
   interface BadgeProps {
-    variant?: "default" | "secondary" | "destructive" | "outline";
+    variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info";
   }
 }
 
