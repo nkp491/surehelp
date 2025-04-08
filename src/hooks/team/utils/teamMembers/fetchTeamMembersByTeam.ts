@@ -12,8 +12,18 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
   console.log("Fetching team members for team:", teamId);
   
   try {
-    // First, try to get all user IDs associated with this team using a direct approach
-    // This helps avoid the recursive RLS policy issue
+    // First, check if we can use the direct approach with secure functions
+    const { data: canAccess, error: accessError } = await supabase.rpc(
+      'is_team_member',
+      { team_id: teamId }
+    );
+    
+    if (accessError || !canAccess) {
+      console.error("Error checking team access or user is not a member:", accessError);
+      return [];
+    }
+    
+    // First try to get team memberships
     const { data: teamMemberships, error: membershipError } = await supabase
       .from('team_members')
       .select('user_id')
@@ -22,13 +32,9 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
     if (membershipError) {
       console.error("Error fetching team memberships:", membershipError);
       
-      // If we get an infinite recursion error, try an alternative approach
-      if (membershipError.message?.includes('infinite recursion')) {
-        console.log("Detected recursion error, trying alternative approach...");
-        return await fetchTeamMembersAlternative(teamId);
-      }
-      
-      return [];
+      // If we get an error, try the alternative approach
+      console.log("Trying alternative approach for team members...");
+      return await fetchTeamMembersAlternative(teamId);
     }
     
     if (!teamMemberships || teamMemberships.length === 0) {
@@ -47,7 +53,7 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
       
     if (profilesError) {
       console.error("Error fetching profiles:", profilesError);
-      return [];
+      return await fetchTeamMembersAlternative(teamId);
     }
     
     // Map the profiles to TeamMember objects
@@ -68,6 +74,6 @@ export const fetchTeamMembersByTeam = async (teamId: string): Promise<TeamMember
     return result;
   } catch (error) {
     console.error("Error in fetchTeamMembersByTeam:", error);
-    return [];
+    return await fetchTeamMembersAlternative(teamId);
   }
 };

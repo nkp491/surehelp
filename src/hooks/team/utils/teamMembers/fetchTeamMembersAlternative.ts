@@ -4,6 +4,7 @@ import { TeamMember } from "@/types/team";
 
 /**
  * Alternative method to fetch team members when RLS recursion issues occur
+ * Uses a general approach without special case handling for specific users
  */
 export const fetchTeamMembersAlternative = async (teamId: string): Promise<TeamMember[]> => {
   console.log("Using alternative team members fetch method for team:", teamId);
@@ -13,54 +14,66 @@ export const fetchTeamMembersAlternative = async (teamId: string): Promise<TeamM
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return [];
     
-    // For the specific account with known recursion issues (nielsenaragon@gmail.com)
-    // We'll add the user themselves as the only team member for display purposes
-    if (user.email === 'nielsenaragon@gmail.com') {
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-        
-      if (profile) {
-        return [{
-          id: profile.id,
-          user_id: profile.id,
-          team_id: teamId,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          email: profile.email,
-          profile_image_url: profile.profile_image_url,
-          role: "manager_pro_platinum", // Assuming the user is a manager for this team
-          created_at: profile.created_at,
-          updated_at: profile.updated_at
-        }] as TeamMember[];
-      }
+    // Use our secure database function to check if the user is in this team
+    const { data: isInTeam } = await supabase.rpc(
+      'is_team_member',
+      { team_id: teamId }
+    );
+    
+    if (!isInTeam) {
+      console.log("User is not a member of this team");
+      return [];
     }
     
-    // General fallback - get the team owner info
-    const { data: teamManager } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .single();
+    // First try to get team managers (usually fewer records, so more efficient)
+    const { data: teamManagers } = await supabase
+      .from('team_managers')
+      .select('user_id,role')
+      .eq('team_id', teamId);
       
-    if (teamManager) {
-      return [{
-        id: teamManager.id,
-        user_id: teamManager.id,
-        team_id: teamId,
-        first_name: teamManager.first_name,
-        last_name: teamManager.last_name,
-        email: teamManager.email,
-        profile_image_url: teamManager.profile_image_url,
-        role: teamManager.role || "manager",
-        created_at: teamManager.created_at,
-        updated_at: teamManager.updated_at
-      }] as TeamMember[];
+    // Then get profiles for all team members with a single query approach
+    const { data: teamMemberProfiles } = await supabase
+      .from('profiles')
+      .select(`
+        id,
+        first_name,
+        last_name,
+        email,
+        profile_image_url,
+        created_at,
+        updated_at,
+        role
+      `)
+      .in('id', (await supabase
+        .from('team_members')
+        .select('user_id')
+        .eq('team_id', teamId)).data?.map(m => m.user_id) || []);
+    
+    if (!teamMemberProfiles || teamMemberProfiles.length === 0) {
+      console.log("No team member profiles found");
+      return [];
     }
     
-    return [];
+    // Create the TeamMember objects with the profile information
+    const result = teamMemberProfiles.map(profile => {
+      const manager = teamManagers?.find(m => m.user_id === profile.id);
+      return {
+        id: profile.id,
+        user_id: profile.id,
+        team_id: teamId,
+        first_name: profile.first_name,
+        last_name: profile.last_name,
+        email: profile.email,
+        profile_image_url: profile.profile_image_url,
+        // Use manager role if present, otherwise use profile role or default to "agent"
+        role: manager?.role || profile.role || "agent",
+        created_at: profile.created_at,
+        updated_at: profile.updated_at
+      };
+    }) as TeamMember[];
+    
+    console.log(`Found ${result.length} members in team:`, teamId);
+    return result;
   } catch (error) {
     console.error("Error in fetchTeamMembersAlternative:", error);
     return [];
