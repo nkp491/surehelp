@@ -9,7 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { supabase } from "@/integrations/supabase/client";
 
 export default function RealManagerDashboard() {
   const { profile } = useProfileManagement();
@@ -67,74 +66,6 @@ export default function RealManagerDashboard() {
       description: "Your teams list has been refreshed.",
     });
   };
-
-  // Special fix for Momentum Capitol association
-  useEffect(() => {
-    const checkMomentumAssociation = async () => {
-      try {
-        // Check if user is nielsenaragon@gmail.com
-        if (profile?.email === 'nielsenaragon@gmail.com') {
-          console.log("Detected nielsenaragon@gmail.com, checking Momentum Capitol association");
-          
-          // Get all teams
-          const { data: allTeams } = await supabase
-            .from('teams')
-            .select('*');
-          
-          // Find Momentum teams
-          const momentumTeams = allTeams?.filter(team => 
-            team.name.includes('Momentum Capitol') || 
-            team.name.includes('Momentum Capital')
-          ) || [];
-          
-          if (momentumTeams.length > 0) {
-            console.log("Found Momentum teams:", momentumTeams);
-            
-            // For each Momentum team
-            for (const team of momentumTeams) {
-              // Check if user is already a member
-              const { data: existingMembership } = await supabase
-                .from('team_members')
-                .select('id')
-                .eq('team_id', team.id)
-                .eq('user_id', profile.id);
-              
-              if (!existingMembership || existingMembership.length === 0) {
-                console.log(`Adding user to ${team.name}`);
-                
-                // Add user to team
-                const { error: addError } = await supabase
-                  .from('team_members')
-                  .insert([{ 
-                    team_id: team.id,
-                    user_id: profile.id,
-                    role: 'manager_pro_platinum'
-                  }]);
-                  
-                if (addError) {
-                  console.error(`Error adding user to ${team.name}:`, addError);
-                } else {
-                  console.log(`Successfully added user to ${team.name}`);
-                  await fetchTeams(); // Refresh teams after adding
-                }
-              } else {
-                console.log(`User already member of ${team.name}`);
-              }
-            }
-          } else {
-            console.log("Momentum Capitol team not found in teams list. Will try to repair the association.");
-            await fetchTeams();
-          }
-        }
-      } catch (err) {
-        console.error("Error in checkMomentumAssociation:", err);
-      }
-    };
-    
-    if (profile?.email) {
-      checkMomentumAssociation();
-    }
-  }, [profile?.email]);
 
   return (
     <div className="container mx-auto p-6">

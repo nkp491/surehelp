@@ -8,7 +8,7 @@ export const fetchUserTeamsDirectly = async () => {
   console.log("Fetching user teams directly");
   
   try {
-    // Try to use the new secure function - have to use any to bypass type checking
+    // Try to use the secure function - have to use any to bypass type checking
     const { data: secureTeams, error: secureError } = await supabase.rpc(
       'get_user_teams_secure' as any
     );
@@ -40,32 +40,6 @@ export const fetchUserTeamsDirectly = async () => {
     return data?.map(item => item.teams) || [];
   } catch (error) {
     console.error("Error in fetchUserTeamsDirectly:", error);
-    return [];
-  }
-};
-
-/**
- * Fetch Momentum Capitol teams
- */
-export const fetchMomentumTeams = async () => {
-  console.log("Fetching Momentum teams");
-  
-  try {
-    // Try to use the secure function to identify Momentum teams
-    const { data: teams, error } = await supabase
-      .from('teams')
-      .select('*')
-      .or('name.ilike.%Momentum%,name.ilike.%Capitol%,name.ilike.%Capital%');
-      
-    if (error) {
-      console.error("Error fetching Momentum teams:", error);
-      return [];
-    }
-    
-    console.log("Found Momentum teams:", teams);
-    return teams || [];
-  } catch (error) {
-    console.error("Error in fetchMomentumTeams:", error);
     return [];
   }
 };
@@ -116,52 +90,13 @@ export const fetchTeamsThroughManager = async (managerId: string) => {
 };
 
 /**
- * Check if this is a special user case (Nielsen, etc.)
- */
-export const checkSpecialUserCase = async () => {
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return false;
-  
-  // Try to use the secure function
-  try {
-    const { data, error } = await supabase.rpc(
-      'is_special_user' as any,
-      { check_user_id: user.id }
-    );
-    
-    if (!error) {
-      return !!data;
-    }
-    
-    // Fall back to direct checking
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('email')
-      .eq('id', user.id)
-      .single();
-      
-    if (profile) {
-      return (
-        profile.email === 'nielsenaragon@gmail.com' ||
-        profile.email === 'nielsenaragon@ymail.com' ||
-        profile.email === 'kirbyaragon@gmail.com'
-      );
-    }
-  } catch (error) {
-    console.error("Error checking special user case:", error);
-  }
-  
-  return false;
-};
-
-/**
  * Fetch teams without relying on RLS
  */
 export const fetchTeamsWithoutRLS = async (userId: string) => {
   console.log("Attempting to fetch teams without RLS");
   
   try {
-    // First try the new secure function added in the migration
+    // First try the secure function added in the migration
     const { data: secureTeams, error: secureError } = await supabase.rpc(
       'get_user_teams_secure' as any,
       { check_user_id: userId }
@@ -207,50 +142,6 @@ export const fetchTeamsWithoutRLS = async (userId: string) => {
     return [];
   } catch (error) {
     console.error("Error in fetchTeamsWithoutRLS:", error);
-    return [];
-  }
-};
-
-/**
- * Fetch teams for special cases (Nielsen, Kirby)
- */
-export const fetchTeamsForSpecialCase = async (userId: string) => {
-  console.log("Fetching teams for special case");
-  
-  try {
-    // Check if this is a special user 
-    const isSpecial = await checkSpecialUserCase();
-    
-    if (isSpecial) {
-      console.log("User is a special case, fetching Momentum teams");
-      return await fetchMomentumTeams();
-    }
-    
-    // Check if user is managed by Nielsen
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('manager_id')
-      .eq('id', userId)
-      .single();
-      
-    if (profile?.manager_id) {
-      const { data: managerProfile } = await supabase
-        .from('profiles')
-        .select('email')
-        .eq('id', profile.manager_id)
-        .single();
-        
-      if (managerProfile && 
-          (managerProfile.email === 'nielsenaragon@gmail.com' || 
-           managerProfile.email === 'nielsenaragon@ymail.com')) {
-        console.log("User is managed by Nielsen, fetching Momentum teams");
-        return await fetchMomentumTeams();
-      }
-    }
-    
-    return [];
-  } catch (error) {
-    console.error("Error in fetchTeamsForSpecialCase:", error);
     return [];
   }
 };
