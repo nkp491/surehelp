@@ -13,6 +13,7 @@ import { useTeamInformationLogic } from "@/hooks/useTeamInformationLogic";
 import { useTeamAssociationService } from "@/services/team-association";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { Team } from "@/types/team";
 
 interface TeamInformationProps {
   managerId?: string | null;
@@ -147,7 +148,7 @@ const TeamInformation = ({
           />
 
           <TeamsSection 
-            teams={userTeams}
+            teams={userTeams as Team[]} // Explicitly cast to Team[] to ensure TypeScript knows it has the right shape
             isLoadingTeams={isLoadingTeams}
             isFixing={fixingTeamAssociation || isProcessing}
             showAlert={showAlert}
