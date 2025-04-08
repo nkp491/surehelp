@@ -6,11 +6,9 @@ import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MessageCircle } from "lucide-react";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 export default function BulletinsPage() {
   const { profile, loading } = useProfileManagement();
-  const { userRoles } = useRoleCheck();
   const [teamId, setTeamId] = useState<string | undefined>(undefined);
   
   // Determine if user is a manager or has a manager
@@ -18,7 +16,6 @@ export default function BulletinsPage() {
                     profile?.roles?.some(r => r.includes('manager_pro'));
   
   const hasManager = !!profile?.manager_id;
-  const isAgentPro = userRoles.includes('agent_pro');
 
   useEffect(() => {
     // For managers, we'll use their ID as the team ID
@@ -34,28 +31,6 @@ export default function BulletinsPage() {
 
   if (loading) {
     return <ProfileLoading />;
-  }
-
-  // For agent_pro users without a manager, show a specific message
-  if (isAgentPro && !hasManager) {
-    return (
-      <div className="container max-w-7xl mx-auto py-6 space-y-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Team Bulletins</CardTitle>
-            <CardDescription>
-              As an Agent Pro user, you need to have a manager assigned to access team bulletins.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center py-10">
-            <MessageCircle className="h-16 w-16 text-muted-foreground mb-4" />
-            <p className="text-muted-foreground text-center">
-              Please go to your profile and select a manager to access team bulletins.
-            </p>
-          </CardContent>
-        </Card>
-      </div>
-    );
   }
 
   // User needs to either be a manager or have a manager

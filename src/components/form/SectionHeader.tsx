@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 
@@ -14,6 +13,8 @@ const SectionHeader = ({ section, onRemove }: SectionHeaderProps) => {
       {onRemove && (
         <Button
           onClick={onRemove}
+          variant="ghost"
+          size="sm"
           className="text-red-600 hover:text-red-700"
         >
           <X className="h-4 w-4" />

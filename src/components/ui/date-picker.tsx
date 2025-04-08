@@ -46,63 +46,24 @@ export function DatePicker({
   }, [selected]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const newValue = e.target.value;
-    
-    // Allow the user to clear the input
-    if (!newValue) {
-      setInputValue("");
-      onSelect(null);
-      return;
-    }
-    
-    // Only allow digits and slashes in the input
-    const sanitizedValue = newValue.replace(/[^\d/]/g, '');
-    setInputValue(sanitizedValue);
-    
-    // Try to parse the date if it looks like a complete MM/DD/YYYY date
-    if (sanitizedValue.length >= 8) {
-      const parts = sanitizedValue.split('/');
+    const value = e.target.value;
+    setInputValue(value);
+
+    // Try to parse the date in MM/DD/YYYY format
+    const parts = value.split('/');
+    if (parts.length === 3) {
+      const month = parseInt(parts[0]) - 1; // months are 0-based
+      const day = parseInt(parts[1]);
+      const year = parseInt(parts[2]);
       
-      if (parts.length === 3 || 
-         (parts.length === 2 && parts[1].length >= 4) ||
-         (parts.length === 1 && parts[0].length >= 8)) {
-        
-        let month, day, year;
-        
-        // Handle different formats
-        if (parts.length === 3) {
-          month = parseInt(parts[0]);
-          day = parseInt(parts[1]);
-          year = parseInt(parts[2]);
-        } else if (parts.length === 2) {
-          month = parseInt(parts[0]);
-          day = parseInt(parts[1].substring(0, 2));
-          year = parseInt(parts[1].substring(2));
-        } else {
-          month = parseInt(sanitizedValue.substring(0, 2));
-          day = parseInt(sanitizedValue.substring(2, 4));
-          year = parseInt(sanitizedValue.substring(4));
-        }
-        
-        // Basic validation
-        if (month >= 1 && month <= 12 && 
-            day >= 1 && day <= 31 && 
-            year >= 1900 && year <= 2100) {
-          
-          const date = new Date(year, month - 1, day);
-          
-          // Further validation
-          if (date.getMonth() === month - 1 && 
-              date.getDate() === day && 
-              date.getFullYear() === year &&
-              (!maxDate || date <= maxDate)) {
-            
-            onSelect(date);
-            
-            // Format the date properly
-            setInputValue(format(date, "MM/dd/yyyy"));
-          }
-        }
+      const date = new Date(year, month, day);
+      
+      // Check if it's a valid date and within the allowed range
+      if (
+        !isNaN(date.getTime()) && 
+        (!maxDate || date <= maxDate)
+      ) {
+        onSelect(date);
       }
     }
   };
@@ -131,32 +92,12 @@ export function DatePicker({
     setMonth(newMonth);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Allow navigation keys and expected date input characters
-    const allowedKeys = ['Backspace', 'Delete', 'ArrowLeft', 'ArrowRight', 'Tab', '/'];
-    const isDigit = /^\d$/.test(e.key);
-    
-    if (!isDigit && !allowedKeys.includes(e.key)) {
-      e.preventDefault();
-    }
-    
-    // Auto-add slashes for better UX
-    if (isDigit) {
-      const curValue = e.currentTarget.value;
-      if ((curValue.length === 2 || curValue.length === 5) && !curValue.endsWith('/')) {
-        setInputValue(curValue + '/' + e.key);
-        e.preventDefault();
-      }
-    }
-  };
-
   return (
     <div className="relative">
       <Input
         type="text"
         value={inputValue}
         onChange={handleInputChange}
-        onKeyDown={handleKeyDown}
         placeholder="MM/DD/YYYY"
         className="pr-10"
       />
@@ -200,7 +141,6 @@ export function DatePicker({
             initialFocus
             month={month}
             onMonthChange={handleMonthChange}
-            className="p-3 pointer-events-auto"
           />
         </PopoverContent>
       </Popover>
