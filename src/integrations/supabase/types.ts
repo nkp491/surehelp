@@ -351,38 +351,6 @@ export type Database = {
         }
         Relationships: []
       }
-      manager_teams: {
-        Row: {
-          created_at: string | null
-          id: string
-          manager_id: string
-          team_id: string
-          updated_at: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          manager_id: string
-          team_id: string
-          updated_at?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          manager_id?: string
-          team_id?: string
-          updated_at?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "manager_teams_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       meeting_followups: {
         Row: {
           created_at: string | null
@@ -546,7 +514,6 @@ export type Database = {
       }
       profiles: {
         Row: {
-          agent_info: Json | null
           created_at: string
           email: string | null
           first_name: string | null
@@ -564,7 +531,6 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          agent_info?: Json | null
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -582,7 +548,6 @@ export type Database = {
           updated_at?: string
         }
         Update: {
-          agent_info?: Json | null
           created_at?: string
           email?: string | null
           first_name?: string | null
@@ -728,41 +693,6 @@ export type Database = {
           },
         ]
       }
-      team_managers: {
-        Row: {
-          created_at: string | null
-          id: string
-          role: string
-          team_id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          role: string
-          team_id: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          role?: string
-          team_id?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "team_managers_team_id_fkey"
-            columns: ["team_id"]
-            isOneToOne: false
-            referencedRelation: "teams"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       team_members: {
         Row: {
           created_at: string
@@ -887,120 +817,53 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      add_user_to_manager_teams: {
-        Args: { user_id: string; manager_id: string }
-        Returns: boolean
-      }
-      can_access_team: {
-        Args: { check_user_id: string; check_team_id: string }
-        Returns: boolean
-      }
-      create_team_for_manager: {
-        Args: { team_name: string }
-        Returns: Json
-      }
-      create_team_for_manager_secure: {
-        Args: { team_name: string }
-        Returns: Json
-      }
       create_team_with_member: {
-        Args: { team_name: string; member_role?: string }
+        Args: {
+          team_name: string
+          member_role?: string
+        }
         Returns: Json
-      }
-      ensure_user_in_manager_teams: {
-        Args: { user_id: string; manager_id: string }
-        Returns: boolean
-      }
-      force_agent_team_association: {
-        Args: { agent_id: string }
-        Returns: boolean
-      }
-      get_manager_teams: {
-        Args: { manager_id: string }
-        Returns: string[]
-      }
-      get_user_manager_status: {
-        Args: { check_user_id: string; check_team_id: string }
-        Returns: boolean
       }
       get_user_role: {
-        Args: { user_id: string }
+        Args: {
+          user_id: string
+        }
         Returns: string
       }
       get_user_roles: {
-        Args: { check_user_id: string }
-        Returns: string[]
-      }
-      get_user_team_memberships: {
-        Args: { user_id_param: string }
+        Args: {
+          check_user_id: string
+        }
         Returns: string[]
       }
       get_user_teams: {
         Args: Record<PropertyKey, never>
         Returns: string[]
       }
-      get_user_teams_by_id: {
-        Args: { user_id_param: string }
-        Returns: string[]
-      }
-      get_user_teams_secure: {
-        Args: { check_user_id: string }
-        Returns: string[]
-      }
-      get_user_teams_v2: {
-        Args: Record<PropertyKey, never>
-        Returns: string[]
-      }
       has_role: {
-        Args: { check_user_id: string; check_role: string }
+        Args: {
+          check_user_id: string
+          check_role: string
+        }
         Returns: boolean
       }
       is_manager_of: {
-        Args: { manager_id: string; user_id: string }
-        Returns: boolean
-      }
-      is_manager_of_user: {
-        Args: { manager_id: string; user_id: string }
-        Returns: boolean
-      }
-      is_momentum_team: {
-        Args: { check_team_id: string }
-        Returns: boolean
-      }
-      is_special_user: {
-        Args: { check_user_id: string }
+        Args: {
+          manager_id: string
+          user_id: string
+        }
         Returns: boolean
       }
       is_team_manager: {
-        Args: { check_team_id: string }
-        Returns: boolean
-      }
-      is_team_manager_secure: {
-        Args: { check_user_id: string; check_team_id: string }
-        Returns: boolean
-      }
-      is_team_manager_v2: {
-        Args: { check_team_id: string }
+        Args: {
+          check_team_id: string
+        }
         Returns: boolean
       }
       is_team_member: {
-        Args: { team_id: string }
-        Returns: boolean
-      }
-      is_team_member_v2: {
-        Args: { check_team_id: string }
-        Returns: boolean
-      }
-      safe_is_team_manager: {
-        Args: { check_team_id: string; check_user_id?: string }
-        Returns: boolean
-      }
-      safe_is_team_manager_v2: {
-        Args: { check_team_id: string; check_user_id?: string }
-        Returns: boolean
-      }
-      user_has_role: {
-        Args: { check_user_id: string; check_role: string }
+        Args: {
+          team_id: string
+        }
         Returns: boolean
       }
     }
@@ -1020,29 +883,27 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type PublicSchema = Database[Extract<keyof Database, "public">]
 
 export type Tables<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+  PublicTableNameOrOptions extends
+    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+        Database[PublicTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])
-    ? (DefaultSchema["Tables"] &
-        DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
+        PublicSchema["Views"])
+    ? (PublicSchema["Tables"] &
+        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
         Row: infer R
       }
       ? R
@@ -1050,22 +911,20 @@ export type Tables<
     : never
 
 export type TablesInsert<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Insert: infer I
       }
       ? I
@@ -1073,22 +932,20 @@ export type TablesInsert<
     : never
 
 export type TablesUpdate<
-  DefaultSchemaTableNameOrOptions extends
-    | keyof DefaultSchema["Tables"]
+  PublicTableNameOrOptions extends
+    | keyof PublicSchema["Tables"]
     | { schema: keyof Database },
-  TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+  TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = PublicTableNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
     : never
-  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
-    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
+    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
         Update: infer U
       }
       ? U
@@ -1096,23 +953,21 @@ export type TablesUpdate<
     : never
 
 export type Enums<
-  DefaultSchemaEnumNameOrOptions extends
-    | keyof DefaultSchema["Enums"]
+  PublicEnumNameOrOptions extends
+    | keyof PublicSchema["Enums"]
     | { schema: keyof Database },
-  EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+  EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
+    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
-    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+> = PublicEnumNameOrOptions extends { schema: keyof Database }
+  ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
+    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
     : never
 
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
-    | keyof DefaultSchema["CompositeTypes"]
+    | keyof PublicSchema["CompositeTypes"]
     | { schema: keyof Database },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
     schema: keyof Database
@@ -1121,22 +976,6 @@ export type CompositeTypes<
     : never = never,
 > = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
   ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
-    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
+    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-export const Constants = {
-  public: {
-    Enums: {
-      user_role: [
-        "agent",
-        "manager_pro",
-        "beta_user",
-        "manager_pro_gold",
-        "manager_pro_platinum",
-        "agent_pro",
-        "system_admin",
-      ],
-    },
-  },
-} as const

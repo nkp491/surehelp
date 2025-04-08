@@ -2,10 +2,8 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RolesList } from "@/components/role-management/RolesList";
 import { RoleDescriptions } from "@/components/role-management/RoleDescriptions";
-import { TeamManagement } from "@/components/role-management/TeamManagement";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface RoleManagementContentProps {
   users: UserWithRoles[] | undefined;
@@ -24,14 +22,10 @@ export function RoleManagementContent({
   removeRole,
   isAssigningRole 
 }: RoleManagementContentProps) {
-  const { hasRequiredRole } = useRoleCheck();
-  const isAdmin = hasRequiredRole(['system_admin']);
-  
   return (
     <Tabs defaultValue="users">
       <TabsList className="mb-6">
         <TabsTrigger value="users">Users & Roles</TabsTrigger>
-        {isAdmin && <TabsTrigger value="teams">Team Management</TabsTrigger>}
         <TabsTrigger value="about">About Roles</TabsTrigger>
       </TabsList>
       
@@ -51,12 +45,6 @@ export function RoleManagementContent({
           />
         )}
       </TabsContent>
-      
-      {isAdmin && (
-        <TabsContent value="teams">
-          <TeamManagement />
-        </TabsContent>
-      )}
       
       <TabsContent value="about">
         <RoleDescriptions />

@@ -2,11 +2,9 @@
 import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PlusCircle, MinusCircle, UserRound, Calendar } from "lucide-react";
+import { PlusCircle, MinusCircle } from "lucide-react";
 import { formatRoleName, getBadgeVariant } from "@/components/role-management/roleUtils";
 import { useToast } from "@/hooks/use-toast";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
-import { format } from "date-fns";
 
 interface UserRoleItemProps {
   user: UserWithRoles;
@@ -24,8 +22,6 @@ export function UserRoleItem({
   onRemoveRole 
 }: UserRoleItemProps) {
   const { toast } = useToast();
-  const { hasRequiredRole } = useRoleCheck();
-  const isAdmin = hasRequiredRole(['system_admin']);
   
   const handleAssignRole = () => {
     if (!selectedRole) {
@@ -43,11 +39,6 @@ export function UserRoleItem({
     onRemoveRole({ userId: user.id, role });
   };
 
-  // Format the account creation date if available
-  const formattedCreationDate = user.created_at 
-    ? format(new Date(user.created_at), 'MMM d, yyyy') 
-    : 'Unknown';
-
   return (
     <div className="border rounded-lg p-4">
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
@@ -56,27 +47,6 @@ export function UserRoleItem({
             {user.first_name} {user.last_name}
           </h3>
           <p className="text-sm text-muted-foreground">{user.email}</p>
-          
-          <div className="mt-1 flex flex-col space-y-1">
-            {isAdmin && (
-              <>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="h-3 w-3 mr-1" />
-                  <span>Account created: {formattedCreationDate}</span>
-                </div>
-                
-                {user.manager_id && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <UserRound className="h-3 w-3 mr-1" />
-                    <span>Manager: {user.manager_name || 'Unknown'}</span>
-                    {user.manager_email && (
-                      <span className="ml-1">({user.manager_email})</span>
-                    )}
-                  </div>
-                )}
-              </>
-            )}
-          </div>
         </div>
         
         <div className="flex items-center">

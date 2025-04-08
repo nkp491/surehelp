@@ -1,85 +1,73 @@
 
-import { useToast } from "@/hooks/use-toast";
-import { TeamMember } from "@/types/team";
-import { useFetchManagerTeamMembers, useFetchTeamMembersByTeam, useFetchNestedTeamMembers } from "./team";
-import { useTeamMemberOperations } from "./team/useTeamMemberOperations";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Profile } from "@/types/profile";
+import { toast } from "@/hooks/use-toast";
 
-/**
- * Main hook for manager team functionality
- */
 export const useManagerTeam = (managerId?: string) => {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
+  // Get all team members where manager_id = managerId
+  const { data: teamMembers, isLoading, error, refetch } = useQuery({
+    queryKey: ['manager-team', managerId],
+    queryFn: async () => {
+      if (!managerId) return [];
 
-  // Fetch direct reports
-  const { 
-    teamMembers, 
-    isLoading: isLoadingTeamMembers, 
-    error, 
-    refetch: refetchTeamMembers 
-  } = useFetchManagerTeamMembers(managerId);
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('manager_id', managerId);
 
-  // Fetch nested team members
-  const { 
-    data: nestedTeamMembers, 
-    isLoading: isLoadingNested, 
-    refetch: refetchNested 
-  } = useFetchNestedTeamMembers(managerId);
+      if (error) throw error;
+      
+      // Transform the data to match our Profile type
+      return data.map(profile => ({
+        ...profile,
+        // Parse JSON fields properly if they're strings
+        privacy_settings: typeof profile.privacy_settings === 'string'
+          ? JSON.parse(profile.privacy_settings)
+          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
+        notification_preferences: typeof profile.notification_preferences === 'string'
+          ? JSON.parse(profile.notification_preferences)
+          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
+      })) as Profile[];
+    },
+    enabled: !!managerId,
+  });
 
-  // Combined refetch function
-  const refetch = async () => {
+  // Update a team member's manager
+  const updateTeamMemberManager = async (memberId: string, newManagerId: string | null) => {
     try {
-      const results = await Promise.allSettled([
-        refetchTeamMembers(),
-        refetchNested()
-      ]);
+      const { error } = await supabase
+        .from('profiles')
+        .update({ manager_id: newManagerId })
+        .eq('id', memberId);
+
+      if (error) throw error;
       
-      // Even if some refetches fail, continue with invalidating queries
-      
-      // Invalidate all team-related queries
-      queryClient.invalidateQueries({ queryKey: ['team-members-by-team'] });
-      queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-      queryClient.invalidateQueries({ queryKey: ['user-teams-profile-direct'] });
-      
-      // Check if both or at least one refetch was successful
-      const allSuccessful = results.every(result => result.status === 'fulfilled');
-      if (!allSuccessful) {
-        console.warn("Some team data refetches were not successful");
-      }
-      
-      return true;
-    } catch (error) {
-      console.error("Error refreshing team data:", error);
       toast({
-        title: "Refresh failed",
-        description: "Could not refresh team data. Please try again.",
+        title: "Success",
+        description: newManagerId 
+          ? "Team member has been assigned to a new manager." 
+          : "Team member has been removed from your team.",
+      });
+      
+      refetch();
+      return true;
+    } catch (error: any) {
+      console.error("Error updating team member:", error.message);
+      toast({
+        title: "Error",
+        description: "Failed to update team member. Please try again.",
         variant: "destructive",
       });
       return false;
     }
   };
 
-  // Team member operations (with refetch on success)
-  const { 
-    updateTeamMemberManager, 
-    isUpdating 
-  } = useTeamMemberOperations(refetch);
-
-  // Helper function to get a query for team members by team
-  const getTeamMembersByTeamQuery = (teamId?: string) => {
-    return useFetchTeamMembersByTeam(teamId);
-  };
-
   return {
     teamMembers,
-    nestedTeamMembers,
-    isLoading: isLoadingTeamMembers || isLoadingNested || isUpdating,
+    isLoading,
     error,
     updateTeamMemberManager,
-    refetch,
-    getTeamMembersByTeamQuery
+    refetch
   };
 };
-
-export default useManagerTeam;

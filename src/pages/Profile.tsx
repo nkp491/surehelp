@@ -9,11 +9,10 @@ import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
-import TeamInformation from "@/components/profile/TeamInformation";
-import AgentInformation from "@/components/profile/AgentInformation";
 import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { ManagerTeamList } from "@/components/team/ManagerTeamList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -37,13 +36,7 @@ const ProfileContent = () => {
   const { language } = useLanguage();
   const t = translations[language];
   
-  // Improve manager role detection - check both profile.role and profile.roles
-  const isManager = profile?.role?.includes('manager_pro') || 
-                    profile?.roles?.some(r => r.includes('manager_pro'));
-  
-  // Improve agent role detection - check both profile.role and profile.roles
-  const isAgent = profile?.role?.includes('agent') || 
-                  profile?.roles?.some(r => r.includes('agent'));
+  const isManager = profile?.role?.includes('manager_pro');
 
   if (loading) {
     return <ProfileLoading />;
@@ -66,20 +59,9 @@ const ProfileContent = () => {
           lastName={profile?.last_name}
           email={profile?.email}
           phone={profile?.phone}
-          onUpdate={updateProfile}
-        />
-
-        <TeamInformation 
           managerId={profile?.manager_id}
           onUpdate={updateProfile}
         />
-
-        {isAgent && (
-          <AgentInformation 
-            agentInfo={profile?.agent_info}
-            onUpdate={updateProfile}
-          />
-        )}
 
         <div className="flex flex-col gap-6">
           <UserRole role={profile?.role} roles={profile?.roles} />
@@ -97,6 +79,10 @@ const ProfileContent = () => {
           />
           
           <TermsAcceptance />
+          
+          {isManager && (
+            <ManagerTeamList managerId={profile?.id} />
+          )}
         </div>
       </div>
     </div>

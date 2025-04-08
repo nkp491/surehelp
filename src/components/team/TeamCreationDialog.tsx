@@ -1,7 +1,6 @@
 
 import { useState } from "react";
 import { useTeamManagement } from "@/hooks/useTeamManagement";
-import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
   DialogContent,
@@ -14,27 +13,22 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface TeamCreationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   teamId?: string;
   initialName?: string;
-  onSuccess?: () => void;
 }
 
 export function TeamCreationDialog({ 
   open, 
   onOpenChange, 
   teamId, 
-  initialName = "",
-  onSuccess
+  initialName = "" 
 }: TeamCreationDialogProps) {
   const { createTeam, updateTeam, isLoading } = useTeamManagement();
-  const { toast } = useToast();
   const [teamName, setTeamName] = useState(initialName);
-  const queryClient = useQueryClient();
   
   const isEditMode = !!teamId;
   const dialogTitle = isEditMode ? "Edit Team" : "Create Team";
@@ -47,46 +41,14 @@ export function TeamCreationDialog({
     e.preventDefault();
     if (!teamName.trim()) return;
     
-    try {
-      console.log("Attempting to " + (isEditMode ? "update" : "create") + " team with name:", teamName);
-      
-      if (isEditMode && teamId) {
-        await updateTeam.mutateAsync({ teamId, name: teamName });
-        toast({
-          title: "Team Updated",
-          description: "Your team has been updated successfully.",
-        });
-      } else {
-        const result = await createTeam.mutateAsync(teamName);
-        console.log("Team creation result:", result);
-        
-        // Invalidate all related queries to ensure fresh data is fetched
-        await queryClient.invalidateQueries({ queryKey: ['user-teams'] });
-        await queryClient.invalidateQueries({ queryKey: ['user-teams-profile'] });
-        // Also invalidate manager-team queries which might contain this user
-        await queryClient.invalidateQueries({ queryKey: ['manager-team'] });
-        
-        toast({
-          title: "Team Created",
-          description: "Your new team has been created successfully. You can now manage it from your profile.",
-        });
-      }
-      
-      setTeamName("");
-      onOpenChange(false);
-      
-      // Call onSuccess callback if provided to refresh team list
-      if (onSuccess) {
-        onSuccess();
-      }
-    } catch (error) {
-      console.error("Error during team operation:", error);
-      toast({
-        title: "Error",
-        description: "There was a problem with your request. Please try again.",
-        variant: "destructive",
-      });
+    if (isEditMode && teamId) {
+      await updateTeam.mutateAsync({ teamId, name: teamName });
+    } else {
+      await createTeam.mutateAsync(teamName);
     }
+    
+    setTeamName("");
+    onOpenChange(false);
   };
 
   return (

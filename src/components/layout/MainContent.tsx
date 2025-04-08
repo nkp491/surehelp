@@ -2,8 +2,7 @@
 import { useLocation } from "react-router-dom";
 import Dashboard from "@/pages/Dashboard";
 import SubmittedForms from "@/pages/SubmittedForms";
-import ManagerDashboard from "@/pages/ManagerDashboard"; // Demo version
-import RealManagerDashboard from "@/pages/RealManagerDashboard"; // Real implementation
+import ManagerDashboard from "@/pages/ManagerDashboard";
 import Profile from "@/pages/Profile";
 import FormContainer from "@/components/FormContainer";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -11,7 +10,6 @@ import { AppSidebar } from "@/components/layout/AppSidebar";
 import CommissionTracker from "@/pages/CommissionTracker";
 import RoleManagement from "@/pages/RoleManagement";
 import TeamPage from "@/pages/Team";
-import BulletinsPage from "@/pages/Bulletins";
 import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
@@ -32,9 +30,7 @@ const MainContent = () => {
         case '/submitted-forms':
           return <SubmittedForms />;
         case '/manager-dashboard':
-          return <ManagerDashboard />; // Keep the demo version
-        case '/team-dashboard': // New route for real implementation
-          return <RealManagerDashboard />;
+          return <ManagerDashboard />;
         case '/profile':
           return <Profile />;
         case '/assessment':
@@ -45,8 +41,6 @@ const MainContent = () => {
           return <RoleManagement />;
         case '/team':
           return <TeamPage />;
-        case '/bulletins':
-          return <BulletinsPage />;
         case '/terms':
           return <TermsOfUse />;
         case '/admin':
@@ -66,8 +60,8 @@ const MainContent = () => {
       );
     }
 
-    // For the team-related pages, manually add role protection if not already covered
-    if ((location.pathname === '/team' || location.pathname === '/team-dashboard') && !requiredRoles) {
+    // For the team page, manually add role protection if not already covered
+    if (location.pathname === '/team' && !requiredRoles) {
       return (
         <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
           {Component}
