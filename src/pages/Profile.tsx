@@ -1,4 +1,3 @@
-
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
@@ -36,7 +35,9 @@ const ProfileContent = () => {
   const { language } = useLanguage();
   const t = translations[language];
   
-  const isManager = profile?.role?.includes('manager_pro');
+  const isManager = profile?.roles?.some(role => 
+    ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'].includes(role)
+  );
 
   if (loading) {
     return <ProfileLoading />;

@@ -44,6 +44,7 @@ export const useProfileManagement = () => {
       return {
         ...profileData,
         roles: roles,
+        role: null,
         privacy_settings: typeof profileData.privacy_settings === 'string' 
           ? JSON.parse(profileData.privacy_settings)
           : profileData.privacy_settings || { show_email: false, show_phone: false, show_photo: true },

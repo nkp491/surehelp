@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ManagerTeamList } from "@/components/team/ManagerTeamList";
@@ -15,7 +14,10 @@ export default function TeamPage() {
     return <ProfileLoading />;
   }
 
-  const isManager = profile?.role?.includes('manager_pro');
+  const isManager = profile?.role?.includes('manager_pro') || 
+                   profile?.roles?.some(role => 
+                     ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'].includes(role)
+                   );
 
   return (
     <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
