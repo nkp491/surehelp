@@ -47,9 +47,15 @@ export const useTeamDirectQuery = (userId?: string) => {
           return [];
         }
         
-        // Filter teams by membership
+        // Filter teams by membership and ensure all required fields are present
         const teamIds = memberships.map(m => m.team_id);
-        const userTeams = allTeams.filter((team: Team) => teamIds.includes(team.id));
+        const userTeams = allTeams
+          .filter((team: Team) => teamIds.includes(team.id))
+          .map((team: any) => ({
+            ...team,
+            // Ensure updated_at exists since it's required by the Team type
+            updated_at: team.updated_at || team.created_at
+          }));
         
         console.log("User teams found:", userTeams.length);
         return userTeams;
