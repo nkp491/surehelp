@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,21 +43,74 @@ const PersonalInfo = ({
   const { language } = useLanguage();
   const t = translations[language];
 
+  const [managerEmail, setManagerEmail] = useState('');
+  const [managerError, setManagerError] = useState('');
+  const [isCheckingManager, setIsCheckingManager] = useState(false);
+  const [managerName, setManagerName] = useState<string | null>(null);
+
   // Fetch managers for selection
   const { data: managers, isLoading: loadingManagers } = useQuery({
     queryKey: ['managers'],
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('id, first_name, last_name, email')
-        .or('role.eq.manager_pro,role.eq.manager_pro_gold,role.eq.manager_pro_platinum')
-        .order('first_name', { ascending: true });
+      try {
+        // First get user IDs of all managers from user_roles
+        const { data: managerRoles, error: rolesError } = await supabase
+          .from('user_roles')
+          .select('user_id')
+          .in('role', ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'])
+          .distinct();
 
-      if (error) throw error;
-      return data || [];
+        if (rolesError) throw rolesError;
+
+        if (!managerRoles?.length) return [];
+
+        // Then get the profile information for these managers
+        const { data: managerProfiles, error: profilesError } = await supabase
+          .from('profiles')
+          .select('id, first_name, last_name, email')
+          .in('id', managerRoles.map(m => m.user_id))
+          .order('first_name', { ascending: true });
+
+        if (profilesError) throw profilesError;
+        return managerProfiles || [];
+      } catch (error) {
+        console.error('Error fetching managers:', error);
+        throw error;
+      }
     },
     enabled: isEditing, // Only fetch when editing
   });
+
+  // Fetch manager details when not editing
+  useEffect(() => {
+    const fetchManagerDetails = async () => {
+      if (!managerId) {
+        setManagerName(null);
+        return;
+      }
+
+      try {
+        const { data: manager, error } = await supabase
+          .from('profiles')
+          .select('first_name, last_name, email')
+          .eq('id', managerId)
+          .single();
+
+        if (error || !manager) {
+          console.error('Error fetching manager details:', error);
+          setManagerName(null);
+          return;
+        }
+
+        setManagerName(`${manager.first_name} ${manager.last_name} (${manager.email})`);
+      } catch (error) {
+        console.error('Error fetching manager details:', error);
+        setManagerName(null);
+      }
+    };
+
+    fetchManagerDetails();
+  }, [managerId]);
 
   // Update form data when props change
   useEffect(() => {
@@ -72,6 +124,62 @@ const PersonalInfo = ({
       });
     }
   }, [firstName, lastName, email, phone, managerId]);
+
+  // Function to validate manager email
+  const validateManagerEmail = async (email: string) => {
+    setIsCheckingManager(true);
+    setManagerError('');
+    
+    try {
+      // Check if the email exists in user_roles with manager role
+      const { data: managerRole, error: roleError } = await supabase
+        .from('user_roles')
+        .select('user_id')
+        .eq('email', email)
+        .in('role', ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'])
+        .single();
+
+      if (roleError) {
+        setManagerError('This email does not belong to a manager account');
+        return null;
+      }
+
+      // Get the manager's profile
+      const { data: managerProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, first_name, last_name, email')
+        .eq('id', managerRole.user_id)
+        .single();
+
+      if (profileError) {
+        setManagerError('Error finding manager profile');
+        return null;
+      }
+
+      setManagerError('');
+      return managerProfile;
+    } catch (error) {
+      console.error('Error validating manager:', error);
+      setManagerError('Error validating manager email');
+      return null;
+    } finally {
+      setIsCheckingManager(false);
+    }
+  };
+
+  // Handle manager email change
+  const handleManagerEmailChange = async (email: string) => {
+    setManagerEmail(email);
+    if (!email) {
+      setFormData(prev => ({ ...prev, manager_id: 'none' }));
+      return;
+    }
+
+    const manager = await validateManagerEmail(email);
+    if (manager) {
+      setFormData(prev => ({ ...prev, manager_id: manager.id }));
+    }
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -185,28 +293,24 @@ const PersonalInfo = ({
             <div className="space-y-2.5 md:col-span-2">
               <label className="text-sm font-medium text-gray-700">Your Manager</label>
               {isEditing ? (
-                <Select
-                  value={formData.manager_id}
-                  onValueChange={(value) => setFormData({ ...formData, manager_id: value })}
-                  disabled={loadingManagers}
-                >
-                  <SelectTrigger className="w-full">
-                    <SelectValue placeholder={loadingManagers ? "Loading managers..." : "Select your manager"} />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="none">None</SelectItem>
-                    {managers?.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.id}>
-                        {manager.first_name} {manager.last_name} {manager.email ? `(${manager.email})` : ''}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="space-y-2">
+                  <Input
+                    type="email"
+                    placeholder="Enter manager's email"
+                    value={managerEmail}
+                    onChange={(e) => handleManagerEmailChange(e.target.value)}
+                    className="w-full"
+                  />
+                  {isCheckingManager && (
+                    <p className="text-sm text-muted-foreground">Checking manager...</p>
+                  )}
+                  {managerError && (
+                    <p className="text-sm text-destructive">{managerError}</p>
+                  )}
+                </div>
               ) : (
                 <p className="text-base text-gray-900 pt-1">
-                  {managers?.find(m => m.id === managerId) 
-                    ? `${managers.find(m => m.id === managerId)?.first_name} ${managers.find(m => m.id === managerId)?.last_name}`
-                    : (managerId ? 'Loading manager details...' : 'None assigned')}
+                  {managerName || (managerId ? 'Loading manager details...' : 'None assigned')}
                 </p>
               )}
             </div>
