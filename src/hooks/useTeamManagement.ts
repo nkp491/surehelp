@@ -1,50 +1,45 @@
 
-import { useTeams } from "./team/useTeams";
-import { useTeamMembers } from "./team/useTeamMembers";
+import { useTeamOperations } from "./team/useTeamOperations";
+import { useTeamQueries } from "./team/useTeamQueries";
+import { useTeamDirectQuery } from "./team/useTeamDirectQuery";
 import { useTeamPermissions } from "./team/useTeamPermissions";
 
 /**
  * Main hook for team management, combining multiple specialized hooks
  */
 export const useTeamManagement = () => {
-  // Get team management hooks
-  const { teams, isLoadingTeams, createTeam, updateTeam, isLoading: isLoadingTeamOps } = useTeams();
-  const { 
-    getTeamMembers, 
-    fetchTeamMembers, 
-    addTeamMember, 
-    removeTeamMember, 
-    updateTeamMemberRole, 
-    isLoading: isLoadingMemberOps 
-  } = useTeamMembers();
+  // Get specialized hooks
+  const operations = useTeamOperations();
+  const queries = useTeamQueries();
   const { isTeamManager } = useTeamPermissions();
-
-  // Combined loading state
-  const isLoading = isLoadingTeamOps || isLoadingMemberOps;
-
-  // Create a function to get team members that returns the query
-  const getTeamMembersQuery = (teamId?: string) => {
-    return fetchTeamMembers(teamId);
+  
+  // Function to get teams directly, bypassing RLS issues
+  const getTeamsDirectQuery = (userId?: string) => {
+    return useTeamDirectQuery(userId);
   };
 
   return {
-    // Teams
-    teams,
-    isLoadingTeams,
-    createTeam,
-    updateTeam,
+    // Teams operations
+    teams: operations.teams,
+    isLoadingTeams: operations.isLoadingTeams,
+    createTeam: operations.createTeam,
+    updateTeam: operations.updateTeam,
+    addUserToTeam: operations.addUserToTeam,
+    refetchTeams: operations.refetchTeams,
     
-    // Team members
-    useTeamMembers: getTeamMembersQuery,
-    getTeamMembers,
-    addTeamMember,
-    removeTeamMember,
-    updateTeamMemberRole,
+    // Team members operations
+    useTeamMembers: queries.useTeamMembers,
+    addTeamMember: operations.addTeamMember,
+    removeTeamMember: operations.removeTeamMember,
+    updateTeamMemberRole: operations.updateTeamMemberRole,
     
     // Permissions
     isTeamManager,
     
+    // Direct team access (bypassing RLS)
+    getTeamsDirectQuery,
+    
     // Loading state
-    isLoading
+    isLoading: operations.isLoading
   };
 };

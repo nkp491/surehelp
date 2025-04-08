@@ -10,6 +10,7 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
+import { useProfileManagement } from "@/hooks/useProfileManagement";
 
 type SidebarNavigationProps = {
   navigationItems: NavigationItem[];
@@ -18,7 +19,32 @@ type SidebarNavigationProps = {
 export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { hasRequiredRole } = useRoleCheck();
+  const { hasRequiredRole, userRoles } = useRoleCheck();
+  const { profile } = useProfileManagement();
+  
+  const shouldShowBulletins = (item: NavigationItem) => {
+    // If the item is not the bulletins page, show it based on role check
+    if (item.path !== "/bulletins") {
+      return hasRequiredRole(item.requiredRoles);
+    }
+    
+    // For bulletins page, additional checks:
+    // 1. User must have required roles
+    if (!hasRequiredRole(item.requiredRoles)) {
+      return false;
+    }
+    
+    // 2. If user is agent_pro, they must have a manager
+    const isAgentPro = userRoles.includes('agent_pro');
+    const hasManager = !!profile?.manager_id;
+    
+    // Hide for agent_pro users without a manager
+    if (isAgentPro && !hasManager) {
+      return false;
+    }
+    
+    return true;
+  };
   
   return (
     <SidebarGroup>
@@ -26,8 +52,8 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
       <SidebarGroupContent>
         <SidebarMenu>
           {navigationItems.map((item) => {
-            // Only show items if user has required role
-            if (!hasRequiredRole(item.requiredRoles)) return null;
+            // Check if we should show this navigation item
+            if (!shouldShowBulletins(item)) return null;
             
             return (
               <SidebarMenuItem key={item.path}>

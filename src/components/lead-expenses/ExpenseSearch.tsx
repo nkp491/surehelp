@@ -1,3 +1,4 @@
+
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -40,9 +41,13 @@ const ExpenseSearch = ({ onSearch }: ExpenseSearchProps) => {
         return;
       }
 
-      // Flatten and get unique tags
+      // Flatten and get unique tags with type safety
       const uniqueTags = Array.from(new Set(
-        data.flatMap(expense => expense.lead_type)
+        data.flatMap(expense => {
+          const leadType = expense.lead_type;
+          // Ensure leadType is treated as string array
+          return Array.isArray(leadType) ? leadType as string[] : [];
+        })
       )).sort();
 
       setAvailableTags(uniqueTags);

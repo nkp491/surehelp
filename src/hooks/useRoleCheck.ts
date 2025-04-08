@@ -1,4 +1,3 @@
-
 import { useRolesCache } from "./useRolesCache";
 
 export function useRoleCheck() {
