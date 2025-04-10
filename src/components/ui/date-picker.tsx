@@ -1,6 +1,5 @@
-
 import * as React from "react";
-import { format } from "date-fns";
+import { format, parse, isValid } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -23,21 +22,25 @@ interface DatePickerProps {
   selected: Date | null;
   onSelect: (date: Date | null) => void;
   maxDate?: Date;
+  placeholder?: string;
 }
 
 export function DatePicker({
   selected,
   onSelect,
   maxDate,
+  placeholder = "MM/DD/YYYY"
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
   const [inputValue, setInputValue] = React.useState("");
-  const [year, setYear] = React.useState<number>(selected?.getFullYear() || new Date().getFullYear());
+  const [currentMonth, setCurrentMonth] = React.useState<Date>(selected || new Date());
 
   React.useEffect(() => {
     if (selected) {
       setInputValue(format(selected, "MM/dd/yyyy"));
-      setYear(selected.getFullYear());
+      setCurrentMonth(selected);
+    } else {
+      setInputValue("");
     }
   }, [selected]);
 
@@ -45,42 +48,50 @@ export function DatePicker({
     const value = e.target.value;
     setInputValue(value);
 
-    // Try to parse the date in MM/DD/YYYY format
-    const parts = value.split('/');
-    if (parts.length === 3) {
-      const month = parseInt(parts[0]) - 1; // months are 0-based
-      const day = parseInt(parts[1]);
-      const year = parseInt(parts[2]);
-      
-      const date = new Date(year, month, day);
-      
-      // Check if it's a valid date and within the allowed range
-      if (
-        !isNaN(date.getTime()) && 
-        (!maxDate || date <= maxDate)
-      ) {
-        onSelect(date);
+    // Allow backspace/delete to clear the input
+    if (!value) {
+      onSelect(null);
+      return;
+    }
+
+    // Only attempt to parse if we have a complete date format
+    if (value.length === 10) {
+      try {
+        const date = parse(value, "MM/dd/yyyy", new Date());
+        
+        if (isValid(date)) {
+          // Check if date is within allowed range
+          if (maxDate && date > maxDate) {
+            return;
+          }
+          onSelect(date);
+        }
+      } catch (error) {
+        // Invalid date format, just update the input
+        return;
       }
     }
   };
 
-  // Generate array of years from 120 years ago to current year
-  const currentYear = new Date().getFullYear();
-  const years = Array.from({ length: 121 }, (_, i) => currentYear - 120 + i);
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    // Allow backspace/delete
+    if (e.key === "Backspace" || e.key === "Delete") {
+      return;
+    }
 
-  const handleYearChange = (value: string) => {
-    const newYear = parseInt(value);
-    setYear(newYear);
-    
-    if (selected) {
-      const newDate = new Date(selected);
-      newDate.setFullYear(newYear);
-      onSelect(newDate);
+    // Block non-numeric keys except for forward slash
+    if (!/[\d/]/.test(e.key) && !e.ctrlKey && !e.metaKey) {
+      e.preventDefault();
+    }
+
+    // Auto-add slashes
+    if (e.key !== "Backspace" && e.key !== "Delete") {
+      const input = e.currentTarget;
+      if (input.value.length === 2 || input.value.length === 5) {
+        input.value = input.value + "/";
+      }
     }
   };
-
-  // Create a date object for the selected year and current month
-  const defaultMonth = new Date(year, new Date().getMonth());
 
   return (
     <div className="relative">
@@ -88,8 +99,10 @@ export function DatePicker({
         type="text"
         value={inputValue}
         onChange={handleInputChange}
-        placeholder="MM/DD/YYYY"
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder}
         className="pr-10"
+        maxLength={10}
       />
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -103,23 +116,6 @@ export function DatePicker({
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="start">
-          <div className="p-3 border-b">
-            <Select
-              value={year.toString()}
-              onValueChange={handleYearChange}
-            >
-              <SelectTrigger className="w-[120px]">
-                <SelectValue placeholder="Select year" />
-              </SelectTrigger>
-              <SelectContent>
-                {years.map((year) => (
-                  <SelectItem key={year} value={year.toString()}>
-                    {year}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
           <Calendar
             mode="single"
             selected={selected}
@@ -129,8 +125,8 @@ export function DatePicker({
             }}
             disabled={(date) => maxDate ? date > maxDate : false}
             initialFocus
-            month={defaultMonth}
-            onMonthChange={() => {}}
+            month={currentMonth}
+            onMonthChange={setCurrentMonth}
           />
         </PopoverContent>
       </Popover>
