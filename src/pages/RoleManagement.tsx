@@ -1,4 +1,3 @@
-
 import { useRoleManagement } from "@/hooks/useRoleManagement";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
@@ -13,6 +12,7 @@ export default function RoleManagement() {
     availableRoles, 
     assignRole, 
     removeRole,
+    assignManager,
     isAssigningRole 
   } = useRoleManagement();
   const { language } = useLanguage();
@@ -32,6 +32,7 @@ export default function RoleManagement() {
           availableRoles={availableRoles}
           assignRole={assignRole}
           removeRole={removeRole}
+          assignManager={assignManager}
           isAssigningRole={isAssigningRole}
         />
 

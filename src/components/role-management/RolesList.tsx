@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -13,6 +12,7 @@ interface RolesListProps {
   isAssigningRole: boolean;
   onAssignRole: (data: { userId: string; email: string | null; role: string }) => void;
   onRemoveRole: (data: { userId: string; role: string }) => void;
+  onAssignManager: (data: { userId: string; managerId: string | null }) => void;
 }
 
 export function RolesList({ 
@@ -20,7 +20,8 @@ export function RolesList({
   availableRoles, 
   isAssigningRole,
   onAssignRole, 
-  onRemoveRole 
+  onRemoveRole,
+  onAssignManager
 }: RolesListProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
@@ -41,6 +42,11 @@ export function RolesList({
     }
     
     onAssignRole({ userId, email, role: selectedRole });
+  };
+
+  // Handle manager assignment
+  const handleAssignManager = (userId: string, managerId: string | null) => {
+    onAssignManager({ userId, managerId });
   };
 
   return (
@@ -66,10 +72,12 @@ export function RolesList({
                 <UserRoleItem
                   key={user.id}
                   user={user}
+                  allUsers={users}
                   selectedRole={selectedRole}
                   isAssigningRole={isAssigningRole}
                   onAssignRole={handleAssignRole}
                   onRemoveRole={onRemoveRole}
+                  onAssignManager={handleAssignManager}
                 />
               ))
             )}

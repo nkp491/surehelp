@@ -17,6 +17,10 @@ export type UserWithRoles = {
   first_name: string | null;
   last_name: string | null;
   roles: string[];
+  manager_id: string | null;
+  manager_name: string | null;
+  manager_email: string | null;
+  created_at: string;
 };
 
 export const useRoleManagement = () => {
@@ -28,34 +32,78 @@ export const useRoleManagement = () => {
   const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-with-roles'],
     queryFn: async () => {
+      console.log('Fetching users and roles...');
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, first_name, last_name");
+        .select("id, email, first_name, last_name, manager_id, created_at");
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error('Error fetching profiles:', profilesError);
+        throw profilesError;
+      }
+
+      console.log('Fetched profiles with dates:', profiles.map(p => ({
+        email: p.email,
+        created_at: p.created_at
+      })));
+
+      // Fetch managers info separately
+      const managerIds = profiles
+        .filter(p => p.manager_id)
+        .map(p => p.manager_id);
+
+      const { data: managers, error: managersError } = await supabase
+        .from("profiles")
+        .select("id, first_name, last_name, email")
+        .in("id", managerIds);
+
+      if (managersError) {
+        console.error('Error fetching managers:', managersError);
+        throw managersError;
+      }
+
+      console.log('Fetched managers:', managers);
 
       // Then get all role assignments
       const { data: roleAssignments, error: rolesError } = await supabase
         .from("user_roles")
         .select("*");
 
-      if (rolesError) throw rolesError;
+      if (rolesError) {
+        console.error('Error fetching role assignments:', rolesError);
+        throw rolesError;
+      }
+
+      console.log('Fetched role assignments:', roleAssignments);
 
       // Combine the data to create users with their roles
       const usersWithRoles: UserWithRoles[] = profiles.map((profile: any) => {
         const userRoles = roleAssignments.filter(
           (role: any) => role.user_id === profile.id
         );
+        const manager = profile.manager_id ? managers?.find(m => m.id === profile.manager_id) : null;
+        
+        console.log('Processing user profile:', {
+          email: profile.email,
+          created_at: profile.created_at,
+          created_at_type: typeof profile.created_at
+        });
+        
         return {
           id: profile.id,
           email: profile.email,
           first_name: profile.first_name,
           last_name: profile.last_name,
-          roles: userRoles.map((r: any) => r.role)
+          roles: userRoles.map((r: any) => r.role),
+          manager_id: profile.manager_id,
+          manager_name: manager ? `${manager.first_name} ${manager.last_name}`.trim() : null,
+          manager_email: manager?.email || null,
+          created_at: profile.created_at || null
         };
       });
 
+      console.log('Processed users with roles:', usersWithRoles);
       return usersWithRoles;
     },
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -153,12 +201,42 @@ export const useRoleManagement = () => {
     }
   });
 
+  // Assign manager to a user
+  const assignManagerMutation = useMutation({
+    mutationFn: async ({ userId, managerId }: { userId: string; managerId: string | null }) => {
+      const { error } = await supabase
+        .from("profiles")
+        .update({ manager_id: managerId })
+        .eq("id", userId);
+
+      if (error) throw error;
+
+      return { success: true, message: managerId ? "Manager assigned successfully" : "Manager removed successfully" };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      toast({
+        title: "Success",
+        description: data.message,
+      });
+    },
+    onError: (error) => {
+      console.error("Error assigning manager:", error);
+      toast({
+        title: "Error",
+        description: "There was a problem updating the manager. Please try again.",
+        variant: "destructive",
+      });
+    }
+  });
+
   return {
     users,
     isLoadingUsers,
     availableRoles,
     assignRole: assignRoleMutation.mutate,
     removeRole: removeRoleMutation.mutate,
+    assignManager: assignManagerMutation.mutate,
     isAssigningRole
   };
 };
