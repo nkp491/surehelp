@@ -106,7 +106,8 @@ export const useRoleManagement = () => {
       console.log('Processed users with roles:', usersWithRoles);
       return usersWithRoles;
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
+    staleTime: 0, // Set to 0 to always refetch when invalidated
+    refetchOnWindowFocus: true, // Add this to refetch when window regains focus
   });
 
   // Fetch available roles
@@ -204,27 +205,107 @@ export const useRoleManagement = () => {
   // Assign manager to a user
   const assignManagerMutation = useMutation({
     mutationFn: async ({ userId, managerId }: { userId: string; managerId: string | null }) => {
-      const { error } = await supabase
+      console.log('Starting manager assignment:', { userId, managerId });
+
+      // If removing manager, skip validation
+      if (!managerId) {
+        // Proceed with manager removal
+        const { data: updateResult, error: updateError } = await supabase
+          .from("profiles")
+          .update({ 
+            manager_id: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq("id", userId)
+          .select()
+          .single();
+
+        if (updateError) throw updateError;
+        return { 
+          success: true, 
+          message: "Manager removed successfully",
+          data: updateResult
+        };
+      }
+
+      // Check if the selected user has a manager role
+      const { data: managerRoles, error: roleError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", managerId)
+        .in("role", ["manager_pro", "manager_pro_gold", "manager_pro_platinum"]);
+
+      if (roleError) {
+        console.error('Error checking manager roles:', roleError);
+        throw new Error('Failed to verify manager role');
+      }
+
+      if (!managerRoles?.length) {
+        throw new Error('Selected user does not have a manager role');
+      }
+
+      // Get manager's current role tier
+      const managerRole = managerRoles[0].role;
+      const teamSizeLimits = {
+        manager_pro: 5,
+        manager_pro_gold: 10,
+        manager_pro_platinum: 20
+      };
+
+      // Check current team size
+      const { data: currentTeam, error: teamError } = await supabase
         .from("profiles")
-        .update({ manager_id: managerId })
-        .eq("id", userId);
+        .select("id")
+        .eq("manager_id", managerId);
 
-      if (error) throw error;
+      if (teamError) {
+        console.error('Error checking team size:', teamError);
+        throw new Error('Failed to check team size');
+      }
 
-      return { success: true, message: managerId ? "Manager assigned successfully" : "Manager removed successfully" };
+      const currentTeamSize = currentTeam?.length || 0;
+      const teamSizeLimit = teamSizeLimits[managerRole as keyof typeof teamSizeLimits];
+
+      if (currentTeamSize >= teamSizeLimit) {
+        throw new Error(`Manager has reached their team size limit of ${teamSizeLimit} members`);
+      }
+
+      // If all validations pass, proceed with the update
+      const { data: updateResult, error: updateError } = await supabase
+        .from("profiles")
+        .update({ 
+          manager_id: managerId,
+          updated_at: new Date().toISOString()
+        })
+        .eq("id", userId)
+        .select()
+        .single();
+
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw new Error(`Failed to update profile: ${updateError.message}`);
+      }
+
+      return { 
+        success: true, 
+        message: "Manager assigned successfully",
+        data: updateResult
+      };
     },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+    onSuccess: async (data) => {
+      console.log('Manager assignment successful');
+      await queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      
       toast({
         title: "Success",
         description: data.message,
       });
     },
     onError: (error) => {
-      console.error("Error assigning manager:", error);
+      console.error("Error in manager assignment:", error);
       toast({
         title: "Error",
-        description: "There was a problem updating the manager. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update manager",
         variant: "destructive",
       });
     }
