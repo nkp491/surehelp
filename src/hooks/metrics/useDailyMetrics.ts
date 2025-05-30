@@ -11,7 +11,6 @@ const extractMetricData = (data: DatabaseMetric): MetricCount => {
 export const useDailyMetrics = () => {
   const loadDailyMetrics = async (): Promise<MetricCount> => {
     const today = formatInTimeZone(new Date(), 'America/Los_Angeles', 'yyyy-MM-dd');
-    console.log('[DailyMetrics] Loading metrics for:', today);
     
     const { data, error } = await supabase
       .from('daily_metrics')
@@ -30,24 +29,17 @@ export const useDailyMetrics = () => {
       leads: 0, calls: 0, contacts: 0, scheduled: 0, sits: 0, sales: 0, ap: 0,
     };
     
-    console.log('[DailyMetrics] Loaded metrics:', {
-      raw: data,
-      extracted: metrics
-    });
     return metrics;
   };
 
   const saveDailyMetrics = async (metrics: MetricCount) => {
-    console.log('[DailyMetrics] Saving metrics:', metrics);
     const { data: user } = await supabase.auth.getUser();
     
     if (!user.user) {
-      console.error('[DailyMetrics] No user found');
       return;
     }
 
     const today = formatInTimeZone(new Date(), 'America/Los_Angeles', 'yyyy-MM-dd');
-    console.log('[DailyMetrics] Saving for date:', today);
 
     const { error, data } = await supabase
       .from('daily_metrics')
@@ -65,12 +57,6 @@ export const useDailyMetrics = () => {
       console.error('[DailyMetrics] Error saving metrics:', error);
       throw error;
     }
-
-    console.log('[DailyMetrics] Successfully saved metrics:', {
-      saved: metrics,
-      response: data,
-      savedDate: today
-    });
   };
 
   return {

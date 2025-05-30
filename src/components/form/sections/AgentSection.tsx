@@ -11,7 +11,13 @@ interface AgentSectionProps {
   submissionId?: string;
 }
 
-const AgentSection = ({ fields, formData, setFormData, errors, submissionId }: AgentSectionProps) => {
+const AgentSection = ({
+  fields,
+  formData,
+  setFormData,
+  errors,
+  submissionId,
+}: AgentSectionProps) => {
   const { language } = useLanguage();
   const t = translations[language];
 
@@ -28,9 +34,7 @@ const AgentSection = ({ fields, formData, setFormData, errors, submissionId }: A
             fieldType={field.type}
             label={field.label}
             value={formData[field.id]}
-            onChange={(value) =>
-              setFormData((prev: any) => ({ ...prev, [field.id]: value }))
-            }
+            onChange={(value) => setFormData((prev: any) => ({ ...prev, [field.id]: value }))}
             placeholder={field.placeholder}
             required={field.required}
             error={errors[field.id]}

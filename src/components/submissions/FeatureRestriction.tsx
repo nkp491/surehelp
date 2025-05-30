@@ -1,5 +1,3 @@
-
-import { useState } from "react";
 import { UpgradePrompt } from "@/components/common/UpgradePrompt";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 
@@ -10,11 +8,11 @@ interface FeatureRestrictionProps {
   description: string;
 }
 
-export function FeatureRestriction({ 
-  feature, 
-  requiredRole, 
-  children, 
-  description 
+export function FeatureRestriction({
+  feature,
+  requiredRole,
+  children,
+  description,
 }: FeatureRestrictionProps) {
   const { hasRequiredRole } = useRoleCheck();
   const hasAccess = hasRequiredRole([requiredRole]);

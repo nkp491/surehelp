@@ -1,5 +1,3 @@
-
-import React from "react";
 import HeightField from "./form-fields/HeightField";
 import CurrencyField from "./form-fields/CurrencyField";
 import SelectField from "./form-fields/SelectField";
@@ -10,6 +8,8 @@ import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { cn } from "@/lib/utils";
+import { DatePicker } from "./ui/date-picker";
+import { parse, isValid, format } from "date-fns";
 
 interface FormFieldProps {
   label: string;
@@ -42,8 +42,8 @@ const FormField = ({
   const getTranslatedLabel = (label: string) => {
     const translatedLabel = (t as any)[label];
     if (translatedLabel) return translatedLabel;
-    
-    const key = label.toLowerCase().replace(/[^a-zA-Z0-9]/g, '');
+
+    const key = label.toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
     return (t as any)[key] || label;
   };
 
@@ -54,11 +54,28 @@ const FormField = ({
   }
 
   if (type === "currency") {
-    return <CurrencyField label={getTranslatedLabel(label)} value={value} onChange={onChange} required={required} error={error} />;
+    return (
+      <CurrencyField
+        label={getTranslatedLabel(label)}
+        value={value}
+        onChange={onChange}
+        required={required}
+        error={error}
+      />
+    );
   }
 
   if (type === "select" && options.length > 0) {
-    return <SelectField label={getTranslatedLabel(label)} value={value} onChange={onChange} options={options} required={required} error={error} />;
+    return (
+      <SelectField
+        label={getTranslatedLabel(label)}
+        value={value}
+        onChange={onChange}
+        options={options}
+        required={required}
+        error={error}
+      />
+    );
   }
 
   if (type === "yes_no") {
@@ -68,18 +85,18 @@ const FormField = ({
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
-        <RadioGroup
-          value={value}
-          onValueChange={onChange}
-          className="flex items-center gap-6"
-        >
+        <RadioGroup value={value} onValueChange={onChange} className="flex items-center gap-6">
           <div className="flex items-center gap-2">
             <RadioGroupItem value="yes" id={`${label}-yes`} className="h-4 w-4" />
-            <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">{t.yes}</Label>
+            <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">
+              {t.yes}
+            </Label>
           </div>
           <div className="flex items-center gap-2">
             <RadioGroupItem value="no" id={`${label}-no`} className="h-4 w-4" />
-            <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">{t.no}</Label>
+            <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">
+              {t.no}
+            </Label>
           </div>
         </RadioGroup>
         {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
@@ -107,10 +124,31 @@ const FormField = ({
     );
   }
 
-  const inputClassName = cn(
-    "h-11 bg-gray-50 text-sm",
-    type === "age" && "w-[80px]"
-  );
+  const inputClassName = cn("h-11 bg-gray-50 text-sm", type === "age" && "w-[80px]");
+
+  if (type === "date") {
+    const selectedDate =
+      value && isValid(parse(value, "MM/dd/yyyy", new Date()))
+        ? parse(value, "MM/dd/yyyy", new Date())
+        : null;
+
+    return (
+      <div className="relative space-y-2">
+        <Label className={labelClassName}>
+          {getTranslatedLabel(label)}
+          {required && <span className="text-red-500 ml-1">*</span>}
+        </Label>
+        <DatePicker
+          selected={selectedDate}
+          onSelect={(date) => {
+            onChange?.(date ? format(date, "MM/dd/yyyy") : "");
+          }}
+          placeholder={placeholder}
+        />
+        {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
+      </div>
+    );
+  }
 
   return (
     <div className="relative space-y-2">

@@ -9,19 +9,12 @@ interface AssessmentFormSectionProps {
   setIsFormOpen: (isOpen: boolean) => void;
 }
 
-const AssessmentFormSection = ({
-  isFormOpen,
-  setIsFormOpen,
-}: AssessmentFormSectionProps) => {
+const AssessmentFormSection = ({ isFormOpen, setIsFormOpen }: AssessmentFormSectionProps) => {
   return (
     <Card className="bg-transparent shadow-none border-none w-full">
       <div className="w-full mx-auto px-2 pt-2">
         <h2 className="text-lg font-bold text-gray-900">Client Assessment</h2>
-        <Collapsible
-          open={isFormOpen}
-          onOpenChange={setIsFormOpen}
-          className="w-full"
-        >
+        <Collapsible open={isFormOpen} onOpenChange={setIsFormOpen} className="w-full">
           <div className="flex items-center justify-between mb-0.5">
             <p className="text-sm text-gray-600">
               Fill out the form below to store your medical information
@@ -37,7 +30,7 @@ const AssessmentFormSection = ({
               </Button>
             </CollapsibleTrigger>
           </div>
-          
+
           <CollapsibleContent className="w-full">
             <FormContainer />
           </CollapsibleContent>

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -11,8 +10,8 @@ export const useAuthState = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
   const clearAuthData = () => {
-    Object.keys(localStorage).forEach(key => {
-      if (key.startsWith('sb-')) {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("sb-")) {
         localStorage.removeItem(key);
       }
     });
@@ -32,11 +31,11 @@ export const useAuthState = () => {
 
   useEffect(() => {
     let mounted = true;
-
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
         if (!session) {
           if (mounted) {
             clearAuthData();
@@ -45,8 +44,6 @@ export const useAuthState = () => {
           }
           return;
         }
-
-        // Only try to refresh if we have a session
         if (session) {
           try {
             const { error: refreshError } = await supabase.auth.refreshSession();
@@ -61,7 +58,6 @@ export const useAuthState = () => {
             return;
           }
         }
-
         if (mounted) {
           setIsAuthenticated(true);
           setIsLoading(false);
@@ -73,19 +69,21 @@ export const useAuthState = () => {
         }
       }
     };
-    
+
     checkAuth();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (!mounted) return;
 
       console.log("Auth state change:", { event, session });
-      
-      if (event === 'SIGNED_OUT') {
+
+      if (event === "SIGNED_OUT") {
         clearAuthData();
         setIsAuthenticated(false);
         navigate("/auth", { replace: true });
-      } else if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
         setIsAuthenticated(true);
         setIsLoading(false);
       }

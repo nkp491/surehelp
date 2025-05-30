@@ -2289,7 +2289,6 @@ const ManagerDashboard = () => {
 
   const handleAddAgentSubmit = () => {
     // This would typically make an API call to add the agent
-    console.log('Adding new agent:', newAgent);
     setIsAddAgentModalOpen(false);
     setNewAgent({ name: '', role: '', team: '' });
   };
@@ -2302,7 +2301,6 @@ const ManagerDashboard = () => {
   const handleRemoveAgentConfirm = () => {
     if (agentToRemove) {
       // This would typically make an API call to remove the agent
-      console.log('Removing agent:', agentToRemove.name, 'from team:', agentToRemove.team);
       setIsRemoveAgentModalOpen(false);
       setAgentToRemove(null);
     }

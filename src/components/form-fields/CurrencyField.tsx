@@ -48,9 +48,6 @@ const CurrencyField = ({
     }
   };
 
-  // Log the value for debugging
-  console.log(`CurrencyField ${label}:`, { value, displayValue });
-
   return (
     <div className="space-y-2">
       <Label className="text-sm font-medium">
