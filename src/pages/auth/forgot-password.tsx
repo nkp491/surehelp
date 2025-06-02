@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate } from "react-router-dom";
 import AuthLayout from "@/components/auth/AuthLayout";
@@ -11,94 +10,47 @@ const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [loading, setLoading] = useState(false);
   const [emailSent, setEmailSent] = useState(false);
-  const { toast } = useToast();
   const navigate = useNavigate();
+
+  const validateEmail = (email: string) => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return "Please enter a valid email address";
+    }
+    const validTLDs = [".com", ".net", ".org", ".edu", ".gov", ".io", ".co", ".uk", ".ca", ".au"];
+    const hasValidTLD = validTLDs.some((tld) => email.toLowerCase().endsWith(tld));
+    if (!hasValidTLD) {
+      return "Please enter an email with a valid domain";
+    }
+    if (email.length < 5) {
+      return "Email address is too short";
+    }
+    if (email.length > 254) {
+      return "Email address is too long";
+    }
+    return "";
+  };
+
+  const isEmailValid = () => {
+    return validateEmail(email) === "";
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!email) {
-      toast({
-        title: "Email Required",
-        description: "Please enter your email address",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    // Basic email validation
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      toast({
-        title: "Invalid Email",
-        description: "Please enter a valid email address",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    setLoading(true);
     try {
-      setLoading(true);
-
-      // Get the current site URL dynamically
       const siteUrl = window.location.origin;
       const redirectUrl = `${siteUrl}/auth/reset-password`;
-
-      console.log("Sending password reset to:", email);
-      console.log("Redirect URL:", redirectUrl);
-
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: redirectUrl,
       });
-
       if (error) {
         throw error;
       }
-
-      // Show success message
-      toast({
-        title: "Check your email",
-        description:
-          "We've sent you a password reset link. Please check your email (including spam folder).",
-        duration: 8000,
-      });
-
-      // Set email sent state to show confirmation
       setEmailSent(true);
-
-      // Clear the form
       setEmail("");
     } catch (error) {
       console.error("Error sending password reset email:", error);
-
-      // Handle specific error cases
-      if (error?.message?.includes("rate limit") || error?.message?.includes("too many")) {
-        toast({
-          title: "Too many attempts",
-          description: "Please wait a few minutes before trying again.",
-          variant: "destructive",
-        });
-      } else if (
-        error?.message?.includes("User not found") ||
-        error?.message?.includes("Invalid email")
-      ) {
-        // For security reasons, we don't want to reveal if an email exists or not
-        // So we show the same success message
-        toast({
-          title: "Check your email",
-          description:
-            "If an account with that email exists, we've sent you a password reset link.",
-          duration: 8000,
-        });
-        setEmailSent(true);
-        setEmail("");
-      } else {
-        toast({
-          title: "Error",
-          description: error?.message ?? "Failed to send password reset email. Please try again.",
-          variant: "destructive",
-        });
-      }
     } finally {
       setLoading(false);
     }
@@ -142,7 +94,7 @@ const ForgotPassword = () => {
                 <button
                   type="button"
                   onClick={() => navigate("/auth")}
-                  className="text-sm text-blue-600 hover:text-blue-800 block w-full"
+                  className="text-sm text-[#2A6F97] hover:text-[#2A6F97]/90 block w-full"
                 >
                   Back to Login
                 </button>
@@ -182,7 +134,11 @@ const ForgotPassword = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={loading || !email.trim()}>
+              <Button
+                type="submit"
+                className="w-full px-4 py-2 bg-[#2A6F97] text-white rounded-md font-medium hover:bg-[#2A6F97]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={loading || !isEmailValid()}
+              >
                 {loading ? "Sending..." : "Send Reset Link"}
               </Button>
 
@@ -190,7 +146,7 @@ const ForgotPassword = () => {
                 <button
                   type="button"
                   onClick={() => navigate("/auth")}
-                  className="text-sm text-blue-600 hover:text-blue-800"
+                  className="text-sm text-gray-600 hover:text-gray-800"
                   disabled={loading}
                 >
                   Back to Login

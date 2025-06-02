@@ -35,33 +35,32 @@ const DraggableFormField = ({
   investmentAmounts = {},
   onInvestmentAmountChange = () => {},
   onInvestmentTotalChange = () => {},
-  formData = {}, // Default to empty object
+  formData = {},
 }: DraggableFormFieldProps) => {
-  // Keep a local copy of investment amounts for better state management
   const [localInvestmentAmounts, setLocalInvestmentAmounts] =
     useState<Record<string, string>>(investmentAmounts);
 
-  // Update local state when props change
   useEffect(() => {
-    setLocalInvestmentAmounts((prev) => ({
-      ...prev,
-      ...investmentAmounts,
-    }));
+    const isDifferent =
+      Object.keys(investmentAmounts).some(
+        (key) => investmentAmounts[key] !== localInvestmentAmounts[key]
+      ) ||
+      Object.keys(localInvestmentAmounts).some(
+        (key) => localInvestmentAmounts[key] !== investmentAmounts[key]
+      );
+    if (isDifferent) {
+      setLocalInvestmentAmounts(investmentAmounts);
+    }
   }, [investmentAmounts]);
 
-  // Handle investment amount changes
   const handleInvestmentAmountChange = (type: string, amount: string) => {
-    // Update local state
     setLocalInvestmentAmounts((prev) => ({
       ...prev,
       [type]: amount,
     }));
-
-    // Notify parent
     onInvestmentAmountChange(type, amount);
   };
 
-  // Handle investment total changes
   const handleInvestmentTotalChange = (total: number) => {
     onInvestmentTotalChange(total);
   };
@@ -84,9 +83,7 @@ const DraggableFormField = ({
         );
       case "tobaccoUse":
         return <TobaccoUseField value={value} onChange={onChange} />;
-      // Special case for totalIncome field
       case "currency":
-        // Check for primaryTotalIncome field
         if (id === "primaryTotalIncome") {
           return (
             <TotalIncomeField
@@ -98,7 +95,7 @@ const DraggableFormField = ({
             />
           );
         }
-      // Fall through to default for other currency fields
+        break;
       default:
         return (
           <FormField

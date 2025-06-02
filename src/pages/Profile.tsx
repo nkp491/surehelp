@@ -8,45 +8,43 @@ import TermsAcceptance from "@/components/profile/TermsAcceptance";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
-import { useLanguage, LanguageProvider } from "@/contexts/LanguageContext";
-import { translations } from "@/utils/translations";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ManagerTeamList } from "@/components/team/ManagerTeamList";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      gcTime: 1000 * 60 * 30, // 30 minutes
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
     },
   },
 });
 
 const ProfileContent = () => {
-  const {
-    profile,
-    loading,
-    uploading,
-    updateProfile,
-    uploadAvatar,
-    signOut
-  } = useProfileManagement();
-
-  const { language } = useLanguage();
-  const t = translations[language];
-  
-  const isManager = profile?.roles?.some(role => 
-    ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'].includes(role)
+  const { profile, loading, uploading, updateProfile, uploadAvatar, signOut } =
+    useProfileManagement();
+  const isManager = profile?.roles?.some((role) =>
+    ["manager_pro", "manager_pro_gold", "manager_pro_platinum"].includes(role)
   );
 
   if (loading) {
     return <ProfileLoading />;
   }
 
+  const validRole = profile?.role as
+    | "agent"
+    | "manager_pro"
+    | "beta_user"
+    | "manager_pro_gold"
+    | "manager_pro_platinum"
+    | "agent_pro"
+    | null;
+
   return (
     <div className="container mx-auto py-8 px-4 max-w-4xl">
       <ProfileHeader onSignOut={signOut} />
-      
+
       <div className="space-y-6">
         <ProfileImage
           imageUrl={profile?.profile_image_url}
@@ -65,25 +63,34 @@ const ProfileContent = () => {
         />
 
         <div className="flex flex-col gap-6">
-          <UserRole role={profile?.role} roles={profile?.roles} />
+          <UserRole role={validRole} roles={profile?.roles} />
 
           <PasswordSettings />
 
           <PrivacySettings
-            settings={profile?.privacy_settings || { show_email: false, show_phone: false, show_photo: true }}
+            settings={
+              profile?.privacy_settings || {
+                show_email: false,
+                show_phone: false,
+                show_photo: true,
+              }
+            }
             onUpdate={updateProfile}
           />
 
           <NotificationPreferences
-            preferences={profile?.notification_preferences || { email_notifications: true, phone_notifications: false }}
+            preferences={
+              profile?.notification_preferences || {
+                email_notifications: true,
+                phone_notifications: false,
+              }
+            }
             onUpdate={updateProfile}
           />
-          
+
           <TermsAcceptance />
-          
-          {isManager && (
-            <ManagerTeamList managerId={profile?.id} />
-          )}
+
+          {isManager && <ManagerTeamList managerId={profile?.id} />}
         </div>
       </div>
     </div>
