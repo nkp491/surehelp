@@ -1,13 +1,17 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MetricCount } from "@/types/metrics";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO, subMonths } from "date-fns";
 
+// Create a singleton for the channel
+let globalChannel: ReturnType<typeof supabase.channel> | null = null;
+
 export const useMetricsLoad = () => {
   const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const isSubscribed = useRef(false);
 
   const loadHistory = useCallback(
     async (retryCount = 0) => {
@@ -38,29 +42,23 @@ export const useMetricsLoad = () => {
           throw error;
         }
 
-        const formattedHistory = data.map((entry) => {
-          // Ensure date is properly formatted
-          const parsedDate = parseISO(entry.date);
-          const formattedDate = format(parsedDate, "yyyy-MM-dd");
+        const formattedHistory = data.map((entry) => ({
+          date: format(parseISO(entry.date), "yyyy-MM-dd"),
+          metrics: {
+            leads: entry.leads || 0,
+            calls: entry.calls || 0,
+            contacts: entry.contacts || 0,
+            scheduled: entry.scheduled || 0,
+            sits: entry.sits || 0,
+            sales: entry.sales || 0,
+            ap: entry.ap || 0,
+          },
+        }));
 
-          return {
-            date: formattedDate,
-            metrics: {
-              leads: entry.leads || 0,
-              calls: entry.calls || 0,
-              contacts: entry.contacts || 0,
-              scheduled: entry.scheduled || 0,
-              sits: entry.sits || 0,
-              sales: entry.sales || 0,
-              ap: entry.ap || 0,
-            },
-          };
-        });
-
-        // Update state in a single atomic operation
         setHistory(formattedHistory);
         return formattedHistory;
       } catch (error) {
+        console.error("[MetricsLoad] Error loading history:", error);
         if (retryCount < 2) {
           return loadHistory(retryCount + 1);
         }
@@ -137,34 +135,39 @@ export const useMetricsLoad = () => {
     });
   }, []);
 
-  // Load initial history and set up real-time subscription
   useEffect(() => {
     console.log("[MetricsLoad] Initial load starting...");
     loadHistory();
+    if (!isSubscribed.current && !globalChannel) {
+      globalChannel = supabase
+        .channel("metrics-changes")
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "daily_metrics",
+            filter: `date=gte.${format(subMonths(new Date(), 1), "yyyy-MM-dd")}`,
+          },
+          async (payload) => {
+            console.log("[MetricsLoad] Real-time update received:", payload);
+            await loadHistory();
+          }
+        )
+        .subscribe();
 
-    // Set up real-time subscription for recent changes only
-    const channel = supabase
-      .channel("metrics-changes")
-      .on(
-        "postgres_changes",
-        {
-          event: "*",
-          schema: "public",
-          table: "daily_metrics",
-          filter: `date=gte.${format(subMonths(new Date(), 1), "yyyy-MM-dd")}`,
-        },
-        async (payload) => {
-          console.log("[MetricsLoad] Real-time update received:", payload);
-          await loadHistory();
-        }
-      )
-      .subscribe();
+      isSubscribed.current = true;
+    }
 
     return () => {
-      console.log("[MetricsLoad] Cleaning up subscription");
-      supabase.removeChannel(channel);
+      if (isSubscribed.current && globalChannel) {
+        console.log("[MetricsLoad] Cleaning up subscription");
+        supabase.removeChannel(globalChannel);
+        globalChannel = null;
+        isSubscribed.current = false;
+      }
     };
-  }, [loadHistory]);
+  }, []);
 
   return {
     history,

@@ -1,7 +1,6 @@
 import { MetricCount, DatabaseMetric } from '@/types/metrics';
 import { supabase } from '@/integrations/supabase/client';
 import { format } from 'date-fns';
-import { formatInTimeZone } from 'date-fns-tz';
 
 const extractMetricData = (data: DatabaseMetric): MetricCount => {
   const { leads, calls, contacts, scheduled, sits, sales, ap } = data;
@@ -10,7 +9,7 @@ const extractMetricData = (data: DatabaseMetric): MetricCount => {
 
 export const useDailyMetrics = () => {
   const loadDailyMetrics = async (): Promise<MetricCount> => {
-    const today = formatInTimeZone(new Date(), 'America/Los_Angeles', 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
     
     const { data, error } = await supabase
       .from('daily_metrics')
@@ -39,7 +38,7 @@ export const useDailyMetrics = () => {
       return;
     }
 
-    const today = formatInTimeZone(new Date(), 'America/Los_Angeles', 'yyyy-MM-dd');
+    const today = format(new Date(), 'yyyy-MM-dd');
 
     const { error, data } = await supabase
       .from('daily_metrics')

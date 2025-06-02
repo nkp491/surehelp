@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { MetricCount } from '@/types/metrics';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { useState } from "react";
+import { MetricCount } from "@/types/metrics";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useMetricsEdit = () => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
@@ -20,19 +20,39 @@ export const useMetricsEdit = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
+      const timestamp = Date.now();
+      const formattedDate = new Date(timestamp).toISOString().split("T")[0];
+
       // Process values before saving
-      const processedValues = Object.entries(editedValues).reduce((acc, [key, value]) => ({
-        ...acc,
-        [key]: Math.round(Number(value))
-      }), {} as MetricCount);
+      const processedValues = Object.entries(editedValues).reduce(
+        (acc, [key, value]) => ({
+          ...acc,
+          [key]: Math.round(Number(value)),
+        }),
+        {} as MetricCount
+      );
+
+      console.log("[MetricsEdit] Saving metrics:", {
+        action: "update_metrics",
+        date: formattedDate,
+        metrics: processedValues,
+        timestamp,
+      });
 
       const { error } = await supabase
-        .from('daily_metrics')
+        .from("daily_metrics")
         .update(processedValues)
-        .eq('date', date)
-        .eq('user_id', user.user.id);
+        .eq("date", date)
+        .eq("user_id", user.user.id);
 
       if (error) throw error;
+
+      console.log("[MetricsEdit] Metrics updated successfully:", {
+        action: "update_success",
+        date: formattedDate,
+        metrics: processedValues,
+        timestamp,
+      });
 
       toast({
         title: "Success",
@@ -42,7 +62,12 @@ export const useMetricsEdit = () => {
       setEditingRow(null);
       setEditedValues(null);
     } catch (error) {
-      console.error('Error updating metrics:', error);
+      console.error("[MetricsEdit] Error updating metrics:", {
+        action: "update_error",
+        error,
+        metrics: editedValues,
+        timestamp: Date.now(),
+      });
       toast({
         title: "Error",
         description: "Failed to update metrics",
@@ -59,11 +84,11 @@ export const useMetricsEdit = () => {
   const handleValueChange = (metric: keyof MetricCount, value: string) => {
     if (!editedValues) return;
 
-    setEditedValues(prev => {
+    setEditedValues((prev) => {
       if (!prev) return prev;
       return {
         ...prev,
-        [metric]: metric === 'ap' ? Math.round(Number(value)) : Number(value)
+        [metric]: metric === "ap" ? Math.round(Number(value)) : Number(value),
       };
     });
   };
