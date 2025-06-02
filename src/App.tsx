@@ -10,6 +10,7 @@ import TermsOfUse from "./pages/marketing/TermsOfUse";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { roleService } from "@/services/roleService";
+import ForgotPassword from "./pages/auth/forgot-password";
 
 function App() {
   useEffect(() => {
@@ -30,6 +31,7 @@ function App() {
         <Routes>
           {/* Authentication routes */}
           <Route path="/auth" element={<Auth />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<CallbackHandler />} />
           <Route path="/auth/terms" element={<TermsOfUse />} />

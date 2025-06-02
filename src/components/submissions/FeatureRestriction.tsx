@@ -13,7 +13,7 @@ export function FeatureRestriction({
   requiredRole,
   children,
   description,
-}: FeatureRestrictionProps) {
+}: Readonly<FeatureRestrictionProps>) {
   const { hasRequiredRole } = useRoleCheck();
   const hasAccess = hasRequiredRole([requiredRole]);
 

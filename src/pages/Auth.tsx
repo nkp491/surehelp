@@ -21,6 +21,8 @@ const Auth = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsError, setShowTermsError] = useState(false);
+  const [resetCooldown, setResetCooldown] = useState(0);
+  const [isResetting, setIsResetting] = useState(false);
 
   const getSiteUrl = () => {
     try {
@@ -216,6 +218,66 @@ const Auth = () => {
     return baseAppearance;
   };
 
+  const startResetCooldown = () => {
+    setResetCooldown(36); // 36 seconds cooldown
+    const timer = setInterval(() => {
+      setResetCooldown((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const handleForgotPassword = async (email: string) => {
+    if (resetCooldown > 0) {
+      toast({
+        title: "Please Wait",
+        description: `You can request another reset in ${resetCooldown} seconds`,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (!email) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      setIsResetting(true);
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/auth/reset-password`,
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: "Password Reset Email Sent",
+        description: "Please check your email for password reset instructions.",
+        duration: 6000,
+      });
+      
+      // Start the cooldown timer
+      startResetCooldown();
+    } catch (error: any) {
+      console.error("Error sending password reset email:", error);
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send password reset email",
+        variant: "destructive",
+      });
+    } finally {
+      setIsResetting(false);
+    }
+  };
+
   return (
     <AuthLayout>
       <div className="space-y-6">
@@ -228,30 +290,32 @@ const Auth = () => {
         <AuthFormContainer>
           <SupabaseAuth
             supabaseClient={supabase}
-            view={view}
             appearance={getCustomAppearance()}
             providers={[]}
             redirectTo={getCallbackUrl()}
-            showLinks={true}
-            localization={{
-              variables: {
-                sign_up: {
-                  button_label: "Sign up",
-                },
-              },
-            }}
+            view={view}
+            showLinks={false}
           />
+          {view === "sign_in" && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Navigating to forgot password"); // Debug log
+                  navigate('/auth/forgot-password');
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          )}
           {view === "sign_up" && (
-            <>
-              <TermsCheckbox isChecked={termsAccepted} onCheckedChange={setTermsAccepted} />
-              {showTermsError && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertDescription>
-                    You must accept the Terms and Conditions to sign up
-                  </AlertDescription>
-                </Alert>
-              )}
-            </>
+            <TermsCheckbox
+              accepted={termsAccepted}
+              onAcceptChange={setTermsAccepted}
+              showError={showTermsError}
+            />
           )}
         </AuthFormContainer>
       </div>
