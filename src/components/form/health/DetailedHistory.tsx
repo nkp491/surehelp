@@ -3,60 +3,67 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
+import { DatePicker } from "@/components/ui/date-picker";
+import { FormSubmission } from "@/types/form";
 
 interface DetailedHistoryProps {
-  formData: any;
-  setFormData: (value: any) => void;
+  formData: Partial<FormSubmission>;
+  setFormData: (value: Partial<FormSubmission>) => void;
 }
 
 const DetailedHistory = ({ formData, setFormData }: DetailedHistoryProps) => {
   const { language } = useLanguage();
   const t = translations[language];
 
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  const handleInputChange = (field: keyof FormSubmission, value: string) => {
+    setFormData({ ...formData, [field]: value });
+  };
+
+  const handleDateSelect = (date: Date | null) => {
+    if (date) {
+      handleInputChange("lastMedicalExam", date.toISOString().split("T")[0]);
+    }
   };
 
   return (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label>{t.hospitalizations}</Label>
-        <Textarea 
+        <Textarea
           className="min-h-[100px]"
-          value={formData.hospitalizations || ''}
-          onChange={(e) => handleInputChange('hospitalizations', e.target.value)}
+          value={formData.hospitalizations || ""}
+          onChange={(e) => handleInputChange("hospitalizations", e.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label>{t.surgeries}</Label>
-        <Textarea 
+        <Textarea
           className="min-h-[100px]"
-          value={formData.surgeries || ''}
-          onChange={(e) => handleInputChange('surgeries', e.target.value)}
+          value={formData.surgeries || ""}
+          onChange={(e) => handleInputChange("surgeries", e.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label>{t.prescriptionMedications}</Label>
-        <Textarea 
+        <Textarea
           className="min-h-[100px]"
-          value={formData.prescriptionMedications || ''}
-          onChange={(e) => handleInputChange('prescriptionMedications', e.target.value)}
+          value={formData.prescriptionMedications || ""}
+          onChange={(e) => handleInputChange("prescriptionMedications", e.target.value)}
         />
       </div>
       <div className="space-y-2">
         <Label>{t.lastMedicalExam}</Label>
-        <Input 
-          type="date"
-          value={formData.lastMedicalExam || ''}
-          onChange={(e) => handleInputChange('lastMedicalExam', e.target.value)}
+        <DatePicker
+          selected={formData.lastMedicalExam ? new Date(formData.lastMedicalExam) : null}
+          onSelect={handleDateSelect}
         />
       </div>
       <div className="space-y-2">
         <Label>{t.familyMedicalConditions}</Label>
-        <Textarea 
+        <Textarea
           className="min-h-[100px]"
-          value={formData.familyMedicalConditions || ''}
-          onChange={(e) => handleInputChange('familyMedicalConditions', e.target.value)}
+          value={formData.familyMedicalConditions || ""}
+          onChange={(e) => handleInputChange("familyMedicalConditions", e.target.value)}
         />
       </div>
     </div>

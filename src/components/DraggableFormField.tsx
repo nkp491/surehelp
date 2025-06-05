@@ -19,7 +19,7 @@ interface DraggableFormFieldProps {
   investmentAmounts?: Record<string, string>;
   onInvestmentAmountChange?: (type: string, amount: string) => void;
   onInvestmentTotalChange?: (total: number) => void;
-  formData?: any; // Added for TotalIncomeField
+  formData?: any;
 }
 
 const DraggableFormField = ({
@@ -35,61 +35,43 @@ const DraggableFormField = ({
   investmentAmounts = {},
   onInvestmentAmountChange = () => {},
   onInvestmentTotalChange = () => {},
-  formData = {}, // Default to empty object
+  formData = {},
 }: DraggableFormFieldProps) => {
-  // Keep a local copy of investment amounts for better state management
-  const [localInvestmentAmounts, setLocalInvestmentAmounts] = useState<Record<string, string>>(investmentAmounts);
+  const [localInvestmentAmounts, setLocalInvestmentAmounts] =
+    useState<Record<string, string>>(investmentAmounts);
 
-  // Update local state when props change
   useEffect(() => {
-    setLocalInvestmentAmounts(prev => ({
-      ...prev,
-      ...investmentAmounts
-    }));
+    const isDifferent =
+      Object.keys(investmentAmounts).some(
+        (key) => investmentAmounts[key] !== localInvestmentAmounts[key]
+      ) ||
+      Object.keys(localInvestmentAmounts).some(
+        (key) => localInvestmentAmounts[key] !== investmentAmounts[key]
+      );
+    if (isDifferent) {
+      setLocalInvestmentAmounts(investmentAmounts);
+    }
   }, [investmentAmounts]);
 
-  // Handle investment amount changes
   const handleInvestmentAmountChange = (type: string, amount: string) => {
-    console.log(`DraggableFormField (${id}) - Amount change for ${type}:`, amount);
-    
-    // Update local state
-    setLocalInvestmentAmounts(prev => ({
+    setLocalInvestmentAmounts((prev) => ({
       ...prev,
-      [type]: amount
+      [type]: amount,
     }));
-    
-    // Notify parent
     onInvestmentAmountChange(type, amount);
   };
 
-  // Handle investment total changes
   const handleInvestmentTotalChange = (total: number) => {
-    console.log(`DraggableFormField (${id}) - Total change:`, total);
     onInvestmentTotalChange(total);
   };
 
   const renderField = () => {
     switch (fieldType) {
       case "medicalConditions":
-        return (
-          <MedicalConditionsCheckbox
-            selectedConditions={value}
-            onChange={onChange}
-          />
-        );
+        return <MedicalConditionsCheckbox selectedConditions={value} onChange={onChange} />;
       case "employmentStatus":
-        return (
-          <EmploymentStatusCheckbox
-            selectedStatus={value}
-            onChange={onChange}
-          />
-        );
+        return <EmploymentStatusCheckbox selectedStatus={value} onChange={onChange} />;
       case "investmentTypes":
-        console.log(`DraggableFormField (${id}) - Rendering InvestmentTypesCheckbox with:`, {
-          selectedInvestments: value,
-          investmentAmounts: localInvestmentAmounts
-        });
-        
         return (
           <InvestmentTypesCheckbox
             selectedInvestments={value}
@@ -100,17 +82,9 @@ const DraggableFormField = ({
           />
         );
       case "tobaccoUse":
-        return (
-          <TobaccoUseField
-            value={value}
-            onChange={onChange}
-          />
-        );
-      // Special case for totalIncome field
+        return <TobaccoUseField value={value} onChange={onChange} />;
       case "currency":
-        // Check for primaryTotalIncome field
         if (id === "primaryTotalIncome") {
-          console.log(`DraggableFormField (${id}) - Rendering TotalIncomeField with formData:`, formData);
           return (
             <TotalIncomeField
               label={label}
@@ -121,7 +95,7 @@ const DraggableFormField = ({
             />
           );
         }
-        // Fall through to default for other currency fields
+        break;
       default:
         return (
           <FormField
@@ -138,11 +112,7 @@ const DraggableFormField = ({
     }
   };
 
-  return (
-    <div className="w-full">
-      {renderField()}
-    </div>
-  );
+  return <div className="w-full">{renderField()}</div>;
 };
 
 export default DraggableFormField;

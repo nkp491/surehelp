@@ -13,13 +13,13 @@ const SectionHeader = ({ section, onRemove }: SectionHeaderProps) => {
   const t = translations[language];
 
   const getTranslatedSection = (section: string) => {
-    const sectionKey = section.toLowerCase().replace(/\s+/g, '');
-    return (t as any)[sectionKey] || section;
+    const sectionKey = section.toLowerCase().replace(/\s+/g, "");
+    return (t as any)[sectionKey] ?? section;
   };
 
   return (
-    <div className="form-section-header flex justify-between items-center">
-      <span>{getTranslatedSection(section)}</span>
+    <div className="bg-[#0096c7] w-full text-white px-5 py-2 text-sm font-medium rounded-t-xl flex items-center justify-between">
+      <div>{getTranslatedSection(section)}</div>
       {onRemove && (
         <Button
           onClick={onRemove}
@@ -27,7 +27,7 @@ const SectionHeader = ({ section, onRemove }: SectionHeaderProps) => {
           size="sm"
           className="h-4 w-4 p-0 hover:bg-blue-600"
         >
-          <X className="h-3 w-3 text-white" />
+          <X className="size-4 text-white" />
         </Button>
       )}
     </div>

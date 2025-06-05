@@ -60,14 +60,6 @@ const BusinessMetricsContent = () => {
   useEffect(() => {
     if (sortedHistory?.length > 0 && isAuthenticated) {
       setAggregatedMetrics(aggregatedMetrics);
-
-      console.log('[BusinessMetrics] Updated aggregated metrics:', {
-        timePeriod,
-        metrics: aggregatedMetrics,
-        historyLength: sortedHistory.length,
-        firstEntry: sortedHistory[0],
-        isAuthenticated
-      });
     }
   }, [aggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod, isAuthenticated]);
   

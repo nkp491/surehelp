@@ -1,4 +1,3 @@
-import { FormField } from "@/types/formTypes";
 import { PRIMARY_HEALTH_FIELDS } from "./fields/primaryHealthFields";
 import { SPOUSE_HEALTH_FIELDS } from "./fields/spouseHealthFields";
 import { PRIMARY_INCOME_FIELDS } from "./fields/primaryIncomeFields";
@@ -14,5 +13,5 @@ export const INITIAL_FIELDS = [
   { section: "Spouse Income Assessment", fields: SPOUSE_INCOME_FIELDS },
   { section: "Household Income", fields: HOUSEHOLD_INCOME_FIELDS },
   { section: "Assessment Notes", fields: ASSESSMENT_NOTES_FIELDS },
-  { section: "Agent Use Only", fields: AGENT_FIELDS }
+  { section: "Agent Use Only", fields: AGENT_FIELDS },
 ];

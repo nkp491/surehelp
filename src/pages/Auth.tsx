@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -10,6 +10,7 @@ import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
 import { useToast } from "@/hooks/use-toast";
 import TermsCheckbox from "@/components/auth/TermsCheckbox";
+import { roleService } from "@/services/roleService";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -20,17 +21,14 @@ const Auth = () => {
   const [isInitializing, setIsInitializing] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
   const [showTermsError, setShowTermsError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const getSiteUrl = () => {
     try {
-      if (typeof window === 'undefined') {
-        return '';
+      if (typeof window === "undefined") {
+        return "";
       }
-
       const currentUrl = new URL(window.location.href);
       const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`;
-      console.log("Base URL detected:", baseUrl);
       return baseUrl;
     } catch (error) {
       console.error("Error getting site URL:", error);
@@ -50,113 +48,57 @@ const Auth = () => {
     }
   };
 
-  const handleFormSubmit = useCallback(async (event: Event) => {
-    try {
-      const form = event.target as HTMLFormElement;
-      
-      if (view !== "sign_up") return;
-      
-      if (!termsAccepted) {
-        event.preventDefault();
-        event.stopPropagation();
-        setShowTermsError(true);
-        setIsSubmitting(false);
-        return false;
-      }
-      
-      setShowTermsError(false);
-      return true;
-    } catch (error) {
-      console.error("Form intercept error:", error);
-      return true;
-    }
-  }, [view, termsAccepted]);
-
-  const handleSignUp = async (credentials: { email: string; password: string }) => {
-    setIsSubmitting(true);
-    
-    if (view === "sign_up" && !termsAccepted) {
-      setShowTermsError(true);
-      setIsSubmitting(false);
-      return { error: new Error("You must accept the Terms and Conditions to sign up") };
-    }
-    
-    setShowTermsError(false);
-    
-    const termsAcceptedTimestamp = termsAccepted ? new Date().toISOString() : null;
-    console.log("Terms accepted timestamp:", termsAcceptedTimestamp);
-    
-    const { data, error } = await supabase.auth.signUp({
-      email: credentials.email,
-      password: credentials.password,
-      options: {
-        emailRedirectTo: getCallbackUrl(),
-        data: {
-          terms_accepted: termsAcceptedTimestamp
-        }
-      }
-    });
-    
-    setIsSubmitting(false);
-    
-    if (!error && data.user) {
-      toast({
-        title: "Account created",
-        description: "Your account has been created successfully.",
-        duration: 5000,
-      });
-    }
-    
-    return { data, error };
-  };
-
   useEffect(() => {
     const checkSession = async () => {
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
-        console.log("Initial session check:", { session, error });
-        
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
+
         const hash = window.location.hash;
-        if (hash && hash.includes('type=recovery')) {
-          setView('update_password');
+        if (hash?.includes("type=recovery")) {
+          setView("update_password");
           setIsInitializing(false);
           return;
         }
-        
+
         if (session) {
-          const returnUrl = new URLSearchParams(location.search).get('returnUrl');
+          const returnUrl = new URLSearchParams(location.search).get("returnUrl");
           navigate(returnUrl || "/assessment", { replace: true });
         }
-        
+
         if (error) {
           console.error("Session check error:", error);
           setErrorMessage(getErrorMessage(error));
         }
-        
+
         setIsInitializing(false);
       } catch (error) {
         console.error("Auth error:", error);
         setIsInitializing(false);
       }
     };
-    
+
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change:", { event, session });
-      
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       switch (event) {
         case "SIGNED_IN":
           if (session) {
-            const returnUrl = new URLSearchParams(location.search).get('returnUrl');
+            await roleService.fetchAndSaveRoles();
+            const returnUrl = new URLSearchParams(location.search).get("returnUrl");
             navigate(returnUrl || "/assessment", { replace: true });
           }
           break;
         case "SIGNED_OUT":
+          roleService.clearRoles();
           setErrorMessage("");
           break;
         case "PASSWORD_RECOVERY":
-          setView('update_password');
+          setView("update_password");
           toast({
             title: "Password reset initiated",
             description: "Please check your email for the password reset link.",
@@ -180,8 +122,7 @@ const Auth = () => {
 
     const url = new URL(window.location.href);
     const errorCode = url.searchParams.get("error_code");
-    const errorDescription = url.searchParams.get("error_description");
-    
+
     if (errorCode === "otp_expired") {
       toast({
         title: "Password Reset Link Expired",
@@ -202,7 +143,7 @@ const Auth = () => {
       const signUpForm = document.querySelector('form[data-supabase-auth-view="sign_up"]');
       if (signUpForm) {
         console.log("Attaching form submission listener to sign up form");
-        signUpForm.addEventListener('submit', (e) => {
+        signUpForm.addEventListener("submit", (e) => {
           if (!termsAccepted) {
             e.preventDefault();
             e.stopPropagation();
@@ -213,24 +154,24 @@ const Auth = () => {
           return true;
         });
       }
-      
-      // Find and modify the sign up button
-      const signUpButton = document.querySelector('form[data-supabase-auth-view="sign_up"] button[type="submit"]');
+      const signUpButton = document.querySelector(
+        'form[data-supabase-auth-view="sign_up"] button[type="submit"]'
+      );
       if (signUpButton && !termsAccepted) {
-        signUpButton.setAttribute('disabled', !termsAccepted ? 'true' : 'false');
+        signUpButton.setAttribute("disabled", !termsAccepted ? "true" : "false");
       } else if (signUpButton) {
-        signUpButton.removeAttribute('disabled');
+        signUpButton.removeAttribute("disabled");
       }
     };
 
     const timer = setTimeout(attachFormListeners, 500);
-    
+
     const observer = new MutationObserver(() => {
       attachFormListeners();
     });
-    
+
     observer.observe(document.body, { childList: true, subtree: true });
-    
+
     return () => {
       clearTimeout(timer);
       observer.disconnect();
@@ -242,14 +183,15 @@ const Auth = () => {
   }, [view]);
 
   if (isInitializing) {
-    return <div className="flex items-center justify-center min-h-screen">
-      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
-    </div>;
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      </div>
+    );
   }
 
   const getCustomAppearance = () => {
     const baseAppearance = getAuthFormAppearance();
-    
     if (view === "sign_up") {
       return {
         ...baseAppearance,
@@ -257,20 +199,21 @@ const Auth = () => {
           ...baseAppearance.style,
           button: {
             ...baseAppearance.style.button,
-            opacity: termsAccepted ? '1' : '0.6',
-            cursor: termsAccepted ? 'pointer' : 'not-allowed',
-          }
+            opacity: termsAccepted ? "1" : "0.6",
+            cursor: termsAccepted ? "pointer" : "not-allowed",
+          },
         },
         className: {
           ...baseAppearance.className,
-          button: `${baseAppearance.className.button} ${!termsAccepted ? 'pointer-events-none' : ''}`
+          button: `${baseAppearance.className.button} ${
+            !termsAccepted ? "pointer-events-none" : ""
+          }`,
         },
         variables: {
           ...baseAppearance.variables,
-        }
+        },
       };
     }
-    
     return baseAppearance;
   };
 
@@ -278,45 +221,40 @@ const Auth = () => {
     <AuthLayout>
       <div className="space-y-6">
         <AuthHeader view={view} onViewChange={setView} />
-        
         {errorMessage && (
           <Alert variant="destructive" className="mb-6">
             <AlertDescription>{errorMessage}</AlertDescription>
           </Alert>
         )}
-
         <AuthFormContainer>
-          <SupabaseAuth 
+          <SupabaseAuth
             supabaseClient={supabase}
-            view={view}
             appearance={getCustomAppearance()}
             providers={[]}
             redirectTo={getCallbackUrl()}
-            showLinks={true}
-            localization={{
-              variables: {
-                sign_up: {
-                  button_label: "Sign up"
-                }
-              }
-            }}
+            view={view}
+            showLinks={false}
           />
-          
+          {view === "sign_in" && (
+            <div className="mt-4 text-center">
+              <button
+                type="button"
+                onClick={() => {
+                  console.log("Navigating to forgot password"); // Debug log
+                  navigate("/auth/forgot-password");
+                }}
+                className="text-sm text-blue-600 hover:text-blue-800"
+              >
+                Forgot Password?
+              </button>
+            </div>
+          )}
           {view === "sign_up" && (
-            <>
-              <TermsCheckbox 
-                isChecked={termsAccepted} 
-                onCheckedChange={setTermsAccepted} 
-              />
-              
-              {showTermsError && (
-                <Alert variant="destructive" className="mt-2">
-                  <AlertDescription>
-                    You must accept the Terms and Conditions to sign up
-                  </AlertDescription>
-                </Alert>
-              )}
-            </>
+            <TermsCheckbox
+              isChecked={termsAccepted}
+              onCheckedChange={setTermsAccepted}
+              showError={showTermsError}
+            />
           )}
         </AuthFormContainer>
       </div>

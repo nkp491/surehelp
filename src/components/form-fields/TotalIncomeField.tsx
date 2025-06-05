@@ -29,7 +29,7 @@ const TotalIncomeField = ({
     const cleanAndParse = (value: string): number => {
       if (!value) return 0;
       // Remove any non-numeric characters except decimal point
-      const cleanValue = value.replace(/[^\d.]/g, '');
+      const cleanValue = value.replace(/[^\d.]/g, "");
       return parseFloat(cleanValue) || 0;
     };
 
@@ -38,46 +38,30 @@ const TotalIncomeField = ({
     const socialSecurity = cleanAndParse(formData.socialSecurityIncome);
     const pension = cleanAndParse(formData.pensionIncome);
     const survivorship = cleanAndParse(formData.survivorshipIncome);
-    
+
     // Get investment income if available
     let investmentIncome = 0;
     if (formData.selectedInvestments_total) {
       investmentIncome = cleanAndParse(formData.selectedInvestments_total);
     }
-    
+
     // Calculate total
     const total = employment + socialSecurity + pension + survivorship + investmentIncome;
-    
-    console.log("TotalIncomeField - Calculated Total:", {
-      employment,
-      socialSecurity,
-      pension,
-      survivorship,
-      investmentIncome,
-      total,
-      formValues: {
-        employmentIncome: formData.employmentIncome,
-        socialSecurityIncome: formData.socialSecurityIncome,
-        pensionIncome: formData.pensionIncome,
-        survivorshipIncome: formData.survivorshipIncome,
-        selectedInvestments_total: formData.selectedInvestments_total
-      }
-    });
-    
+
     // Format the total
     setTotalIncome(total.toFixed(2));
-    
+
     // IMPORTANT: Also update the formData directly if possible
     if (formData.onChange) {
       // Use consistent field name
-      formData.onChange('primaryTotalIncome', total.toString());
+      formData.onChange("primaryTotalIncome", total.toString());
     }
   }, [
     formData.employmentIncome,
     formData.socialSecurityIncome,
     formData.pensionIncome,
     formData.survivorshipIncome,
-    formData.selectedInvestments_total
+    formData.selectedInvestments_total,
   ]);
 
   return (
@@ -92,10 +76,7 @@ const TotalIncomeField = ({
           type="text"
           value={totalIncome}
           placeholder={placeholder}
-          className={cn(
-            "pl-7",
-            error ? "border-destructive" : "border-input"
-          )}
+          className={cn("pl-7", error ? "border-destructive" : "border-input")}
           readOnly={true}
         />
       </div>
@@ -104,4 +85,4 @@ const TotalIncomeField = ({
   );
 };
 
-export default TotalIncomeField; 
+export default TotalIncomeField;

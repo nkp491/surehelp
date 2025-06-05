@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import MetricButtons from "@/components/MetricButtons";
 import { useMetrics } from "@/contexts/MetricsContext";
@@ -12,41 +11,41 @@ const MetricsSection = () => {
   const { saveDailyMetrics } = useMetricsUpdates(metrics, handleInputChange);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
-
-  const metricLabels = {
-    leads: 'Leads',
-    calls: 'Calls',
-    contacts: 'Contacts',
-    scheduled: 'Scheduled',
-    sits: 'Sits',
-    sales: 'Sales',
-    ap: 'AP'
-  };
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
+
       if (currentScrollY > lastScrollY) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-      
+
       setLastScrollY(currentScrollY);
     };
 
-    window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener("scroll", handleScroll);
     };
   }, [lastScrollY]);
 
+  const handleSaveMetrics = async () => {
+    try {
+      setIsLoading(true);
+      await saveDailyMetrics();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
-    <div 
+    <div
       className={`w-full transition-all duration-300 ${
-        isVisible ? 'translate-y-0' : 'translate-y-full opacity-0'
+        isVisible ? "translate-y-0" : "translate-y-full opacity-0"
       }`}
     >
       <div className="py-2">
@@ -62,11 +61,19 @@ const MetricsSection = () => {
               />
             ))}
           </div>
-          <Button 
-            onClick={saveDailyMetrics}
-            className="bg-[#2A6F97] text-white px-8 h-6 text-sm hover:bg-[#2A6F97]/90 transition-colors"
+          <Button
+            onClick={handleSaveMetrics}
+            disabled={isLoading}
+            className="bg-[#2A6F97] text-white px-8 h-6 text-sm hover:bg-[#2A6F97]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Log
+            {isLoading ? (
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                <span>Logging...</span>
+              </div>
+            ) : (
+              "Log"
+            )}
           </Button>
         </div>
       </div>

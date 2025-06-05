@@ -11,7 +11,7 @@ interface DirectTotalIncomeCalculatorProps {
  */
 const DirectTotalIncomeCalculator: React.FC<DirectTotalIncomeCalculatorProps> = ({
   formData,
-  setFormData
+  setFormData,
 }) => {
   // Calculate and update total income whenever relevant form data changes
   useEffect(() => {
@@ -19,7 +19,7 @@ const DirectTotalIncomeCalculator: React.FC<DirectTotalIncomeCalculatorProps> = 
     const cleanAndParse = (value: string): number => {
       if (!value) return 0;
       // Remove any non-numeric characters except decimal point
-      const cleanValue = value.replace(/[^\d.]/g, '');
+      const cleanValue = value.replace(/[^\d.]/g, "");
       return parseFloat(cleanValue) || 0;
     };
 
@@ -28,52 +28,34 @@ const DirectTotalIncomeCalculator: React.FC<DirectTotalIncomeCalculatorProps> = 
     const socialSecurity = cleanAndParse(formData.socialSecurityIncome);
     const pension = cleanAndParse(formData.pensionIncome);
     const survivorship = cleanAndParse(formData.survivorshipIncome);
-    
+
     // Get investment income if available
     let investmentIncome = 0;
     if (formData.selectedInvestments_total) {
       investmentIncome = cleanAndParse(formData.selectedInvestments_total);
     }
-    
+
     // Calculate total
     const total = employment + socialSecurity + pension + survivorship + investmentIncome;
-    
-    console.log("DirectTotalIncomeCalculator - Calculated Total:", {
-      employment,
-      socialSecurity,
-      pension,
-      survivorship,
-      investmentIncome,
-      total,
-      formValues: {
-        employmentIncome: formData.employmentIncome,
-        socialSecurityIncome: formData.socialSecurityIncome,
-        pensionIncome: formData.pensionIncome,
-        survivorshipIncome: formData.survivorshipIncome,
-        selectedInvestments_total: formData.selectedInvestments_total
-      }
-    });
-    
+
     // Use a consistent field name for the total income
     // Instead of trying multiple field names, use a single consistent one
     setFormData({
       ...formData,
       totalIncome: total.toString(),
-      primaryTotalIncome: total.toString()
+      primaryTotalIncome: total.toString(),
     });
-    
-    console.log("Updated form data with total income:", total.toString());
   }, [
     formData.employmentIncome,
     formData.socialSecurityIncome,
     formData.pensionIncome,
     formData.survivorshipIncome,
     formData.selectedInvestments_total,
-    setFormData
+    setFormData,
   ]);
 
   // This component doesn't render anything visible
   return null;
 };
 
-export default DirectTotalIncomeCalculator; 
+export default DirectTotalIncomeCalculator;
