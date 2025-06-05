@@ -126,8 +126,35 @@ const transformTeamsData = (
   }));
 };
 
-const fetchDailyMetrics = async (userIds: string[]): Promise<DailyMetric[]> => {
-  const { data, error } = await supabase.from("daily_metrics").select("*").in("user_id", userIds);
+const fetchDailyMetrics = async (
+  userIds: string[],
+  timeRange: TimeRange
+): Promise<DailyMetric[]> => {
+  const now = new Date();
+  let startDate: Date;
+
+  // Calculate start date based on time range
+  switch (timeRange) {
+    case "weekly":
+      startDate = new Date(now.setDate(now.getDate() - 7));
+      break;
+    case "monthly":
+      startDate = new Date(now.getFullYear(), now.getMonth(), 1); // First day of current month
+      break;
+    case "ytd":
+      startDate = new Date(now.getFullYear(), 0, 1); // First day of current year
+      break;
+    default:
+      startDate = new Date(now.getFullYear(), 0, 1); // Default to YTD
+  }
+
+  const { data, error } = await supabase
+    .from("daily_metrics")
+    .select("*")
+    .in("user_id", userIds)
+    .gte("created_at", startDate.toISOString())
+    .order("created_at", { ascending: true });
+
   if (error) throw error;
   return data as DailyMetric[];
 };
@@ -358,7 +385,7 @@ const ManagerDashboard = () => {
       const userIds = selectedTeam.members.map((m) => m.user_id);
       if (!userIds.length) return;
       const [metricsData, { meetings, meetingNotes }] = await Promise.all([
-        fetchDailyMetrics(userIds),
+        fetchDailyMetrics(userIds, timeRange),
         fetchMeetingData(userIds),
       ]);
       const metricsByUser = aggregateMetricsByUser(metricsData);
@@ -390,8 +417,10 @@ const ManagerDashboard = () => {
     fetchBulletins();
   }, [selectedTeam]);
   useEffect(() => {
-    fetchTeamMemberMetrics();
-  }, [selectedTeam]);
+    if (selectedTeam) {
+      fetchTeamMemberMetrics();
+    }
+  }, [selectedTeam, timeRange]);
   useEffect(() => {
     setCurrentPage(1);
   }, [searchQuery, filterRole, itemsPerPage]);
@@ -527,7 +556,7 @@ const ManagerDashboard = () => {
                     </div>
                   ) : (
                     currentMembers.map((member) => (
-                      <MemberCard data={member} key={member.user_id} />
+                      <MemberCard data={member} key={member.user_id} timeRange={timeRange} />
                     ))
                   )}
                 </div>

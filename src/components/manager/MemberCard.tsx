@@ -1,17 +1,136 @@
 import { Phone, Calendar, MessageSquare, Target, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
-const MemberCard = ({ data }: { data: any }) => {
-  console.log("data", data);
+// Type definitions
+interface Note {
+  id: string | number;
+  content: string;
+  created_at: string;
+}
+
+interface Ratios {
+  leadsToContact: number;
+  leadsToScheduled: number;
+  leadsToSits: number;
+  leadsToSales: number;
+  aPPerLead: number;
+  contactToScheduled: number;
+  contactToSits: number;
+  callsToContact: number;
+  callsToScheduled: number;
+  callsToSits: number;
+  callsToSales: number;
+  aPPerCall: number;
+  contactToSales: number;
+  aPPerContact: number;
+  scheduledToSits: number;
+  sitsToSalesCloseRatio: number;
+  aPPerSit: number;
+  aPPerSale: number;
+}
+
+interface Metrics {
+  leads: number;
+  calls: number;
+  contacts: number;
+  scheduled: number;
+  sits: number;
+  sales: number;
+  ap: number;
+  conversion: number;
+  ratios: Ratios;
+}
+
+interface MemberData {
+  name: string;
+  role: string;
+  profile_image_url?: string;
+  metrics: Metrics;
+  notes: Note[];
+}
+
+type TimeRange = "weekly" | "monthly" | "ytd";
+
+interface MemberCardProps {
+  data: MemberData;
+  timeRange: TimeRange;
+}
+
+const getTimeRangeLabel = (range: TimeRange): string => {
+  switch (range) {
+    case "weekly":
+      return "Weekly";
+    case "monthly":
+      return "Monthly";
+    case "ytd":
+    default:
+      return "Year to Date";
+  }
+};
+
+const PRIMARY_METRICS = [
+  { key: "leads", label: "Leads", colorClass: "text-blue-600" },
+  { key: "calls", label: "Calls", colorClass: "text-blue-600" },
+  { key: "contacts", label: "Contacts", colorClass: "text-blue-600" },
+  { key: "scheduled", label: "Scheduled", colorClass: "text-blue-600" },
+  { key: "sits", label: "Sits", colorClass: "text-blue-600" },
+  { key: "sales", label: "Sales", colorClass: "text-blue-600" },
+] as const;
+
+const RATIO_METRICS = [
+  { key: "leadsToContact", label: "Lead to Contact", format: "percent" },
+  { key: "leadsToScheduled", label: "Lead to Scheduled", format: "percent" },
+  { key: "leadsToSits", label: "Lead to Sits", format: "percent" },
+  { key: "leadsToSales", label: "Lead to Sales", format: "percent" },
+  { key: "aPPerLead", label: "AP per Lead", format: "currency" },
+  { key: "contactToScheduled", label: "Contact to Scheduled", format: "percent" },
+  { key: "contactToSits", label: "Contact to Sits", format: "percent" },
+  { key: "callsToContact", label: "Calls to Contact", format: "percent" },
+  { key: "callsToScheduled", label: "Calls to Scheduled", format: "percent" },
+  { key: "callsToSits", label: "Calls to Sits", format: "percent" },
+  { key: "callsToSales", label: "Calls to Sales", format: "percent" },
+  { key: "aPPerCall", label: "AP per Call", format: "currency" },
+  { key: "contactToSales", label: "Contact to Sales", format: "percent" },
+  { key: "aPPerContact", label: "AP per Contact", format: "currency" },
+  { key: "scheduledToSits", label: "Scheduled to Sits", format: "percent" },
+  { key: "sitsToSalesCloseRatio", label: "Sits to Sales", format: "percent" },
+  { key: "aPPerSit", label: "AP per Sit", format: "currency" },
+  { key: "aPPerSale", label: "AP per Sale", format: "currency" },
+] as const;
+
+const formatValue = (value: number, format: "percent" | "currency"): string => {
+  if (format === "percent") {
+    return `${value}%`;
+  }
+  return `$${value}`;
+};
+
+const formatDate = (dateString: string): string => {
+  return new Date(dateString).toLocaleDateString();
+};
+
+const calculateSuccessScore = (conversion: number): number => {
+  return Math.round((conversion / 100) * 100);
+};
+
+const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
+  const timeRangeLabel = getTimeRangeLabel(timeRange);
+  const successScore = calculateSuccessScore(data.metrics.conversion);
+
   return (
-    <div className="bg-red-200 p-4 rounded-lg relative cursor-pointer transition-all">
+    <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative cursor-pointer transition-all">
+      {/* Header Section */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center space-x-3">
           {data.profile_image_url ? (
-            <img src={data.profile_image_url} className="size-10 rounded-full" />
+            <img
+              src={data.profile_image_url}
+              alt={`${data.name} profile`}
+              className="size-10 rounded-full object-cover"
+            />
           ) : (
             <div className="size-10 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium">
-              {data.name.charAt(0)}
+              {data.name.charAt(0).toUpperCase()}
             </div>
           )}
           <div>
@@ -29,30 +148,14 @@ const MemberCard = ({ data }: { data: any }) => {
 
       {/* Primary Metrics */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
-        <div className="bg-blue-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-bold text-blue-600">{data.metrics.leads}</div>
-          <div className="text-xs text-muted-foreground">Leads</div>
-        </div>
-        <div className="bg-blue-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-bold text-blue-600">{data.metrics.calls}</div>
-          <div className="text-xs text-muted-foreground">Calls</div>
-        </div>
-        <div className="bg-blue-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-bold text-blue-600">{data.metrics.contacts}</div>
-          <div className="text-xs text-muted-foreground">Contacts</div>
-        </div>
-        <div className="bg-blue-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-bold text-blue-600">{data.metrics.scheduled}</div>
-          <div className="text-xs text-muted-foreground">Scheduled</div>
-        </div>
-        <div className="bg-blue-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-bold text-blue-600">{data.metrics.sits}</div>
-          <div className="text-xs text-muted-foreground">Sits</div>
-        </div>
-        <div className="bg-blue-50 p-3 rounded-lg text-center">
-          <div className="text-lg font-bold text-blue-600">{data.metrics.sales}</div>
-          <div className="text-xs text-muted-foreground">Sales</div>
-        </div>
+        {PRIMARY_METRICS.map(({ key, label, colorClass }) => (
+          <div key={key} className="bg-blue-50 p-3 rounded-lg text-center">
+            <div className={`text-lg font-bold ${colorClass}`}>
+              {data.metrics[key as keyof Omit<Metrics, "ratios" | "conversion">]}
+            </div>
+            <div className="text-xs text-muted-foreground">{label}</div>
+          </div>
+        ))}
         <div className="bg-green-50 p-3 rounded-lg text-center col-span-2">
           <div className="text-lg font-bold text-green-600">${data.metrics.ap}</div>
           <div className="text-xs text-muted-foreground">AP</div>
@@ -61,83 +164,14 @@ const MemberCard = ({ data }: { data: any }) => {
 
       {/* Ratio Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
-        {/* Lead Based Ratios */}
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.leadsToContact}%</div>
-          <div className="text-xs text-muted-foreground">Lead to Contact</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.leadsToScheduled}%</div>
-          <div className="text-xs text-muted-foreground">Lead to Scheduled</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.leadsToSits}%</div>
-          <div className="text-xs text-muted-foreground">Lead to Sits</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.leadsToSales}%</div>
-          <div className="text-xs text-muted-foreground">Lead to Sales</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">${data.metrics.ratios.aPPerLead}</div>
-          <div className="text-xs text-muted-foreground">AP per Lead</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.contactToScheduled}%</div>
-          <div className="text-xs text-muted-foreground">Contact to Scheduled</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.contactToSits}%</div>
-          <div className="text-xs text-muted-foreground">Contact to Sits</div>
-        </div>
-
-        {/* Call Based Ratios */}
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.callsToContact}%</div>
-          <div className="text-xs text-muted-foreground">Calls to Contact</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.callsToScheduled}%</div>
-          <div className="text-xs text-muted-foreground">Calls to Scheduled</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.callsToSits}%</div>
-          <div className="text-xs text-muted-foreground">Calls to Sits</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.callsToSales}%</div>
-          <div className="text-xs text-muted-foreground">Calls to Sales</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">${data.metrics.ratios.aPPerCall}</div>
-          <div className="text-xs text-muted-foreground">AP per Call</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.contactToSales}%</div>
-          <div className="text-xs text-muted-foreground">Contact to Sales</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">${data.metrics.ratios.aPPerContact}</div>
-          <div className="text-xs text-muted-foreground">AP per Contact</div>
-        </div>
-
-        {/* Scheduled and Sits Based Ratios */}
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.scheduledToSits}%</div>
-          <div className="text-xs text-muted-foreground">Scheduled to Sits</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">{data.metrics.ratios.sitsToSalesCloseRatio}%</div>
-          <div className="text-xs text-muted-foreground">Sits to Sales</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">${data.metrics.ratios.aPPerSit}</div>
-          <div className="text-xs text-muted-foreground">AP per Sit</div>
-        </div>
-        <div className="bg-gray-100 p-2 rounded text-center">
-          <div className="text-sm font-semibold">${data.metrics.ratios.aPPerSale}</div>
-          <div className="text-xs text-muted-foreground">AP per Sale</div>
-        </div>
+        {RATIO_METRICS.map(({ key, label, format }) => (
+          <div key={key} className="bg-gray-100 p-2 rounded text-center">
+            <div className="text-sm font-semibold">
+              {formatValue(data.metrics.ratios[key as keyof Ratios], format)}
+            </div>
+            <div className="text-xs text-muted-foreground">{label}</div>
+          </div>
+        ))}
       </div>
 
       {/* Success Calculator and 1:1 Notes */}
@@ -152,31 +186,15 @@ const MemberCard = ({ data }: { data: any }) => {
                 <span className="text-xs font-medium">Conversion Rate</span>
               </div>
               <div className="text-lg font-bold text-green-600">{data.metrics.conversion}%</div>
-              {/* <p className="text-xs text-muted-foreground">
-                {timeRange === "weekly"
-                  ? "Weekly"
-                  : timeRange === "monthly"
-                  ? "Monthly"
-                  : "Year to Date"}{" "}
-                Rate
-              </p> */}
+              <p className="text-xs text-muted-foreground">{timeRangeLabel} Rate</p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-2 mb-1">
                 <Target className="h-4 w-4 text-blue-600" />
                 <span className="text-xs font-medium">Success Score</span>
               </div>
-              <div className="text-lg font-bold text-blue-600">
-                {Math.round((data.metrics.conversion / 100) * 100)}
-              </div>
-              {/* <p className="text-xs text-muted-foreground">
-                {timeRange === "weekly"
-                  ? "Weekly"
-                  : timeRange === "monthly"
-                  ? "Monthly"
-                  : "Year to Date"}{" "}
-                Rating
-              </p> */}
+              <div className="text-lg font-bold text-blue-600">{successScore}</div>
+              <p className="text-xs text-muted-foreground">{timeRangeLabel} Rating</p>
             </div>
           </div>
           <div>
@@ -199,17 +217,16 @@ const MemberCard = ({ data }: { data: any }) => {
             </div>
           </div>
           <div className="space-y-2 max-h-[200px] overflow-y-auto">
-            {data?.notes.map((note, index) => (
-              <div key={note.id} className="p-2 bg-gray-50 rounded-lg">
-                <div className="flex items-center justify-between mb-1">
-                  <span className="text-xs font-medium">
-                    {new Date(note.created_at).toLocaleDateString()}
-                  </span>
+            {data.notes.length > 0 ? (
+              data.notes.map((note) => (
+                <div key={note.id} className="p-2 bg-gray-50 rounded-lg">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium">{formatDate(note.created_at)}</span>
+                  </div>
+                  <p className="text-xs text-gray-600">{note.content}</p>
                 </div>
-                <p className="text-xs text-gray-600">{note.content}</p>
-              </div>
-            ))}
-            {data?.notes.length === 0 && (
+              ))
+            ) : (
               <p className="text-xs text-muted-foreground">No 1:1 notes available</p>
             )}
           </div>
