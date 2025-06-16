@@ -1,6 +1,6 @@
-import { MetricCount, DatabaseMetric } from "@/types/metrics";
-import { supabase } from "@/integrations/supabase/client";
-import { format } from "date-fns";
+import {DatabaseMetric, MetricCount} from "@/types/metrics";
+import {supabase} from "@/integrations/supabase/client";
+import {format} from "date-fns";
 
 const extractMetricData = (data: DatabaseMetric): MetricCount => {
   const { leads, calls, contacts, scheduled, sits, sales, ap } = data;
@@ -30,19 +30,17 @@ export const useDailyMetrics = () => {
       };
     }
 
-    const metrics = data
-      ? extractMetricData(data as DatabaseMetric)
-      : {
-          leads: 0,
-          calls: 0,
-          contacts: 0,
-          scheduled: 0,
-          sits: 0,
-          sales: 0,
-          ap: 0,
+    return data
+        ? extractMetricData(data as DatabaseMetric)
+        : {
+            leads: 0,
+            calls: 0,
+            contacts: 0,
+            scheduled: 0,
+            sits: 0,
+            sales: 0,
+            ap: 0,
         };
-
-    return metrics;
   };
 
   const saveDailyMetrics = async (metrics: MetricCount) => {

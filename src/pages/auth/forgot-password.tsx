@@ -100,7 +100,7 @@ const ForgotPassword = () => {
                   <button
                     type="button"
                     onClick={() => navigate("/auth")}
-                    className="text-sm text-[#2A6F97] hover:text-[#2A6F97]/90 block w-full"
+                    className="text-sm hover:text-[#2A6F97] hover:underline block w-full"
                   >
                     Back to Login
                   </button>
@@ -116,8 +116,13 @@ const ForgotPassword = () => {
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
       <div className="min-h-screen w-full flex items-center justify-center p-4">
-        <div className="space-y-6 w-[28rem] shadow-xl">
-          <Card>
+        <div className="space-y-6 w-[28rem] flex flex-col items-center">
+          <img
+            src="/lovable-uploads/cb31ac2c-4859-4fad-b7ef-36988cc1dad3.png"
+            alt="Logo"
+            className="h-16 object-contain mb-4"
+          />
+          <Card className="shadow-xl">
             <CardHeader>
               <CardTitle className="text-2xl font-semibold text-center">Reset Password</CardTitle>
               <p className="text-center text-gray-600 mt-2">
@@ -155,7 +160,7 @@ const ForgotPassword = () => {
                   <button
                     type="button"
                     onClick={() => navigate("/auth")}
-                    className="text-sm text-gray-600 hover:text-gray-800"
+                    className="text-sm text-gray-600 hover:text-[#2A6F97] hover:underline"
                     disabled={loading}
                   >
                     Back to Login

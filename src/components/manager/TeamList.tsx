@@ -66,7 +66,7 @@ const TeamList = memo(({ teams = [], setSelectedTeam, loading }: TeamListProps) 
               >
                 <div className="flex items-center space-x-2">
                   {member.profile_image_url ? (
-                    <img src={member.profile_image_url} className="size-6 rounded-full" />
+                    <img src={member.profile_image_url} alt="" className="size-6 rounded-full" />
                   ) : (
                     <div className="h-6 w-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium">
                       {member.name.charAt(0)}

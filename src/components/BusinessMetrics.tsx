@@ -13,8 +13,6 @@ import { startOfDay } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo } from "react";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
-import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();

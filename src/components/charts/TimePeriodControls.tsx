@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { CalendarDays, Clock, TrendingUp, History } from "lucide-react";
+import { CalendarDays, Clock, TrendingUp } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 
 interface TimePeriodControlsProps {

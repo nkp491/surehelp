@@ -1,4 +1,3 @@
-import { Card } from "@/components/ui/card";
 import MetricButtons from "@/components/MetricButtons";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";

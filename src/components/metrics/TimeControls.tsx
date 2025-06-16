@@ -7,7 +7,6 @@ import {
 } from "@/components/ui/popover";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { format } from "date-fns";
-import { Clock, CalendarIcon, CalendarDays } from "lucide-react";
 import { useToast } from "../ui/use-toast";
 import { cn } from "@/lib/utils";
 

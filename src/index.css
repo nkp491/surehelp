@@ -79,11 +79,4 @@
     @apply grid grid-cols-1 sm:grid-cols-2 gap-3 items-start;
   }
 
-  .form-field-label {
-    @apply text-xs font-medium text-gray-700 mb-0.5;
-  }
-
-  .form-field-input {
-    @apply w-full text-sm;
-  }
 }

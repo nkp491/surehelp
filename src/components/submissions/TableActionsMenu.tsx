@@ -1,10 +1,8 @@
 
-import { useState } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { FormSubmission } from "@/types/form";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 
 interface TableActionsMenuProps {

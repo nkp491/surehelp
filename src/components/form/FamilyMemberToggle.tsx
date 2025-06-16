@@ -2,8 +2,6 @@ import { Button } from "@/components/ui/button";
 import { Plus, Minus } from "lucide-react";
 import { useFamilyMembers } from "@/contexts/FamilyMembersContext";
 import { toast } from "@/hooks/use-toast";
-import FormSection from "@/components/FormSection";
-import { INITIAL_FIELDS } from "./FormFields";
 
 const FamilyMemberToggle = () => {
   const { familyMembers, addFamilyMember, removeFamilyMember } = useFamilyMembers();

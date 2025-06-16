@@ -1,7 +1,6 @@
-
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
-import { format, subDays, startOfMonth, endOfMonth } from "date-fns";
+import {useQuery} from "@tanstack/react-query";
+import {supabase} from "@/integrations/supabase/client";
+import {endOfMonth, format, startOfMonth, subDays} from "date-fns";
 
 type MetricSummary = {
   total_leads: number;
@@ -59,54 +58,52 @@ export const useTeamMetrics = (teamId?: string) => {
       const monthEnd = format(endOfMonth(today), 'yyyy-MM-dd');
 
       // For each member, get their metrics for the current month
-      const memberMetrics = await Promise.all(
-        members.map(async (member) => {
-          const { data: metrics, error: metricsError } = await supabase
-            .from('daily_metrics')
-            .select('leads, calls, contacts, scheduled, sits, sales, ap')
-            .eq('user_id', member.user_id)
-            .gte('date', monthStart)
-            .lte('date', monthEnd);
+      return await Promise.all(
+          members.map(async (member) => {
+            const {data: metrics, error: metricsError} = await supabase
+                .from('daily_metrics')
+                .select('leads, calls, contacts, scheduled, sits, sales, ap')
+                .eq('user_id', member.user_id)
+                .gte('date', monthStart)
+                .lte('date', monthEnd);
 
-          if (metricsError) throw metricsError;
+            if (metricsError) throw metricsError;
 
-          // Calculate totals and averages
-          const summary: MetricSummary = metrics.reduce((acc, curr) => ({
-            total_leads: acc.total_leads + (curr.leads || 0),
-            total_calls: acc.total_calls + (curr.calls || 0),
-            total_contacts: acc.total_contacts + (curr.contacts || 0),
-            total_scheduled: acc.total_scheduled + (curr.scheduled || 0),
-            total_sits: acc.total_sits + (curr.sits || 0),
-            total_sales: acc.total_sales + (curr.sales || 0),
-            average_ap: acc.average_ap + (curr.ap || 0)
-          }), {
-            total_leads: 0,
-            total_calls: 0,
-            total_contacts: 0,
-            total_scheduled: 0,
-            total_sits: 0,
-            total_sales: 0,
-            average_ap: 0
-          });
+            // Calculate totals and averages
+            const summary: MetricSummary = metrics.reduce((acc, curr) => ({
+              total_leads: acc.total_leads + (curr.leads || 0),
+              total_calls: acc.total_calls + (curr.calls || 0),
+              total_contacts: acc.total_contacts + (curr.contacts || 0),
+              total_scheduled: acc.total_scheduled + (curr.scheduled || 0),
+              total_sits: acc.total_sits + (curr.sits || 0),
+              total_sales: acc.total_sales + (curr.sales || 0),
+              average_ap: acc.average_ap + (curr.ap || 0)
+            }), {
+              total_leads: 0,
+              total_calls: 0,
+              total_contacts: 0,
+              total_scheduled: 0,
+              total_sits: 0,
+              total_sales: 0,
+              average_ap: 0
+            });
 
-          // Calculate average AP
-          summary.average_ap = metrics.length > 0 ? 
-            Math.round(summary.average_ap / metrics.length) : 0;
+            // Calculate average AP
+            summary.average_ap = metrics.length > 0 ?
+                Math.round(summary.average_ap / metrics.length) : 0;
 
-          const profile = profileMap[member.user_id] || {};
+            const profile = profileMap[member.user_id] || {};
 
-          return {
-            user_id: member.user_id,
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            email: profile.email,
-            profile_image_url: profile.profile_image_url,
-            metrics: summary
-          } as TeamMemberMetrics;
-        })
+            return {
+              user_id: member.user_id,
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              email: profile.email,
+              profile_image_url: profile.profile_image_url,
+              metrics: summary
+            } as TeamMemberMetrics;
+          })
       );
-
-      return memberMetrics;
     },
     enabled: !!teamId,
     staleTime: 1000 * 60 * 5, // 5 minutes
@@ -171,12 +168,10 @@ export const useTeamMetrics = (teamId?: string) => {
       }, {});
 
       // Convert to array and calculate average AP
-      const dailyMetrics = Object.values(metricsByDate).map((day: any) => ({
+      return Object.values(metricsByDate).map((day: any) => ({
         ...day,
         ap: day.count > 0 ? Math.round(day.ap / day.count) : 0
       }));
-
-      return dailyMetrics;
     },
     enabled: !!teamId,
     staleTime: 1000 * 60 * 5, // 5 minutes

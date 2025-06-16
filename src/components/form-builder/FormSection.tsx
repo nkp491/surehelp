@@ -1,6 +1,5 @@
-import { FormField } from "@/types/formTypes";
 import DraggableFormField from "../DraggableFormField";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import IncomeDebugger from "../form-fields/IncomeDebugger";
 
 interface FormSectionProps {
@@ -44,9 +43,7 @@ const FormSection = ({ title, fields, formData, setFormData }: FormSectionProps)
     }
 
     // Calculate total
-    const total = employment + socialSecurity + pension + survivorship + investmentIncome;
-
-    return total;
+    return employment + socialSecurity + pension + survivorship + investmentIncome;
   };
 
   // Direct update function for the TotalIncomeField

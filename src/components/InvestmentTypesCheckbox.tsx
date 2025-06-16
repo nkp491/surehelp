@@ -1,7 +1,7 @@
-import { Checkbox } from "./ui/checkbox";
-import { Label } from "./ui/label";
-import { useLanguage } from "@/contexts/LanguageContext";
-import { useState, useEffect, useMemo } from "react";
+import {Checkbox} from "./ui/checkbox";
+import {Label} from "./ui/label";
+import {useLanguage} from "@/contexts/LanguageContext";
+import {useEffect, useMemo, useState} from "react";
 
 interface InvestmentTypesCheckboxProps {
   selectedInvestments: string[];
@@ -86,15 +86,13 @@ const InvestmentTypesCheckbox = ({
 
   // Calculate total investment income from checked investments
   const totalInvestmentIncome = useMemo(() => {
-    const total = selectedInvestments.reduce((total, type) => {
+    return selectedInvestments.reduce((total, type) => {
       const amount = localAmounts[type] || "0";
       // Remove any non-numeric characters except decimal point
       const cleanAmount = amount.replace(/[^\d.]/g, "");
       const numAmount = parseFloat(cleanAmount) || 0;
       return total + numAmount;
     }, 0);
-
-    return total;
   }, [selectedInvestments, localAmounts]);
 
   // Notify parent component when total changes

@@ -1,4 +1,3 @@
-import { FormField } from "@/types/formTypes";
 import DraggableFormField from "../DraggableFormField";
 
 interface HealthMetricsRowProps {

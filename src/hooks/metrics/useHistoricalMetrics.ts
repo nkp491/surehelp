@@ -1,6 +1,6 @@
-import { MetricCount, DatabaseMetric, TimePeriod } from "@/types/metrics";
-import { supabase } from "@/integrations/supabase/client";
-import { startOfDay, subDays, format } from "date-fns";
+import {DatabaseMetric, MetricCount, TimePeriod} from "@/types/metrics";
+import {supabase} from "@/integrations/supabase/client";
+import {format, startOfDay, subDays} from "date-fns";
 
 export const useHistoricalMetrics = () => {
   const loadPreviousMetrics = async (period: TimePeriod): Promise<MetricCount> => {
@@ -37,27 +37,26 @@ export const useHistoricalMetrics = () => {
       };
     }
 
-    const metrics = (data as DatabaseMetric[]).reduce(
-      (acc, curr) => ({
-        leads: acc.leads + (curr.leads || 0),
-        calls: acc.calls + (curr.calls || 0),
-        contacts: acc.contacts + (curr.contacts || 0),
-        scheduled: acc.scheduled + (curr.scheduled || 0),
-        sits: acc.sits + (curr.sits || 0),
-        sales: acc.sales + (curr.sales || 0),
-        ap: acc.ap + (curr.ap || 0),
-      }),
-      {
-        leads: 0,
-        calls: 0,
-        contacts: 0,
-        scheduled: 0,
-        sits: 0,
-        sales: 0,
-        ap: 0,
-      }
+    return (data as DatabaseMetric[]).reduce(
+        (acc, curr) => ({
+          leads: acc.leads + (curr.leads || 0),
+          calls: acc.calls + (curr.calls || 0),
+          contacts: acc.contacts + (curr.contacts || 0),
+          scheduled: acc.scheduled + (curr.scheduled || 0),
+          sits: acc.sits + (curr.sits || 0),
+          sales: acc.sales + (curr.sales || 0),
+          ap: acc.ap + (curr.ap || 0),
+        }),
+        {
+          leads: 0,
+          calls: 0,
+          contacts: 0,
+          scheduled: 0,
+          sits: 0,
+          sales: 0,
+          ap: 0,
+        }
     );
-    return metrics;
   };
 
   return {

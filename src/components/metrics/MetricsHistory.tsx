@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useMetricsHistory } from '@/hooks/useMetricsHistory';
 import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
 import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
