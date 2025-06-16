@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import AuthLayout from "@/components/auth/AuthLayout";
 import { Eye, EyeOff, Check, X } from "lucide-react";
 
 interface ValidationItemProps {
@@ -156,13 +155,15 @@ const ResetPassword = () => {
 
   if (checking) {
     return (
-      <AuthLayout>
-        <div className="container mx-auto py-8 px-4 max-w-md">
-          <div className="text-center">
-            <div className="animate-pulse">Verifying reset link...</div>
+      <div className="min-h-screen w-full bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+        <div className="min-h-screen w-full flex items-center justify-center p-4">
+          <div className="space-y-6 w-[28rem] shadow-xl">
+            <div className="text-center">
+              <div className="animate-pulse">Verifying reset link...</div>
+            </div>
           </div>
         </div>
-      </AuthLayout>
+      </div>
     );
   }
 
@@ -171,121 +172,128 @@ const ResetPassword = () => {
   }
 
   return (
-    <AuthLayout>
-      <div className="container mx-auto py-8 px-4 max-w-md">
-        <form onSubmit={handleReset} className="space-y-4">
-          <h2 className="text-2xl font-semibold text-center">Set New Password</h2>
-
-          <div className="space-y-2">
-            <label htmlFor="password" className="text-sm font-medium">
-              New Password
-            </label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your new password"
-                required
-                disabled={loading}
-                minLength={8}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowPassword(!showPassword)}
-                tabIndex={-1}
-              >
-                {showPassword ? (
-                  <EyeOff className="h-4 w-4 text-gray-500" />
-                ) : (
-                  <Eye className="h-4 w-4 text-gray-500" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <label htmlFor="confirmPassword" className="text-sm font-medium">
-              Confirm New Password
-            </label>
-            <div className="relative">
-              <Input
-                id="confirmPassword"
-                type={showConfirmPassword ? "text" : "password"}
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder="Confirm your new password"
-                required
-                disabled={loading}
-                minLength={8}
-              />
-              <button
-                type="button"
-                className="absolute right-3 top-1/2 transform -translate-y-1/2"
-                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                tabIndex={-1}
-              >
-                {showConfirmPassword ? (
-                  <EyeOff className="h-4 w-4 text-gray-500" />
-                ) : (
-                  <Eye className="h-4 w-4 text-gray-500" />
-                )}
-              </button>
-            </div>
-          </div>
-
-          {/* Password Requirements */}
-          {password && (
-            <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
-              <div className="text-sm font-medium text-gray-700">Password Requirements:</div>
-              <div className="space-y-1">
-                <ValidationItem isValid={validations.length} text="At least 8 characters long" />
-                <ValidationItem isValid={validations.uppercase} text="One uppercase letter (A-Z)" />
-                <ValidationItem isValid={validations.lowercase} text="One lowercase letter (a-z)" />
-                <ValidationItem isValid={validations.number} text="One number (0-9)" />
-                <ValidationItem
-                  isValid={validations.special}
-                  text="One special character (!@#$%^&*)"
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+      <div className="min-h-screen w-full flex items-center justify-center p-4">
+        <div className="space-y-6 w-[28rem] shadow-xl">
+          <form onSubmit={handleReset} className="space-y-4">
+            <h2 className="text-2xl font-semibold text-center">Set New Password</h2>
+            <div className="space-y-2">
+              <label htmlFor="password" className="text-sm font-medium">
+                New Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Enter your new password"
+                  required
+                  disabled={loading}
+                  minLength={8}
                 />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  onClick={() => setShowPassword(!showPassword)}
+                  tabIndex={-1}
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
               </div>
             </div>
-          )}
 
-          {/* Password Match Indicator */}
-          {confirmPassword && (
-            <div
-              className={`text-sm ${
-                password === confirmPassword ? "text-green-600" : "text-red-600"
-              }`}
-            >
-              {password === confirmPassword ? (
-                <div className="flex items-center gap-1">
-                  <Check className="h-3 w-3" />
-                  Passwords match
-                </div>
-              ) : (
-                <div className="flex items-center gap-1">
-                  <X className="h-3 w-3" />
-                  Passwords do not match
-                </div>
-              )}
+            <div className="space-y-2">
+              <label htmlFor="confirmPassword" className="text-sm font-medium">
+                Confirm New Password
+              </label>
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="Confirm your new password"
+                  required
+                  disabled={loading}
+                  minLength={8}
+                />
+                <button
+                  type="button"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  tabIndex={-1}
+                >
+                  {showConfirmPassword ? (
+                    <EyeOff className="h-4 w-4 text-gray-500" />
+                  ) : (
+                    <Eye className="h-4 w-4 text-gray-500" />
+                  )}
+                </button>
+              </div>
             </div>
-          )}
 
-          <Button
-            type="submit"
-            className="w-full px-4 py-2 bg-[#2A6F97] text-white rounded-md font-medium hover:bg-[#2A6F97]/90 transition-colors"
-            disabled={
-              loading || !validatePassword(password).isValid || password !== confirmPassword
-            }
-          >
-            {loading ? "Updating..." : "Reset Password"}
-          </Button>
-        </form>
+            {/* Password Requirements */}
+            {password && (
+              <div className="space-y-2 p-3 bg-gray-50 rounded-lg">
+                <div className="text-sm font-medium text-gray-700">Password Requirements:</div>
+                <div className="space-y-1">
+                  <ValidationItem isValid={validations.length} text="At least 8 characters long" />
+                  <ValidationItem
+                    isValid={validations.uppercase}
+                    text="One uppercase letter (A-Z)"
+                  />
+                  <ValidationItem
+                    isValid={validations.lowercase}
+                    text="One lowercase letter (a-z)"
+                  />
+                  <ValidationItem isValid={validations.number} text="One number (0-9)" />
+                  <ValidationItem
+                    isValid={validations.special}
+                    text="One special character (!@#$%^&*)"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Password Match Indicator */}
+            {confirmPassword && (
+              <div
+                className={`text-sm ${
+                  password === confirmPassword ? "text-green-600" : "text-red-600"
+                }`}
+              >
+                {password === confirmPassword ? (
+                  <div className="flex items-center gap-1">
+                    <Check className="h-3 w-3" />
+                    Passwords match
+                  </div>
+                ) : (
+                  <div className="flex items-center gap-1">
+                    <X className="h-3 w-3" />
+                    Passwords do not match
+                  </div>
+                )}
+              </div>
+            )}
+
+            <Button
+              type="submit"
+              className="w-full px-4 py-2 bg-[#2A6F97] text-white rounded-md font-medium hover:bg-[#2A6F97]/90 transition-colors"
+              disabled={
+                loading || !validatePassword(password).isValid || password !== confirmPassword
+              }
+            >
+              {loading ? "Updating..." : "Reset Password"}
+            </Button>
+          </form>
+        </div>
       </div>
-    </AuthLayout>
+    </div>
   );
 };
 
