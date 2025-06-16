@@ -1,4 +1,3 @@
-import { FormSubmission } from "@/types/form";
 import {
   AlertDialog,
   AlertDialogAction,

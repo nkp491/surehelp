@@ -15,7 +15,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import { format, parseISO, subDays } from "date-fns";
+import { format } from "date-fns";
 
 interface TeamMetricsOverviewProps {
   teamId?: string;

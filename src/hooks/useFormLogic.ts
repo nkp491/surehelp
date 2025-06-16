@@ -1,11 +1,11 @@
-import { useEffect } from "react";
-import { FormSubmission } from "@/types/form";
-import { useAgeCalculation } from "./useAgeCalculation";
-import { useIncomeCalculation } from "./useIncomeCalculation";
-import { useFormValidation } from "./useFormValidation";
-import { useFormState } from "./useFormState";
-import { useFormSubmission } from "./useFormSubmission";
-import { toast } from "@/hooks/use-toast";
+import {useEffect} from "react";
+import {FormSubmission} from "@/types/form";
+import {useAgeCalculation} from "./useAgeCalculation";
+import {useIncomeCalculation} from "./useIncomeCalculation";
+import {useFormValidation} from "./useFormValidation";
+import {useFormState} from "./useFormState";
+import {useFormSubmission} from "./useFormSubmission";
+import {toast} from "@/hooks/use-toast";
 
 export const useFormLogic = (
   editingSubmission: FormSubmission | null = null,
@@ -29,13 +29,11 @@ export const useFormLogic = (
 
   useEffect(() => {
     setFormData((prev) => {
-      const updated = {
+      return {
         ...prev,
         age,
         // We're not touching totalIncome at all
       };
-
-      return updated;
     });
   }, [age, setFormData]); // Removed totalIncome from dependencies
 

@@ -1,7 +1,6 @@
-import { Card } from "@/components/ui/card";
 import ChartControls from "./charts/ChartControls";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from 'recharts';
+import { Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Line, ComposedChart } from 'recharts';
 import CustomTooltip from "./charts/CustomTooltip";
 import { startOfDay, subDays } from 'date-fns';
 

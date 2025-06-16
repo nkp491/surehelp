@@ -2,8 +2,6 @@ import React from 'react';
 import AddMetricsButton from "../AddMetricsButton";
 import SearchFilters from "./SearchFilters";
 import { TimePeriod } from "@/types/metrics";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
 
 interface MetricsHistoryHeaderProps {
   selectedDate: Date | null;

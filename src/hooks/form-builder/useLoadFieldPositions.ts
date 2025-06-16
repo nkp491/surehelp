@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { FormField } from "@/types/formTypes";
 
 export const useLoadFieldPositions = (section: string) => {
   const [fieldPositions, setFieldPositions] = useState<Record<string, any>>({});

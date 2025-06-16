@@ -1,7 +1,6 @@
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import DateRangePicker from "@/components/charts/DateRangePicker";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { TimePeriod } from "@/types/metrics";
 
 interface SearchFiltersProps {

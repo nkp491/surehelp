@@ -5,7 +5,7 @@ import { TeamBulletin as TeamBulletinType } from "@/types/team";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus, Pin, PinOff, Edit, Trash2, Loader2 } from "lucide-react";
-import { format, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import { CreateBulletinDialog } from "./CreateBulletinDialog";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";

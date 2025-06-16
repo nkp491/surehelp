@@ -1,7 +1,6 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RolesList } from "@/components/role-management/RolesList";
 import { RoleDescriptions } from "@/components/role-management/RoleDescriptions";
-import { Skeleton } from "@/components/ui/skeleton";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { useState } from "react";
 

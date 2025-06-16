@@ -1,6 +1,3 @@
-
-import React from 'react';
-import { Badge } from "@/components/ui/badge";
 export function PricingHeader() {
   return <>
       <div className="flex gap-2 flex-col px-0">

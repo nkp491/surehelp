@@ -1,7 +1,6 @@
 import MetricsSection from "../dashboard/MetricsSection";
 import { useLocation } from "react-router-dom";
 import { MetricsProvider } from "@/contexts/MetricsContext";
-import { Separator } from "@/components/ui/separator";
 
 const Header = () => {
   const location = useLocation();

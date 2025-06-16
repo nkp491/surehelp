@@ -16,8 +16,6 @@ import {
 import { useSidebar } from "./sidebar-context"
 import { 
   SIDEBAR_WIDTH_MOBILE,
-  SIDEBAR_WIDTH,
-  SIDEBAR_WIDTH_ICON
 } from "./sidebar-context"
 
 const Sidebar = React.forwardRef<

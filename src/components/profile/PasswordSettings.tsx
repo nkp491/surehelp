@@ -20,7 +20,7 @@ interface ValidationItemProps {
   text: string;
 }
 
-const ValidationItem = ({ isValid, text }: ValidationItemProps): JSX.Element => (
+const ValidationItem = ({ isValid, text }: ValidationItemProps) => (
   <div
     className={`flex items-center gap-2 text-sm ${isValid ? "text-green-600" : "text-gray-500"}`}
   >

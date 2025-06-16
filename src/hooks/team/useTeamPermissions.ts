@@ -33,8 +33,8 @@ export const useTeamPermissions = () => {
       .eq('role', 'system_admin')
       .single();
 
-    if (error || !data) return false;
-    return true;
+    return !(error || !data);
+
   };
 
   return {
