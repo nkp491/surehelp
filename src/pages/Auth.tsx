@@ -88,7 +88,12 @@ const Auth = () => {
       switch (event) {
         case "SIGNED_IN":
           if (session) {
-            await roleService.fetchAndSaveRoles();
+            const { hasRoles } = await roleService.fetchAndSaveRoles();
+            if (!hasRoles) {
+              await supabase.auth.signOut();
+              setErrorMessage("You don't have any roles assigned. Please contact an administrator.");
+              return;
+            }
             const returnUrl = new URLSearchParams(location.search).get("returnUrl");
             navigate(returnUrl || "/assessment", { replace: true });
           }

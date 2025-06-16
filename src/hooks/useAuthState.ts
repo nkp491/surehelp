@@ -1,11 +1,7 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
 
 export const useAuthState = () => {
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 
@@ -20,22 +16,36 @@ export const useAuthState = () => {
   const handleAuthError = async () => {
     clearAuthData();
     await supabase.auth.signOut();
-    toast({
-      title: "Session Expired",
-      description: "Please sign in again",
-      variant: "destructive",
-    });
     setIsAuthenticated(false);
-    navigate("/auth", { replace: true });
+    setIsLoading(false);
   };
 
   useEffect(() => {
     let mounted = true;
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event, session) => {
+      if (!mounted) return;
+
+      console.log("Auth state change:", { event, session });
+
+      if (event === "SIGNED_OUT") {
+        clearAuthData();
+        setIsAuthenticated(false);
+      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
+        setIsAuthenticated(true);
+      }
+    });
+
     const checkAuth = async () => {
       try {
         const {
           data: { session },
         } = await supabase.auth.getSession();
+
+        console.log("Initial session ===>", session);
+
         if (!session) {
           if (mounted) {
             clearAuthData();
@@ -44,56 +54,32 @@ export const useAuthState = () => {
           }
           return;
         }
-        if (session) {
-          try {
-            const { error: refreshError } = await supabase.auth.refreshSession();
-            if (refreshError) {
-              console.error("Session refresh error:", refreshError);
-              await handleAuthError();
-              return;
-            }
-          } catch (refreshError) {
-            console.error("Session refresh error:", refreshError);
-            await handleAuthError();
-            return;
-          }
+
+        const { error: refreshError } = await supabase.auth.refreshSession();
+
+        if (refreshError) {
+          console.error("Session refresh error:", refreshError);
+          if (mounted) await handleAuthError();
+          return;
         }
+
         if (mounted) {
           setIsAuthenticated(true);
           setIsLoading(false);
         }
-      } catch (error) {
-        console.error("Auth error:", error);
-        if (mounted) {
-          await handleAuthError();
-        }
+      } catch (err) {
+        console.error("Auth check error:", err);
+        if (mounted) await handleAuthError();
       }
     };
 
-    checkAuth();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (!mounted) return;
-
-      console.log("Auth state change:", { event, session });
-
-      if (event === "SIGNED_OUT") {
-        clearAuthData();
-        setIsAuthenticated(false);
-        navigate("/auth", { replace: true });
-      } else if (event === "SIGNED_IN" || event === "TOKEN_REFRESHED") {
-        setIsAuthenticated(true);
-        setIsLoading(false);
-      }
-    });
+    checkAuth(); // Call this *after* subscription is setup
 
     return () => {
       mounted = false;
       subscription.unsubscribe();
     };
-  }, [navigate, toast]);
+  }, []);
 
   return { isLoading, isAuthenticated };
 };
