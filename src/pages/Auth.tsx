@@ -21,6 +21,49 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+
+  const validateEmail = (email: string) => {
+    if (!email) {
+      setEmailError("");
+      return false;
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      setEmailError("Please enter a valid email address");
+      return false;
+    }
+    setEmailError("");
+    return true;
+  };
+
+  const validatePassword = (password: string, isSignUp: boolean) => {
+    if (!password) {
+      setPasswordError("");
+      return false;
+    }
+    if (isSignUp) {
+      if (password.length < 8) {
+        setPasswordError("Password must be at least 8 characters long");
+        return false;
+      }
+      if (!/[A-Z]/.test(password)) {
+        setPasswordError("Password must contain at least one uppercase letter");
+        return false;
+      }
+      if (!/[a-z]/.test(password)) {
+        setPasswordError("Password must contain at least one lowercase letter");
+        return false;
+      }
+      if (!/[0-9]/.test(password)) {
+        setPasswordError("Password must contain at least one number");
+        return false;
+      }
+    }
+    setPasswordError("");
+    return true;
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -111,6 +154,12 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
+    
+    if (!validateEmail(email) || !validatePassword(password, true)) {
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signUp({ email, password });
     setLoading(false);
     if (error) setErrorMessage(getErrorMessage(error));
@@ -120,6 +169,12 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
+    
+    if (!validateEmail(email) || !validatePassword(password, false)) {
+      setLoading(false);
+      return;
+    }
+
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
     if (error) setErrorMessage(getErrorMessage(error));
@@ -152,9 +207,13 @@ const Auth = () => {
                     type="email"
                     placeholder="Your email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      validateEmail(e.target.value);
+                    }}
                     required
                   />
+                  {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
                 </div>
                 <div>
                   <label htmlFor="password">Create a Password</label>
@@ -162,9 +221,13 @@ const Auth = () => {
                     type="password"
                     placeholder="Your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      validatePassword(e.target.value, true);
+                    }}
                     required
                   />
+                  {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                 </div>
                 <TermsCheckbox isChecked={termsAccepted} onCheckedChange={setTermsAccepted} />
                 <Button
@@ -184,9 +247,13 @@ const Auth = () => {
                     type="email"
                     placeholder="Your email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      validateEmail(e.target.value);
+                    }}
                     required
                   />
+                  {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
                 </div>
                 <div>
                   <label htmlFor="password">Your Password</label>
@@ -194,9 +261,13 @@ const Auth = () => {
                     type="password"
                     placeholder="Your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      validatePassword(e.target.value, false);
+                    }}
                     required
                   />
+                  {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
                 </div>
                 <Button
                   type="submit"
