@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthHeader from "@/components/auth/AuthHeader";
-import AuthFormContainer from "@/components/auth/AuthFormContainer";
-import AuthLayout from "@/components/auth/AuthLayout";
 import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
 import { useToast } from "@/hooks/use-toast";
@@ -62,17 +60,14 @@ const Auth = () => {
           setIsInitializing(false);
           return;
         }
-
         if (session) {
           const returnUrl = new URLSearchParams(location.search).get("returnUrl");
           navigate(returnUrl || "/assessment", { replace: true });
         }
-
         if (error) {
           console.error("Session check error:", error);
           setErrorMessage(getErrorMessage(error));
         }
-
         setIsInitializing(false);
       } catch (error) {
         console.error("Auth error:", error);
@@ -223,47 +218,48 @@ const Auth = () => {
   };
 
   return (
-    <AuthLayout>
-      <div className="space-y-6">
-        <AuthHeader view={view} onViewChange={setView} />
-        {errorMessage && (
-          <Alert variant="destructive" className="mb-6">
-            <AlertDescription>{errorMessage}</AlertDescription>
-          </Alert>
-        )}
-        <AuthFormContainer>
-          <SupabaseAuth
-            supabaseClient={supabase}
-            appearance={getCustomAppearance()}
-            providers={[]}
-            redirectTo={getCallbackUrl()}
-            view={view}
-            showLinks={false}
-          />
-          {view === "sign_in" && (
-            <div className="mt-4 text-center">
-              <button
-                type="button"
-                onClick={() => {
-                  console.log("Navigating to forgot password"); // Debug log
-                  navigate("/auth/forgot-password");
-                }}
-                className="text-sm text-blue-600 hover:text-blue-800"
-              >
-                Forgot Password?
-              </button>
-            </div>
+    <div className="min-h-screen w-full bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
+      <div className="min-h-screen w-full flex items-center justify-center p-4">
+        <div className="space-y-6 w-[28rem]">
+          <AuthHeader view={view} onViewChange={setView} />
+          {errorMessage && (
+            <Alert variant="destructive" className="mb-6">
+              <AlertDescription>{errorMessage}</AlertDescription>
+            </Alert>
           )}
-          {view === "sign_up" && (
-            <TermsCheckbox
-              isChecked={termsAccepted}
-              onCheckedChange={setTermsAccepted}
-              showError={showTermsError}
+          <div className="bg-white/90 p-6 sm:p-8 rounded-xl shadow-lg">
+            <SupabaseAuth
+              supabaseClient={supabase}
+              appearance={getCustomAppearance()}
+              providers={[]}
+              redirectTo={getCallbackUrl()}
+              view={view}
+              showLinks={false}
             />
-          )}
-        </AuthFormContainer>
+            {view === "sign_in" && (
+              <div className="mt-4 text-center">
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigate("/auth/forgot-password");
+                  }}
+                  className="text-sm text-blue-600 hover:text-blue-800"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
+            {view === "sign_up" && (
+              <TermsCheckbox
+                isChecked={termsAccepted}
+                onCheckedChange={setTermsAccepted}
+                showError={showTermsError}
+              />
+            )}
+          </div>
+        </div>
       </div>
-    </AuthLayout>
+    </div>
   );
 };
 

@@ -12,11 +12,9 @@ import {
 } from "@/components/ui/dialog";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { useToast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 import { Eye, EyeOff, Lock, Check, X } from "lucide-react";
 
-// Move this to the top of the file, before PasswordSettings
 interface ValidationItemProps {
   isValid: boolean;
   text: string;
@@ -33,25 +31,21 @@ const ValidationItem = ({ isValid, text }: ValidationItemProps): JSX.Element => 
 
 const PasswordSettings = () => {
   const { language } = useLanguage();
-  const { toast } = useToast();
   const t = translations[language];
-
   // Dialog states
   const [showCurrentPasswordDialog, setShowCurrentPasswordDialog] = useState(false);
   const [showNewPasswordDialog, setShowNewPasswordDialog] = useState(false);
-
   // Form states
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [loading, setLoading] = useState(false);
-
+  const [error, setError] = useState("");
   // Password visibility states
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
-  // Password validation function
   const validatePassword = (password: string) => {
     const validations = {
       length: password.length >= 8,
@@ -60,7 +54,6 @@ const PasswordSettings = () => {
       number: /\d/.test(password),
       special: /[!@#$%^&*(),.?":{}|<>]/.test(password),
     } as const;
-
     const isValid = Object.values(validations).every(Boolean);
     return { validations, isValid };
   };
@@ -70,17 +63,13 @@ const PasswordSettings = () => {
       const {
         data: { user },
       } = await supabase.auth.getUser();
-
       if (!user?.email) {
         throw new Error("No user email found");
       }
-
-      // Try to sign in with current credentials to verify password
       const { error } = await supabase.auth.signInWithPassword({
         email: user.email,
         password: password,
       });
-
       return !error;
     } catch (error: unknown) {
       console.error("Error verifying password:", error);
@@ -92,38 +81,19 @@ const PasswordSettings = () => {
     e: React.FormEvent<HTMLFormElement>
   ): Promise<void> => {
     e.preventDefault();
-
-    if (!currentPassword) {
-      toast({
-        title: "Error",
-        description: "Please enter your current password",
-        variant: "destructive",
-      });
-      return;
-    }
-
     setLoading(true);
-
+    setError("");
     try {
-      const isValid = await verifyCurrentPassword(currentPassword);
-
-      if (isValid) {
+      const response = await verifyCurrentPassword(currentPassword);
+      if (response) {
         setShowCurrentPasswordDialog(false);
         setShowNewPasswordDialog(true);
       } else {
-        toast({
-          title: "Error",
-          description: "Current password is incorrect",
-          variant: "destructive",
-        });
+        setError("Current password is incorrect");
       }
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : "Failed to verify password";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      console.error("Error verifying password:", error);
+      setError("Failed to verify password");
     } finally {
       setLoading(false);
     }
@@ -131,70 +101,39 @@ const PasswordSettings = () => {
 
   const handleNewPasswordSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
-
-    if (!newPassword || !confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all fields",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
+    setError("");
     const { isValid } = validatePassword(newPassword);
     if (!isValid) {
-      toast({
-        title: "Error",
-        description: "Password does not meet the requirements",
-        variant: "destructive",
-      });
+      setError("Password does not meet the requirements");
       return;
     }
-
     if (currentPassword === newPassword) {
-      toast({
-        title: "Error",
-        description: "New password must be different from current password",
-        variant: "destructive",
-      });
+      setError("New password must be different from current password");
       return;
     }
-
     setLoading(true);
-
     try {
-      const { error } = await supabase.auth.updateUser({
+      const response = await supabase.auth.updateUser({
         password: newPassword,
       });
-
-      if (error) {
-        throw error;
+      if (response.error) {
+        if (response.error.name === "AuthWeakPasswordError") {
+          const formattedError = response?.error?.message.replace(/([A-Z])/g, " $1").trim();
+          const capitalizedError = formattedError.charAt(0).toUpperCase() + formattedError.slice(1);
+          setError(capitalizedError);
+        } else {
+          setError(response.error.message || "Failed to update password");
+        }
+        return;
       }
-
-      toast({
-        title: "Success",
-        description: "Password updated successfully",
-      });
-
-      // Reset all states
+      if (!response.data?.user) {
+        setError("Failed to update password. Please try again.");
+        return;
+      }
       handleCloseDialogs();
     } catch (error: unknown) {
       console.error("Error updating password:", error);
-      const errorMessage = error instanceof Error ? error.message : "Failed to update password";
-      toast({
-        title: "Error",
-        description: errorMessage,
-        variant: "destructive",
-      });
+      setError("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
     }
@@ -209,6 +148,7 @@ const PasswordSettings = () => {
     setShowCurrentPassword(false);
     setShowNewPassword(false);
     setShowConfirmPassword(false);
+    setError("");
   };
 
   const handleChangePasswordClick = (): void => {
@@ -289,6 +229,7 @@ const PasswordSettings = () => {
                   )}
                 </button>
               </div>
+              {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
             </div>
 
             <div className="flex gap-2 pt-2">
@@ -354,6 +295,7 @@ const PasswordSettings = () => {
                   )}
                 </button>
               </div>
+              {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
             </div>
 
             {/* Confirm Password */}
