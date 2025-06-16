@@ -5,19 +5,18 @@ import { Link } from "react-router-dom";
 interface TermsCheckboxProps {
   isChecked: boolean;
   onCheckedChange: (checked: boolean) => void;
-  showError?: boolean;
 }
 
-const TermsCheckbox = ({ isChecked, onCheckedChange, showError }: TermsCheckboxProps) => {
+const TermsCheckbox = ({ isChecked, onCheckedChange }: TermsCheckboxProps) => {
   return (
-    <div className="flex items-start space-x-2 mt-4 mb-2">
-      <Checkbox id="terms" checked={isChecked} onCheckedChange={onCheckedChange} className="mt-1" />
-      <div className="grid gap-1.5 leading-none">
+    <div className="flex items-center space-x-2 mt-4 mb-2">
+      <Checkbox id="terms" checked={isChecked} onCheckedChange={onCheckedChange} />
+      <div className="grid gap-1.5 accent--[#2A6F97]">
         <Label htmlFor="terms" className="text-sm text-gray-600 font-normal cursor-pointer">
           I agree to the{" "}
           <Link
             to="/auth/terms"
-            className="text-blue-600 hover:text-blue-800 hover:underline"
+            className="hover:text-[#2A6F97] hover:underline"
             target="_blank"
             rel="noopener noreferrer"
           >

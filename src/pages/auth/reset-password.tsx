@@ -168,7 +168,7 @@ const ResetPassword = () => {
   }
 
   if (!isValidSession) {
-    return null; // Will redirect in useEffect
+    return null;
   }
 
   return (

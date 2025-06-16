@@ -1,50 +1,26 @@
 import { useEffect, useState } from "react";
-import { Auth as SupabaseAuth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import AuthHeader from "@/components/auth/AuthHeader";
-import { getAuthFormAppearance } from "@/components/auth/AuthFormAppearance";
 import { getErrorMessage } from "@/utils/authErrors";
 import { useToast } from "@/hooks/use-toast";
 import TermsCheckbox from "@/components/auth/TermsCheckbox";
 import { roleService } from "@/services/roleService";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 const Auth = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
   const [errorMessage, setErrorMessage] = useState("");
-  const [view, setView] = useState<"sign_in" | "sign_up" | "update_password">("sign_up");
+  const [view, setView] = useState<"sign_in" | "sign_up">("sign_up");
   const [isInitializing, setIsInitializing] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
-  const [showTermsError, setShowTermsError] = useState(false);
-
-  const getSiteUrl = () => {
-    try {
-      if (typeof window === "undefined") {
-        return "";
-      }
-      const currentUrl = new URL(window.location.href);
-      const baseUrl = `${currentUrl.protocol}//${currentUrl.host}`;
-      return baseUrl;
-    } catch (error) {
-      console.error("Error getting site URL:", error);
-      return window.location.origin;
-    }
-  };
-
-  const getCallbackUrl = () => {
-    try {
-      const siteUrl = getSiteUrl();
-      const callbackUrl = `${siteUrl}/auth/callback`;
-      console.log("Callback URL configured as:", callbackUrl);
-      return callbackUrl;
-    } catch (error) {
-      console.error("Error constructing callback URL:", error);
-      return `${window.location.origin}/auth/callback`;
-    }
-  };
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     const checkSession = async () => {
@@ -56,7 +32,6 @@ const Auth = () => {
 
         const hash = window.location.hash;
         if (hash?.includes("type=recovery")) {
-          setView("update_password");
           setIsInitializing(false);
           return;
         }
@@ -86,7 +61,9 @@ const Auth = () => {
             const { hasRoles } = await roleService.fetchAndSaveRoles();
             if (!hasRoles) {
               await supabase.auth.signOut();
-              setErrorMessage("You don't have any roles assigned. Please contact an administrator.");
+              setErrorMessage(
+                "You don't have any roles assigned. Please contact an administrator."
+              );
               return;
             }
             const returnUrl = new URLSearchParams(location.search).get("returnUrl");
@@ -96,14 +73,6 @@ const Auth = () => {
         case "SIGNED_OUT":
           roleService.clearRoles();
           setErrorMessage("");
-          break;
-        case "PASSWORD_RECOVERY":
-          setView("update_password");
-          toast({
-            title: "Password reset initiated",
-            description: "Please check your email for the password reset link.",
-            duration: 6000,
-          });
           break;
         case "USER_UPDATED":
           if (session) {
@@ -138,49 +107,23 @@ const Auth = () => {
     return () => subscription.unsubscribe();
   }, [navigate, toast, location]);
 
-  useEffect(() => {
-    const attachFormListeners = () => {
-      const signUpForm = document.querySelector('form[data-supabase-auth-view="sign_up"]');
-      if (signUpForm) {
-        console.log("Attaching form submission listener to sign up form");
-        signUpForm.addEventListener("submit", (e) => {
-          if (!termsAccepted) {
-            e.preventDefault();
-            e.stopPropagation();
-            setShowTermsError(true);
-            return false;
-          }
-          setShowTermsError(false);
-          return true;
-        });
-      }
-      const signUpButton = document.querySelector(
-        'form[data-supabase-auth-view="sign_up"] button[type="submit"]'
-      );
-      if (signUpButton && !termsAccepted) {
-        signUpButton.setAttribute("disabled", !termsAccepted ? "true" : "false");
-      } else if (signUpButton) {
-        signUpButton.removeAttribute("disabled");
-      }
-    };
+  const handleSignUp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+    const { error } = await supabase.auth.signUp({ email, password });
+    setLoading(false);
+    if (error) setErrorMessage(getErrorMessage(error));
+  };
 
-    const timer = setTimeout(attachFormListeners, 500);
-
-    const observer = new MutationObserver(() => {
-      attachFormListeners();
-    });
-
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    return () => {
-      clearTimeout(timer);
-      observer.disconnect();
-    };
-  }, [view, termsAccepted]);
-
-  useEffect(() => {
-    setShowTermsError(false);
-  }, [view]);
+  const handleSignIn = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrorMessage("");
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    setLoading(false);
+    if (error) setErrorMessage(getErrorMessage(error));
+  };
 
   if (isInitializing) {
     return (
@@ -189,33 +132,6 @@ const Auth = () => {
       </div>
     );
   }
-
-  const getCustomAppearance = () => {
-    const baseAppearance = getAuthFormAppearance();
-    if (view === "sign_up") {
-      return {
-        ...baseAppearance,
-        style: {
-          ...baseAppearance.style,
-          button: {
-            ...baseAppearance.style.button,
-            opacity: termsAccepted ? "1" : "0.6",
-            cursor: termsAccepted ? "pointer" : "not-allowed",
-          },
-        },
-        className: {
-          ...baseAppearance.className,
-          button: `${baseAppearance.className.button} ${
-            !termsAccepted ? "pointer-events-none" : ""
-          }`,
-        },
-        variables: {
-          ...baseAppearance.variables,
-        },
-      };
-    }
-    return baseAppearance;
-  };
 
   return (
     <div className="min-h-screen w-full bg-gradient-to-b from-[#e6e9f0] via-[#eef1f5] to-white">
@@ -228,33 +144,77 @@ const Auth = () => {
             </Alert>
           )}
           <div className="bg-white/90 p-6 sm:p-8 rounded-xl shadow-lg">
-            <SupabaseAuth
-              supabaseClient={supabase}
-              appearance={getCustomAppearance()}
-              providers={[]}
-              redirectTo={getCallbackUrl()}
-              view={view}
-              showLinks={false}
-            />
-            {view === "sign_in" && (
-              <div className="mt-4 text-center">
-                <button
-                  type="button"
-                  onClick={() => {
-                    navigate("/auth/forgot-password");
-                  }}
-                  className="text-sm text-blue-600 hover:text-blue-800"
-                >
-                  Forgot Password?
-                </button>
-              </div>
-            )}
             {view === "sign_up" && (
-              <TermsCheckbox
-                isChecked={termsAccepted}
-                onCheckedChange={setTermsAccepted}
-                showError={showTermsError}
-              />
+              <form onSubmit={handleSignUp} data-supabase-auth-view="sign_up" className="space-y-4">
+                <div>
+                  <label htmlFor="email">Email address</label>
+                  <Input
+                    type="email"
+                    placeholder="Your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password">Create a Password</label>
+                  <Input
+                    type="password"
+                    placeholder="Your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <TermsCheckbox isChecked={termsAccepted} onCheckedChange={setTermsAccepted} />
+                <Button
+                  type="submit"
+                  className="w-full bg-[#2A6F97] hover:bg-[#256087] text-white"
+                  disabled={!termsAccepted || loading}
+                >
+                  {loading ? "Signing up..." : "Sign up"}
+                </Button>
+              </form>
+            )}
+            {view === "sign_in" && (
+              <form onSubmit={handleSignIn} data-supabase-auth-view="sign_in" className="space-y-4">
+                <div>
+                  <label htmlFor="email">Email address</label>
+                  <Input
+                    type="email"
+                    placeholder="Your email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div>
+                  <label htmlFor="password">Your Password</label>
+                  <Input
+                    type="password"
+                    placeholder="Your password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button
+                  type="submit"
+                  className="w-full bg-[#2A6F97] hover:bg-[#256087] text-white"
+                  disabled={loading}
+                >
+                  {loading ? "Signing in..." : "Sign in"}
+                </Button>
+                <div className="mt-4 text-center">
+                  <button
+                    type="button"
+                    onClick={() => navigate("/auth/forgot-password")}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Forgot Password?
+                  </button>
+                </div>
+              </form>
             )}
           </div>
         </div>

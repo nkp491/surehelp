@@ -12,18 +12,16 @@ interface AuthGuardProps {
 const AuthGuard = ({ children }: AuthGuardProps) => {
   const { isLoading, isAuthenticated } = useAuthState();
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const checkAuth = async () => {
       if (!isLoading && isAuthenticated === false) {
         navigate("/auth", { replace: true });
         return;
       }
-
       if (!isLoading && isAuthenticated) {
         const { hasRoles } = await roleService.fetchAndSaveRoles();
         if (!hasRoles) {
-          // If user has no roles, sign them out and redirect to auth
           await supabase.auth.signOut();
           navigate("/auth", { replace: true });
         }
@@ -36,7 +34,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
   if (isLoading) {
     return <LoadingScreen />;
   }
-  
+
   if (!isAuthenticated) {
     return null;
   }
