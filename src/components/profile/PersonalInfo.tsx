@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,8 +51,7 @@ const PersonalInfo = ({
         const { data: managerRoles, error: rolesError } = await supabase
           .from('user_roles')
           .select('user_id')
-          .in('role', ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'])
-          .distinct();
+          .in('role', ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum']);
 
         if (rolesError) throw rolesError;
 

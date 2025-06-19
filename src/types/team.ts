@@ -148,7 +148,7 @@ export interface EnrichedMember {
   user_id: string;
   name: string;
   role: string;
-  email?: string;
+  email?: string; // Make email optional
   profile_image_url?: string | null;
   metrics: MemberMetrics;
   notes: MeetingNote[];

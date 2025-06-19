@@ -21,6 +21,7 @@ export const useManagerTeam = (managerId?: string) => {
       // Transform the data to match our Profile type
       return data.map(profile => ({
         ...profile,
+        roles: [], // Add empty roles array to match Profile type
         // Parse JSON fields properly if they're strings
         privacy_settings: typeof profile.privacy_settings === 'string'
           ? JSON.parse(profile.privacy_settings)

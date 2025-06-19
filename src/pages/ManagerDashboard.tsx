@@ -271,7 +271,7 @@ const convertRatiosToObject = (
           .replace(/ ([a-z])/g, (_, c: string) => c.toUpperCase())
           .replace(/ /g, "");
         const camelKey = key.charAt(0).toLowerCase() + key.slice(1);
-        (acc as any)[camelKey] = r.value;
+        (acc as any)[camelKey] = String(r.value); // Ensure value is string for MetricRatios
         return acc;
       } catch (error) {
         console.warn("Error processing ratio:", r, error);
@@ -316,7 +316,7 @@ const transformMemberData = (
               user_id: member.user_id,
               name: member.name || "Unknown User",
               role: member.role || "Unknown Role",
-              email: member.email || null,
+              email: member.email || undefined, // Make email optional
               profile_image_url: member.profile_image_url || null,
               metrics: {
                 ...defaultMetrics,
@@ -331,7 +331,7 @@ const transformMemberData = (
             user_id: member.user_id,
             name: member.name || "Unknown User",
             role: member.role || "Unknown Role",
-            email: member.email || null,
+            email: member.email || undefined, // Make email optional
             profile_image_url: member.profile_image_url || null,
             metrics: {
               leads: Number(metrics.leads) || 0,
