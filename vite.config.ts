@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
   },
   plugins: [
     react({
-      jsxImportSource: '@emotion/react',
+      jsxRuntime: 'automatic',
     }),
   ],
   resolve: {
