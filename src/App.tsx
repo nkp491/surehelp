@@ -1,3 +1,4 @@
+
 import { BrowserRouter as Router, Route, Routes, Navigate } from "react-router-dom";
 import Auth from "./pages/Auth";
 import CallbackHandler from "./pages/CallbackHandler";
@@ -7,6 +8,9 @@ import AuthGuard from "./components/auth/AuthGuard";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { queryClient } from "./lib/react-query";
 import TermsOfUse from "./pages/marketing/TermsOfUse";
+import Home from "./pages/marketing/Home";
+import About from "./pages/marketing/About";
+import Pricing from "./pages/marketing/Pricing";
 import { useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { roleService } from "@/services/roleService";
@@ -29,15 +33,21 @@ function App() {
     <QueryClientProvider client={queryClient}>
       <Router>
         <Routes>
+          {/* Marketing pages */}
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<About />} />
+          <Route path="/pricing" element={<Pricing />} />
+          
           {/* Authentication routes */}
           <Route path="/auth" element={<Auth />} />
           <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           <Route path="/auth/reset-password" element={<ResetPassword />} />
           <Route path="/auth/callback" element={<CallbackHandler />} />
           <Route path="/auth/terms" element={<TermsOfUse />} />
-          {/* Protected routes with sidebar navigation */}
+          
+          {/* Protected application routes with sidebar navigation */}
           <Route
-            path="/"
+            path="/dashboard"
             element={
               <AuthGuard>
                 <Navigate to="/metrics" replace />
