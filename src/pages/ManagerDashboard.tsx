@@ -316,7 +316,7 @@ const transformMemberData = (
               user_id: member.user_id,
               name: member.name || "Unknown User",
               role: member.role || "Unknown Role",
-              email: member.email || undefined, // Make email optional
+              email: member.email, // Keep as optional
               profile_image_url: member.profile_image_url || null,
               metrics: {
                 ...defaultMetrics,
@@ -326,12 +326,20 @@ const transformMemberData = (
               notes: meetingNotesByUser[member.user_id] || [],
             };
           }
-          const ratios = metrics.ratios || calculateRatios(metrics);
+          const ratios = metrics.ratios || calculateRatios({
+            leads: metrics.leads,
+            calls: metrics.calls,
+            contacts: metrics.contacts,
+            scheduled: metrics.scheduled,
+            sits: metrics.sits,
+            sales: metrics.sales,
+            ap: metrics.ap,
+          });
           return {
             user_id: member.user_id,
             name: member.name || "Unknown User",
             role: member.role || "Unknown Role",
-            email: member.email || undefined, // Make email optional
+            email: member.email, // Keep as optional
             profile_image_url: member.profile_image_url || null,
             metrics: {
               leads: Number(metrics.leads) || 0,
