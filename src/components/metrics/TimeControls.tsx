@@ -9,8 +9,11 @@ import { useMetrics } from "@/contexts/MetricsContext";
 import { format } from "date-fns";
 import { useToast } from "../ui/use-toast";
 import { cn } from "@/lib/utils";
+import { roleService } from "@/services/roleService";
 
 const TimeControls = () => {
+  const userRoles = roleService.getRoles();
+  const isAgent = userRoles.length > 1 ? false : userRoles.includes("agent") ? true : false;
   const { timePeriod, dateRange, handleTimePeriodChange, setDateRange } = useMetrics();
   const { toast } = useToast();
 
@@ -33,7 +36,6 @@ const TimeControls = () => {
   const tabStyle = "px-6 py-2 rounded-t-lg font-medium transition-colors";
   const activeTabStyle = "bg-[#3F7BA9] text-white";
   const inactiveTabStyle = "text-[#3F7BA9] hover:bg-[#3F7BA9]/10";
-
   return (
     <div className="flex gap-0.5 items-end justify-end w-full">
       <button
@@ -63,6 +65,7 @@ const TimeControls = () => {
       >
         Monthly
       </button>
+      {!isAgent && (
       <Popover>
         <PopoverTrigger asChild>
           <button
@@ -96,9 +99,10 @@ const TimeControls = () => {
               });
             }}
             numberOfMonths={2}
-          />
+            />
         </PopoverContent>
       </Popover>
+        )}
     </div>
   );
 };
