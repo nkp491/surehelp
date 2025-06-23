@@ -11,6 +11,7 @@ import { DeleteDialog } from "./submissions/DeleteDialog";
 import SubmissionsPagination from "./submissions/SubmissionsPagination";
 import { useSubmissionDelete } from "./submissions/useSubmissionDelete";
 import { useSubmissionExport } from "./submissions/useSubmissionExport";
+import { AgentTypes } from "@/types/agent";
 
 interface SubmissionsTableProps {
   submissions: FormSubmission[];
@@ -49,8 +50,10 @@ const SubmissionsTable = ({ submissions, onEdit }: SubmissionsTableProps) => {
     declined: processSubmissions(submissions.filter(s => s.outcome?.toLowerCase() === "declined") || [])
   };
 
+  // adding the dynamic roles from the AgentTypes
+  const roles = Object.values(AgentTypes);
   // If user doesn't have the required role for advanced features
-  const showAdvancedFiltering = hasRequiredRole(['agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']);
+  const showAdvancedFiltering = hasRequiredRole(roles);
 
   return (
     <div className="space-y-8">

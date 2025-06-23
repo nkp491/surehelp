@@ -14,8 +14,10 @@ import AdminActionsPage from "@/components/admin/AdminActionsPage";
 import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import TermsOfUse from "@/pages/marketing/TermsOfUse";
+import { AgentTypes } from "@/types/agent";
 
 const MainContent = () => {
+  const roles = Object.values(AgentTypes);
   const location = useLocation();
 
   // Find the current navigation item to get the required roles
@@ -63,7 +65,8 @@ const MainContent = () => {
     // For the team page, manually add role protection if not already covered
     if (location.pathname === '/team' && !requiredRoles) {
       return (
-        <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
+        // adding the dynamic roles from the AgentTypes
+        <RoleBasedRoute requiredRoles={roles}>
           {Component}
         </RoleBasedRoute>
       );
