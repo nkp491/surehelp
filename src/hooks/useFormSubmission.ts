@@ -15,6 +15,7 @@ export const useFormSubmission = (
 
   const handleSubmit = async (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
+    console.log("Submitting form with outcome:", outcome);
     
     const submissionData = {
       ...formData,
@@ -77,6 +78,7 @@ export const useFormSubmission = (
       }
       
       setFormData(initialFormValues);
+      return true;
     } catch (error) {
       console.error("Error saving submission:", error);
       toast({
@@ -84,6 +86,7 @@ export const useFormSubmission = (
         description: "Failed to save submission. Please try again.",
         variant: "destructive",
       });
+      return false;
     }
   };
 

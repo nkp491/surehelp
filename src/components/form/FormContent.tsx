@@ -16,10 +16,18 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const [sections] = useState(INITIAL_FIELDS);
   const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
   const { familyMembers, updateFamilyMember, removeFamilyMember } = useFamilyMembers();
+  const [loading, setLoading] = useState(false);
+  const [loadingButton, setLoadingButton] = useState<string | undefined>(undefined);
 
-  const handleFormSubmit = (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => {
+  const handleFormSubmit = async (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => {
     e.preventDefault();
-    handleSubmit(e, outcome);
+    setLoading(true);
+    setLoadingButton(outcome);
+    const success = await handleSubmit(e, outcome);
+    setLoading(false);
+    setLoadingButton(undefined);
+    // Only reset if successful (handleSubmit returns true)
+    // (Form reset is handled in useFormSubmission on success)
   };
 
   return (
@@ -88,7 +96,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
           onRemove={() => removeFamilyMember(member.id)}
         />
       ))}
-      <FormButtons onSubmit={handleFormSubmit} />
+      <FormButtons onSubmit={handleFormSubmit} loading={loading} loadingButton={loadingButton} />
     </form>
   );
 };

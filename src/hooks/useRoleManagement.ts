@@ -2,6 +2,7 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { AgentTypes } from "@/types/agent";
 
 export type UserRole = {
   id: string;
@@ -32,7 +33,7 @@ export const useRoleManagement = () => {
   const { data: users, isLoading: isLoadingUsers } = useQuery({
     queryKey: ['users-with-roles'],
     queryFn: async () => {
-      console.log('Fetching users and roles...');
+      // console.log('Fetching users and roles...');
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
@@ -43,10 +44,10 @@ export const useRoleManagement = () => {
         throw profilesError;
       }
 
-      console.log('Fetched profiles with dates:', profiles.map(p => ({
-        email: p.email,
-        created_at: p.created_at
-      })));
+      // console.log('Fetched profiles with dates:', profiles.map(p => ({
+      //   email: p.email,
+      //   created_at: p.created_at
+      // })));
 
       // Fetch managers info separately
       const managerIds = profiles
@@ -63,7 +64,7 @@ export const useRoleManagement = () => {
         throw managersError;
       }
 
-      console.log('Fetched managers:', managers);
+      // console.log('Fetched managers:', managers);
 
       // Then get all role assignments
       const { data: roleAssignments, error: rolesError } = await supabase
@@ -75,7 +76,7 @@ export const useRoleManagement = () => {
         throw rolesError;
       }
 
-      console.log('Fetched role assignments:', roleAssignments);
+      // console.log('Fetched role assignments:', roleAssignments);
 
       // Combine the data to create users with their roles
       const usersWithRoles: UserWithRoles[] = profiles.map((profile: any) => {
@@ -84,11 +85,11 @@ export const useRoleManagement = () => {
         );
         const manager = profile.manager_id ? managers?.find(m => m.id === profile.manager_id) : null;
         
-        console.log('Processing user profile:', {
-          email: profile.email,
-          created_at: profile.created_at,
-          created_at_type: typeof profile.created_at
-        });
+        // console.log('Processing user profile:', {
+        //   email: profile.email,
+        //   created_at: profile.created_at,
+        //   created_at_type: typeof profile.created_at
+        // });
         
         return {
           id: profile.id,
@@ -103,7 +104,7 @@ export const useRoleManagement = () => {
         };
       });
 
-      console.log('Processed users with roles:', usersWithRoles);
+      // console.log('Processed users with roles:', usersWithRoles);
       return usersWithRoles;
     },
     staleTime: 0, // Set to 0 to always refetch when invalidated
@@ -111,15 +112,7 @@ export const useRoleManagement = () => {
   });
 
   // Fetch available roles
-  const availableRoles = [
-    "agent",
-    "agent_pro",
-    "manager_pro",
-    "manager_pro_gold",
-    "manager_pro_platinum",
-    "beta_user",
-    "system_admin"
-  ];
+  const availableRoles = Object.values(AgentTypes);
 
   // Assign a role to a user
   const assignRoleMutation = useMutation({
@@ -233,7 +226,7 @@ export const useRoleManagement = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", managerId)
-        .in("role", ["manager_pro", "manager_pro_gold", "manager_pro_platinum"]);
+        .in("role", [AgentTypes.MANAGER, AgentTypes.MANAGER_PRO, AgentTypes.MANAGER_PRO_GOLD, AgentTypes.MANAGER_PRO_PLATINUM]);
 
       if (roleError) {
         console.error('Error checking manager roles:', roleError);
@@ -244,15 +237,25 @@ export const useRoleManagement = () => {
         throw new Error('Selected user does not have a manager role');
       }
 
-      // Get manager's current role tier
-      const managerRole = managerRoles[0].role;
-      const teamSizeLimits = {
-        manager_pro: 5,
-        manager_pro_gold: 10,
-        manager_pro_platinum: 20
-      };
 
-      // Check current team size
+      // Extract all roles from the managerRoles array
+      const roles = managerRoles.map(roleObj => roleObj.role);
+
+      // Team size limits for different roles
+      const teamSizeLimits = {
+        manager: 5,
+        manager_pro: 20,
+        manager_pro_gold: 50,
+        manager_pro_platinum: Infinity
+      } as const;
+
+      // Determine the **maximum** limit based on all roles
+      const applicableLimits = roles
+        .map(role => teamSizeLimits[role as keyof typeof teamSizeLimits])
+        .filter(limit => limit !== undefined);
+
+      const teamSizeLimit = Math.max(...applicableLimits);
+      // Fetch current team size
       const { data: currentTeam, error: teamError } = await supabase
         .from("profiles")
         .select("id")
@@ -264,11 +267,11 @@ export const useRoleManagement = () => {
       }
 
       const currentTeamSize = currentTeam?.length || 0;
-      const teamSizeLimit = teamSizeLimits[managerRole as keyof typeof teamSizeLimits];
 
       if (currentTeamSize >= teamSizeLimit) {
         throw new Error(`Manager has reached their team size limit of ${teamSizeLimit} members`);
       }
+
 
       // If all validations pass, proceed with the update
       const { data: updateResult, error: updateError } = await supabase

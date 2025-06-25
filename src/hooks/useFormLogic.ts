@@ -45,13 +45,15 @@ export const useFormLogic = (
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      await submitForm(e, outcome);
+      const result = await submitForm(e, outcome);
+      return result; // true if success, false if error
     } else {
       toast({
         title: "Error",
         description: "Please check the form for errors.",
         variant: "destructive",
       });
+      return false;
     }
   };
 
