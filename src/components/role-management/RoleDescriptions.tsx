@@ -1,5 +1,10 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function RoleDescriptions() {
   return (
@@ -23,7 +28,7 @@ export function RoleDescriptions() {
             <li>Client book of business</li>
           </ul>
         </div>
-        
+
         {/* Agent Pro */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Agent Pro</h3>
@@ -38,37 +43,40 @@ export function RoleDescriptions() {
             <li>Priority support</li>
           </ul>
         </div>
-        
+
         {/* Manager Pro */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Manager Pro</h3>
           <p className="text-muted-foreground mb-2">
-            Entry-level role for team managers.
+            Entry-level role for team managers and small agencies.
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>Everything in Agent Pro role</li>
-            <li>Basic manager dashboard</li>
-            <li>Team performance metrics</li>
-            <li>Up to 5 agent accounts</li>
+            <li>Manager dashboard access</li>
+            <li>Team performance analytics</li>
+            <li>Up to 25 team members</li>
+            <li>Team bulletin system</li>
+            <li>One-on-one meeting scheduling</li>
+            <li>Action item management</li>
+            <li>Team lead expense tracking</li>
           </ul>
         </div>
-        
+
         {/* Manager Pro Gold */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Manager Pro Gold</h3>
           <p className="text-muted-foreground mb-2">
-            Mid-tier role for growing teams.
+            Advanced role for medium agencies with multiple teams.
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>Everything in Manager Pro role</li>
-            <li>Full manager dashboard</li>
-            <li>Team performance analytics</li>
-            <li>Up to 20 agent accounts</li>
+            <li>Up to 500 team members</li>
             <li>Premium email support</li>
             <li>White-label reporting</li>
+            <li>Advanced team analytics</li>
           </ul>
         </div>
-        
+
         {/* Manager Pro Platinum */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Manager Pro Platinum</h3>
@@ -82,7 +90,7 @@ export function RoleDescriptions() {
             <li>Dedicated account manager</li>
           </ul>
         </div>
-        
+
         {/* Beta User */}
         <div>
           <h3 className="font-semibold text-lg mb-2">Beta User</h3>

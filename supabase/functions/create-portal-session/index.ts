@@ -33,19 +33,40 @@ serve(async (req) => {
       throw new Error("User not found");
     }
 
+    console.log("Current user ID:", user.id);
+
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16",
     });
 
-    // Get customer ID from database
-    const { data: subscription } = await supabaseClient
+    // First, let's check all subscriptions for this user
+    const { data: allSubscriptions, error: fetchError } = await supabaseClient
       .from("subscriptions")
-      .select("stripe_customer_id")
+      .select("*")
+      .eq("user_id", user.id);
+
+    console.log("All subscriptions for user:", allSubscriptions);
+    console.log("Fetch error:", fetchError);
+
+    // Get customer ID from database - look for any subscription with customer ID
+    const { data: subscription, error: singleError } = await supabaseClient
+      .from("subscriptions")
+      .select("stripe_customer_id, status")
       .eq("user_id", user.id)
+      .not("stripe_customer_id", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
       .single();
 
+    console.log("Single subscription query result:", subscription);
+    console.log("Single subscription error:", singleError);
+
     if (!subscription?.stripe_customer_id) {
-      throw new Error("No subscription found");
+      throw new Error(
+        `No active subscription found for user ${user.id}. Found ${
+          allSubscriptions?.length || 0
+        } total subscriptions.`
+      );
     }
 
     // Create portal session
