@@ -11,6 +11,7 @@ import PasswordSettings from "@/components/profile/PasswordSettings";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ManagerTeamList } from "@/components/team/ManagerTeamList";
+import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -62,36 +63,44 @@ const ProfileContent = () => {
           onUpdate={updateProfile}
         />
 
-        <div className="flex flex-col gap-6">
-          <UserRole role={validRole} roles={profile?.roles} />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="space-y-6">
+            <UserRole role={validRole} roles={profile?.roles} />
+            <SubscriptionStatus />
+            <PasswordSettings />
+          </div>
 
-          <PasswordSettings />
-
-          <PrivacySettings
-            settings={
-              profile?.privacy_settings || {
-                show_email: false,
-                show_phone: false,
-                show_photo: true,
+          <div className="space-y-6">
+            <PrivacySettings
+              settings={
+                profile?.privacy_settings || {
+                  show_email: false,
+                  show_phone: false,
+                  show_photo: true,
+                }
               }
-            }
-            onUpdate={updateProfile}
-          />
+              onUpdate={updateProfile}
+            />
 
-          <NotificationPreferences
-            preferences={
-              profile?.notification_preferences || {
-                email_notifications: true,
-                phone_notifications: false,
+            <NotificationPreferences
+              preferences={
+                profile?.notification_preferences || {
+                  email_notifications: true,
+                  phone_notifications: false,
+                }
               }
-            }
-            onUpdate={updateProfile}
-          />
+              onUpdate={updateProfile}
+            />
 
-          <TermsAcceptance />
-
-          {isManager && <ManagerTeamList managerId={profile?.id} />}
+            <TermsAcceptance />
+          </div>
         </div>
+
+        {isManager && (
+          <div className="mt-8">
+            <ManagerTeamList managerId={profile?.id} />
+          </div>
+        )}
       </div>
     </div>
   );
