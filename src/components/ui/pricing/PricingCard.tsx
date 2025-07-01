@@ -6,53 +6,54 @@ import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/integrations/stripe/plans";
 
 interface PricingCardProps {
+  id: string;
   title: string;
   description: string;
   monthlyPrice: string | JSX.Element;
   annualPrice: string | JSX.Element;
   savings?: JSX.Element | null;
   isContact?: boolean;
+  billingInterval?: "monthlyPrice" | "yearlyPrice";
 }
 
 export function PricingCard({
+  id,
   title,
   description,
   monthlyPrice,
   annualPrice,
   savings,
   isContact = false,
+  billingInterval
 }: PricingCardProps) {
   const navigate = useNavigate();
   const { createCheckoutSession, isLoading } = useStripeCheckout();
-  const [billingInterval, setBillingInterval] = useState<
-    "monthly" | "annually"
-  >("monthly");
 
-  const agentProPlan = SUBSCRIPTION_PLANS.find(
-    (plan) => plan.id === "agent_pro"
-  );
-  const isAgentPro = title === "Agent Pro";
+  // Find the plan by id
+  const plan = SUBSCRIPTION_PLANS.find((plan) => plan.id === id);
+  const isAgentPro = id === "agent_pro";
   const isFree = title === "Agent";
+  const isManagerPlan = ["manager_pro", "manager_pro_gold", "manager_pro_platinum"].includes(id);
 
-  const handleGetStarted = async () => {
+  const handleGetStarted = async (id: string) => {
     if (isFree) {
       navigate("/auth");
       return;
     }
 
-    if (isAgentPro && agentProPlan) {
+    if (plan) {
       const priceId =
-        billingInterval === "monthly"
-          ? agentProPlan.stripePriceIdMonthly
-          : agentProPlan.stripePriceIdAnnual;
+        billingInterval === "monthlyPrice"
+          ? plan.stripePriceIdMonthly
+          : plan.stripePriceIdAnnual;
 
       await createCheckoutSession({
         priceId,
-        userId: "", // Will be handled in the hook
-        trialDays: TRIAL_DAYS,
+        userId: "", // handled in the hook
+        trialDays: isAgentPro ? TRIAL_DAYS : undefined,
       });
     } else {
-      // For manager plans, navigate to contact or auth
+      // fallback: navigate to auth if plan not found
       navigate("/auth");
     }
   };
@@ -62,6 +63,7 @@ export function PricingCard({
     if (isFree) return "Get started";
     if (isAgentPro) return `Start ${TRIAL_DAYS}-day free trial`;
     if (isContact) return "Contact sales";
+    if (isManagerPlan) return "Start subscription";
     return "Get started";
   };
 
@@ -74,52 +76,31 @@ export function PricingCard({
         <p className="text-sm text-white/80 h-20 mt-2">{description}</p>
       </div>
       <div className="flex flex-col gap-4 relative flex-grow">
-        {isAgentPro && (
-          <div className="flex items-center justify-center space-x-2 mb-2">
-            <button
-              onClick={() => setBillingInterval("monthly")}
-              className={`px-3 py-1 text-xs rounded ${
-                billingInterval === "monthly"
-                  ? "bg-white text-[#0096C7]"
-                  : "text-white/80 hover:text-white"
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              onClick={() => setBillingInterval("annually")}
-              className={`px-3 py-1 text-xs rounded ${
-                billingInterval === "annually"
-                  ? "bg-white text-[#0096C7]"
-                  : "text-white/80 hover:text-white"
-              }`}
-            >
-              Annual
-            </button>
+
+        {billingInterval === "monthlyPrice" ? (
+          <div>
+            <p className="text-sm text-white/80">Monthly</p>
+            <p className="text-2xl text-white font-semibold">{monthlyPrice}</p>
+          </div>
+        ) : (
+          <div>
+            <p className="text-sm text-white/80">Annual</p>
+            <div className="flex flex-col">
+              <p className="text-2xl text-white font-semibold">{annualPrice}</p>
+              {savings && (
+                <div className="text-sm text-emerald-400 font-medium">
+                  {savings}
+                </div>
+              )}
+            </div>
           </div>
         )}
-        <div>
-          <p className="text-sm text-white/80">Monthly</p>
-          <p className="text-2xl text-white font-semibold">{monthlyPrice}</p>
-        </div>
-        <div className="h-px w-full bg-white/20"></div>
-        <div>
-          <p className="text-sm text-white/80">Annual</p>
-          <div className="flex flex-col">
-            <p className="text-2xl text-white font-semibold">{annualPrice}</p>
-            {savings && (
-              <div className="text-sm text-emerald-400 font-medium">
-                {savings}
-              </div>
-            )}
-          </div>
-        </div>
       </div>
       <div className="flex justify-center">
         <Button
           variant="outline"
           className="gap-4 mt-8 w-fit px-6 text-[#0096C7] border-[#0096C7] hover:bg-[#0096C7] hover:text-white"
-          onClick={handleGetStarted}
+          onClick={() => handleGetStarted(id)}
           disabled={isLoading}
         >
           {isLoading ? (
@@ -137,3 +118,6 @@ export function PricingCard({
     </div>
   );
 }
+
+
+          
