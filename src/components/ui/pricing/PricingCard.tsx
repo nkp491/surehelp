@@ -62,7 +62,7 @@ export function PricingCard({
     if (isLoading) return "Processing...";
     if (isFree) return "Get started";
     if (isAgentPro) return `Start ${TRIAL_DAYS}-day free trial`;
-    if (isContact) return "Contact sales";
+    if (isContact) return "Subscribed Now";
     if (isManagerPlan) return "Start subscription";
     return "Get started";
   };

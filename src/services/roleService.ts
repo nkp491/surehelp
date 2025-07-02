@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { SubscriptionRoles } from "@/types/agent";
-import { clear } from "console";
 
 const ROLES_STORAGE_KEY = "user_roles";
 const NON_SUBSCRIBED_ROLES_KEY = "non_subscribed_roles";
@@ -61,8 +60,8 @@ export const roleService = {
       const subscribedPlanIds = new Set(subscribedRoles?.map((s) => s.plan_id) || []);
 
       const nonSubscribedRoles: string[] = [];
-      const validRoles: string[] = [];
-
+      let validRoles: string[] = [];
+      if (!roles.includes("system_admin")) {
       for (const role of roles) {
         if (SubscriptionRoles.includes(role)) {
           if (subscribedPlanIds.has(role)) {
@@ -74,6 +73,9 @@ export const roleService = {
           validRoles.push(role);
         }
       }
+      } else {
+        validRoles = roles
+      }
 
       const hasRoles = validRoles.length > 0;
 
@@ -82,7 +84,7 @@ export const roleService = {
       } else {
         this.clearRoles();
       }
-      if (nonSubscribedRoles.length > 0) {
+      if (!roles.includes("system_admin") && nonSubscribedRoles.length > 0) {
         this.saveNonSubscribedRoles(nonSubscribedRoles);
       } else {
         this.clearNonSubscribedRoles();
@@ -91,7 +93,7 @@ export const roleService = {
       return { roles : validRoles, hasRoles, nonSubscribedRoles };
     } catch (error) {
       console.error("Error fetching roles:", error);
-      return { roles: [], hasRoles: false };
+      return { roles: [], hasRoles: false, nonSubscribedRoles: [] };
     }
   },
 };
