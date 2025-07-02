@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 export const useAuthState = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
+  const [isLogin, setIsLogin] = useState(false);
 
   const clearAuthData = () => {
     Object.keys(localStorage).forEach((key) => {
@@ -54,6 +55,9 @@ export const useAuthState = () => {
           }
           return;
         }
+        if (session){
+          setIsLogin(true);
+        }
 
         const { error: refreshError } = await supabase.auth.refreshSession();
 
@@ -81,5 +85,5 @@ export const useAuthState = () => {
     };
   }, []);
 
-  return { isLoading, isAuthenticated };
+  return { isLoading, isAuthenticated, isLogin };
 };

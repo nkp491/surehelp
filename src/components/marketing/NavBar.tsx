@@ -1,9 +1,11 @@
 
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useAuthState } from "@/hooks/useAuthState";
 
 const NavBar = () => {
   const navigate = useNavigate();
+  const { isLogin } = useAuthState();
 
   const scrollToContact = () => {
     const contactSection = document.querySelector('#contact-section');
@@ -27,21 +29,30 @@ const NavBar = () => {
             />
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:text-white/90">
+            <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:bg-white hover:text-[#0096C7]">
               About
             </Button>
-            <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:text-white/90">
+            <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:bg-white hover:text-[#0096C7]">
               Pricing
             </Button>
-            <Button variant="ghost" onClick={scrollToContact} className="text-white hover:text-white/90">
+            <Button variant="ghost" onClick={scrollToContact} className="text-white hover:bg-white hover:text-[#0096C7]">
               Contact Us
             </Button>
+            {isLogin ? 
+            <Button 
+              onClick={() => navigate('/assessment')}
+              className="bg-white text-[#0096C7] hover:bg-white/90"
+            >
+              Go to Dashboard
+            </Button>
+            :
             <Button 
               onClick={() => navigate('/auth')}
               className="bg-white text-[#0096C7] hover:bg-white/90"
             >
               Login
             </Button>
+            }
           </div>
         </div>
       </div>

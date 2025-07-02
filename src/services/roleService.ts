@@ -1,6 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
+import { SubscriptionRoles } from "@/types/agent";
+import { clear } from "console";
 
 const ROLES_STORAGE_KEY = "user_roles";
+const NON_SUBSCRIBED_ROLES_KEY = "non_subscribed_roles";
 
 export const roleService = {
   getRoles(): string[] {
@@ -12,9 +15,21 @@ export const roleService = {
   },
   clearRoles() {
     localStorage.removeItem(ROLES_STORAGE_KEY);
+    localStorage.removeItem(NON_SUBSCRIBED_ROLES_KEY);
+  },
+  clearNonSubscribedRoles() {
+    localStorage.removeItem(NON_SUBSCRIBED_ROLES_KEY);
+  },
+  saveNonSubscribedRoles(roles: string[]) {
+    localStorage.setItem(NON_SUBSCRIBED_ROLES_KEY, JSON.stringify(roles));
+  },
+  getNonSubscribedRoles(): string[] {
+    const roles = localStorage.getItem(NON_SUBSCRIBED_ROLES_KEY);
+    return roles ? JSON.parse(roles) : [];
   },
 
-  async fetchAndSaveRoles(): Promise<{ roles: string[]; hasRoles: boolean }> {
+
+  async fetchAndSaveRoles(): Promise<{ roles: string[]; hasRoles: boolean, nonSubscribedRoles?: string[] }> {
     try {
       const {
         data: { user },
@@ -34,16 +49,46 @@ export const roleService = {
         return { roles: [], hasRoles: false };
       }
 
+      const {data: subscribedRoles, error: subscribedRolesError} = await supabase
+        .from("subscriptions")
+        .select("plan_id")
+        .eq("user_id", user.id);  
+      if (subscribedRolesError) {
+        console.error("Error fetching subscribed roles:", subscribedRolesError);
+      }
+
       const roles = userRoles?.map((r) => r.role) || [];
-      const hasRoles = roles.length > 0;
+      const subscribedPlanIds = new Set(subscribedRoles?.map((s) => s.plan_id) || []);
+
+      const nonSubscribedRoles: string[] = [];
+      const validRoles: string[] = [];
+
+      for (const role of roles) {
+        if (SubscriptionRoles.includes(role)) {
+          if (subscribedPlanIds.has(role)) {
+            validRoles.push(role);
+          } else {
+            nonSubscribedRoles.push(role);
+          }
+        } else {
+          validRoles.push(role);
+        }
+      }
+
+      const hasRoles = validRoles.length > 0;
 
       if (hasRoles) {
-        this.saveRoles(roles);
+        this.saveRoles(validRoles);
       } else {
         this.clearRoles();
       }
+      if (nonSubscribedRoles.length > 0) {
+        this.saveNonSubscribedRoles(nonSubscribedRoles);
+      } else {
+        this.clearNonSubscribedRoles();
+      }
 
-      return { roles, hasRoles };
+      return { roles : validRoles, hasRoles, nonSubscribedRoles };
     } catch (error) {
       console.error("Error fetching roles:", error);
       return { roles: [], hasRoles: false };

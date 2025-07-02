@@ -21,3 +21,10 @@ export const AgentTypes = {
   BETA_USER: 'beta_user',
   SYSTEM_ADMIN: 'system_admin'
 }
+
+export const SubscriptionRoles = [
+  AgentTypes.AGENT_PRO,
+  AgentTypes.MANAGER_PRO,
+  AgentTypes.MANAGER_PRO_GOLD,
+  AgentTypes.MANAGER_PRO_PLATINUM
+]

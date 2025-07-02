@@ -3,9 +3,11 @@ import { PricingComparison } from "@/components/ui/pricing-section-with-comparis
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/marketing/Footer";
+import { useAuthState } from "@/hooks/useAuthState";
 
 const Pricing = () => {
   const navigate = useNavigate();
+  const { isLogin } = useAuthState();
 
   return (
     <div className="min-h-screen w-screen overflow-x-hidden bg-gradient-to-b from-[#0096C7] to-[#002DCB]/90">
@@ -21,18 +23,27 @@ const Pricing = () => {
               />
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:text-white/90">
+              <Button variant="ghost" onClick={() => navigate('/about')} className="text-white hover:bg-white hover:text-[#0096C7]">
                 About
               </Button>
-              <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:text-white/90">
+              <Button variant="ghost" onClick={() => navigate('/pricing')} className="text-white hover:bg-white hover:text-[#0096C7]">
                 Pricing
               </Button>
-              <Button 
-                onClick={() => navigate('/auth')}
-                className="bg-white text-[#0096C7] hover:bg-white/90"
-              >
-                Login
-              </Button>
+              {isLogin ? 
+            <Button 
+              onClick={() => navigate('/assessment')}
+              className="bg-white text-[#0096C7] hover:bg-white/90"
+            >
+              Go to Dashboard
+            </Button>
+            :
+            <Button 
+              onClick={() => navigate('/auth')}
+              className="bg-white text-[#0096C7] hover:bg-white/90"
+            >
+              Login
+            </Button>
+            }
             </div>
           </div>
         </div>
