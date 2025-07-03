@@ -37,6 +37,12 @@ export const roleService = {
         this.clearRoles();
         return { roles: [], hasRoles: false };
       }
+      const roleRanks = {
+        agent_pro: 1,
+        manager_pro: 2,
+        manager_pro_gold: 3,
+        manager_pro_platinum: 4
+     };
 
       const { data: userRoles, error } = await supabase
         .from("user_roles")

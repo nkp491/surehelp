@@ -17,7 +17,7 @@ export const SubscriptionGuard = ({ children }: SubscriptionGuardProps) => {
         const { roles } = await roleService.fetchAndSaveRoles();
 
         // Ensure roles is a valid array
-        if (!Array.isArray(roles) || !(roles.length === 1 && roles.includes("agent"))) {
+        if (!(roles.length === 1 && roles.includes("agent"))) {
           navigate("/assessment", { replace: true });
         }
       } catch (error) {
