@@ -20,6 +20,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { roleService } from "@/services/roleService";
 import ForgotPassword from "./pages/auth/forgot-password";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
+import { SubscriptionGuard } from "./components/auth/SubscriptionGuard";
 
 function App() {
   useEffect(() => {
@@ -40,9 +41,22 @@ function App() {
         <Router>
           <Routes>
             {/* Marketing pages */}
-            <Route path="/" element={<Home />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/pricing" element={<Pricing />} />
+
+            <Route path="/" element={
+              <SubscriptionGuard>
+                <Home />
+              </SubscriptionGuard>
+            } />
+            <Route path="/about" element={
+              <SubscriptionGuard>
+                <About />
+              </SubscriptionGuard>
+            } />
+            <Route path="/pricing" element={
+              <SubscriptionGuard>
+                <Pricing />
+              </SubscriptionGuard>
+            } />
 
             {/* Authentication routes */}
             <Route path="/auth" element={<Auth />} />

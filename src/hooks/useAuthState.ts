@@ -45,8 +45,6 @@ export const useAuthState = () => {
           data: { session },
         } = await supabase.auth.getSession();
 
-        console.log("Initial session ===>", session);
-
         if (!session) {
           if (mounted) {
             clearAuthData();

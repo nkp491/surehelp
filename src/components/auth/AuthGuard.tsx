@@ -20,7 +20,7 @@ const AuthGuard = ({ children }: AuthGuardProps) => {
         return;
       }
       if (!isLoading && isAuthenticated) {
-        const { hasRoles } = await roleService.fetchAndSaveRoles();
+        const { hasRoles, roles } = await roleService.fetchAndSaveRoles();
         if (!hasRoles) {
           await supabase.auth.signOut();
           navigate("/auth", { replace: true });
