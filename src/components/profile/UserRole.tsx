@@ -32,19 +32,14 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
     }
   };
 
-  // Format the role display text with proper capitalization
-  const getRoleDisplay = (role: string) => {
-    // Special cases for multi-word roles
-    if (role === "beta_user") return "Beta User";
-    if (role === "manager") return "Manager";
-    if (role === "manager_pro_gold") return "Manager Pro Gold";
-    if (role === "manager_pro_platinum") return "Manager Pro Platinum";
-    if (role === "agent_pro") return "Agent Pro";
-    if (role === "manager_pro") return "Manager Pro";
-    
-    // For other roles, just capitalize the first letter
-    return role.charAt(0).toUpperCase() + role.slice(1);
-  };
+  const getRoleDisplay = (role: string): string => {
+  if (!role) return "";
+
+  return role
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
   // Get premium features based on role
   const getPremiumFeatures = (role: string): string[] => {

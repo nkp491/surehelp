@@ -29,9 +29,6 @@ import MemberCard from "@/components/manager/MemberCard";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { Loader2 } from "lucide-react";
 import { MetricCount } from "@/types/metrics";
-import { roleService } from "@/services/roleService";
-import RoleAssignCard from "@/components/common/RoleAssignCard";
-
 
 type TimeRange = "weekly" | "monthly" | "ytd";
 
@@ -319,7 +316,7 @@ const transformMemberData = (
               user_id: member.user_id,
               name: member.name || "Unknown User",
               role: member.role || "Unknown Role",
-              email: member.email, // Keep as optional
+              email: member.email || undefined, // Make email optional
               profile_image_url: member.profile_image_url || null,
               metrics: {
                 ...defaultMetrics,
@@ -342,7 +339,7 @@ const transformMemberData = (
             user_id: member.user_id,
             name: member.name || "Unknown User",
             role: member.role || "Unknown Role",
-            email: member.email, // Keep as optional
+            email: member.email || undefined, // Make email optional
             profile_image_url: member.profile_image_url || null,
             metrics: {
               leads: Number(metrics.leads) || 0,
@@ -452,7 +449,6 @@ const ManagerDashboard = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentMembers = filteredMembers.slice(startIndex, endIndex);
-  const nonSubscribedRoles = roleService.getNonSubscribedRoles();
 
   return (
     <div className="w-full min-h-screen">
@@ -460,16 +456,6 @@ const ManagerDashboard = () => {
         <div className="mb-4">
           <h2 className="text-2xl font-bold text-gray-900">Team Dashboard</h2>
           <p className="text-muted-foreground mt-1">Manage your team and monitor performance</p>
-        </div>
-
-        <div className="mb-4">
-          {nonSubscribedRoles
-          .filter(role => role.includes("manager"))
-          .map((role, index) => (
-            <div key={index} className="mb-6">
-              <RoleAssignCard role={role} />
-            </div>
-        ))}
         </div>
 
         <div className="space-y-6">
