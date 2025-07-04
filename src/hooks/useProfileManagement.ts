@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
-
+import { roleService } from "@/services/roleService";
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -31,14 +31,13 @@ export const useProfileManagement = () => {
       if (profileError) throw profileError;
       
       // Fetch user roles
-      const { data: userRoles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("role, email")
-        .eq("user_id", session.user.id);
-        
-      if (rolesError) throw rolesError;
+      // const { data: userRoles, error: rolesError } = await supabase
+      //   .from("user_roles")
+      //   .select("role, email")
+      //   .eq("user_id", session.user.id);
+      const { roles } = await roleService.fetchAndSaveRoles();
       
-      const roles = userRoles.map(r => r.role);
+      // const roles = userRoles.map(r => r.role);
       
       // Transform the data to match our Profile type
       return {

@@ -48,14 +48,13 @@ export default function RoleAssignCard({role}: { role: string }) {
         </div>
       </CardContent>
       <CardFooter className="flex justify-between gap-2 pt-4">
+        <Button variant="outline"
+        onClick={handleClose}>
+          Dismiss
+        </Button>
         <Button variant="default" onClick={() => navigate('/pricing')}>
           <CreditCard className="mr-2 h-4 w-4" />
           Subscribe Now
-        </Button>
-        <Button variant="outline"
-        onClick={handleClose}
-        className="border-amber-300 text-amber-700 hover:bg-amber-100 bg-transparent">
-          Dismiss
         </Button>
       </CardFooter>
     </Card>)

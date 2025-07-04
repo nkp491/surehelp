@@ -8,7 +8,7 @@ import { Info } from "lucide-react";
 import { AgentTypes } from "@/types/agent";
 
 interface UserRoleProps {
-  role: "agent" | "manager_pro" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;
+  role: "agent" | "manager_pro" | "manager" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;
   roles?: string[];
 }
 
@@ -25,6 +25,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
       case "manager_pro_platinum": return "outline";
       case "manager_pro_gold": return "outline"; 
       case "agent_pro": return "outline";
+      case "manager": return "default";
       case "manager_pro": return "default";
       case "beta_user": return "destructive";
       default: return "secondary";
@@ -35,6 +36,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
   const getRoleDisplay = (role: string) => {
     // Special cases for multi-word roles
     if (role === "beta_user") return "Beta User";
+    if (role === "manager") return "Manager";
     if (role === "manager_pro_gold") return "Manager Pro Gold";
     if (role === "manager_pro_platinum") return "Manager Pro Platinum";
     if (role === "agent_pro") return "Agent Pro";

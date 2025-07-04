@@ -83,6 +83,21 @@ export const roleService = {
         validRoles = roles
       }
 
+      // Remove lower-rank nonSubscribedRoles if user has higher active rank
+      if (!roles.includes("system_admin") && validRoles.length > 0 && nonSubscribedRoles.length > 0) {
+        // Get the highest rank of the valid roles
+        const highestActiveRank = Math.max(...validRoles.map((r) => roleRanks[r] || 0));
+
+        // Filter out any nonSubscribedRoles with rank <= highest active rank
+        const filteredNonSubscribedRoles = nonSubscribedRoles.filter(
+          (r) => (roleRanks[r] || 0) > highestActiveRank
+        );
+
+        nonSubscribedRoles.length = 0;
+        nonSubscribedRoles.push(...filteredNonSubscribedRoles);
+      }
+
+
       const hasRoles = validRoles.length > 0;
 
       if (hasRoles) {

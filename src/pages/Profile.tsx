@@ -13,6 +13,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ManagerTeamList } from "@/components/team/ManagerTeamList";
 import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
 
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -26,7 +27,7 @@ const ProfileContent = () => {
   const { profile, loading, uploading, updateProfile, uploadAvatar, signOut } =
     useProfileManagement();
   const isManager = profile?.roles?.some((role) =>
-    ["manager_pro", "manager_pro_gold", "manager_pro_platinum"].includes(role)
+    ["manager", "manager_pro", "manager_pro_gold", "manager_pro_platinum"].includes(role)
   );
 
   if (loading) {
@@ -35,11 +36,12 @@ const ProfileContent = () => {
 
   const validRole = profile?.role as
     | "agent"
+    | "agent_pro"
+    | "manager"
     | "manager_pro"
-    | "beta_user"
     | "manager_pro_gold"
     | "manager_pro_platinum"
-    | "agent_pro"
+    | "beta_user"
     | null;
 
   return (
