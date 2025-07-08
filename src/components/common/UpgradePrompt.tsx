@@ -11,6 +11,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { roleService } from "@/services/roleService";
 
 interface UpgradePromptProps {
   title: string;
@@ -33,7 +34,8 @@ export function UpgradePrompt({
   };
 
   if (!isVisible) return null;
-
+  const roles = roleService.getRoles();
+  const navigationPath = roles.length === 1 && roles[0] === 'agent' ? '/pricing' : '/profile';
   const formatRoleName = (role: string) => {
     return role
       .split('_')
@@ -62,7 +64,7 @@ export function UpgradePrompt({
         <Button variant="outline" onClick={handleClose}>
           Dismiss
         </Button>
-        <Button variant="default" onClick={() => navigate('/pricing')}>
+        <Button variant="default" onClick={() => navigate(navigationPath)}>
           Learn More
         </Button>
       </CardFooter>

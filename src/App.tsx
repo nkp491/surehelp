@@ -154,6 +154,14 @@ function App() {
                 </AuthGuard>
               }
             />
+             <Route
+              path="/promo-codes"
+              element={
+                <AuthGuard>
+                  <MainContent />
+                </AuthGuard>
+              }
+            />
             <Route
               path="/admin-actions"
               element={

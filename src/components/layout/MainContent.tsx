@@ -15,16 +15,12 @@ import { RoleBasedRoute } from "@/components/auth/RoleBasedRoute";
 import { navigationItems } from "./sidebar/navigationItems";
 import TermsOfUse from "@/pages/marketing/TermsOfUse";
 import { AgentTypes } from "@/types/agent";
-// import RoleAssignCard from "../common/RoleAssignCard";
-import { roleService } from "@/services/roleService";
-import { useEffect, useState } from "react";
+import CouponsManager from "../promo-codes/CouponsManager";
 
 const MainContent = () => {
   const roles = Object.values(AgentTypes);
   const location = useLocation();
 
-  // const nonSubscribedRoles = roleService.getNonSubscribedRoles();
-  // Find the current navigation item to get the required roles
   const currentNavItem = navigationItems.find(item => item.path === location.pathname);
   const requiredRoles = currentNavItem?.requiredRoles;
 
@@ -49,6 +45,8 @@ const MainContent = () => {
           return <TeamPage />;
         case '/terms':
           return <TermsOfUse />;
+        case '/promo-codes':
+          return <CouponsManager />;
         case '/admin':
         case '/admin-actions':
           return <AdminActionsPage />;
@@ -86,10 +84,6 @@ const MainContent = () => {
         <AppSidebar />
         <SidebarInset className="flex-1">
           <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl">
-            {/* {nonSubscribedRoles.length > 0 &&
-             nonSubscribedRoles.map((role) => (
-               <RoleAssignCard key={role} role={role} />
-             ))} */}
             {renderContent()}
           </div>
         </SidebarInset>

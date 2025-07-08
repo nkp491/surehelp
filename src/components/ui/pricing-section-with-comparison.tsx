@@ -108,7 +108,7 @@ const features = [
 function PricingComparison() {
   const [billingInterval, setBillingInterval] = React.useState<
       "monthlyPrice" | "yearlyPrice"
-    >("monthlyPrice");
+    >("yearlyPrice");
 
   const getFeatureValues = (key: string) => {
     switch (key) {
@@ -162,22 +162,12 @@ function PricingComparison() {
           <div className="relative bg-white/10 backdrop-blur-sm rounded-full p-1 border border-white/20">
             <div
               className={`absolute top-1 bottom-1 bg-white rounded-full transition-all duration-300 ease-in-out ${
-                billingInterval === "monthlyPrice" 
+                billingInterval === "yearlyPrice" 
                   ? "left-1 right-[calc(50%+2px)]" 
                   : "left-[calc(50%+2px)] right-1"
               }`}
             />
             <div className="relative flex">
-              <button
-                onClick={() => setBillingInterval("monthlyPrice")}
-                className={`px-6 py-2 text-sm font-medium rounded-full transition-colors duration-300 relative z-10 ${
-                  billingInterval === "monthlyPrice"
-                    ? "text-[#0096C7]"
-                    : "text-white/80 hover:text-white"
-                }`}
-              >
-                Monthly
-              </button>
               <button
                 onClick={() => setBillingInterval("yearlyPrice")}
                 className={`px-6 py-2 text-sm font-medium rounded-full transition-colors duration-300 relative z-10 ${
@@ -187,6 +177,16 @@ function PricingComparison() {
                 }`}
               >
                 Annual
+              </button>
+              <button
+                onClick={() => setBillingInterval("monthlyPrice")}
+                className={`px-6 py-2 text-sm font-medium rounded-full transition-colors duration-300 relative z-10 ${
+                  billingInterval === "monthlyPrice"
+                    ? "text-[#0096C7]"
+                    : "text-white/80 hover:text-white"
+                }`}
+              >
+                Monthly
               </button>
             </div>
           </div>

@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge"
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { roleService } from "@/services/roleService";
 
 export default function RoleAssignCard({role}: { role: string }) {
     const [isVisible, setIsVisible] = useState(true);
@@ -16,6 +17,9 @@ export default function RoleAssignCard({role}: { role: string }) {
       .join(' ');
   };
   const navigate = useNavigate();
+  const roles = roleService.getRoles();
+  const navigationPath = roles.length === 1 && roles[0] === 'agent' ? '/pricing' : '/profile';
+
   return (
     <>
     {isVisible && (
@@ -52,7 +56,7 @@ export default function RoleAssignCard({role}: { role: string }) {
         onClick={handleClose}>
           Dismiss
         </Button>
-        <Button variant="default" onClick={() => navigate('/pricing')}>
+        <Button variant="default" onClick={() => navigate(navigationPath)}>
           <CreditCard className="mr-2 h-4 w-4" />
           Subscribe Now
         </Button>

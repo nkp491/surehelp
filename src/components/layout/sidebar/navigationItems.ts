@@ -1,5 +1,5 @@
 
-import { LucideIcon, ClipboardList, LayoutDashboard, Users2, Shield, DollarSign, BookOpen, UserCog, Settings } from "lucide-react";
+import { LucideIcon, ClipboardList, LayoutDashboard, Users2, Shield, DollarSign, BookOpen, UserCog, Settings, TicketPlus } from "lucide-react";
 
 export type NavigationItem = {
   title: string;
@@ -49,6 +49,12 @@ export const navigationItems: NavigationItem[] = [
     title: "Role Management",
     path: "/role-management",
     icon: Shield,
+    requiredRoles: ["system_admin"],
+  },
+  {
+    title: "Promo Codes",
+    path: "/promo-codes",
+    icon: TicketPlus,
     requiredRoles: ["system_admin"],
   },
   {

@@ -26,6 +26,8 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
   const userRoles = roleService.getRoles();
   const [submissionCount, setSubmissionCount] = useState(0);
   const [loading, setLoading] = useState(true);
+  const showManagerPrompt = userRoles.includes("agent") || userRoles.includes("agent_pro");
+
   useEffect(() => {
     const checkSubmissionLimits = async () => {
       try {
@@ -66,7 +68,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
           description={`You have reached the maximum limit of ${MAX_SUBMISSIONS_FOR_BASIC} assessment submissions. Upgrade to Agent Pro for unlimited assessments and advanced features.`}
           requiredRole="agent_pro"
         />
-        {nonSubscribedRoles.length > 0 && nonSubscribedRoles.includes("agent_pro") && (
+        {nonSubscribedRoles.length > 0 && showManagerPrompt && (
           nonSubscribedRoles.map((role) => (
             <div className="mb-7">
               <RoleAssignCard role={role} />
@@ -83,7 +85,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
           <MetricsProvider>
             <div className="w-full max-w-[98vw] mx-auto">
               <div>
-                {nonSubscribedRoles.length > 0 && nonSubscribedRoles.includes("agent_pro") && (
+                {nonSubscribedRoles.length > 0 && showManagerPrompt && (
                   nonSubscribedRoles.map((role) => (
                     <RoleAssignCard key={role} role={role} />
                   ))

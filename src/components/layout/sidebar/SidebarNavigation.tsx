@@ -22,7 +22,7 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
   
   return (
     <SidebarGroup>
-      <SidebarGroupLabel className="h-12 px-4 text-lg font-bold mt-3">Agent Hub</SidebarGroupLabel>
+      <SidebarGroupLabel className="h-12 px-4 text-lg font-bold my-3">Agent Hub</SidebarGroupLabel>
       <SidebarGroupContent>
         <SidebarMenu>
           {navigationItems.map((item) => {
@@ -34,6 +34,7 @@ export function SidebarNavigation({ navigationItems }: SidebarNavigationProps) {
                 <SidebarMenuButton
                   onClick={() => navigate(item.path)}
                   data-active={location.pathname === item.path}
+                  className="mb-2"
                 >
                   <item.icon className="w-5 h-5" />
                   <span>{item.title}</span>
