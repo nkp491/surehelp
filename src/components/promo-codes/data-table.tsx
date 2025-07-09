@@ -35,6 +35,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { AddPromoCode } from "./add-promo-code"
+import { supabase } from "@/integrations/supabase/client"
 
 export type PROMO_CODE = {
   id: string
@@ -44,6 +45,61 @@ export type PROMO_CODE = {
   expiration_date: string
   usage_limit: number
   usage_count: number
+  coupon_id: string
+}
+
+const activateDeactivatePromoCode = async (action: string, coupon_id: string) => {
+  const status = action === "active" ? "deactivate" : "activate"
+
+  const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        throw new Error("No session found. Please log in and try again.")
+      }
+
+      const accessToken = session.access_token
+
+      const response = await fetch("https://fkdvsxnwpbvahllneusg.supabase.co/functions/v1/create-promo-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({activateCode: true, coupon_id, action: status }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
+}
+
+const deleteCoupon = async (coupon_id: string) => {
+  const {
+        data: { session },
+      } = await supabase.auth.getSession()
+
+      if (!session?.access_token) {
+        throw new Error("No session found. Please log in and try again.")
+      }
+
+      const accessToken = session.access_token
+
+      const response = await fetch("https://fkdvsxnwpbvahllneusg.supabase.co/functions/v1/create-promo-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({deleteCode: true, coupon_id }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
 }
 
 export const columns: ColumnDef<PROMO_CODE>[] = [
@@ -105,8 +161,8 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem>Deactivate</DropdownMenuItem>
-            <DropdownMenuItem>Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => activateDeactivatePromoCode(payment.status, payment.coupon_id)}>{payment.status === "active" ? "Deactivate" : "Activate"}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => deleteCoupon(payment.coupon_id)}>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )

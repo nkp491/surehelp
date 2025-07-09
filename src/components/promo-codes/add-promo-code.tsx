@@ -16,7 +16,8 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "lucide-react"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { CalendarIcon, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { format } from "date-fns"
 import { useForm, Controller } from "react-hook-form"
 import { useState } from "react"
@@ -33,8 +34,19 @@ type FormData = {
   expirationDate: Date
 }
 
+type SubmissionState = {
+  isLoading: boolean
+  success: boolean
+  error: string | null
+}
+
 export function AddPromoCode() {
   const [open, setOpen] = useState(false)
+  const [submissionState, setSubmissionState] = useState<SubmissionState>({
+    isLoading: false,
+    success: false,
+    error: null,
+  })
 
   const {
     register,
@@ -58,53 +70,82 @@ export function AddPromoCode() {
   const discountType = watch("discountType")
   const showDiscountField = discountType === "percentage" || discountType === "fixed-discount"
 
-  const handleCreateCoupon = async (data: any) => {
-  const {
-    data: { session },
-  } = await supabase.auth.getSession();
+  const handleCreateCoupon = async (data: FormData) => {
+    setSubmissionState({ isLoading: true, success: false, error: null })
 
-  if (!session?.access_token) {
-    console.error("No session found. User is not authenticated.");
-    return;
-  }
+    try {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession()
 
-  const accessToken = session.access_token;
+      if (!session?.access_token) {
+        throw new Error("No session found. Please log in and try again.")
+      }
 
-  try {
-    const response = await fetch("https://fkdvsxnwpbvahllneusg.supabase.co/functions/v1/create-promo-code", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-    body: JSON.stringify({
-    promo_code: data.promoCode,
-    discount_type: data.discountType, // 30, 90 day trial, percentage, fixed discount
-    value: data.discountValue,  // This should be dynamic based on the input
-    duration: "once", // once or "repeating" or "forever"
-    plan: data.planType,
-    billing_cycle: data.billingCycle, // monthly or yearly
-    expiration_date: data.expirationDate.toISOString(),
-    usage_limit: data.usageLimit,
+      const accessToken = session.access_token
+
+      const response = await fetch("https://fkdvsxnwpbvahllneusg.supabase.co/functions/v1/create-promo-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        body: JSON.stringify({
+          newCode: true,
+          promo_code: data.promoCode,
+          discount_type: data.discountType,
+          value: data.discountValue,
+          duration: "once",
+          plan: data.planType,
+          billing_cycle: data.billingCycle,
+          expiration_date: data.expirationDate.toISOString(),
+          usage_limit: data.usageLimit,
+        }),
       })
-    });
 
-    const result = await response.json();
-    console.log("Response from function:", result);
-  } catch (err) {
-    console.error("Error calling Edge Function:", err);
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+      }
+
+      const result = await response.json()
+      console.log("Response from function:", result)
+
+      setSubmissionState({ isLoading: false, success: true, error: null })
+
+      // Auto-close dialog after success
+      setTimeout(() => {
+        setOpen(false)
+        reset()
+        setSubmissionState({ isLoading: false, success: false, error: null })
+      }, 2000)
+    } catch (err) {
+      console.error("Error calling Edge Function:", err)
+      setSubmissionState({
+        isLoading: false,
+        success: false,
+        error: err instanceof Error ? err.message : "An unexpected error occurred. Please try again.",
+      })
+    }
   }
- };
 
   const onSubmit = async (data: FormData) => {
     await handleCreateCoupon(data)
-    console.log("Form Data:", data)
-    setOpen(false)
-    reset()
+  }
+
+  const handleDialogClose = (newOpen: boolean) => {
+    if (!submissionState.isLoading) {
+      setOpen(newOpen)
+      if (!newOpen) {
+        // Reset form and states when dialog closes
+        reset()
+        setSubmissionState({ isLoading: false, success: false, error: null })
+      }
+    }
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={handleDialogClose}>
       <DialogTrigger asChild>
         <Button>Create Promo Code</Button>
       </DialogTrigger>
@@ -115,6 +156,24 @@ export function AddPromoCode() {
             <DialogDescription>Create promo codes from here</DialogDescription>
           </DialogHeader>
 
+          {/* Success Message */}
+          {submissionState.success && (
+            <Alert className="border-green-200 bg-green-50">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              <AlertDescription className="text-green-800">
+                Promo code created successfully! This dialog will close automatically.
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Error Message */}
+          {submissionState.error && (
+            <Alert className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4 text-red-600" />
+              <AlertDescription className="text-red-800">{submissionState.error}</AlertDescription>
+            </Alert>
+          )}
+
           <div className="grid gap-4 py-4">
             {/* Promo Code Text */}
             <div className="grid gap-2">
@@ -123,6 +182,7 @@ export function AddPromoCode() {
                 id="promoCode"
                 {...register("promoCode", { required: "Promo code text is required" })}
                 placeholder="Enter promo code"
+                disabled={submissionState.isLoading}
               />
               {errors.promoCode && <span className="text-sm text-red-500">{errors.promoCode.message}</span>}
             </div>
@@ -135,7 +195,7 @@ export function AddPromoCode() {
                 control={control}
                 rules={{ required: "Plan type is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={submissionState.isLoading}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select plan type" />
                     </SelectTrigger>
@@ -153,13 +213,13 @@ export function AddPromoCode() {
 
             {/* Discount Type */}
             <div className="grid gap-2">
-              <Label htmlFor="discountType">Discount Type Type *</Label>
+              <Label htmlFor="discountType">Discount Type *</Label>
               <Controller
                 name="discountType"
                 control={control}
                 rules={{ required: "Discount Type is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={submissionState.isLoading}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Discount Type" />
                     </SelectTrigger>
@@ -197,6 +257,7 @@ export function AddPromoCode() {
                         : undefined,
                   })}
                   placeholder={discountType === "percentage" ? "Enter percentage (0-100)" : "Enter discount amount"}
+                  disabled={submissionState.isLoading}
                 />
                 {errors.discountValue && <span className="text-sm text-red-500">{errors.discountValue.message}</span>}
               </div>
@@ -210,7 +271,7 @@ export function AddPromoCode() {
                 control={control}
                 rules={{ required: "Billing cycle is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={submissionState.isLoading}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select billing cycle" />
                     </SelectTrigger>
@@ -224,18 +285,19 @@ export function AddPromoCode() {
               {errors.billingCycle && <span className="text-sm text-red-500">{errors.billingCycle.message}</span>}
             </div>
 
-            {/* usage limit */}
+            {/* Usage Limit */}
             <div className="grid gap-2">
               <Label htmlFor="usageLimit">Usage Limit *</Label>
               <Input
                 id="usageLimit"
                 type="number"
-                {...register("usageLimit", 
-                 { required: "Usage limit is required",
-                    valueAsNumber: true,
-                    min: { value: 1, message: "Usage limit must be at least 1" },
-                  })}
+                {...register("usageLimit", {
+                  required: "Usage limit is required",
+                  valueAsNumber: true,
+                  min: { value: 1, message: "Usage limit must be at least 1" },
+                })}
                 placeholder="Enter usage limit"
+                disabled={submissionState.isLoading}
               />
               {errors.usageLimit && <span className="text-sm text-red-500">{errors.usageLimit.message}</span>}
             </div>
@@ -256,6 +318,7 @@ export function AddPromoCode() {
                           "w-full justify-start text-left font-normal",
                           !field.value && "text-muted-foreground",
                         )}
+                        disabled={submissionState.isLoading}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {field.value ? format(field.value, "PPP") : "Pick a date"}
@@ -275,16 +338,29 @@ export function AddPromoCode() {
               />
               {errors.expirationDate && <span className="text-sm text-red-500">{errors.expirationDate.message}</span>}
             </div>
-
           </div>
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+              <Button type="button" variant="outline" disabled={submissionState.isLoading}>
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit">Create Promo Code</Button>
+            <Button type="submit" disabled={submissionState.isLoading || submissionState.success}>
+              {submissionState.isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Creating...
+                </>
+              ) : submissionState.success ? (
+                <>
+                  <CheckCircle className="mr-2 h-4 w-4" />
+                  Created!
+                </>
+              ) : (
+                "Create Promo Code"
+              )}
+            </Button>
           </DialogFooter>
         </form>
       </DialogContent>

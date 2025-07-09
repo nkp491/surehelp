@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react';
 import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import LoadingScreen from '../ui/loading-screen';
 import { PROMO_CODE } from './data-table';
+import { Toaster } from "@/components/ui/toaster";
 function CouponsManager() {
   // Fetch promo codes from Supabase
   const [promoCodes, setPromoCodes] = useState<PROMO_CODE[]>([]);
@@ -33,6 +34,8 @@ function CouponsManager() {
     fetchPromoCodes();
   }, []);
 
+  console.log('Promo Codes:', promoCodes);
+
   return (
     <div className="space-y-6 py-6 sm:py-8 md:py-10">
       <div className="bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
@@ -58,6 +61,7 @@ function CouponsManager() {
           )}
         </Card>
       </div>
+      <Toaster />
     </div>
   )
 }
