@@ -46,9 +46,10 @@ export type PROMO_CODE = {
   usage_limit: number
   usage_count: number
   coupon_id: string
+  promo_id: string
 }
 
-const activateDeactivatePromoCode = async (action: string, coupon_id: string) => {
+const activateDeactivatePromoCode = async (action: string, promo_id: string) => {
   const status = action === "active" ? "deactivate" : "activate"
 
   const {
@@ -67,7 +68,7 @@ const activateDeactivatePromoCode = async (action: string, coupon_id: string) =>
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({activateCode: true, coupon_id, action: status }),
+        body: JSON.stringify({activateCode: true, promo_id, action: status }),
       })
 
       if (!response.ok) {
@@ -76,7 +77,11 @@ const activateDeactivatePromoCode = async (action: string, coupon_id: string) =>
       }
 }
 
-const deleteCoupon = async (coupon_id: string) => {
+const deleteCoupon = async (coupon_id: string, promo_id: string) => {
+  if (!coupon_id || !promo_id) {
+        throw new Error("Coupon ID and promo ID are required to delete the promo code.")
+      }
+
   const {
         data: { session },
       } = await supabase.auth.getSession()
@@ -93,7 +98,7 @@ const deleteCoupon = async (coupon_id: string) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({deleteCode: true, coupon_id }),
+        body: JSON.stringify({deleteCode: true, coupon_id, promo_id }),
       })
 
       if (!response.ok) {
@@ -161,8 +166,8 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             <DropdownMenuItem>Edit</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => activateDeactivatePromoCode(payment.status, payment.coupon_id)}>{payment.status === "active" ? "Deactivate" : "Activate"}</DropdownMenuItem>
-            <DropdownMenuItem onClick={() => deleteCoupon(payment.coupon_id)}>Delete</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => activateDeactivatePromoCode(payment.status, payment.promo_id)}>{payment.status === "active" ? "Deactivate" : "Activate"}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => deleteCoupon(payment.coupon_id, payment.promo_id)}>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       )
