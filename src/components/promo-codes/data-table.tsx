@@ -40,7 +40,6 @@ import { supabase } from "@/integrations/supabase/client"
 export type PROMO_CODE = {
   id: string
   promo_code: string
-  billing_cycle: string
   status: "active" | "inactive" | "expired"
   expiration_date: string
   usage_limit: number
@@ -113,13 +112,6 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
     header: "Promo Code",
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("promo_code")}</div>
-    ),
-  },
-  {
-    accessorKey: "billing_cycle",
-    header: "Billing Cycle",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("billing_cycle")}</div>
     ),
   },
   {

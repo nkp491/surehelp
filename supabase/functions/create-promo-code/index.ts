@@ -28,20 +28,20 @@ serve(async (req)=>{
       apiVersion: "2023-10-16"
     });
     const body = await req.json();
-    const { promo_code, discount_type, value, duration, plan, billing_cycle, expiration_date, usage_limit, newCode, activateCode } = body;
+    const { promo_code, discount_type, value, expiration_date, usage_limit, newCode, activateCode } = body;
     // logic to add new promo code
     if (newCode) {
       let coupon;
       if (discount_type === "percentage") {
         coupon = await stripe.coupons.create({
           percent_off: value,
-          duration: duration || "once"
+          duration: "once"
         });
       } else if (discount_type === "fixed") {
         coupon = await stripe.coupons.create({
           amount_off: value * 100,
           currency: "usd",
-          duration: duration || "once"
+          duration: "once"
         });
       } else if (discount_type === "30-day-trial" || discount_type === "90-day-trial") {
         // Use a zero-value coupon + add metadata to mark as trial
@@ -65,12 +65,8 @@ serve(async (req)=>{
       const { error } = await supabaseClient.from("promo_codes").insert([
         {
           promo_code,
-          plan,
-          billing_cycle,
           discount_type,
           value,
-          duration_type: "discount",
-          duration_length: 1,
           expiration_date,
           usage_limit,
           status: "active",

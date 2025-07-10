@@ -26,10 +26,8 @@ import { supabase } from "@/integrations/supabase/client"
 
 type FormData = {
   promoCode: string
-  planType: string
   discountType: string
   discountValue?: number
-  billingCycle: string
   usageLimit: number
   expirationDate: Date
 }
@@ -58,10 +56,8 @@ export function AddPromoCode() {
   } = useForm<FormData>({
     defaultValues: {
       promoCode: "",
-      planType: "",
       discountType: "",
       discountValue: 0,
-      billingCycle: "monthly",
       usageLimit: 0,
       expirationDate: new Date(),
     },
@@ -96,8 +92,6 @@ export function AddPromoCode() {
           discount_type: data.discountType,
           value: data.discountValue,
           duration: "once",
-          plan: data.planType,
-          billing_cycle: data.billingCycle,
           expiration_date: data.expirationDate.toISOString(),
           usage_limit: data.usageLimit,
         }),
@@ -105,7 +99,7 @@ export function AddPromoCode() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.message || `HTTP error! status: ${response.status}`)
+        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
       }
 
       const result = await response.json()
@@ -187,30 +181,6 @@ export function AddPromoCode() {
               {errors.promoCode && <span className="text-sm text-red-500">{errors.promoCode.message}</span>}
             </div>
 
-            {/* Plan Type */}
-            <div className="grid gap-2">
-              <Label htmlFor="planType">Type of Plan *</Label>
-              <Controller
-                name="planType"
-                control={control}
-                rules={{ required: "Plan type is required" }}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={submissionState.isLoading}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select plan type" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="agent_pro">Agent Pro</SelectItem>
-                      <SelectItem value="manager_pro">Manager Pro</SelectItem>
-                      <SelectItem value="manager_pro_gold">Manager Pro Gold</SelectItem>
-                      <SelectItem value="manager_pro_platinum">Manager Pro Platinum</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.planType && <span className="text-sm text-red-500">{errors.planType.message}</span>}
-            </div>
-
             {/* Discount Type */}
             <div className="grid gap-2">
               <Label htmlFor="discountType">Discount Type *</Label>
@@ -262,28 +232,6 @@ export function AddPromoCode() {
                 {errors.discountValue && <span className="text-sm text-red-500">{errors.discountValue.message}</span>}
               </div>
             )}
-
-            {/* Billing Cycle */}
-            <div className="grid gap-2">
-              <Label htmlFor="billingCycle">Billing Cycle *</Label>
-              <Controller
-                name="billingCycle"
-                control={control}
-                rules={{ required: "Billing cycle is required" }}
-                render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={submissionState.isLoading}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select billing cycle" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="monthly">Monthly</SelectItem>
-                      <SelectItem value="yearly">Yearly</SelectItem>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.billingCycle && <span className="text-sm text-red-500">{errors.billingCycle.message}</span>}
-            </div>
 
             {/* Usage Limit */}
             <div className="grid gap-2">
