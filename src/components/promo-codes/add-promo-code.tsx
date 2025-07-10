@@ -64,11 +64,11 @@ export function AddPromoCode() {
   })
 
   const discountType = watch("discountType")
-  const showDiscountField = discountType === "percentage" || discountType === "fixed-discount"
+  const showDiscountField = discountType === "percentage" || discountType === "fixed"
 
   const handleCreateCoupon = async (data: FormData) => {
     setSubmissionState({ isLoading: true, success: false, error: null })
-
+    console.log("Form data submitted:", data)
     try {
       const {
         data: { session },
@@ -197,7 +197,7 @@ export function AddPromoCode() {
                       <SelectItem value="30-day-trial">30 Day Trial</SelectItem>
                       <SelectItem value="90-day-trial">90 Day Trial</SelectItem>
                       <SelectItem value="percentage">Percentage</SelectItem>
-                      <SelectItem value="fixed-discount">Fixed Discount</SelectItem>
+                      <SelectItem value="fixed">Fixed Discount</SelectItem>
                     </SelectContent>
                   </Select>
                 )}

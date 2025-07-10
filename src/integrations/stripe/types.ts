@@ -36,6 +36,7 @@ export interface CreateCheckoutSessionParams {
   priceId: string;
   userId: string;
   trialDays?: number;
+  promotionCode?: string;
 }
 
 export interface BillingInterval {

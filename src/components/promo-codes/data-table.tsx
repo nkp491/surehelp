@@ -157,7 +157,7 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>Edit</DropdownMenuItem>
+            {/* <DropdownMenuItem>Edit</DropdownMenuItem> */}
             <DropdownMenuItem onClick={() => activateDeactivatePromoCode(payment.status, payment.promo_id)}>{payment.status === "active" ? "Deactivate" : "Activate"}</DropdownMenuItem>
             <DropdownMenuItem onClick={() => deleteCoupon(payment.coupon_id, payment.promo_id)}>Delete</DropdownMenuItem>
           </DropdownMenuContent>

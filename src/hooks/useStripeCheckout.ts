@@ -27,6 +27,7 @@ export function useStripeCheckout() {
             priceId: params.priceId,
             userId: user.id,
             trialDays: params.trialDays,
+            promotionCode: params.promotionCode,
           },
         }
       );

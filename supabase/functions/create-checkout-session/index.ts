@@ -33,7 +33,7 @@ serve(async (req) => {
       throw new Error("User not found");
     }
 
-    const { priceId, trialDays = 14 } = await req.json();
+    const { priceId, trialDays = 14, promotionCode } = await req.json();
 
     if (!priceId) {
       throw new Error("Price ID is required");
@@ -65,6 +65,19 @@ serve(async (req) => {
       });
     }
 
+    let discounts: { promotion_code: string }[] | undefined = undefined;
+    let redemption = undefined;
+    if (promotionCode) {
+      // You may want to store the Stripe promotion_code ID in your DB, or fetch it from Stripe
+      const promoList = await stripe.promotionCodes.list({ code: promotionCode, active: true });
+      if (promoList.data.length > 0) {
+        discounts = [{ promotion_code: promoList.data[0].id }];
+        redemption = promoList.data[0].times_redeemed;  
+      } else {
+        throw new Error("Invalid or expired promotion code");
+      }
+    }
+
     // Create checkout session
     const session = await stripe.checkout.sessions.create({
       customer: customer.id,
@@ -86,7 +99,13 @@ serve(async (req) => {
           supabase_user_id: user.id,
         },
       },
+      ...(discounts ? { discounts } : {}),
     });
+    await supabaseClient.from("promo_codes").update({
+      "usage_count": redemption ? redemption + 1 : 1,
+    }).eq("promo_code", promotionCode);
+    // revoke promo for this user
+    // const deleted = await stripe.customers.deleteDiscount(customer.id);
 
     return new Response(JSON.stringify({ sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

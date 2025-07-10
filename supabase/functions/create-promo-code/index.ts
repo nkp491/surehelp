@@ -60,6 +60,9 @@ serve(async (req)=>{
         coupon: coupon.id,
         code: promo_code,
         max_redemptions: usage_limit,
+        // restrictions: {
+        //   customer: true, // limit to one per Stripe customer
+        // }, 
         expires_at: Math.floor(new Date(expiration_date).getTime() / 1000)
       });
       const { error } = await supabaseClient.from("promo_codes").insert([

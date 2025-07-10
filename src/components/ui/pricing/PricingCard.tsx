@@ -1,9 +1,12 @@
 import React, { useState } from "react";
-import { MoveRight, Loader2 } from "lucide-react";
+import { MoveRight, Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/integrations/stripe/plans";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PricingCardProps {
   id: string;
@@ -27,8 +30,11 @@ export function PricingCard({
   billingInterval
 }: PricingCardProps) {
   const navigate = useNavigate();
-  const { createCheckoutSession, isLoading } = useStripeCheckout();
-
+  const { createCheckoutSession } = useStripeCheckout();
+  const [promoCode, setPromoCode] = useState("");
+  const [showPromoField, setShowPromoField] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   // Find the plan by id
   const plan = SUBSCRIPTION_PLANS.find((plan) => plan.id === id);
   const isAgentPro = id === "agent_pro";
@@ -40,8 +46,38 @@ export function PricingCard({
       navigate("/auth");
       return;
     }
-
     if (plan) {
+      setIsLoading(true);
+      setErrorMessage("");
+
+      // Check if the user is logged in
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      if (userError || !user) {
+        setErrorMessage("You must be logged in to subscribe.");
+        console.error("User not authenticated:", userError);
+        setIsLoading(false);
+        return;
+      }
+
+      // Validate promo code if provided
+    let promotionCode: string | undefined = undefined;
+    if (promoCode) {
+      const {data: dbPromoCode, error} = await supabase.from("promo_codes")
+        .select("*")
+        .eq("promo_code", promoCode)
+        .eq("status", "active")
+        .single();
+      if (error || !dbPromoCode) {
+        const errorMsg = error?.message || "Invalid or expired promo code";
+        setErrorMessage(errorMsg);
+        console.error("Bro Error :",error);
+        setIsLoading(false);
+        return;
+      }
+      promotionCode = dbPromoCode.promo_code;
+    }
+    console.log("Promotion Code:", promotionCode);
+
       const priceId =
         billingInterval === "monthlyPrice"
           ? plan.stripePriceIdMonthly
@@ -51,7 +87,9 @@ export function PricingCard({
         priceId,
         userId: "", // handled in the hook
         trialDays: isAgentPro ? TRIAL_DAYS : undefined,
+        promotionCode,
       });
+      setIsLoading(false);
     } else {
       // fallback: navigate to auth if plan not found
       navigate("/auth");
@@ -96,6 +134,48 @@ export function PricingCard({
           </div>
         )}
       </div>
+      {!isFree && (
+        <div className="flex flex-col gap-2">
+          {!showPromoField ? (
+            <button
+              type="button"
+              onClick={() => setShowPromoField(true)}
+              className="text-sm text-white/60 hover:text-white/80 flex items-center gap-1 self-start transition-colors"
+            >
+              <Tag className="w-3 h-3" />
+              Have a promotion code?
+            </button>
+          ) : (
+            <div className="space-y-2">
+              <Label htmlFor={`promo-${id}`} className="text-sm text-white/80">
+                Promotion Code
+              </Label>
+              <div className="flex gap-2">
+                <Input
+                  id={`promo-${id}`}
+                  type="text"
+                  placeholder="Enter code"
+                  value={promoCode}
+                  onChange={(e) => setPromoCode(e.target.value)}
+                  className="bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-[#0096C7]"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setShowPromoField(false)
+                    setPromoCode("")
+                  }}
+                  className="text-white/60 px-2"
+                >
+                  ×
+                </Button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
       <div className="flex justify-center">
         <Button
           variant="outline"
