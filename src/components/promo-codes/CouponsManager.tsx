@@ -80,7 +80,7 @@ function CouponsManager() {
             </Alert>
           ) : (
             <>
-              <MetricsBoxes />
+              <MetricsBoxes promoCodes={promoCodes}/>
               <PromoCodesTable
                 data={filteredPromoCodes}
                 onDeletePromoCode={handleDeletePromoCode}
