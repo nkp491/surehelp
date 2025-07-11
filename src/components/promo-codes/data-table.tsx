@@ -116,8 +116,8 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
     ),
   },
   {
-  accessorKey: "status",
-  header: "Status",
+    accessorKey: "status",
+    header: "Status",
   cell: ({ row }) => {
     const status = row.getValue("status") as string;
     let colorClass = "";
@@ -134,7 +134,7 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
       </span>
     );
   },
-},
+  },
   {
     accessorKey: "expiration_date",
     header: "Expiration",
@@ -259,6 +259,74 @@ export function PromoCodesTable({
     });
   }, [table.getState().pagination.pageIndex]);
 
+  // CSV Export functionality
+  const exportToCSV = (type: 'all' | 'filtered' | 'selected') => {
+    let dataToExport: PROMO_CODE[] = [];
+    
+    switch (type) {
+      case 'all':
+        dataToExport = data;
+        break;
+      case 'filtered':
+        dataToExport = table.getFilteredRowModel().rows.map(row => row.original);
+        break;
+    }
+
+    if (dataToExport.length === 0) {
+      toast({
+        title: "No Data",
+        description: "No data available to export.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Define CSV headers
+    const headers = [
+      'Promo Code',
+      'Status',
+      'Expiration Date',
+      'Usage Limit',
+      'Usage Count',
+      'Coupon ID',
+      'Promo ID'
+    ];
+
+    // Convert data to CSV format
+    const csvContent = [
+      headers.join(','),
+      ...dataToExport.map(row => [
+        `"${row.promo_code}"`,
+        `"${row.status}"`,
+        `"${row.expiration_date}"`,
+        row.usage_limit,
+        row.usage_count,
+        `"${row.coupon_id}"`,
+        `"${row.promo_id}"`
+      ].join(','))
+    ].join('\n');
+
+    // Create and download the file
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    
+    if (link.download !== undefined) {
+      const url = URL.createObjectURL(blob);
+      link.setAttribute('href', url);
+      link.setAttribute('download', `promo_codes_${type}_${new Date().toISOString().split('T')[0]}.csv`);
+      link.style.visibility = 'hidden';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      toast({
+        title: "Export Successful",
+        description: `${dataToExport.length} promo codes exported successfully.`,
+        variant: "default",
+      });
+    }
+  };
+
   // Delete handler
   const handleDelete = async (coupon_id: string, promo_id: string) => {
     setLoadingRows(prev => new Set(prev).add(promo_id));
@@ -357,7 +425,8 @@ export function PromoCodesTable({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-           {/* Export logic here if needed */}
+            <DropdownMenuItem onClick={() => exportToCSV('all')}>Export All</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => exportToCSV('filtered')}>Export Filtered</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         </div>
