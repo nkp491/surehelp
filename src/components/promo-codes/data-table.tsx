@@ -13,7 +13,7 @@ import {
   useReactTable,
   VisibilityState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal, Search } from "lucide-react"
+import { ArrowUpDown, ChevronDown, MoreHorizontal, Search, Loader2 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
 import {
@@ -34,8 +34,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { AddPromoCode } from "./add-promo-code"
+
 import { supabase } from "@/integrations/supabase/client"
+import { useToast } from "@/hooks/use-toast";
 
 export type PROMO_CODE = {
   id: string
@@ -48,7 +49,7 @@ export type PROMO_CODE = {
   promo_id: string
 }
 
-const activateDeactivatePromoCode = async (action: string, promo_id: string) => {
+const activateDeactivatePromoCode = async (promo_id: string, action: string) => {
   const status = action === "active" ? "deactivate" : "activate"
 
   const {
@@ -111,16 +112,29 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
     accessorKey: "promo_code",
     header: "Promo Code",
     cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("promo_code")}</div>
+      <div>{row.getValue("promo_code")}</div>
     ),
   },
   {
-    accessorKey: "status",
-    header: "Status",
-    cell: ({ row }) => (
-      <div className="capitalize">{row.getValue("status")}</div>
-    ),
+  accessorKey: "status",
+  header: "Status",
+  cell: ({ row }) => {
+    const status = row.getValue("status") as string;
+    let colorClass = "";
+
+    if (status === "active") colorClass = "bg-[#6DE96E] text-white";
+    else if (status === "inactive") colorClass = "bg-[#F93C65] text-white";
+    else if (status === "expired") colorClass = "bg-gray-800 text-white";
+
+    return (
+      <span
+        className={`capitalize px-3 py-2 min-w-[80px] text-center inline-block rounded-full text-xs font-semibold ${colorClass}`}
+      >
+        {status}
+      </span>
+    );
   },
+},
   {
     accessorKey: "expiration_date",
     header: "Expiration",
@@ -158,7 +172,7 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
             {/* <DropdownMenuItem>Edit</DropdownMenuItem> */}
-            <DropdownMenuItem onClick={() => activateDeactivatePromoCode(payment.status, payment.promo_id)}>{payment.status === "active" ? "Deactivate" : "Activate"}</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => activateDeactivatePromoCode(payment.promo_id, payment.status)}>{payment.status === "active" ? "Deactivate" : "Activate"}</DropdownMenuItem>
             <DropdownMenuItem onClick={() => deleteCoupon(payment.coupon_id, payment.promo_id)}>Delete</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -167,7 +181,25 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
   },
 ]
 
-export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
+export function PromoCodesTable({
+  data,
+  onDeletePromoCode,
+  onStatusChange,
+  statusFilter,
+  setStatusFilter,
+  usageFilter,
+  setUsageFilter,
+  AddPromoCodeComponent,
+}: {
+  data: PROMO_CODE[];
+  onDeletePromoCode: (promo_id: string) => void;
+  onStatusChange: (promo_id: string, newStatus: PROMO_CODE['status']) => void;
+  statusFilter: string | null;
+  setStatusFilter: (val: string | null) => void;
+  usageFilter: string | null;
+  setUsageFilter: (val: string | null) => void;
+  AddPromoCodeComponent: React.ReactNode;
+}) {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [columnFilters, setColumnFilters] = React.useState<ColumnFiltersState>(
     []
@@ -175,6 +207,11 @@ export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
   const [columnVisibility, setColumnVisibility] =
     React.useState<VisibilityState>({})
   const [rowSelection, setRowSelection] = React.useState({})
+  const { toast } = useToast();
+  
+  // Use Set to store loading states for better performance and accuracy
+  const [loadingRows, setLoadingRows] = React.useState<Set<string>>(new Set());
+  const [statusLoadingRows, setStatusLoadingRows] = React.useState<Set<string>>(new Set());
 
   const table = useReactTable({
     data,
@@ -194,6 +231,86 @@ export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
       rowSelection,
     },
   })
+
+  // Clear loading states when pagination changes
+  React.useEffect(() => {
+    const currentVisibleIds = table.getRowModel().rows.map(row => row.original.promo_id);
+    
+    setLoadingRows(prev => {
+      const newSet = new Set(prev);
+      // Remove loading states for IDs that are no longer visible
+      Array.from(newSet).forEach(id => {
+        if (!currentVisibleIds.includes(id)) {
+          newSet.delete(id);
+        }
+      });
+      return newSet;
+    });
+    
+    setStatusLoadingRows(prev => {
+      const newSet = new Set(prev);
+      // Remove loading states for IDs that are no longer visible
+      Array.from(newSet).forEach(id => {
+        if (!currentVisibleIds.includes(id)) {
+          newSet.delete(id);
+        }
+      });
+      return newSet;
+    });
+  }, [table.getState().pagination.pageIndex]);
+
+  // Delete handler
+  const handleDelete = async (coupon_id: string, promo_id: string) => {
+    setLoadingRows(prev => new Set(prev).add(promo_id));
+    try {
+      await deleteCoupon(coupon_id, promo_id);
+      onDeletePromoCode(promo_id);
+      toast({
+        title: "Deleted",
+        description: "Promo code deleted successfully.",
+        variant: "default",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to delete promo code.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoadingRows(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(promo_id);
+        return newSet;
+      });
+    }
+  };
+
+  // Status change handler
+  const handleChangeStatus = async (promo_id: string, currentStatus: PROMO_CODE['status']) => {
+    setStatusLoadingRows(prev => new Set(prev).add(promo_id));
+    const newStatus = currentStatus === 'active' ? 'inactive' : 'active';
+    try {
+      await activateDeactivatePromoCode(promo_id, currentStatus);
+      onStatusChange(promo_id, newStatus);
+      toast({
+        title: "Status Updated",
+        description: `Promo code status changed to ${newStatus}.`,
+        variant: "default",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to change promo code status.",
+        variant: "destructive",
+      });
+    } finally {
+      setStatusLoadingRows(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(promo_id);
+        return newSet;
+      });
+    }
+  };
 
   return (
     <div className="w-full bg-white p-4 sm:p-6 rounded-lg shadow-sm border border-[#fbfaf8]">
@@ -215,7 +332,10 @@ export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-           
+            <DropdownMenuItem onClick={() => setStatusFilter(null)}>All</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('active')}>Active</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('inactive')}>Inactive</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setStatusFilter('expired')}>Expired</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
@@ -225,7 +345,9 @@ export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-           
+            <DropdownMenuItem onClick={() => setUsageFilter(null)}>All</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setUsageFilter('used')}>Used</DropdownMenuItem>
+            <DropdownMenuItem onClick={() => setUsageFilter('unused')}>Unused</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
         <DropdownMenu>
@@ -235,14 +357,14 @@ export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-           
+           {/* Export logic here if needed */}
           </DropdownMenuContent>
         </DropdownMenu>
         </div>
       </div>
       <div className="flex justify-between items-center mb-4">
         <p className="text-xl font-bold">PROMO CODE MANAGEMENT</p>
-        <AddPromoCode />
+        {AddPromoCodeComponent}
       </div>
       <div className="rounded-md">
         <Table>
@@ -276,10 +398,47 @@ export function PromoCodesTable({ data }: { data: PROMO_CODE[] }) {
                     <TableCell key={cell.id}
                     className="border-0 border-b border-border"
                     >
-                      {flexRender(
-                        cell.column.columnDef.cell,
-                        cell.getContext()
-                      )}
+                      {cell.column.id === 'actions'
+                        ? (() => {
+                            const payment = row.original;
+                            const isDeleteLoading = loadingRows.has(payment.promo_id);
+                            const isStatusLoading = statusLoadingRows.has(payment.promo_id);
+                            
+                            return (
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Open menu</span>
+                                    <MoreHorizontal />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem
+                                    onClick={() => handleChangeStatus(payment.promo_id, payment.status)}
+                                    disabled={isStatusLoading || isDeleteLoading}
+                                  >
+                                    {isStatusLoading ? (
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : null}
+                                    {payment.status === "active" ? "Deactivate" : "Activate"}
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => handleDelete(payment.coupon_id, payment.promo_id)}
+                                    disabled={isDeleteLoading || isStatusLoading}
+                                  >
+                                    {isDeleteLoading ? (
+                                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    ) : null}
+                                    Delete
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            );
+                          })()
+                        : flexRender(
+                            cell.column.columnDef.cell,
+                            cell.getContext()
+                          )}
                     </TableCell>
                   ))}
                 </TableRow>

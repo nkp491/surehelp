@@ -18,11 +18,13 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { CalendarIcon, Loader2, CheckCircle, AlertCircle } from "lucide-react"
-import { format } from "date-fns"
+import { format, set } from "date-fns"
 import { useForm, Controller } from "react-hook-form"
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { supabase } from "@/integrations/supabase/client"
+import { PROMO_CODE } from "./data-table";
+import { useToast } from "@/hooks/use-toast";
 
 type FormData = {
   promoCode: string
@@ -32,19 +34,14 @@ type FormData = {
   expirationDate: Date
 }
 
-type SubmissionState = {
-  isLoading: boolean
-  success: boolean
-  error: string | null
-}
+type AddPromoCodeProps = {
+  onPromoCodeAdded?: (promo: PROMO_CODE) => void;
+};
 
-export function AddPromoCode() {
+export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
   const [open, setOpen] = useState(false)
-  const [submissionState, setSubmissionState] = useState<SubmissionState>({
-    isLoading: false,
-    success: false,
-    error: null,
-  })
+  const [isLoading, setIsLoading] = useState(false);
+   const { toast } = useToast();
 
   const {
     register,
@@ -67,8 +64,7 @@ export function AddPromoCode() {
   const showDiscountField = discountType === "percentage" || discountType === "fixed"
 
   const handleCreateCoupon = async (data: FormData) => {
-    setSubmissionState({ isLoading: true, success: false, error: null })
-    console.log("Form data submitted:", data)
+    setIsLoading(true)
     try {
       const {
         data: { session },
@@ -99,27 +95,55 @@ export function AddPromoCode() {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(errorData.error || `HTTP error! status: ${response.status}`)
+        console.error("Error response from function:", errorData)
+        setIsLoading(false)
+        toast({
+        title: "Error",
+        description: "Failed to create promo code: " + (errorData || "Unknown error"),
+        variant: "destructive",
+        duration: 5000,
+      });
+        throw new Error(errorData.error || `Error creating promo code`)
       }
 
       const result = await response.json()
       console.log("Response from function:", result)
 
-      setSubmissionState({ isLoading: false, success: true, error: null })
+      // Compose the new promo code object for optimistic update
+      if (onPromoCodeAdded) {
+        const newPromo: PROMO_CODE = {
+          id: result.promo?.id,
+          promo_code: result.promo?.promo_code,
+          status: result.promo?.status,
+          expiration_date: result.promo?.expiration_date,
+          usage_limit: result.promo?.usage_limit,
+          usage_count: result.promo?.usage_count || 0,
+          coupon_id: result.promo?.coupon_id || '',
+          promo_id: result.promo?.promo_id || '',
+        };
+        onPromoCodeAdded(newPromo);
+      }
+      setIsLoading(false)
+      toast({
+        title: "Success",
+        description: "Promo code created successfully",
+        variant: "default",
+      });
 
       // Auto-close dialog after success
       setTimeout(() => {
         setOpen(false)
         reset()
-        setSubmissionState({ isLoading: false, success: false, error: null })
       }, 2000)
     } catch (err) {
       console.error("Error calling Edge Function:", err)
-      setSubmissionState({
-        isLoading: false,
-        success: false,
-        error: err instanceof Error ? err.message : "An unexpected error occurred. Please try again.",
-      })
+      setIsLoading(false)
+      // Show error alert
+      toast({
+        title: "Error",
+        description: "Failed to create promo code: " + (err.error || err || "Unknown error"),
+        variant: "destructive",
+      });
     }
   }
 
@@ -128,12 +152,11 @@ export function AddPromoCode() {
   }
 
   const handleDialogClose = (newOpen: boolean) => {
-    if (!submissionState.isLoading) {
+    if (!isLoading) {
       setOpen(newOpen)
       if (!newOpen) {
         // Reset form and states when dialog closes
         reset()
-        setSubmissionState({ isLoading: false, success: false, error: null })
       }
     }
   }
@@ -149,25 +172,6 @@ export function AddPromoCode() {
             <DialogTitle>Create Promo Code</DialogTitle>
             <DialogDescription>Create promo codes from here</DialogDescription>
           </DialogHeader>
-
-          {/* Success Message */}
-          {submissionState.success && (
-            <Alert className="border-green-200 bg-green-50">
-              <CheckCircle className="h-4 w-4 text-green-600" />
-              <AlertDescription className="text-green-800">
-                Promo code created successfully! This dialog will close automatically.
-              </AlertDescription>
-            </Alert>
-          )}
-
-          {/* Error Message */}
-          {submissionState.error && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertCircle className="h-4 w-4 text-red-600" />
-              <AlertDescription className="text-red-800">{submissionState.error}</AlertDescription>
-            </Alert>
-          )}
-
           <div className="grid gap-4 py-4">
             {/* Promo Code Text */}
             <div className="grid gap-2">
@@ -176,7 +180,7 @@ export function AddPromoCode() {
                 id="promoCode"
                 {...register("promoCode", { required: "Promo code text is required" })}
                 placeholder="Enter promo code"
-                disabled={submissionState.isLoading}
+                disabled={isLoading}
               />
               {errors.promoCode && <span className="text-sm text-red-500">{errors.promoCode.message}</span>}
             </div>
@@ -189,7 +193,7 @@ export function AddPromoCode() {
                 control={control}
                 rules={{ required: "Discount Type is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={submissionState.isLoading}>
+                  <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select Discount Type" />
                     </SelectTrigger>
@@ -227,7 +231,7 @@ export function AddPromoCode() {
                         : undefined,
                   })}
                   placeholder={discountType === "percentage" ? "Enter percentage (0-100)" : "Enter discount amount"}
-                  disabled={submissionState.isLoading}
+                  disabled={isLoading}
                 />
                 {errors.discountValue && <span className="text-sm text-red-500">{errors.discountValue.message}</span>}
               </div>
@@ -245,7 +249,7 @@ export function AddPromoCode() {
                   min: { value: 1, message: "Usage limit must be at least 1" },
                 })}
                 placeholder="Enter usage limit"
-                disabled={submissionState.isLoading}
+                disabled={isLoading}
               />
               {errors.usageLimit && <span className="text-sm text-red-500">{errors.usageLimit.message}</span>}
             </div>
@@ -266,7 +270,7 @@ export function AddPromoCode() {
                           "w-full justify-start text-left font-normal",
                           !field.value && "text-muted-foreground",
                         )}
-                        disabled={submissionState.isLoading}
+                        disabled={isLoading}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
                         {field.value ? format(field.value, "PPP") : "Pick a date"}
@@ -290,20 +294,15 @@ export function AddPromoCode() {
 
           <DialogFooter>
             <DialogClose asChild>
-              <Button type="button" variant="outline" disabled={submissionState.isLoading}>
+              <Button type="button" variant="outline" disabled={isLoading}>
                 Cancel
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={submissionState.isLoading || submissionState.success}>
-              {submissionState.isLoading ? (
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                   Creating...
-                </>
-              ) : submissionState.success ? (
-                <>
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Created!
                 </>
               ) : (
                 "Create Promo Code"

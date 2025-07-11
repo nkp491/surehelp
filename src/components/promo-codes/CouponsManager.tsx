@@ -8,33 +8,58 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import LoadingScreen from '../ui/loading-screen';
 import { PROMO_CODE } from './data-table';
 import { Toaster } from "@/components/ui/toaster";
+import { AddPromoCode } from './add-promo-code';
 function CouponsManager() {
   // Fetch promo codes from Supabase
   const [promoCodes, setPromoCodes] = useState<PROMO_CODE[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  // Filter state
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
+  const [usageFilter, setUsageFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchPromoCodes = async () => {
       setLoading(true);
-      const { data, error } = await supabase.from('promo_codes').select('*');
-
+      const { data, error } = await supabase.from('promo_codes').select('*').order('created_at', { ascending: false });
       if (error) {
-        console.error('Error fetching promo codes:', error);
         setError(error.message);
         setPromoCodes([]);
       } else {
         setPromoCodes(data || []);
         setError(null);
       }
-
       setLoading(false);
     };
-
     fetchPromoCodes();
   }, []);
 
-  console.log('Promo Codes:', promoCodes);
+  // Optimistic add handler
+  const handleAddPromoCode = (newPromo: PROMO_CODE) => {
+    setPromoCodes((prev) => [newPromo, ...prev]);
+  };
+
+  // Optimistic delete handler
+  const handleDeletePromoCode = (promo_id: string) => {
+    setPromoCodes((prev) => prev.filter((p) => p.promo_id !== promo_id));
+  };
+
+  // Optimistic status change handler
+  const handleStatusChange = (promo_id: string, newStatus: PROMO_CODE['status']) => {
+    setPromoCodes((prev) =>
+      prev.map((p) => (p.promo_id === promo_id ? { ...p, status: newStatus } : p))
+    );
+  };
+
+  // Filtered data
+  const filteredPromoCodes = promoCodes.filter((promo) => {
+    let statusMatch = true;
+    let usageMatch = true;
+    if (statusFilter) statusMatch = promo.status === statusFilter;
+    if (usageFilter === 'used') usageMatch = promo.usage_count > 0;
+    if (usageFilter === 'unused') usageMatch = promo.usage_count === 0;
+    return statusMatch && usageMatch;
+  });
 
   return (
     <div className="space-y-6 py-6 sm:py-8 md:py-10">
@@ -56,7 +81,16 @@ function CouponsManager() {
           ) : (
             <>
               <MetricsBoxes />
-              <PromoCodesTable data={promoCodes} />
+              <PromoCodesTable
+                data={filteredPromoCodes}
+                onDeletePromoCode={handleDeletePromoCode}
+                onStatusChange={handleStatusChange}
+                statusFilter={statusFilter}
+                setStatusFilter={setStatusFilter}
+                usageFilter={usageFilter}
+                setUsageFilter={setUsageFilter}
+                AddPromoCodeComponent={<AddPromoCode onPromoCodeAdded={handleAddPromoCode} />}
+              />
             </>
           )}
         </Card>

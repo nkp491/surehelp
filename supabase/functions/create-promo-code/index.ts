@@ -65,7 +65,7 @@ serve(async (req)=>{
         // }, 
         expires_at: Math.floor(new Date(expiration_date).getTime() / 1000)
       });
-      const { error } = await supabaseClient.from("promo_codes").insert([
+      const { data: newPromo, error } = await supabaseClient.from("promo_codes").insert([
         {
           promo_code,
           discount_type,
@@ -76,15 +76,22 @@ serve(async (req)=>{
           coupon_id: coupon.id,
           promo_id: promo.id
         }
-      ]);
+      ]).select();
       if (error) {
         console.error("Supabase error:", error);
-        return new Response("Database error", {
-          status: 500
+        return new Response(JSON.stringify({
+          error: `Failed to create promo code in database: ${error.message}`
+        }), {
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json"
+          },
+          status: 400
         });
       }
       return new Response(JSON.stringify({
-        promo
+        message: "Promo code created successfully",
+        promo: newPromo[0],
       }), {
         headers: {
           ...corsHeaders,
