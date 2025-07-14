@@ -33,7 +33,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   return (
     <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-180px)] pb-8">
       <DirectTotalIncomeCalculator formData={formData} setFormData={setFormData} />
-      <div className="form-layout">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 max-w-[1440px] mx-auto">
         {/* Primary Health Assessment Column */}
         <div className="space-y-6">
           <FormSection
