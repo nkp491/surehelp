@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { useStripeCheckout } from "@/hooks/useStripeCheckout";
 import { SUBSCRIPTION_PLANS, TRIAL_DAYS } from "@/integrations/stripe/plans";
 import { supabase } from "@/integrations/supabase/client";
-
+import { useToast } from "@/hooks/use-toast";
 interface PricingCardProps {
   id: string;
   title: string;
@@ -35,12 +35,12 @@ export function PricingCard({
   const [showPromoField, setShowPromoField] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
   // Find the plan by id
   const plan = SUBSCRIPTION_PLANS.find((plan) => plan.id === id);
   const isAgentPro = id === "agent_pro";
   const isFree = title === "Agent";
   const isManagerPlan = ["manager_pro", "manager_pro_gold", "manager_pro_platinum"].includes(id);
-
   const handleGetStarted = async (id: string) => {
     if (isFree) {
       navigate("/auth");
@@ -69,14 +69,28 @@ export function PricingCard({
         .single();
       if (error || !dbPromoCode) {
         const errorMsg = error?.message || "Invalid or expired promo code";
+        toast({
+          title: "Error",
+          description: "Invalid or expired promo code",
+          variant: "destructive",
+        });
         setErrorMessage(errorMsg);
-        console.error("Bro Error :",error);
+        console.error("Error :",error);
+        setIsLoading(false);
+        return;
+      }
+      if (dbPromoCode.usage_limit && dbPromoCode.usage_count >= dbPromoCode.usage_limit) {
+        toast({
+          title: "Error",
+          description: "This promo code has reached its usage limit.",
+          variant: "destructive",
+        });
+        setErrorMessage("This promo code has reached its usage limit.");
         setIsLoading(false);
         return;
       }
       promotionCode = dbPromoCode.promo_code;
     }
-    console.log("Promotion Code:", promotionCode);
 
       const priceId =
         billingInterval === "monthlyPrice"

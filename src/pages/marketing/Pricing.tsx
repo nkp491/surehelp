@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import Footer from "@/components/marketing/Footer";
 import { useAuthState } from "@/hooks/useAuthState";
-
+import { Toaster } from "@/components/ui/toaster";
 const Pricing = () => {
   const navigate = useNavigate();
   const { isLogin } = useAuthState();
@@ -53,6 +53,7 @@ const Pricing = () => {
         <PricingComparison />
       </main>
       <Footer />
+      <Toaster />
     </div>
   );
 };

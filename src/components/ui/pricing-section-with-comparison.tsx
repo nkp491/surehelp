@@ -3,7 +3,7 @@ import React from 'react';
 import { PricingHeader } from './pricing/PricingHeader';
 import { PricingCard } from './pricing/PricingCard';
 import { FeatureRow } from './pricing/FeatureRow';
-
+import { useToast } from "@/hooks/use-toast";
 // You can modify the pricing data here
 const pricingData = [
   {
@@ -109,6 +109,7 @@ function PricingComparison() {
   const [billingInterval, setBillingInterval] = React.useState<
       "monthlyPrice" | "yearlyPrice"
     >("yearlyPrice");
+    const { toast } = useToast();
 
   const getFeatureValues = (key: string) => {
     switch (key) {

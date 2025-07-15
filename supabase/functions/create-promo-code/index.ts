@@ -46,7 +46,7 @@ serve(async (req)=>{
       } else if (discount_type === "30-day-trial" || discount_type === "90-day-trial") {
         // Use a zero-value coupon + add metadata to mark as trial
         coupon = await stripe.coupons.create({
-          percent_off: 100,
+          percent_off: 0.01,
           duration: "once",
           metadata: {
             trial_days: discount_type === "30-day-trial" ? "30" : "90"

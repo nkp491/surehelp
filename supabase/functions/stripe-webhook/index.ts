@@ -25,6 +25,7 @@ serve(async (req)=>{
           const subscription = event.data.object;
           const customerId = subscription.customer;
           const userId = subscription.metadata.supabase_user_id;
+          const promotionCode = subscription.metadata?.promotion_code;
           if (!userId) {
             console.error("No user ID in subscription metadata");
             break;
@@ -149,6 +150,18 @@ serve(async (req)=>{
             }
           } else {
             console.log(`⚠️ Unhandled subscription status: ${subscription.status} for user ${userId}`);
+          }
+
+          // Handle promotion code if provided
+          if (promotionCode) {
+           const { error: promoError } = await supabaseAdmin.rpc("increment_promo_usage", {
+            promo: promotionCode
+          });
+            if (promoError) {
+              console.error("Error incrementing promo code usage:", promoError);
+            } else {
+              console.log(`✅ Incremented usage for promo code: ${promotionCode}`);
+            }
           }
           break;
         }
