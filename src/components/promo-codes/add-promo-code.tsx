@@ -120,6 +120,7 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
           usage_count: result.promo?.usage_count || 0,
           coupon_id: result.promo?.coupon_id || '',
           promo_id: result.promo?.promo_id || '',
+          discount_type: result.promo?.discount_type, // Add the discount type
         };
         onPromoCodeAdded(newPromo);
       }
