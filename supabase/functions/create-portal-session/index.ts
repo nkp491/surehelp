@@ -45,7 +45,7 @@ serve(async (req) => {
       .single();
 
     if (!subscription?.stripe_customer_id) {
-      throw new Error("No subscription found");
+      throw new Error(`No subscription found for user`);
     }
 
     // Create portal session

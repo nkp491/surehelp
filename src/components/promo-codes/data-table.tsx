@@ -47,6 +47,7 @@ export type PROMO_CODE = {
   usage_count: number
   coupon_id: string
   promo_id: string
+  discount_type: string
 }
 
 const activateDeactivatePromoCode = async (promo_id: string, action: string) => {
@@ -154,6 +155,13 @@ export const columns: ColumnDef<PROMO_CODE>[] = [
     header: "Redemption",  // by redemption we mean how many times the promo code has been used bu users
     cell: ({ row }) => (
       <div className="capitalize">{row.getValue("usage_count")}</div>
+    ),
+  },
+  {
+    accessorKey: "discount_type",
+    header: "Discount Type",
+    cell: ({ row }) => (
+      <div className="capitalize">{row.getValue("discount_type")}</div>
     ),
   },
   {
@@ -285,6 +293,7 @@ export function PromoCodesTable({
     const headers = [
       'Promo Code',
       'Status',
+      'Discount Type',
       'Expiration Date',
       'Usage Limit',
       'Usage Count',
@@ -298,6 +307,7 @@ export function PromoCodesTable({
       ...dataToExport.map(row => [
         `"${row.promo_code}"`,
         `"${row.status}"`,
+        `"${row.discount_type}"`,
         `"${row.expiration_date}"`,
         row.usage_limit,
         row.usage_count,
