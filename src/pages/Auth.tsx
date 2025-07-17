@@ -23,6 +23,11 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [name, setName] = useState({
+    firstName: "",
+    lastName: "",
+  });
+ const [nameError, setNameError] = useState({ firstName: "", lastName: "" });
 
   const validateEmail = (email: string) => {
     if (!email) {
@@ -64,6 +69,31 @@ const Auth = () => {
     setPasswordError("");
     return true;
   };
+
+  const validateName = (name: { firstName: string; lastName: string }) => {
+  const errors = { firstName: "", lastName: "" };
+  let isValid = true;
+
+  if (!name.firstName) {
+    errors.firstName = "Please enter the first name";
+    isValid = false;
+  } else if (name.firstName.length < 2) {
+    errors.firstName = "First name must be at least 2 characters long";
+    isValid = false;
+  }
+
+  if (!name.lastName) {
+    errors.lastName = "Please enter the last name";
+    isValid = false;
+  } else if (name.lastName.length < 2) {
+    errors.lastName = "Last name must be at least 2 characters long";
+    isValid = false;
+  }
+
+  setNameError(errors);
+  return isValid;
+};
+
 
   useEffect(() => {
     const checkSession = async () => {
@@ -156,12 +186,12 @@ const Auth = () => {
     setLoading(true);
     setErrorMessage("");
     
-    if (!validateEmail(email) || !validatePassword(password, true)) {
+    if (!validateEmail(email) || !validatePassword(password, true) || !validateName(name)) {
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.signUp({ email, password });
+    const { error } = await supabase.auth.signUp({ email, password, options: {data: {first_name: name.firstName, last_name: name.lastName}} });
     setLoading(false);
     if (error) setErrorMessage(getErrorMessage(error));
   };
@@ -202,6 +232,41 @@ const Auth = () => {
           <div className="bg-white/90 p-6 sm:p-8 rounded-xl shadow-lg">
             {view === "sign_up" && (
               <form onSubmit={handleSignUp} data-supabase-auth-view="sign_up" className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+  <div>
+    <label htmlFor="firstName">First Name</label>
+    <Input
+      type="text"
+      placeholder="Your first name"
+      value={name.firstName}
+      onChange={(e) => {
+        setName((prev) => ({ ...prev, firstName: e.target.value }));
+        setNameError((prev) => ({ ...prev, firstName: "" }));
+      }}
+      required
+    />
+    {nameError.firstName && (
+      <p className="text-red-500 text-sm mt-1">{nameError.firstName}</p>
+    )}
+  </div>
+  <div>
+    <label htmlFor="lastName">Last Name</label>
+    <Input
+      type="text"
+      placeholder="Your last name"
+      value={name.lastName}
+      onChange={(e) => {
+        setName((prev) => ({ ...prev, lastName: e.target.value }));
+        setNameError((prev) => ({ ...prev, lastName: "" }));
+      }}
+      required
+    />
+    {nameError.lastName && (
+      <p className="text-red-500 text-sm mt-1">{nameError.lastName}</p>
+    )}
+  </div>
+</div>
+
                 <div>
                   <label htmlFor="email">Email address</label>
                   <Input
