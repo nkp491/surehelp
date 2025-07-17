@@ -58,11 +58,27 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
           <Label htmlFor="dob">
             {t.dateOfBirth} <span className="text-red-500">*</span>
           </Label>
+          <div
+          className="cursor-pointer"
+          onClick={(e) => {
+            // Find the input or button inside and click it
+            const input = e.currentTarget.querySelector('input');
+            const button = e.currentTarget.querySelector('button');
+
+            if (input) {
+              input.focus();
+              input.click();
+            } else if (button) {
+              button.click();
+            }
+          }}
+        >
           <DatePicker
             selected={formData.dob ? new Date(formData.dob) : null}
             onSelect={handleDateSelect}
             maxDate={today}
           />
+          </div>
         </div>
         <div className="md:col-span-4 space-y-2">
           <Label htmlFor="age">{t.age}</Label>

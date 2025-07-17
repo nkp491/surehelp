@@ -52,10 +52,26 @@ const DetailedHistory = ({ formData, setFormData }: DetailedHistoryProps) => {
       </div>
       <div className="space-y-2">
         <Label>{t.lastMedicalExam}</Label>
-        <DatePicker
-          selected={formData.lastMedicalExam ? new Date(formData.lastMedicalExam) : null}
-          onSelect={handleDateSelect}
-        />
+        <div
+          className="cursor-pointer"
+          onClick={(e) => {
+            // Find the input or button inside and click it
+            const input = e.currentTarget.querySelector('input');
+            const button = e.currentTarget.querySelector('button');
+
+            if (input) {
+              input.focus();
+              input.click();
+            } else if (button) {
+              button.click();
+            }
+          }}
+        >
+          <DatePicker
+            selected={formData.lastMedicalExam ? new Date(formData.lastMedicalExam) : null}
+            onSelect={handleDateSelect}
+          />
+        </div>
       </div>
       <div className="space-y-2">
         <Label>{t.familyMedicalConditions}</Label>
