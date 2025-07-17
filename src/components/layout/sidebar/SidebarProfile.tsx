@@ -10,6 +10,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { supabase } from "@/integrations/supabase/client";
+import { roleService } from "@/services/roleService";
 
 type SidebarProfileProps = {
   profileData: {
@@ -24,6 +25,7 @@ export function SidebarProfile({ profileData }: SidebarProfileProps) {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
+      roleService.clearRoles();
       navigate('/auth');
     } catch (error) {
       console.error('Error signing out:', error);

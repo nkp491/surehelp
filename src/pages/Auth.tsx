@@ -104,6 +104,7 @@ const Auth = () => {
             const { hasRoles } = await roleService.fetchAndSaveRoles();
             if (!hasRoles) {
               await supabase.auth.signOut();
+              roleService.clearRoles();
               setErrorMessage(
                 "You don't have any roles assigned. Please contact an administrator."
               );

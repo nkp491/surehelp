@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { roleService } from "@/services/roleService";
 
 export const useAuthStateManager = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -20,6 +21,7 @@ export const useAuthStateManager = () => {
 
       if (!session) {
         await supabase.auth.signOut();
+        roleService.clearRoles();
         setIsAuthenticated(false);
         setIsLoading(false);
         return;
@@ -29,6 +31,7 @@ export const useAuthStateManager = () => {
       if (refreshError) {
         console.error("Refresh error:", refreshError);
         await supabase.auth.signOut();
+        roleService.clearRoles();
         setIsAuthenticated(false);
         toast({
           title: "Session Expired",
@@ -44,6 +47,7 @@ export const useAuthStateManager = () => {
     } catch (error) {
       console.error("Auth error:", error);
       await supabase.auth.signOut();
+      roleService.clearRoles();
       setIsAuthenticated(false);
       setIsLoading(false);
       toast({

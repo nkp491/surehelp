@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-
+import { roleService } from "@/services/roleService";
 export const useAuthState = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -17,6 +17,7 @@ export const useAuthState = () => {
   const handleAuthError = async () => {
     clearAuthData();
     await supabase.auth.signOut();
+    roleService.clearRoles();
     setIsAuthenticated(false);
     setIsLoading(false);
   };

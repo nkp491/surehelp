@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Eye, EyeOff, Check, X } from "lucide-react";
+import { roleService } from "@/services/roleService";
 
 interface ValidationItemProps {
   isValid: boolean;
@@ -140,6 +141,7 @@ const ResetPassword = () => {
       });
 
       await supabase.auth.signOut();
+      roleService.clearRoles();
       navigate("/auth", { replace: true });
     } catch (error) {
       console.error("Error updating password:", error);

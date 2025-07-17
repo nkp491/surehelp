@@ -3,58 +3,50 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
-import { useQuery } from "@tanstack/react-query";
 import { roleService } from "@/services/roleService";
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [uploading, setUploading] = useState(false);
+  const [profileData, setProfileData] = useState<Profile>();
+  const isLoading = !profileData;
 
-  // Profile query with React Query
-  const { data: profile, isLoading, refetch } = useQuery({
-    queryKey: ['profile'],
-    queryFn: async () => {
+  useEffect(() => {
+    const fetchProfile = async () => {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
         navigate("/auth");
-        return null;
+        return;
       }
 
-      // Fetch basic profile data
-      const { data: profileData, error: profileError } = await supabase
+      // Fetch profile data
+      const { data: profile, error } = await supabase
         .from("profiles")
         .select("*")
         .eq("id", session.user.id)
         .single();
-
-      if (profileError) throw profileError;
-      
-      // Fetch user roles
-      // const { data: userRoles, error: rolesError } = await supabase
-      //   .from("user_roles")
-      //   .select("role, email")
-      //   .eq("user_id", session.user.id);
       const { roles } = await roleService.fetchAndSaveRoles();
-      
-      // const roles = userRoles.map(r => r.role);
-      
-      // Transform the data to match our Profile type
-      return {
-        ...profileData,
+      if (error) {
+        console.error("Error fetching profile:", error);
+        return;
+      }
+      console.log("Fetched profile:", profile);
+
+      setProfileData({
+        ...profile,
         roles: roles,
-        role: null,
-        privacy_settings: typeof profileData.privacy_settings === 'string' 
-          ? JSON.parse(profileData.privacy_settings)
-          : profileData.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
-        notification_preferences: typeof profileData.notification_preferences === 'string'
-          ? JSON.parse(profileData.notification_preferences)
-          : profileData.notification_preferences || { email_notifications: true, phone_notifications: false }
-      } as Profile;
-    },
-    staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
-    gcTime: 1000 * 60 * 30, // Keep data in cache for 30 minutes
-  });
+        privacy_settings: typeof profile.privacy_settings === 'string'
+          ? JSON.parse(profile.privacy_settings)
+          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
+        notification_preferences: typeof profile.notification_preferences === 'string'
+          ? JSON.parse(profile.notification_preferences)
+          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
+      } as Profile);
+    };
+
+    fetchProfile();
+  }, [navigate]);
 
   // Auth state listener
   useEffect(() => {
@@ -125,7 +117,7 @@ export const useProfileManagement = () => {
       }
       
       // Refetch profile data to ensure we have the latest
-      await refetch();
+      // await refetch();
       
       toast({
         title: "Profile updated",
@@ -191,11 +183,12 @@ export const useProfileManagement = () => {
       });
     } else {
       navigate("/auth");
+      roleService.clearRoles();
     }
   }
 
   return {
-    profile,
+    profile: profileData,
     loading: isLoading,
     uploading,
     updateProfile,

@@ -3,6 +3,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { roleService } from "@/services/roleService";
 
 export function useProfileMenu() {
   const navigate = useNavigate();
@@ -58,7 +59,9 @@ export function useProfileMenu() {
   const handleSignOut = async () => {
     try {
       await supabase.auth.signOut();
+      setProfileData({});
       navigate('/auth');
+      roleService.clearRoles();
       toast({
         title: "Signed out successfully",
         description: "You have been signed out of your account.",
