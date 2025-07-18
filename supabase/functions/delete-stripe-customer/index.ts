@@ -20,10 +20,10 @@ serve(async (req)=>{
       }
     });
     // Get the session or user object
-    const { data: { user } } = await supabaseClient.auth.getUser();
-    if (!user) {
-      throw new Error("User not found");
-    }
+    // const { data: { user } } = await supabaseClient.auth.getUser();
+    // if (!user) {
+    //   throw new Error("User not found");
+    // }
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") || "", {
       apiVersion: "2023-10-16"
     });
@@ -38,7 +38,7 @@ serve(async (req)=>{
     if (!deletedCustomer) {
       throw new Error("Failed to delete Stripe subscription");
     }
-    return new Response(JSON.stringify({ success: true, message: "Stripe subscription deleted successfully" }), {
+    return new Response(JSON.stringify({ success: true, deletedCustomer, message: "Stripe subscription deleted successfully" }), {
       status: 200,
       headers: {
         ...corsHeaders,

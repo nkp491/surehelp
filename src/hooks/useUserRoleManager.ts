@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { assignRoleToUser, removeRoleFromUser, getUserRoles } from "@/utils/roles";
+import { useStripeSubscriptionDeletion } from "@/components/admin/delete-stripe-subscription";
 
 interface UserInfo {
   email: string | null;
@@ -10,11 +11,12 @@ interface UserInfo {
 }
 
 export function useUserRoleManager() {
-  const [userId, setUserId] = useState("c65f14e1-81d4-46f3-9183-22e935936d0e");
+  const [userId, setUserId] = useState("");
   const [isLookingUp, setIsLookingUp] = useState(false);
   const [userRoles, setUserRoles] = useState<string[]>([]);
   const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const { toast } = useToast();
+  const { deleteStripeSubscription } = useStripeSubscriptionDeletion();
 
   const handleLookupRoles = async () => {
     if (!userId.trim()) {
@@ -63,7 +65,7 @@ export function useUserRoleManager() {
     }
   };
 
-  const handleRoleAction = async (action: "assign" | "remove", role: string) => {
+  const handleRoleAction = async (action: "assign" | "remove", role: string, subscriptionId: string) => {
     if (!userId.trim()) {
       toast({
         title: "Error",
@@ -79,6 +81,7 @@ export function useUserRoleManager() {
       if (action === "assign") {
         result = await assignRoleToUser(userId, role);
       } else {
+        await deleteStripeSubscription(subscriptionId);
         result = await removeRoleFromUser(userId, role);
       }
       

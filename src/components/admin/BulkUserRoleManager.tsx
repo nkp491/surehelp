@@ -7,8 +7,7 @@ import {
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
+  AlertDialogTitle, 
 } from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -40,7 +39,7 @@ export function BulkUserRoleManager() {
   const { toast } = useToast();
   const { users, isLoadingUsers, availableRoles } = useRoleManagement();
   const { searchQuery, setSearchQuery, filterUsers } = useUserSearch();
-  
+  const [checkingSubscription, setCheckingSubscription] = useState(false);
   const filteredUsers = filterUsers(users);
 
   const toggleUserSelection = (userId: string) => {
@@ -61,6 +60,7 @@ export function BulkUserRoleManager() {
   };
 
   const handleCheckSubscription = async ()=> {
+    setCheckingSubscription(true);
     if (selectedUserIds.length === 0 || !role) {
       toast({
         title: "Error",
@@ -70,14 +70,14 @@ export function BulkUserRoleManager() {
       return;
     }
     try {
-      const {data: subscribedUser, error} = await supabase.from("subscriptions").select("user_id, stripe_subscription_id").eq("plan_id", role);
+      const {data: subscribedUser, error} = await supabase.from("subscriptions").select("user_id, stripe_subscription_id").eq("plan_id", role).in("user_id", selectedUserIds);
       if (error) {
         throw new Error(`Error checking subscription: ${error.message}`);
       }
       if (subscribedUser.length !== 0) {
         setSubscribedUser(subscribedUser);
-        setOpenDialog(true);    
-        // await handleBulkRoleAction();
+        setOpenDialog(true);
+        setCheckingSubscription(false);
       } else {
         await handleBulkRoleAction();
       }
@@ -133,9 +133,6 @@ export function BulkUserRoleManager() {
   return (
     <div>
       <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
-      <AlertDialogTrigger asChild>
-        <Button variant="outline">Show Dialog</Button>
-      </AlertDialogTrigger>
       <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
@@ -249,11 +246,11 @@ export function BulkUserRoleManager() {
               
               <Button 
                 onClick={action === "remove" ? handleCheckSubscription : handleBulkRoleAction}
-                disabled={isLoading || selectedUserIds.length === 0 || !role}
+                disabled={isLoading || checkingSubscription || selectedUserIds.length === 0 || !role}
                 className="w-full"
                 variant={action === "remove" ? "destructive" : "default"}
               >
-                {isLoading ? (
+                {(isLoading || checkingSubscription) ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     {action === "assign" ? "Assigning..." : "Removing..."}

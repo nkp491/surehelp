@@ -2,6 +2,7 @@
 import { assignRoleToUser } from "./assignRole";
 import { removeRoleFromUser } from "./removeRole";
 import { hasSystemAdminRole } from "./hasRole";
+import { useStripeSubscriptionDeletion } from "@/components/admin/delete-stripe-subscription";
 
 /**
  * Performs bulk role operations (assign or remove) for multiple users
@@ -24,6 +25,7 @@ export const bulkRoleOperation = async ({
   try {
     // First check if current user has system_admin role
     const isAdmin = await hasSystemAdminRole();
+    const { deleteStripeSubscription } = useStripeSubscriptionDeletion();
     if (!isAdmin) {
       return { success: false, message: "You must have system_admin role to perform bulk role operations" };
     }
@@ -43,7 +45,13 @@ export const bulkRoleOperation = async ({
       if (action === "assign") {
         result = await assignRoleToUser(userId, role);
       } else {
-
+        const user = subscribedUser?.find((u) => u.user_id === userId);
+        const data = await deleteStripeSubscription(user?.stripe_subscription_id);
+        if (data?.error) {
+          console.log("Stripe Error:", data?.error);
+          return { success: false, message: "Failed to delete Stripe subscription for user" };
+        }
+        
         result = await removeRoleFromUser(userId, role);
       }
       
@@ -75,9 +83,3 @@ export const bulkRoleOperation = async ({
     return { success: false, message: error.message || "An unexpected error occurred" };
   }
 };
-
-
-
-async function revokeSubscription (userId: string, planId: string) {
-  
-}
