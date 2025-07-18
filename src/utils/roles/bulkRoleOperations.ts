@@ -9,11 +9,13 @@ import { hasSystemAdminRole } from "./hasRole";
 export const bulkRoleOperation = async ({
   userIds,
   role,
-  action
+  action,
+  subscribedUser
 }: {
   userIds: string[];
   role: string;
   action: "assign" | "remove";
+  subscribedUser?: any[];
 }): Promise<{ 
   success: boolean; 
   message: string; 
@@ -41,6 +43,7 @@ export const bulkRoleOperation = async ({
       if (action === "assign") {
         result = await assignRoleToUser(userId, role);
       } else {
+
         result = await removeRoleFromUser(userId, role);
       }
       
@@ -72,3 +75,9 @@ export const bulkRoleOperation = async ({
     return { success: false, message: error.message || "An unexpected error occurred" };
   }
 };
+
+
+
+async function revokeSubscription (userId: string, planId: string) {
+  
+}

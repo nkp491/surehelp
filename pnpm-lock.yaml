@@ -119,6 +119,9 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.56.2
         version: 5.81.2(react@18.3.1)
+      '@tanstack/react-table':
+        specifier: ^8.21.3
+        version: 8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       class-variance-authority:
         specifier: ^0.7.1
         version: 0.7.1
@@ -180,14 +183,14 @@ importers:
         specifier: ^2.12.7
         version: 2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
-        specifier: ^1.5.0
+        specifier: ^1.7.4
         version: 1.7.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       stripe:
         specifier: ^18.2.1
         version: 18.2.1(@types/node@22.15.33)
       supabase:
-        specifier: ^2.26.9
-        version: 2.26.9
+        specifier: ^2.30.4
+        version: 2.31.4
       tailwind-merge:
         specifier: ^2.5.2
         version: 2.6.0
@@ -1383,67 +1386,56 @@ packages:
     resolution: {integrity: sha512-n0edDmSHlXFhrlmTK7XBuwKlG5MbS7yleS1cQ9nn4kIeW+dJH+ExqNgQ0RrFRew8Y+0V/x6C5IjsHrJmiHtkxQ==}
     cpu: [arm]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm-musleabihf@4.44.1':
     resolution: {integrity: sha512-8WVUPy3FtAsKSpyk21kV52HCxB+me6YkbkFHATzC2Yd3yuqHwy2lbFL4alJOLXKljoRw08Zk8/xEj89cLQ/4Nw==}
     cpu: [arm]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-arm64-gnu@4.44.1':
     resolution: {integrity: sha512-yuktAOaeOgorWDeFJggjuCkMGeITfqvPgkIXhDqsfKX8J3jGyxdDZgBV/2kj/2DyPaLiX6bPdjJDTu9RB8lUPQ==}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-arm64-musl@4.44.1':
     resolution: {integrity: sha512-W+GBM4ifET1Plw8pdVaecwUgxmiH23CfAUj32u8knq0JPFyK4weRy6H7ooxYFD19YxBulL0Ktsflg5XS7+7u9g==}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-loongarch64-gnu@4.44.1':
     resolution: {integrity: sha512-1zqnUEMWp9WrGVuVak6jWTl4fEtrVKfZY7CvcBmUUpxAJ7WcSowPSAWIKa/0o5mBL/Ij50SIf9tuirGx63Ovew==}
     cpu: [loong64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-powerpc64le-gnu@4.44.1':
     resolution: {integrity: sha512-Rl3JKaRu0LHIx7ExBAAnf0JcOQetQffaw34T8vLlg9b1IhzcBgaIdnvEbbsZq9uZp3uAH+JkHd20Nwn0h9zPjA==}
     cpu: [ppc64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-gnu@4.44.1':
     resolution: {integrity: sha512-j5akelU3snyL6K3N/iX7otLBIl347fGwmd95U5gS/7z6T4ftK288jKq3A5lcFKcx7wwzb5rgNvAg3ZbV4BqUSw==}
     cpu: [riscv64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-riscv64-musl@4.44.1':
     resolution: {integrity: sha512-ppn5llVGgrZw7yxbIm8TTvtj1EoPgYUAbfw0uDjIOzzoqlZlZrLJ/KuiE7uf5EpTpCTrNt1EdtzF0naMm0wGYg==}
     cpu: [riscv64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-linux-s390x-gnu@4.44.1':
     resolution: {integrity: sha512-Hu6hEdix0oxtUma99jSP7xbvjkUM/ycke/AQQ4EC5g7jNRLLIwjcNwaUy95ZKBJJwg1ZowsclNnjYqzN4zwkAw==}
     cpu: [s390x]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-gnu@4.44.1':
     resolution: {integrity: sha512-EtnsrmZGomz9WxK1bR5079zee3+7a+AdFlghyd6VbAjgRJDbTANJ9dcPIPAi76uG05micpEL+gPGmAKYTschQw==}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@rollup/rollup-linux-x64-musl@4.44.1':
     resolution: {integrity: sha512-iAS4p+J1az6Usn0f8xhgL4PaU878KEtutP4hqw52I4IO6AGoyOkHCxcc4bqufv1tQLdDWFx8lR9YlwxKuv3/3g==}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@rollup/rollup-win32-arm64-msvc@4.44.1':
     resolution: {integrity: sha512-NtSJVKcXwcqozOl+FwI41OH3OApDyLk3kqTJgx8+gp6On9ZEt5mYhIsKNPGuaZr3p9T6NWPKGU/03Vw4CNU9qg==}
@@ -1522,28 +1514,24 @@ packages:
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
-    libc: [glibc]
 
   '@swc/core-linux-arm64-musl@1.12.7':
     resolution: {integrity: sha512-jxyINtBezpxd3eIUDiDXv7UQ87YWlPsM9KumOwJk09FkFSO4oYxV2RT+Wu+Nt5tVWue4N0MdXT/p7SQsDEk4YA==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
-    libc: [musl]
 
   '@swc/core-linux-x64-gnu@1.12.7':
     resolution: {integrity: sha512-PR4tPVwU1BQBfFDk2XfzXxsEIjF3x/bOV1BzZpYvrlkU0TKUDbR4t2wzvsYwD/coW7/yoQmlL70/qnuPtTp1Zw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
-    libc: [glibc]
 
   '@swc/core-linux-x64-musl@1.12.7':
     resolution: {integrity: sha512-zy7JWfQtQItgMfUjSbbcS3DZqQUn2d9VuV0LSGpJxtTXwgzhRpF1S2Sj7cU9hGpbM27Y8RJ4DeFb3qbAufjbrw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
-    libc: [musl]
 
   '@swc/core-win32-arm64-msvc@1.12.7':
     resolution: {integrity: sha512-52PeF0tyX04ZFD8nibNhy/GjMFOZWTEWPmIB3wpD1vIJ1po+smtBnEdRRll5WIXITKoiND8AeHlBNBPqcsdcwA==}
@@ -1593,6 +1581,17 @@ packages:
     resolution: {integrity: sha512-pe8kFlTrL2zFLlcAj2kZk9UaYYHDk9/1hg9EBaoO3cxDhOZf1FRGJeziSXKrVZyxIfs7b3aoOj/bw7Lie0mDUg==}
     peerDependencies:
       react: ^18 || ^19
+
+  '@tanstack/react-table@8.21.3':
+    resolution: {integrity: sha512-5nNMTSETP4ykGegmVkhjcS8tTLW6Vl4axfEGQN3v0zdHYbK4UfoqfPChclTrJ4EoK9QynqAu9oUf8VEmrpZ5Ww==}
+    engines: {node: '>=12'}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+
+  '@tanstack/table-core@8.21.3':
+    resolution: {integrity: sha512-ldZXEhOBb8Is7xLs01fR3YEc3DERiz5silj8tnGkFZytt1abEvl/GhUmCE0PMLaMPTa3Jk4HbKmRlHmu+gCftg==}
+    engines: {node: '>=12'}
 
   '@types/d3-array@3.2.1':
     resolution: {integrity: sha512-Y2Jn2idRrLzUfAKV2LyRImR+y4oa2AntrgID95SHJxuMUrkNXmanDSed71sRNZysveJVt1hLLemQZIady0FpEg==}
@@ -2793,8 +2792,8 @@ packages:
     engines: {node: '>=16 || 14 >=14.17'}
     hasBin: true
 
-  supabase@2.26.9:
-    resolution: {integrity: sha512-wHl7HtAD2iHMVXL8JZyfSjdI0WYM7EF0ydThp1tSvDANaD2JHCZc8GH1NdzglbwGqdHmjCYeSZ+H28fmucYl7Q==}
+  supabase@2.31.4:
+    resolution: {integrity: sha512-5OIhaXuJHq/rdu6yIozmD4kZa1//IzfQTmrSE74DgJOP4Nz6Y5ynMdaCCg8kTWv34MyOMn0GXrbjhObLdsyElA==}
     engines: {npm: '>=8'}
     hasBin: true
 
@@ -4197,6 +4196,14 @@ snapshots:
       '@tanstack/query-core': 5.81.2
       react: 18.3.1
 
+  '@tanstack/react-table@8.21.3(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
+    dependencies:
+      '@tanstack/table-core': 8.21.3
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+
+  '@tanstack/table-core@8.21.3': {}
+
   '@types/d3-array@3.2.1': {}
 
   '@types/d3-color@3.1.3': {}
@@ -5456,7 +5463,7 @@ snapshots:
       pirates: 4.0.7
       ts-interface-checker: 0.1.13
 
-  supabase@2.26.9:
+  supabase@2.31.4:
     dependencies:
       bin-links: 5.0.0
       https-proxy-agent: 7.0.6

@@ -9,7 +9,7 @@ import { hasSystemAdminRole } from "./hasRole";
  * @param role - The role to remove
  * @returns Promise resolving to a success message or error
  */
-export const removeRoleFromUser = async (userId: string, role: string): Promise<{ success: boolean; message: string }> => {
+export const removeRoleFromUser = async (userId: string, role: string, subscribedUser?: any): Promise<{ success: boolean; message: string }> => {
   try {
     // First check if current user has system_admin role
     const isAdmin = await hasSystemAdminRole();

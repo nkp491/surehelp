@@ -1,4 +1,15 @@
 import { useState } from "react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -10,11 +21,21 @@ import { Input } from "@/components/ui/input";
 import { UserCheckboxList } from "./UserCheckboxList";
 import { bulkRoleOperation } from "@/utils/roles";
 import { BulkPasswordReset } from "./BulkPasswordReset";
+import { supabase } from "@/integrations/supabase/client";
+
+
+interface selectedUserData {
+  userId: string;
+  email: string;
+}
 
 export function BulkUserRoleManager() {
   const [selectedUserIds, setSelectedUserIds] = useState<string[]>([]);
+  const [selectedUsers, setSelectedUsers] = useState<selectedUserData[]>([]);
+  const [openDialog, setOpenDialog] = useState(false);
   const [role, setRole] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [subscribedUser, setSubscribedUser] = useState<any[]>([]);
   const [action, setAction] = useState<"assign" | "remove">("assign");
   const { toast } = useToast();
   const { users, isLoadingUsers, availableRoles } = useRoleManagement();
@@ -28,7 +49,43 @@ export function BulkUserRoleManager() {
         ? prev.filter(id => id !== userId) 
         : [...prev, userId]
     );
+    setSelectedUsers(prev => {
+      const user = users.find(u => u.id === userId);
+      if (!user) return prev;
+      if (prev.some(u => u.userId === userId)) {
+        return prev.filter(u => u.userId !== userId);
+      } else {
+        return [...prev, { userId: user.id, email: user.email }];
+      }
+    });
   };
+
+  const handleCheckSubscription = async ()=> {
+    if (selectedUserIds.length === 0 || !role) {
+      toast({
+        title: "Error",
+        description: "Please select users and a role for the operation",
+        variant: "destructive",
+      });
+      return;
+    }
+    try {
+      const {data: subscribedUser, error} = await supabase.from("subscriptions").select("user_id, stripe_subscription_id").eq("plan_id", role);
+      if (error) {
+        throw new Error(`Error checking subscription: ${error.message}`);
+      }
+      if (subscribedUser.length !== 0) {
+        setSubscribedUser(subscribedUser);
+        setOpenDialog(true);    
+        // await handleBulkRoleAction();
+      } else {
+        await handleBulkRoleAction();
+      }
+      return;
+    } catch (error) {
+     console.error("Error checking subscription:", error); 
+    }
+  }
 
   const handleBulkRoleAction = async () => {
     if (selectedUserIds.length === 0 || !role) {
@@ -45,7 +102,8 @@ export function BulkUserRoleManager() {
       const result = await bulkRoleOperation({
         userIds: selectedUserIds,
         role,
-        action
+        action,
+        subscribedUser
       });
       
       if (result.success) {
@@ -73,6 +131,31 @@ export function BulkUserRoleManager() {
   };
 
   return (
+    <div>
+      <AlertDialog open={openDialog} onOpenChange={setOpenDialog}>
+      <AlertDialogTrigger asChild>
+        <Button variant="outline">Show Dialog</Button>
+      </AlertDialogTrigger>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+          <AlertDialogDescription>
+            Below users have an active subscription for the selected role. Proceeding will revoke their subscription.
+            <ul>
+                {selectedUsers
+                  .filter(sub => subscribedUser.some(sel => sel.user_id === sub.userId))
+                  .map(user => (
+                    <li key={user.userId}>{user.email}</li>
+                  ))}
+              </ul>
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction onClick={handleBulkRoleAction}>Continue</AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
     <Card>
       <CardHeader>
         <CardTitle>Bulk User Role Management</CardTitle>
@@ -165,7 +248,7 @@ export function BulkUserRoleManager() {
               </div>
               
               <Button 
-                onClick={handleBulkRoleAction}
+                onClick={action === "remove" ? handleCheckSubscription : handleBulkRoleAction}
                 disabled={isLoading || selectedUserIds.length === 0 || !role}
                 className="w-full"
                 variant={action === "remove" ? "destructive" : "default"}
@@ -186,5 +269,6 @@ export function BulkUserRoleManager() {
         </div>
       </CardContent>
     </Card>
+    </div>
   );
 }
