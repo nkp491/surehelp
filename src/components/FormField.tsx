@@ -10,6 +10,7 @@ import { translations } from "@/utils/translations";
 import { cn } from "@/lib/utils";
 import { DatePicker } from "./ui/date-picker";
 import { parse, isValid, format } from "date-fns";
+import { CustomeDatePicker } from "./custome-date-picker";
 
 interface FormFieldProps {
   label: string;
@@ -138,29 +139,11 @@ const FormField = ({
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
-        <div
-          className="cursor-pointer"
-          onClick={(e) => {
-            // Find the input or button inside and click it
-            const input = e.currentTarget.querySelector('input');
-            const button = e.currentTarget.querySelector('button');
-
-            if (input) {
-              input.focus();
-              input.click();
-            } else if (button) {
-              button.click();
-            }
-          }}
-        >
-        <DatePicker
-          selected={selectedDate}
-          onSelect={(date) => {
-            onChange?.(date ? format(date, "MM/dd/yyyy") : "");
-          }}
-          placeholder={placeholder}
-        />
-        </div>
+        <CustomeDatePicker
+                    value={selectedDate}
+                    onChange={(dateString) => onChange?.(dateString || "")}
+                    startYear={1920}
+                  />
         {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
       </div>
     );

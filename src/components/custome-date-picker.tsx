@@ -15,7 +15,7 @@ interface DatePickerWithInputProps {
   /**
    * The current date value in "YYYY-MM-DD" format.
    */
-  value?: string
+  value?: string | Date
   /**
    * Callback function when the date changes. Returns date string in "YYYY-MM-DD" or undefined.
    */
@@ -68,20 +68,27 @@ export function CustomeDatePicker({
   // Effect to synchronize internal state with external `value` prop
   React.useEffect(() => {
     if (value) {
-      const parsedFromProp = parse(value, "yyyy-MM-dd", new Date())
-      if (isValid(parsedFromProp)) {
-        setDate(parsedFromProp)
-        setInputValue(format(parsedFromProp, "MM/dd/yyyy"))
-        setShowInvalidTooltip(false) // Valid date from prop, hide tooltip
+      let parsedFromProp: Date | undefined;
+      if (typeof value === "string") {
+        parsedFromProp = parse(value, "yyyy-MM-dd", new Date());
+      } else if (value instanceof Date && isValid(value)) {
+        parsedFromProp = value;
       } else {
-        setDate(undefined)
-        setInputValue("")
-        setShowInvalidTooltip(true) // Invalid date from prop, show tooltip
+        parsedFromProp = undefined;
+      }
+      if (parsedFromProp && isValid(parsedFromProp)) {
+        setDate(parsedFromProp);
+        setInputValue(format(parsedFromProp, "MM/dd/yyyy"));
+        setShowInvalidTooltip(false); // Valid date from prop, hide tooltip
+      } else {
+        setDate(undefined);
+        setInputValue("");
+        setShowInvalidTooltip(true); // Invalid date from prop, show tooltip
       }
     } else {
-      setDate(undefined)
-      setInputValue("")
-      setShowInvalidTooltip(false) // Empty value, hide tooltip
+      setDate(undefined);
+      setInputValue("");
+      setShowInvalidTooltip(false); // Empty value, hide tooltip
     }
   }, [value])
 
