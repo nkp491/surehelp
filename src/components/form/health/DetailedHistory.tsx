@@ -4,6 +4,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { DatePicker } from "@/components/ui/date-picker";
 import { FormSubmission } from "@/types/form";
+import { CustomeDatePicker } from "@/components/custome-date-picker";
 
 interface DetailedHistoryProps {
   formData: Partial<FormSubmission>;
@@ -52,26 +53,11 @@ const DetailedHistory = ({ formData, setFormData }: DetailedHistoryProps) => {
       </div>
       <div className="space-y-2">
         <Label>{t.lastMedicalExam}</Label>
-        <div
-          className="cursor-pointer"
-          onClick={(e) => {
-            // Find the input or button inside and click it
-            const input = e.currentTarget.querySelector('input');
-            const button = e.currentTarget.querySelector('button');
-
-            if (input) {
-              input.focus();
-              input.click();
-            } else if (button) {
-              button.click();
-            }
-          }}
-        >
-          <DatePicker
-            selected={formData.lastMedicalExam ? new Date(formData.lastMedicalExam) : null}
-            onSelect={handleDateSelect}
-          />
-        </div>
+       <CustomeDatePicker
+                   value={formData.lastMedicalExam}
+                   onChange={(dateString) => handleInputChange("lastMedicalExam", dateString || "")}
+                   startYear={1920}
+        />
       </div>
       <div className="space-y-2">
         <Label>{t.familyMedicalConditions}</Label>

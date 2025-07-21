@@ -2,10 +2,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { useEffect } from "react";
-import { differenceInYears } from "date-fns";
-import { DatePicker } from "@/components/ui/date-picker";
+import { useEffect, useState } from "react";
+import { differenceInYears, isValid } from "date-fns";
 import { FormSubmission } from "@/types/form";
+import { CustomeDatePicker } from "@/components/custome-date-picker";
 
 interface PersonalInfoProps {
   formData: Partial<FormSubmission>;
@@ -13,9 +13,9 @@ interface PersonalInfoProps {
 }
 
 const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
   const { language } = useLanguage();
   const t = translations[language];
-
   const handleInputChange = (field: keyof FormSubmission, value: string) => {
     setFormData({ ...formData, [field]: value });
   };
@@ -28,11 +28,17 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
 
   useEffect(() => {
     if (formData.dob) {
-      const birthDate = new Date(formData.dob);
-      const calculatedAge = differenceInYears(new Date(), birthDate);
-      handleInputChange("age", calculatedAge.toString());
+      const birthDate = new Date(formData.dob)
+      if (isValid(birthDate)) {
+        const calculatedAge = differenceInYears(new Date(), birthDate)
+        handleInputChange("age", calculatedAge.toString())
+      } else {
+        handleInputChange("age", "")
+      }
+    } else {
+      handleInputChange("age", "")
     }
-  }, [formData.dob]);
+  }, [formData.dob]) 
 
   const today = new Date();
   const minDate = new Date();
@@ -58,27 +64,15 @@ const PersonalInfo = ({ formData, setFormData }: PersonalInfoProps) => {
           <Label htmlFor="dob">
             {t.dateOfBirth} <span className="text-red-500">*</span>
           </Label>
-          <div
-          className="cursor-pointer"
-          onClick={(e) => {
-            // Find the input or button inside and click it
-            const input = e.currentTarget.querySelector('input');
-            const button = e.currentTarget.querySelector('button');
-
-            if (input) {
-              input.focus();
-              input.click();
-            } else if (button) {
-              button.click();
-            }
-          }}
-        >
-          <DatePicker
-            selected={formData.dob ? new Date(formData.dob) : null}
-            onSelect={handleDateSelect}
+          <CustomeDatePicker
+            value={formData.dob}
+            onChange={(dateString) => handleInputChange("dob", dateString || "")} 
+            startYear={1920}
+            endYear={2025} 
             maxDate={today}
+            open={isDatePickerOpen}
+            onOpenChange={setIsDatePickerOpen}
           />
-          </div>
         </div>
         <div className="md:col-span-4 space-y-2">
           <Label htmlFor="age">{t.age}</Label>
