@@ -21,6 +21,8 @@ import { roleService } from "@/services/roleService";
 import ForgotPassword from "./pages/auth/forgot-password";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import { SubscriptionGuard } from "./components/auth/SubscriptionGuard";
+import { ConditionalSubscriptionGuard } from "./components/auth/ConditionalSubscriptionGuard";
+import { NotFound } from "./components/NotFound";
 
 function App() {
   useEffect(() => {
@@ -43,19 +45,19 @@ function App() {
             {/* Marketing pages */}
 
             <Route path="/" element={
-              <SubscriptionGuard>
+              <ConditionalSubscriptionGuard>
                 <Home />
-              </SubscriptionGuard>
+              </ConditionalSubscriptionGuard>
             } />
             <Route path="/about" element={
-              <SubscriptionGuard>
+              <ConditionalSubscriptionGuard>
                 <About />
-              </SubscriptionGuard>
+              </ConditionalSubscriptionGuard>
             } />
             <Route path="/pricing" element={
-              <SubscriptionGuard>
+              <ConditionalSubscriptionGuard>
                 <Pricing />
-              </SubscriptionGuard>
+              </ConditionalSubscriptionGuard>
             } />
 
             {/* Authentication routes */}
@@ -170,6 +172,9 @@ function App() {
                 </AuthGuard>
               }
             />
+            
+            {/* Catch-all route for 404 */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Router>
       </SubscriptionProvider>
