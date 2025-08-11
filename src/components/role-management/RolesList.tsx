@@ -10,21 +10,27 @@ interface RolesListProps {
   users: UserWithRoles[];
   availableRoles: string[];
   isAssigningRole: boolean;
-  onAssignRole: (data: { userId: string; email: string | null; role: string }) => void;
+  onAssignRole: (data: {
+    userId: string;
+    email: string | null;
+    role: string;
+  }) => void;
   onRemoveRole: (data: { userId: string; role: string }) => void;
   onAssignManager: (data: { userId: string; managerId: string | null }) => void;
 }
 
-export function RolesList({ 
-  users, 
-  availableRoles, 
+export function RolesList({
+  users,
+  availableRoles,
   isAssigningRole,
-  onAssignRole, 
+  onAssignRole,
   onRemoveRole,
-  onAssignManager
-}: RolesListProps) {
+  onAssignManager,
+}: Readonly<RolesListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
+  const [selectedRole, setSelectedRole] = useState<string | undefined>(
+    undefined
+  );
   const { toast } = useToast();
 
   // Memoize filtered users to prevent recalculation on every render
@@ -40,23 +46,29 @@ export function RolesList({
   }, [filteredUsers, searchQuery]);
 
   // Memoize role assignment handler
-  const handleAssignRole = useCallback((userId: string, email: string | null) => {
-    if (!selectedRole) {
-      toast({
-        title: "Select a role",
-        description: "Please select a role to assign",
-        variant: "default",
-      });
-      return;
-    }
-    
-    onAssignRole({ userId, email, role: selectedRole });
-  }, [selectedRole, onAssignRole, toast]);
+  const handleAssignRole = useCallback(
+    (userId: string, email: string | null) => {
+      if (!selectedRole) {
+        toast({
+          title: "Select a role",
+          description: "Please select a role to assign",
+          variant: "default",
+        });
+        return;
+      }
+
+      onAssignRole({ userId, email, role: selectedRole });
+    },
+    [selectedRole, onAssignRole, toast]
+  );
 
   // Memoize manager assignment handler
-  const handleAssignManager = useCallback((userId: string, managerId: string | null) => {
-    onAssignManager({ userId, managerId });
-  }, [onAssignManager]);
+  const handleAssignManager = useCallback(
+    (userId: string, managerId: string | null) => {
+      onAssignManager({ userId, managerId });
+    },
+    [onAssignManager]
+  );
 
   // Memoize search change handler
   const handleSearchChange = useCallback((query: string) => {
@@ -70,7 +82,7 @@ export function RolesList({
 
   return (
     <div className="space-y-6">
-      <RolesListFilters 
+      <RolesListFilters
         searchQuery={searchQuery}
         onSearchChange={handleSearchChange}
         selectedRole={selectedRole}
@@ -91,10 +103,12 @@ export function RolesList({
           <div className="space-y-4">
             {displayedUsers.length === 0 ? (
               <p className="text-center text-muted-foreground py-4">
-                {searchQuery.trim() ? "No users found matching your search" : "No users found"}
+                {searchQuery.trim()
+                  ? "No users found matching your search"
+                  : "No users found"}
               </p>
             ) : (
-              displayedUsers.map(user => (
+              displayedUsers.map((user) => (
                 <UserRoleItem
                   key={user.id}
                   user={user}

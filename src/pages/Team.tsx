@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ManagerTeamList } from "@/components/team/ManagerTeamList";
+import { SmartTeamList } from "@/components/team/SmartTeamList";
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
@@ -54,7 +54,7 @@ export default function TeamPage() {
 
           <TabsContent value="members" className="space-y-6">
             {isManager ? (
-              <ManagerTeamList managerId={profile?.id} />
+              <SmartTeamList managerId={profile?.id} />
             ) : (
               <div className="bg-muted rounded-lg p-6 text-center">
                 <h3 className="text-lg font-medium mb-2">Your Manager</h3>

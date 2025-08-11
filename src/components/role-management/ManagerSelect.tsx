@@ -32,7 +32,8 @@ export function ManagerSelect({
       const queue = [targetUserId];
 
       while (queue.length > 0) {
-        const currentId = queue.shift()!;
+        const currentId = queue.shift();
+        if (!currentId) continue;
         if (visited.has(currentId)) continue;
         visited.add(currentId);
 

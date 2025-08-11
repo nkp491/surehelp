@@ -48,7 +48,12 @@ export const useRoleManagement = () => {
         .filter((p) => p.manager_id)
         .map((p) => p.manager_id);
 
-      let managers: any[] = [];
+      let managers: Array<{
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
+      }> = [];
       if (managerIds.length > 0) {
         const { data: managersData, error: managersError } = await supabase
           .from("profiles")
@@ -74,39 +79,56 @@ export const useRoleManagement = () => {
 
       // Create a map for faster role lookup
       const roleMap = new Map<string, string[]>();
-      roleAssignments?.forEach((role: any) => {
+      roleAssignments?.forEach((role: { user_id: string; role: string }) => {
         const existing = roleMap.get(role.user_id) || [];
         roleMap.set(role.user_id, [...existing, role.role]);
       });
 
       // Create a map for faster manager lookup
-      const managerMap = new Map<string, any>();
+      const managerMap = new Map<
+        string,
+        {
+          id: string;
+          first_name: string | null;
+          last_name: string | null;
+          email: string | null;
+        }
+      >();
       managers.forEach((manager) => {
         managerMap.set(manager.id, manager);
       });
 
       // Process users with optimized data structure
       const usersWithRoles: UserWithRoles[] =
-        profiles?.map((profile: any) => {
-          const manager = profile.manager_id
-            ? managerMap.get(profile.manager_id)
-            : null;
-          const userRoles = roleMap.get(profile.id) || [];
+        profiles?.map(
+          (profile: {
+            id: string;
+            email: string | null;
+            first_name: string | null;
+            last_name: string | null;
+            manager_id: string | null;
+            created_at: string | null;
+          }) => {
+            const manager = profile.manager_id
+              ? managerMap.get(profile.manager_id)
+              : null;
+            const userRoles = roleMap.get(profile.id) || [];
 
-          return {
-            id: profile.id,
-            email: profile.email,
-            first_name: profile.first_name,
-            last_name: profile.last_name,
-            roles: userRoles,
-            manager_id: profile.manager_id,
-            manager_name: manager
-              ? `${manager.first_name} ${manager.last_name}`.trim()
-              : null,
-            manager_email: manager?.email || null,
-            created_at: profile.created_at || null,
-          };
-        }) || [];
+            return {
+              id: profile.id,
+              email: profile.email,
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              roles: userRoles,
+              manager_id: profile.manager_id,
+              manager_name: manager
+                ? `${manager.first_name} ${manager.last_name}`.trim()
+                : null,
+              manager_email: manager?.email || null,
+              created_at: profile.created_at || null,
+            };
+          }
+        ) || [];
 
       return usersWithRoles;
     },
@@ -116,10 +138,7 @@ export const useRoleManagement = () => {
     refetchOnReconnect: true,
   });
 
-  // Memoize available roles
   const availableRoles = useMemo(() => Object.values(AgentTypes), []);
-
-  // Optimize assign role mutation
   const assignRoleMutation = useMutation({
     mutationFn: async ({
       userId,
@@ -131,29 +150,22 @@ export const useRoleManagement = () => {
       role: string;
     }) => {
       setIsAssigningRole(true);
-
-      // Check if user already has this role
       const { data: existingRole, error: checkError } = await supabase
         .from("user_roles")
         .select("*")
         .eq("user_id", userId)
         .eq("role", role)
         .single();
-
       if (checkError && checkError.code !== "PGRST116") {
         throw checkError;
       }
-
       if (existingRole) {
         return { success: true, message: "User already has this role" };
       }
-
       const { error } = await supabase
         .from("user_roles")
         .insert([{ user_id: userId, role, email }]);
-
       if (error) throw error;
-
       return { success: true, message: "Role assigned successfully" };
     },
     onSuccess: (data) => {
@@ -176,7 +188,6 @@ export const useRoleManagement = () => {
     },
   });
 
-  // Optimize remove role mutation
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const { error } = await supabase
@@ -184,9 +195,7 @@ export const useRoleManagement = () => {
         .delete()
         .eq("user_id", userId)
         .eq("role", role);
-
       if (error) throw error;
-
       return { success: true, message: "Role removed successfully" };
     },
     onSuccess: (data) => {
@@ -206,7 +215,6 @@ export const useRoleManagement = () => {
     },
   });
 
-  // Optimize assign manager mutation with better error handling
   const assignManagerMutation = useMutation({
     mutationFn: async ({
       userId,
