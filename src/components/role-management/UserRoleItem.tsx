@@ -1,8 +1,12 @@
+import { useMemo, useCallback } from "react";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MinusCircle } from "lucide-react";
-import { formatRoleName, getBadgeVariant } from "@/components/role-management/roleUtils";
+import {
+  formatRoleName,
+  getBadgeVariant,
+} from "@/components/role-management/roleUtils";
 import { useToast } from "@/hooks/use-toast";
 import { ManagerSelect } from "./ManagerSelect";
 import { format } from "date-fns";
@@ -17,18 +21,34 @@ interface UserRoleItemProps {
   onAssignManager: (userId: string, managerId: string | null) => void;
 }
 
-export function UserRoleItem({ 
-  user, 
+export function UserRoleItem({
+  user,
   allUsers,
-  selectedRole, 
+  selectedRole,
   isAssigningRole,
-  onAssignRole, 
+  onAssignRole,
   onRemoveRole,
-  onAssignManager
-}: UserRoleItemProps) {
+  onAssignManager,
+}: Readonly<UserRoleItemProps>) {
   const { toast } = useToast();
-  
-  const handleAssignRole = () => {
+
+  // Memoize the formatted date to prevent recalculation
+  const formattedDate = useMemo(() => {
+    if (!user.created_at) return "Unknown";
+    try {
+      const date = new Date(user.created_at);
+      if (isNaN(date.getTime())) {
+        console.warn("Invalid date:", user.created_at);
+        return "Unknown";
+      }
+      return format(date, "MMM d, yyyy");
+    } catch (error) {
+      console.warn("Error formatting date:", error);
+      return "Unknown";
+    }
+  }, [user.created_at]);
+
+  const handleAssignRole = useCallback(() => {
     if (!selectedRole) {
       toast({
         title: "Error",
@@ -38,30 +58,14 @@ export function UserRoleItem({
       return;
     }
     onAssignRole(user.id, user.email);
-  };
+  }, [selectedRole, onAssignRole, user.id, user.email, toast]);
 
-  const handleRemoveRole = (role: string) => {
-    onRemoveRole({ userId: user.id, role });
-  };
-
-  const formatCreatedAt = (dateStr: string | null) => {
-    if (!dateStr) return 'Unknown';
-    try {
-      // Try parsing the date
-      const date = new Date(dateStr);
-      // Check if the date is valid
-      if (isNaN(date.getTime())) {
-        console.warn('Invalid date:', dateStr);
-        return 'Unknown';
-      }
-      return format(date, 'MMM d, yyyy');
-    } catch (error) {
-      console.warn('Error formatting date:', error);
-      return 'Unknown';
-    }
-  };
-
-  const formattedDate = formatCreatedAt(user.created_at);
+  const handleRemoveRole = useCallback(
+    (role: string) => {
+      onRemoveRole({ userId: user.id, role });
+    },
+    [onRemoveRole, user.id]
+  );
 
   return (
     <div className="border rounded-lg p-4">
@@ -72,19 +76,19 @@ export function UserRoleItem({
               {user.first_name} {user.last_name}
             </h3>
             <p className="text-sm text-muted-foreground">{user.email}</p>
-            <p className="text-xs text-muted-foreground">Member since {formattedDate}</p>
+            <p className="text-xs text-muted-foreground">
+              Member since {formattedDate}
+            </p>
           </div>
-          
           <div>
             <p className="text-sm font-medium mb-1">Manager</p>
-            <ManagerSelect 
+            <ManagerSelect
               user={user}
               allUsers={allUsers}
               onAssignManager={onAssignManager}
             />
           </div>
         </div>
-        
         <div className="flex items-center">
           <Button
             variant="outline"
@@ -98,17 +102,16 @@ export function UserRoleItem({
           </Button>
         </div>
       </div>
-      
       <div className="mt-3 flex flex-wrap gap-2">
         {user.roles.length > 0 ? (
           user.roles.map((role, index) => (
-            <Badge 
-              key={index} 
-              variant={getBadgeVariant(role)} 
+            <Badge
+              key={`${user.id}-${role}-${index}`}
+              variant={getBadgeVariant(role)}
               className="flex items-center gap-1 group"
             >
               {formatRoleName(role)}
-              <button 
+              <button
                 onClick={() => handleRemoveRole(role)}
                 className="opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label={`Remove ${role} role`}
@@ -118,7 +121,9 @@ export function UserRoleItem({
             </Badge>
           ))
         ) : (
-          <span className="text-sm text-muted-foreground">No roles assigned</span>
+          <span className="text-sm text-muted-foreground">
+            No roles assigned
+          </span>
         )}
       </div>
     </div>

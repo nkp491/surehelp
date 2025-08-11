@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useMemo, useCallback, useState } from "react";
 import {
   Select,
   SelectContent,
@@ -7,8 +7,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
-import { UserX } from "lucide-react";
+import { UserX, Search } from "lucide-react";
 
 interface ManagerSelectProps {
   user: UserWithRoles;
@@ -16,44 +17,120 @@ interface ManagerSelectProps {
   onAssignManager: (userId: string, managerId: string | null) => void;
 }
 
-export function ManagerSelect({ user, allUsers, onAssignManager }: ManagerSelectProps) {
-  const [isOpen, setIsOpen] = useState(false);
-  const NO_MANAGER_VALUE = "no_manager"; // Special value for no manager selection
+export function ManagerSelect({
+  user,
+  allUsers,
+  onAssignManager,
+}: Readonly<ManagerSelectProps>) {
+  const [searchQuery, setSearchQuery] = useState("");
+  const NO_MANAGER_VALUE = "no_manager";
 
-  // Filter out the current user and their subordinates to prevent circular management chains
-  const availableManagers = allUsers.filter(potentialManager => 
-    potentialManager.id !== user.id && // Can't be their own manager
-    !hasUserAsManager(potentialManager, user.id, allUsers) // Prevent circular references
+  const availableManagers = useMemo(() => {
+    const circularUsers = new Set<string>();
+    const findCircularUsers = (targetUserId: string) => {
+      const visited = new Set<string>();
+      const queue = [targetUserId];
+
+      while (queue.length > 0) {
+        const currentId = queue.shift()!;
+        if (visited.has(currentId)) continue;
+        visited.add(currentId);
+
+        allUsers.forEach((potentialUser) => {
+          if (
+            potentialUser.manager_id === currentId &&
+            !visited.has(potentialUser.id)
+          ) {
+            circularUsers.add(potentialUser.id);
+            queue.push(potentialUser.id);
+          }
+        });
+      }
+    };
+    findCircularUsers(user.id);
+
+    return allUsers.filter(
+      (potentialManager) =>
+        potentialManager.id !== user.id &&
+        !circularUsers.has(potentialManager.id)
+    );
+  }, [user.id, allUsers]);
+
+  // Filter managers based on search query
+  const filteredManagers = useMemo(() => {
+    if (!searchQuery.trim()) {
+      return availableManagers;
+    }
+
+    const query = searchQuery.toLowerCase().trim();
+    return availableManagers.filter((manager) => {
+      const firstName = (manager.first_name || "").toLowerCase();
+      const lastName = (manager.last_name || "").toLowerCase();
+      const email = (manager.email || "").toLowerCase();
+      const fullName = `${firstName} ${lastName}`.trim();
+
+      return (
+        firstName.indexOf(query) !== -1 ||
+        lastName.indexOf(query) !== -1 ||
+        email.indexOf(query) !== -1 ||
+        fullName.indexOf(query) !== -1
+      );
+    });
+  }, [availableManagers, searchQuery]);
+
+  // Memoize the manager assignment handler
+  const handleManagerChange = useCallback(
+    (value: string) => {
+      onAssignManager(user.id, value === NO_MANAGER_VALUE ? null : value);
+    },
+    [user.id, onAssignManager]
   );
 
-  // Helper function to check if a user has someone as their manager (direct or indirect)
-  function hasUserAsManager(user: UserWithRoles, targetManagerId: string, allUsers: UserWithRoles[]): boolean {
-    if (!user.manager_id) return false;
-    if (user.manager_id === targetManagerId) return true;
-    const manager = allUsers.find(u => u.id === user.manager_id);
-    return manager ? hasUserAsManager(manager, targetManagerId, allUsers) : false;
-  }
+  // Memoize the remove manager handler
+  const handleRemoveManager = useCallback(() => {
+    onAssignManager(user.id, null);
+  }, [user.id, onAssignManager]);
+
+  // Handle search input change
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchQuery(e.target.value);
+    },
+    []
+  );
 
   return (
     <div className="flex items-center gap-2">
       <Select
         value={user.manager_id || NO_MANAGER_VALUE}
-        onValueChange={(value) => {
-          onAssignManager(user.id, value === NO_MANAGER_VALUE ? null : value);
-        }}
+        onValueChange={handleManagerChange}
       >
         <SelectTrigger className="w-[250px]">
           <SelectValue placeholder="Select a manager" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value={NO_MANAGER_VALUE}>
-            No Manager
-          </SelectItem>
-          {availableManagers.map((manager) => (
+          {/* Search input */}
+          <div className="flex items-center px-3 py-2 border-b">
+            <Search className="h-4 w-4 text-muted-foreground mr-2" />
+            <Input
+              placeholder="Search managers..."
+              value={searchQuery}
+              onChange={handleSearchChange}
+              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto"
+            />
+          </div>
+
+          <SelectItem value={NO_MANAGER_VALUE}>No Manager</SelectItem>
+          {filteredManagers.map((manager) => (
             <SelectItem key={manager.id} value={manager.id}>
               {manager.first_name} {manager.last_name} ({manager.email})
             </SelectItem>
           ))}
+          {filteredManagers.length === 0 && searchQuery.trim() && (
+            <div className="px-3 py-2 text-sm text-muted-foreground">
+              No managers found matching "{searchQuery}"
+            </div>
+          )}
         </SelectContent>
       </Select>
 
@@ -61,7 +138,7 @@ export function ManagerSelect({ user, allUsers, onAssignManager }: ManagerSelect
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => onAssignManager(user.id, null)}
+          onClick={handleRemoveManager}
           className="h-8 w-8"
           title="Remove manager"
         >
@@ -70,4 +147,4 @@ export function ManagerSelect({ user, allUsers, onAssignManager }: ManagerSelect
       )}
     </div>
   );
-} 
+}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
@@ -27,11 +27,20 @@ export function RolesList({
   const [selectedRole, setSelectedRole] = useState<string | undefined>(undefined);
   const { toast } = useToast();
 
-  // Filter users based on search query
-  const filteredUsers = filterUsers(users, searchQuery);
+  // Memoize filtered users to prevent recalculation on every render
+  const filteredUsers = useMemo(() => {
+    return filterUsers(users, searchQuery);
+  }, [users, searchQuery]);
 
-  // Handle role assignment
-  const handleAssignRole = (userId: string, email: string | null) => {
+  // Limit the number of users rendered to prevent performance issues with large lists
+  const displayedUsers = useMemo(() => {
+    // If no search query, limit to first 50 users for performance
+    // If searching, show all results since they're likely filtered down
+    return searchQuery.trim() ? filteredUsers : filteredUsers.slice(0, 50);
+  }, [filteredUsers, searchQuery]);
+
+  // Memoize role assignment handler
+  const handleAssignRole = useCallback((userId: string, email: string | null) => {
     if (!selectedRole) {
       toast({
         title: "Select a role",
@@ -42,33 +51,50 @@ export function RolesList({
     }
     
     onAssignRole({ userId, email, role: selectedRole });
-  };
+  }, [selectedRole, onAssignRole, toast]);
 
-  // Handle manager assignment
-  const handleAssignManager = (userId: string, managerId: string | null) => {
+  // Memoize manager assignment handler
+  const handleAssignManager = useCallback((userId: string, managerId: string | null) => {
     onAssignManager({ userId, managerId });
-  };
+  }, [onAssignManager]);
+
+  // Memoize search change handler
+  const handleSearchChange = useCallback((query: string) => {
+    setSearchQuery(query);
+  }, []);
+
+  // Memoize role change handler
+  const handleRoleChange = useCallback((role: string | undefined) => {
+    setSelectedRole(role);
+  }, []);
 
   return (
     <div className="space-y-6">
       <RolesListFilters 
         searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
+        onSearchChange={handleSearchChange}
         selectedRole={selectedRole}
-        onRoleChange={setSelectedRole}
+        onRoleChange={handleRoleChange}
         availableRoles={availableRoles}
       />
 
       <Card>
         <CardHeader>
           <CardTitle>User Roles</CardTitle>
+          {!searchQuery.trim() && filteredUsers.length > 50 && (
+            <p className="text-sm text-muted-foreground">
+              Showing first 50 users. Use search to find specific users.
+            </p>
+          )}
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {filteredUsers.length === 0 ? (
-              <p className="text-center text-muted-foreground py-4">No users found</p>
+            {displayedUsers.length === 0 ? (
+              <p className="text-center text-muted-foreground py-4">
+                {searchQuery.trim() ? "No users found matching your search" : "No users found"}
+              </p>
             ) : (
-              filteredUsers.map(user => (
+              displayedUsers.map(user => (
                 <UserRoleItem
                   key={user.id}
                   user={user}
