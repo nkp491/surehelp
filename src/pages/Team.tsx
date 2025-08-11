@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { SmartTeamList } from "@/components/team/SmartTeamList";
+import { AllTeamsList } from "@/components/team/AllTeamsList";
 import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileLoading from "@/components/profile/ProfileLoading";
 import { TeamBulletinBoard } from "@/components/team/TeamBulletinBoard";
@@ -22,6 +23,9 @@ export default function TeamPage() {
     profile?.roles?.some(role =>
       ['manager_pro', 'manager_pro_gold', 'manager_pro_platinum'].includes(role)
     );
+  
+  const isAdmin = profile?.role?.includes('system_admin') ||
+    profile?.roles?.some(role => role === 'system_admin');
 
   return (
     <RoleBasedRoute requiredRoles={['manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin']}>
@@ -53,7 +57,9 @@ export default function TeamPage() {
           </TabsList>
 
           <TabsContent value="members" className="space-y-6">
-            {isManager ? (
+            {isAdmin ? (
+              <AllTeamsList />
+            ) : isManager ? (
               <SmartTeamList managerId={profile?.id} />
             ) : (
               <div className="bg-muted rounded-lg p-6 text-center">
