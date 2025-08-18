@@ -70,26 +70,17 @@ serve(async (req) => {
     let trial_days: undefined;
     if (promotionCode) {
       // You may want to store the Stripe promotion_code ID in your DB, or fetch it from Stripe
-      const promoList = await stripe.promotionCodes.list({ code: promotionCode, active: true });
+      const promoList = await stripe.promotionCodes.list({
+        code: promotionCode,
+        active: true,
+      });
       if (promoList.data.length > 0) {
         discounts = [{ promotion_code: promoList.data[0].id }];
-        redemption = promoList.data[0].times_redeemed;  
+        redemption = promoList.data[0].times_redeemed;
         trial_days = promoList.data[0].coupon?.metadata?.trial_days;
       } else {
         throw new Error("Invalid or expired promotion code");
       }
-
-      // const { data: promoCodeData } = await supabaseClient
-      //   .from("promo_codes")
-      //   .select("usage_limit, usage_count")
-      //   .eq("promo_code", promotionCode)
-      //   .single();
-
-      // if (promoCodeData) {
-      //   if (promoCodeData.usage_limit && promoCodeData.usage_count >= promoCodeData.usage_limit) {
-      //     throw new Error("This promo code has reached its usage limit.");
-      //   }
-      // }
     }
 
     // Create checkout session
@@ -116,13 +107,10 @@ serve(async (req) => {
       },
       ...(trial_days ? {} : discounts ? { discounts } : {}),
     });
-    // revoke promo for this user
-    // const deleted = await stripe.customers.deleteDiscount(customer.id);
-    console.log("Deleted discount:", discounts);
-    return new Response(JSON.stringify({ sessionId: session.id,}), {
+    return new Response(JSON.stringify({ sessionId: session.id }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
       status: 200,
-      "statusText": "Coupon applied successfully",
+      statusText: "Coupon applied successfully",
     });
   } catch (error) {
     console.error("Error creating checkout session:", error);

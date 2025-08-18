@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
@@ -31,123 +31,145 @@ export const useRoleManagement = () => {
 
   // Fetch all users with their roles
   const { data: users, isLoading: isLoadingUsers } = useQuery({
-    queryKey: ['users-with-roles'],
+    queryKey: ["users-with-roles"],
     queryFn: async () => {
-      // console.log('Fetching users and roles...');
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
         .select("id, email, first_name, last_name, manager_id, created_at");
 
       if (profilesError) {
-        console.error('Error fetching profiles:', profilesError);
+        console.error("Error fetching profiles:", profilesError);
         throw profilesError;
       }
 
-      // console.log('Fetched profiles with dates:', profiles.map(p => ({
-      //   email: p.email,
-      //   created_at: p.created_at
-      // })));
-
       // Fetch managers info separately
       const managerIds = profiles
-        .filter(p => p.manager_id)
-        .map(p => p.manager_id);
+        .filter((p) => p.manager_id)
+        .map((p) => p.manager_id);
 
-      const { data: managers, error: managersError } = await supabase
-        .from("profiles")
-        .select("id, first_name, last_name, email")
-        .in("id", managerIds);
+      let managers: Array<{
+        id: string;
+        first_name: string | null;
+        last_name: string | null;
+        email: string | null;
+      }> = [];
+      if (managerIds.length > 0) {
+        const { data: managersData, error: managersError } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email")
+          .in("id", managerIds);
 
-      if (managersError) {
-        console.error('Error fetching managers:', managersError);
-        throw managersError;
+        if (managersError) {
+          console.error("Error fetching managers:", managersError);
+          throw managersError;
+        }
+        managers = managersData || [];
       }
 
-      // console.log('Fetched managers:', managers);
-
-      // Then get all role assignments
+      // Get all role assignments
       const { data: roleAssignments, error: rolesError } = await supabase
         .from("user_roles")
         .select("*");
 
       if (rolesError) {
-        console.error('Error fetching role assignments:', rolesError);
+        console.error("Error fetching role assignments:", rolesError);
         throw rolesError;
       }
 
-      // console.log('Fetched role assignments:', roleAssignments);
-
-      // Combine the data to create users with their roles
-      const usersWithRoles: UserWithRoles[] = profiles.map((profile: any) => {
-        const userRoles = roleAssignments.filter(
-          (role: any) => role.user_id === profile.id
-        );
-        const manager = profile.manager_id ? managers?.find(m => m.id === profile.manager_id) : null;
-        
-        // console.log('Processing user profile:', {
-        //   email: profile.email,
-        //   created_at: profile.created_at,
-        //   created_at_type: typeof profile.created_at
-        // });
-        
-        return {
-          id: profile.id,
-          email: profile.email,
-          first_name: profile.first_name,
-          last_name: profile.last_name,
-          roles: userRoles.map((r: any) => r.role),
-          manager_id: profile.manager_id,
-          manager_name: manager ? `${manager.first_name} ${manager.last_name}`.trim() : null,
-          manager_email: manager?.email || null,
-          created_at: profile.created_at || null
-        };
+      // Create a map for faster role lookup
+      const roleMap = new Map<string, string[]>();
+      roleAssignments?.forEach((role: { user_id: string; role: string }) => {
+        const existing = roleMap.get(role.user_id) || [];
+        roleMap.set(role.user_id, [...existing, role.role]);
       });
 
-      // console.log('Processed users with roles:', usersWithRoles);
+      // Create a map for faster manager lookup
+      const managerMap = new Map<
+        string,
+        {
+          id: string;
+          first_name: string | null;
+          last_name: string | null;
+          email: string | null;
+        }
+      >();
+      managers.forEach((manager) => {
+        managerMap.set(manager.id, manager);
+      });
+
+      // Process users with optimized data structure
+      const usersWithRoles: UserWithRoles[] =
+        profiles?.map(
+          (profile: {
+            id: string;
+            email: string | null;
+            first_name: string | null;
+            last_name: string | null;
+            manager_id: string | null;
+            created_at: string | null;
+          }) => {
+            const manager = profile.manager_id
+              ? managerMap.get(profile.manager_id)
+              : null;
+            const userRoles = roleMap.get(profile.id) || [];
+
+            return {
+              id: profile.id,
+              email: profile.email,
+              first_name: profile.first_name,
+              last_name: profile.last_name,
+              roles: userRoles,
+              manager_id: profile.manager_id,
+              manager_name: manager
+                ? `${manager.first_name} ${manager.last_name}`.trim()
+                : null,
+              manager_email: manager?.email || null,
+              created_at: profile.created_at || null,
+            };
+          }
+        ) || [];
+
       return usersWithRoles;
     },
-    staleTime: 0, // Set to 0 to always refetch when invalidated
-    refetchOnWindowFocus: true, // Add this to refetch when window regains focus
+    staleTime: 30000, // Cache for 30 seconds instead of 0
+    refetchOnWindowFocus: false, // Disable refetch on window focus
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
-  // Fetch available roles
-  const availableRoles = Object.values(AgentTypes);
-
-  // Assign a role to a user
+  const availableRoles = useMemo(() => Object.values(AgentTypes), []);
   const assignRoleMutation = useMutation({
-    mutationFn: async ({ userId, email, role }: { userId: string; email: string | null; role: string }) => {
+    mutationFn: async ({
+      userId,
+      email,
+      role,
+    }: {
+      userId: string;
+      email: string | null;
+      role: string;
+    }) => {
       setIsAssigningRole(true);
-      
-      // Check if user already has this role
       const { data: existingRole, error: checkError } = await supabase
         .from("user_roles")
         .select("*")
         .eq("user_id", userId)
         .eq("role", role)
         .single();
-
       if (checkError && checkError.code !== "PGRST116") {
-        // PGRST116 means no rows returned, which is expected if user doesn't have the role
         throw checkError;
       }
-
-      // If role already exists, no need to assign again
       if (existingRole) {
         return { success: true, message: "User already has this role" };
       }
-
-      // Assign the role
       const { error } = await supabase
         .from("user_roles")
         .insert([{ user_id: userId, role, email }]);
-
       if (error) throw error;
-
       return { success: true, message: "Role assigned successfully" };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       toast({
         title: "Success",
         description: data.message || "Role assigned successfully",
@@ -158,14 +180,14 @@ export const useRoleManagement = () => {
       console.error("Error assigning role:", error);
       toast({
         title: "Error",
-        description: "There was a problem assigning the role. Please try again.",
+        description:
+          "There was a problem assigning the role. Please try again.",
         variant: "destructive",
       });
       setIsAssigningRole(false);
-    }
+    },
   });
 
-  // Remove a role from a user
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
       const { error } = await supabase
@@ -173,13 +195,11 @@ export const useRoleManagement = () => {
         .delete()
         .eq("user_id", userId)
         .eq("role", role);
-
       if (error) throw error;
-
       return { success: true, message: "Role removed successfully" };
     },
     onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
+      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       toast({
         title: "Success",
         description: data.message || "Role removed successfully",
@@ -192,69 +212,105 @@ export const useRoleManagement = () => {
         description: "There was a problem removing the role. Please try again.",
         variant: "destructive",
       });
-    }
+    },
   });
 
-  // Assign manager to a user
   const assignManagerMutation = useMutation({
-    mutationFn: async ({ userId, managerId }: { userId: string; managerId: string | null }) => {
-      console.log('Starting manager assignment:', { userId, managerId });
-
+    mutationFn: async ({
+      userId,
+      managerId,
+    }: {
+      userId: string;
+      managerId: string | null;
+    }) => {
       // If removing manager, skip validation
       if (!managerId) {
-        // Proceed with manager removal
         const { data: updateResult, error: updateError } = await supabase
           .from("profiles")
-          .update({ 
+          .update({
             manager_id: null,
-            updated_at: new Date().toISOString()
+            updated_at: new Date().toISOString(),
           })
           .eq("id", userId)
           .select()
           .single();
 
         if (updateError) throw updateError;
-        return { 
-          success: true, 
+        return {
+          success: true,
           message: "Manager removed successfully",
-          data: updateResult
+          data: updateResult,
         };
       }
 
-      // Check if the selected user has a manager role
-      const { data: managerRoles, error: roleError } = await supabase
+      // Get current user ID first
+      const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
+      if (currentUserError || !currentUser) {
+        throw new Error("Failed to get current user");
+      }
+
+      // Check if the current user has the required role to assign managers
+      const { data: currentUserRoles, error: currentUserRoleError } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", managerId)
-        .in("role", [AgentTypes.MANAGER, AgentTypes.MANAGER_PRO, AgentTypes.MANAGER_PRO_GOLD, AgentTypes.MANAGER_PRO_PLATINUM]);
+        .eq("user_id", currentUser.id)
+        .in("role", [
+          "agent_pro",
+          "manager_pro",
+          "manager_pro_gold",
+          "manager_pro_platinum",
+          "beta_user",
+          "system_admin"
+        ]);
 
-      if (roleError) {
-        console.error('Error checking manager roles:', roleError);
-        throw new Error('Failed to verify manager role');
+      if (currentUserRoleError) {
+        console.error("Error checking current user roles:", currentUserRoleError);
+        throw new Error("Failed to verify current user role");
+      }
+
+      if (!currentUserRoles?.length) {
+        throw new Error("Only Agent Pro users and above can assign managers");
+      }
+
+      // Check if the manager has a valid manager role
+      const { data: managerRoles, error: managerRoleError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("user_id", managerId)
+        .in("role", [
+          "manager_pro",
+          "manager_gold", 
+          "manager_pro_gold",
+          "manager_pro_platinum"
+        ]);
+
+      if (managerRoleError) {
+        console.error("Error checking manager roles:", managerRoleError);
+        throw new Error("Failed to verify manager role");
       }
 
       if (!managerRoles?.length) {
-        throw new Error('Selected user does not have a manager role');
+        throw new Error("Selected user does not have a manager role");
       }
 
-
       // Extract all roles from the managerRoles array
-      const roles = managerRoles.map(roleObj => roleObj.role);
+      const roles = managerRoles.map((roleObj) => roleObj.role);
 
       // Team size limits for different roles
       const teamSizeLimits = {
         manager: 5,
         manager_pro: 20,
         manager_pro_gold: 50,
-        manager_pro_platinum: Infinity
+        manager_pro_platinum: Infinity,
       } as const;
 
-      // Determine the **maximum** limit based on all roles
+      // Determine the maximum limit based on all roles
       const applicableLimits = roles
-        .map(role => teamSizeLimits[role as keyof typeof teamSizeLimits])
-        .filter(limit => limit !== undefined);
+        .map((role) => teamSizeLimits[role as keyof typeof teamSizeLimits])
+        .filter((limit) => limit !== undefined);
 
       const teamSizeLimit = Math.max(...applicableLimits);
+
       // Fetch current team size
       const { data: currentTeam, error: teamError } = await supabase
         .from("profiles")
@@ -262,43 +318,43 @@ export const useRoleManagement = () => {
         .eq("manager_id", managerId);
 
       if (teamError) {
-        console.error('Error checking team size:', teamError);
-        throw new Error('Failed to check team size');
+        console.error("Error checking team size:", teamError);
+        throw new Error("Failed to check team size");
       }
 
       const currentTeamSize = currentTeam?.length || 0;
 
       if (currentTeamSize >= teamSizeLimit) {
-        throw new Error(`Manager has reached their team size limit of ${teamSizeLimit} members`);
+        throw new Error(
+          `Manager has reached their team size limit of ${teamSizeLimit} members`
+        );
       }
-
 
       // If all validations pass, proceed with the update
       const { data: updateResult, error: updateError } = await supabase
         .from("profiles")
-        .update({ 
+        .update({
           manager_id: managerId,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
         .eq("id", userId)
         .select()
         .single();
 
       if (updateError) {
-        console.error('Error updating profile:', updateError);
+        console.error("Error updating profile:", updateError);
         throw new Error(`Failed to update profile: ${updateError.message}`);
       }
 
-      return { 
-        success: true, 
+      return {
+        success: true,
         message: "Manager assigned successfully",
-        data: updateResult
+        data: updateResult,
       };
     },
     onSuccess: async (data) => {
-      console.log('Manager assignment successful');
-      await queryClient.invalidateQueries({ queryKey: ['users-with-roles'] });
-      
+      await queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+
       toast({
         title: "Success",
         description: data.message,
@@ -308,19 +364,31 @@ export const useRoleManagement = () => {
       console.error("Error in manager assignment:", error);
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to update manager",
+        description:
+          error instanceof Error ? error.message : "Failed to update manager",
         variant: "destructive",
       });
-    }
+    },
   });
+
+  // Memoize the returned functions to prevent unnecessary re-renders
+  const assignRole = useCallback(assignRoleMutation.mutate, [
+    assignRoleMutation.mutate,
+  ]);
+  const removeRole = useCallback(removeRoleMutation.mutate, [
+    removeRoleMutation.mutate,
+  ]);
+  const assignManager = useCallback(assignManagerMutation.mutate, [
+    assignManagerMutation.mutate,
+  ]);
 
   return {
     users,
     isLoadingUsers,
     availableRoles,
-    assignRole: assignRoleMutation.mutate,
-    removeRole: removeRoleMutation.mutate,
-    assignManager: assignManagerMutation.mutate,
-    isAssigningRole
+    assignRole,
+    removeRole,
+    assignManager,
+    isAssigningRole,
   };
 };

@@ -10,7 +10,7 @@ import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
 import { LanguageProvider } from "@/contexts/LanguageContext";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ManagerTeamList } from "@/components/team/ManagerTeamList";
+import { SmartTeamList } from "@/components/team/SmartTeamList";
 import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
 
 
@@ -100,7 +100,7 @@ const ProfileContent = () => {
 
         {isManager && (
           <div className="mt-8">
-            <ManagerTeamList managerId={profile?.id} />
+            <SmartTeamList managerId={profile?.id} />
           </div>
         )}
       </div>
