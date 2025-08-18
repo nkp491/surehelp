@@ -243,20 +243,49 @@ export const useRoleManagement = () => {
         };
       }
 
-      // Check if the selected user has a manager role
-      const { data: managerRoles, error: roleError } = await supabase
+      // Get current user ID first
+      const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
+      if (currentUserError || !currentUser) {
+        throw new Error("Failed to get current user");
+      }
+
+      // Check if the current user has the required role to assign managers
+      const { data: currentUserRoles, error: currentUserRoleError } = await supabase
         .from("user_roles")
         .select("role")
-        .eq("user_id", managerId)
+        .eq("user_id", currentUser.id)
         .in("role", [
-          AgentTypes.MANAGER,
-          AgentTypes.MANAGER_PRO,
-          AgentTypes.MANAGER_PRO_GOLD,
-          AgentTypes.MANAGER_PRO_PLATINUM,
+          "agent_pro",
+          "manager_pro",
+          "manager_pro_gold",
+          "manager_pro_platinum",
+          "beta_user",
+          "system_admin"
         ]);
 
-      if (roleError) {
-        console.error("Error checking manager roles:", roleError);
+      if (currentUserRoleError) {
+        console.error("Error checking current user roles:", currentUserRoleError);
+        throw new Error("Failed to verify current user role");
+      }
+
+      if (!currentUserRoles?.length) {
+        throw new Error("Only Agent Pro users and above can assign managers");
+      }
+
+      // Check if the manager has a valid manager role
+      const { data: managerRoles, error: managerRoleError } = await supabase
+        .from("user_roles")
+        .select("user_id, role")
+        .eq("user_id", managerId)
+        .in("role", [
+          "manager_pro",
+          "manager_gold", 
+          "manager_pro_gold",
+          "manager_pro_platinum"
+        ]);
+
+      if (managerRoleError) {
+        console.error("Error checking manager roles:", managerRoleError);
         throw new Error("Failed to verify manager role");
       }
 

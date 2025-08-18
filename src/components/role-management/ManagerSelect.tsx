@@ -25,6 +25,11 @@ export function ManagerSelect({
   const [searchQuery, setSearchQuery] = useState("");
   const NO_MANAGER_VALUE = "no_manager";
 
+  // Check if user has the required role to assign a manager
+  const canAssignManager = user.roles.some(role => 
+    ['agent_pro', 'manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'].includes(role)
+  );
+
   const availableManagers = useMemo(() => {
     const circularUsers = new Set<string>();
     const findCircularUsers = (targetUserId: string) => {
@@ -82,15 +87,21 @@ export function ManagerSelect({
   // Memoize the manager assignment handler
   const handleManagerChange = useCallback(
     (value: string) => {
+      if (!canAssignManager) {
+        return; // Prevent assignment if user doesn't have required role
+      }
       onAssignManager(user.id, value === NO_MANAGER_VALUE ? null : value);
     },
-    [user.id, onAssignManager]
+    [user.id, onAssignManager, canAssignManager]
   );
 
   // Memoize the remove manager handler
   const handleRemoveManager = useCallback(() => {
+    if (!canAssignManager) {
+      return; // Prevent removal if user doesn't have required role
+    }
     onAssignManager(user.id, null);
-  }, [user.id, onAssignManager]);
+  }, [user.id, onAssignManager, canAssignManager]);
 
   // Handle search input change
   const handleSearchChange = useCallback(
@@ -99,6 +110,30 @@ export function ManagerSelect({
     },
     []
   );
+
+  // If user doesn't have the required role, show a disabled state
+  if (!canAssignManager) {
+    return (
+      <div className="flex items-center gap-2">
+        <Select disabled>
+          <SelectTrigger className="w-[250px] opacity-50">
+            <SelectValue placeholder="Agent Pro required" />
+          </SelectTrigger>
+        </Select>
+        <Button
+          variant="ghost"
+          size="icon"
+          disabled
+          className="opacity-50"
+        >
+          <UserX className="h-4 w-4" />
+        </Button>
+        <div className="text-xs text-muted-foreground">
+          Requires Agent Pro or higher
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex items-center gap-2">
@@ -140,7 +175,6 @@ export function ManagerSelect({
           variant="ghost"
           size="icon"
           onClick={handleRemoveManager}
-          className="h-8 w-8"
           title="Remove manager"
         >
           <UserX className="h-4 w-4" />
