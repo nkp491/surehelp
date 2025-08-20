@@ -3,6 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { AgentTypes } from "@/types/agent";
+import { handleTeamAssignment } from "@/utils/teamAssignment";
 
 export type UserRole = {
   id: string;
@@ -236,6 +237,10 @@ export const useRoleManagement = () => {
           .single();
 
         if (updateError) throw updateError;
+
+        // Handle team removal when manager is removed
+        await handleTeamAssignment(userId, null);
+
         return {
           success: true,
           message: "Manager removed successfully",
@@ -345,6 +350,9 @@ export const useRoleManagement = () => {
         console.error("Error updating profile:", updateError);
         throw new Error(`Failed to update profile: ${updateError.message}`);
       }
+
+      // Handle team assignment after successful profile update
+      await handleTeamAssignment(userId, managerId);
 
       return {
         success: true,

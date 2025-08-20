@@ -3,7 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
+import { handleTeamAssignment } from "@/utils/teamAssignment";
 import { roleService } from "@/services/roleService";
+
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -74,24 +76,27 @@ export const useProfileManagement = () => {
       console.log("Current user ID:", session.user.id);
 
       // Create a clean copy of updates for database
-      const { roles, ...updatesToSave } = updates as any;
+      const { roles, ...updatesToSave } = updates as Partial<Profile> & { roles?: string[] };
+      
+      // Create database update object with proper types
+      const dbUpdate: Record<string, unknown> = { ...updatesToSave };
       
       // Handle JSON fields properly
       if (updatesToSave.privacy_settings && typeof updatesToSave.privacy_settings !== 'string') {
-        updatesToSave.privacy_settings = JSON.stringify(updatesToSave.privacy_settings);
+        dbUpdate.privacy_settings = JSON.stringify(updatesToSave.privacy_settings);
       }
       
       if (updatesToSave.notification_preferences && typeof updatesToSave.notification_preferences !== 'string') {
-        updatesToSave.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
+        dbUpdate.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
       }
 
       // Log what we're sending to debug
-      console.log("Updating profile with:", updatesToSave);
+      console.log("Updating profile with:", dbUpdate);
 
       // FIX: Use .eq instead of .match for more reliable updating
       const { data, error } = await supabase
         .from("profiles")
-        .update(updatesToSave)
+        .update(dbUpdate)
         .eq("id", session.user.id)
         .select();
 
@@ -114,6 +119,17 @@ export const useProfileManagement = () => {
           console.error("Error updating user_roles:", rolesError);
           throw rolesError;
         }
+      }
+
+      // Handle team assignment if manager_id is being updated
+      if (updates.manager_id !== undefined) {
+        await handleTeamAssignment(session.user.id, updates.manager_id, (title, description, variant) => {
+          toast({
+            title,
+            description,
+            variant: variant as "default" | "destructive"
+          });
+        });
       }
       
       // Refetch profile data to ensure we have the latest
@@ -161,10 +177,10 @@ export const useProfileManagement = () => {
         title: "Success",
         description: "Profile picture updated successfully",
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       toast({
         title: "Error uploading image",
-        description: error.message,
+        description: error instanceof Error ? error.message : "Unknown error occurred",
         variant: "destructive",
       });
     } finally {
