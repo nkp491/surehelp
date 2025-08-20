@@ -28,6 +28,7 @@ export const useRoleManagement = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [isAssigningRole, setIsAssigningRole] = useState(false);
+  const [isAssigningManager, setIsAssigningManager] = useState(false);
 
   // Fetch all users with their roles
   const { data: users, isLoading: isLoadingUsers } = useQuery({
@@ -162,14 +163,112 @@ export const useRoleManagement = () => {
       if (existingRole) {
         return { success: true, message: "User already has this role" };
       }
+
+      // Insert the role
       const { error } = await supabase
         .from("user_roles")
         .insert([{ user_id: userId, role, email }]);
       if (error) throw error;
-      return { success: true, message: "Role assigned successfully" };
+
+      // Check if this is a manager role and create a team if needed
+      const managerRoles = [
+        "manager_pro",
+        "manager_pro_gold",
+        "manager_pro_platinum",
+      ];
+      let teamCreated = false;
+
+      if (managerRoles.includes(role)) {
+        try {
+          // Check if user already has a team as a manager
+          const { data: existingTeamManager, error: existingTeamError } =
+            await supabase
+              .from("team_managers")
+              .select("team_id")
+              .eq("user_id", userId)
+              .single();
+
+          if (existingTeamError && existingTeamError.code !== "PGRST116") {
+            console.error(
+              "Error checking existing team manager:",
+              existingTeamError
+            );
+          } else if (!existingTeamManager) {
+            // User doesn't have a team yet, create one
+            // Get user profile to create team name
+            const { data: userProfile, error: profileError } = await supabase
+              .from("profiles")
+              .select("first_name, last_name, email")
+              .eq("id", userId)
+              .single();
+
+            if (profileError) {
+              console.error(
+                "Error fetching user profile for team creation:",
+                profileError
+              );
+            } else {
+              // Create team name based on user's first name
+              const teamName = userProfile?.first_name
+                ? `${userProfile.first_name}'s Team`
+                : userProfile?.email
+                ? `${userProfile.email}'s Team`
+                : `Team ${userId.slice(0, 8)}`;
+
+              // Create the team
+              const { data: newTeam, error: teamError } = await supabase
+                .from("teams")
+                .insert([{ name: teamName }])
+                .select()
+                .single();
+
+              if (teamError) {
+                console.error("Error creating team:", teamError);
+              } else {
+                // Create entry in team_managers table
+                try {
+                  const { error: teamManagerError } = await supabase
+                    .from("team_managers")
+                    .insert([
+                      {
+                        team_id: newTeam.id,
+                        user_id: userId,
+                        role: role,
+                      },
+                    ]);
+
+                  if (teamManagerError) {
+                    console.error(
+                      "Error creating team manager entry:",
+                      teamManagerError
+                    );
+                  } else {
+                    teamCreated = true;
+                    console.log(
+                      `Team created successfully for user ${userId} with role ${role}`
+                    );
+                  }
+                } catch (insertError) {
+                  console.error("Error inserting team manager:", insertError);
+                }
+              }
+            }
+          }
+        } catch (teamCreationError) {
+          console.error("Error in team creation process:", teamCreationError);
+          // Don't throw error here as the role assignment was successful
+        }
+      }
+
+      const message = teamCreated
+        ? "Role assigned successfully and team created"
+        : "Role assigned successfully";
+
+      return { success: true, message, teamCreated };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["user-teams"] });
       toast({
         title: "Success",
         description: data.message || "Role assigned successfully",
@@ -223,53 +322,57 @@ export const useRoleManagement = () => {
       userId: string;
       managerId: string | null;
     }) => {
-      // If removing manager, skip validation
-      if (!managerId) {
-        const { data: updateResult, error: updateError } = await supabase
-          .from("profiles")
-          .update({
-            manager_id: null,
-            updated_at: new Date().toISOString(),
-          })
-          .eq("id", userId)
-          .select()
-          .single();
+      setIsAssigningManager(true);
 
-        if (updateError) throw updateError;
-        return {
-          success: true,
-          message: "Manager removed successfully",
-          data: updateResult,
-        };
-      }
+      // Get current user to check permissions
+      const {
+        data: { user: currentUser },
+        error: currentUserError,
+      } = await supabase.auth.getUser();
 
-      // Get current user ID first
-      const { data: { user: currentUser }, error: currentUserError } = await supabase.auth.getUser();
       if (currentUserError || !currentUser) {
-        throw new Error("Failed to get current user");
+        throw new Error("User not authenticated");
       }
 
-      // Check if the current user has the required role to assign managers
-      const { data: currentUserRoles, error: currentUserRoleError } = await supabase
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", currentUser.id)
-        .in("role", [
-          "agent_pro",
-          "manager_pro",
-          "manager_pro_gold",
-          "manager_pro_platinum",
-          "beta_user",
-          "system_admin"
-        ]);
+      // Check if current user has permission to assign managers
+      const { data: currentUserRoles, error: currentUserRoleError } =
+        await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", currentUser.id)
+          .in("role", [
+            "agent_pro",
+            "manager_pro",
+            "manager_pro_gold",
+            "manager_pro_platinum",
+            "beta_user",
+            "system_admin",
+          ]);
 
       if (currentUserRoleError) {
-        console.error("Error checking current user roles:", currentUserRoleError);
+        console.error(
+          "Error checking current user roles:",
+          currentUserRoleError
+        );
         throw new Error("Failed to verify current user role");
       }
 
       if (!currentUserRoles?.length) {
         throw new Error("Only Agent Pro users and above can assign managers");
+      }
+
+      // If removing manager (managerId is null)
+      if (!managerId) {
+        // Remove user from any existing team
+        await supabase.from("team_members").delete().eq("user_id", userId);
+
+        console.log(`User ${userId} removed from all teams`);
+
+        return {
+          success: true,
+          message: "Manager removed successfully",
+          data: null,
+        };
       }
 
       // Check if the manager has a valid manager role
@@ -279,9 +382,9 @@ export const useRoleManagement = () => {
         .eq("user_id", managerId)
         .in("role", [
           "manager_pro",
-          "manager_gold", 
+          "manager_gold",
           "manager_pro_gold",
-          "manager_pro_platinum"
+          "manager_pro_platinum",
         ]);
 
       if (managerRoleError) {
@@ -293,72 +396,122 @@ export const useRoleManagement = () => {
         throw new Error("Selected user does not have a manager role");
       }
 
-      // Extract all roles from the managerRoles array
-      const roles = managerRoles.map((roleObj) => roleObj.role);
-
-      // Team size limits for different roles
-      const teamSizeLimits = {
-        manager: 5,
-        manager_pro: 20,
-        manager_pro_gold: 50,
-        manager_pro_platinum: Infinity,
-      } as const;
-
-      // Determine the maximum limit based on all roles
-      const applicableLimits = roles
-        .map((role) => teamSizeLimits[role as keyof typeof teamSizeLimits])
-        .filter((limit) => limit !== undefined);
-
-      const teamSizeLimit = Math.max(...applicableLimits);
-
-      // Fetch current team size
-      const { data: currentTeam, error: teamError } = await supabase
+      // Get manager profile for team creation
+      const { data: managerProfile, error: profileError } = await supabase
         .from("profiles")
-        .select("id")
-        .eq("manager_id", managerId);
+        .select("id, first_name, last_name, email")
+        .eq("id", managerId)
+        .single();
 
-      if (teamError) {
-        console.error("Error checking team size:", teamError);
-        throw new Error("Failed to check team size");
+      if (profileError) {
+        console.error("Error fetching manager profile:", profileError);
+        throw new Error("Failed to fetch manager profile");
       }
 
-      const currentTeamSize = currentTeam?.length || 0;
+      // Check if manager has a team
+      const { data: teamManager, error: teamManagerError } = await supabase
+        .from("team_managers")
+        .select("user_id, role, team_id")
+        .eq("user_id", managerId)
+        .in("role", [
+          "manager_pro",
+          "manager_gold",
+          "manager_pro_gold",
+          "manager_pro_platinum",
+        ])
+        .maybeSingle();
 
-      if (currentTeamSize >= teamSizeLimit) {
-        throw new Error(
-          `Manager has reached their team size limit of ${teamSizeLimit} members`
+      if (teamManagerError) {
+        console.error("Error checking team manager:", teamManagerError);
+        throw new Error("Failed to check manager team");
+      }
+
+      let managerTeamId = teamManager?.team_id;
+
+      // If manager doesn't have a team, create one
+      if (!managerTeamId) {
+        console.log("Manager does not have a team, creating one...");
+
+        // Create team name based on manager's first name
+        const teamName = managerProfile.first_name
+          ? `${managerProfile.first_name}'s Team`
+          : managerProfile.email
+          ? `${managerProfile.email}'s Team`
+          : `Team ${managerProfile.id.slice(0, 8)}`;
+
+        // Create the team
+        const { data: newTeam, error: teamError } = await supabase
+          .from("teams")
+          .insert([{ name: teamName }])
+          .select()
+          .single();
+
+        if (teamError) {
+          console.error("Error creating team:", teamError);
+          throw new Error("Error creating team for manager");
+        }
+
+        // Create entry in team_managers table
+        const { error: teamManagerError } = await supabase
+          .from("team_managers")
+          .insert([
+            {
+              team_id: newTeam.id,
+              user_id: managerProfile.id,
+              role: managerRoles[0].role, // Use the first manager role
+            },
+          ]);
+
+        if (teamManagerError) {
+          console.error("Error creating team manager entry:", teamManagerError);
+          throw new Error("Error setting up manager team");
+        }
+
+        managerTeamId = newTeam.id;
+        console.log(
+          `Team created successfully for manager ${managerProfile.id}: ${teamName}`
         );
       }
 
-      // If all validations pass, proceed with the update
-      const { data: updateResult, error: updateError } = await supabase
-        .from("profiles")
-        .update({
-          manager_id: managerId,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", userId)
-        .select()
-        .single();
+      // Remove user from any existing team first
+      await supabase.from("team_members").delete().eq("user_id", userId);
 
-      if (updateError) {
-        console.error("Error updating profile:", updateError);
-        throw new Error(`Failed to update profile: ${updateError.message}`);
+      // Add user to the manager's team
+      const { error: insertError } = await supabase
+        .from("team_members")
+        .insert([
+          {
+            team_id: managerTeamId,
+            user_id: userId,
+            role: "agent", // Default role for team members
+          },
+        ]);
+
+      if (insertError) {
+        console.error("Error adding user to team:", insertError);
+        throw new Error("Error assigning user to team");
       }
+
+      console.log(
+        `User ${userId} successfully added to team ${managerTeamId} under manager ${managerId}`
+      );
 
       return {
         success: true,
         message: "Manager assigned successfully",
-        data: updateResult,
+        data: { team_id: managerTeamId },
       };
     },
     onSuccess: async (data) => {
       await queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      await queryClient.invalidateQueries({ queryKey: ["user-teams"] });
+      await queryClient.invalidateQueries({ queryKey: ["team-members"] });
 
       toast({
         title: "Success",
         description: data.message,
       });
+      setIsAssigningManager(false);
     },
     onError: (error) => {
       console.error("Error in manager assignment:", error);
@@ -368,6 +521,7 @@ export const useRoleManagement = () => {
           error instanceof Error ? error.message : "Failed to update manager",
         variant: "destructive",
       });
+      setIsAssigningManager(false);
     },
   });
 
@@ -390,5 +544,6 @@ export const useRoleManagement = () => {
     removeRole,
     assignManager,
     isAssigningRole,
+    isAssigningManager,
   };
 };

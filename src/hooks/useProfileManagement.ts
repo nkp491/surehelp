@@ -13,8 +13,10 @@ export const useProfileManagement = () => {
 
   useEffect(() => {
     const fetchProfile = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         navigate("/auth");
         return;
@@ -36,12 +38,21 @@ export const useProfileManagement = () => {
       setProfileData({
         ...profile,
         roles: roles,
-        privacy_settings: typeof profile.privacy_settings === 'string'
-          ? JSON.parse(profile.privacy_settings)
-          : profile.privacy_settings || { show_email: false, show_phone: false, show_photo: true },
-        notification_preferences: typeof profile.notification_preferences === 'string'
-          ? JSON.parse(profile.notification_preferences)
-          : profile.notification_preferences || { email_notifications: true, phone_notifications: false }
+        privacy_settings:
+          typeof profile.privacy_settings === "string"
+            ? JSON.parse(profile.privacy_settings)
+            : profile.privacy_settings || {
+                show_email: false,
+                show_phone: false,
+                show_photo: true,
+              },
+        notification_preferences:
+          typeof profile.notification_preferences === "string"
+            ? JSON.parse(profile.notification_preferences)
+            : profile.notification_preferences || {
+                email_notifications: true,
+                phone_notifications: false,
+              },
       } as Profile);
     };
 
@@ -50,7 +61,9 @@ export const useProfileManagement = () => {
 
   // Auth state listener
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
       if (event === "SIGNED_OUT") {
         navigate("/auth");
       }
@@ -62,9 +75,11 @@ export const useProfileManagement = () => {
   async function updateProfile(updates: Partial<Profile>) {
     try {
       console.log("updateProfile called with data:", updates);
-      
-      const { data: { session } } = await supabase.auth.getSession();
-      
+
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         console.error("No active session found");
         navigate("/auth");
@@ -74,15 +89,23 @@ export const useProfileManagement = () => {
       console.log("Current user ID:", session.user.id);
 
       // Create a clean copy of updates for database
-      const { roles, ...updatesToSave } = updates as any;
-      
+      const { roles, ...updatesToSave } = updates as Partial<Profile>;
+
       // Handle JSON fields properly
-      if (updatesToSave.privacy_settings && typeof updatesToSave.privacy_settings !== 'string') {
-        updatesToSave.privacy_settings = JSON.stringify(updatesToSave.privacy_settings);
+      if (
+        updatesToSave.privacy_settings &&
+        typeof updatesToSave.privacy_settings !== "string"
+      ) {
+        (updatesToSave as Record<string, unknown>).privacy_settings =
+          JSON.stringify(updatesToSave.privacy_settings);
       }
-      
-      if (updatesToSave.notification_preferences && typeof updatesToSave.notification_preferences !== 'string') {
-        updatesToSave.notification_preferences = JSON.stringify(updatesToSave.notification_preferences);
+
+      if (
+        updatesToSave.notification_preferences &&
+        typeof updatesToSave.notification_preferences !== "string"
+      ) {
+        (updatesToSave as Record<string, unknown>).notification_preferences =
+          JSON.stringify(updatesToSave.notification_preferences);
       }
 
       // Log what we're sending to debug
@@ -91,7 +114,7 @@ export const useProfileManagement = () => {
       // FIX: Use .eq instead of .match for more reliable updating
       const { data, error } = await supabase
         .from("profiles")
-        .update(updatesToSave)
+        .update(updatesToSave as Record<string, unknown>)
         .eq("id", session.user.id)
         .select();
 
@@ -101,7 +124,7 @@ export const useProfileManagement = () => {
         console.error("Error details:", error);
         throw error;
       }
-      
+
       // If email is updated, update it in user_roles table as well
       if (updates.email) {
         console.log("Updating email in user_roles:", updates.email);
@@ -109,16 +132,13 @@ export const useProfileManagement = () => {
           .from("user_roles")
           .update({ email: updates.email })
           .eq("user_id", session.user.id);
-          
+
         if (rolesError) {
           console.error("Error updating user_roles:", rolesError);
           throw rolesError;
         }
       }
-      
-      // Refetch profile data to ensure we have the latest
-      // await refetch();
-      
+
       toast({
         title: "Profile updated",
         description: "Your profile has been updated successfully.",
@@ -127,7 +147,8 @@ export const useProfileManagement = () => {
       console.error("Error updating profile:", error);
       toast({
         title: "Error updating profile",
-        description: "There was a problem updating your profile. Please try again.",
+        description:
+          "There was a problem updating your profile. Please try again.",
         variant: "destructive",
       });
     }
@@ -136,24 +157,24 @@ export const useProfileManagement = () => {
   async function uploadAvatar(event: React.ChangeEvent<HTMLInputElement>) {
     try {
       setUploading(true);
-      
+
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
+        throw new Error("You must select an image to upload.");
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
+      const fileExt = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
       const { error: uploadError } = await supabase.storage
-        .from('profile_images')
+        .from("profile_images")
         .upload(fileName, file);
 
       if (uploadError) throw uploadError;
 
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile_images')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl },
+      } = supabase.storage.from("profile_images").getPublicUrl(fileName);
 
       await updateProfile({ profile_image_url: publicUrl });
 
@@ -161,7 +182,7 @@ export const useProfileManagement = () => {
         title: "Success",
         description: "Profile picture updated successfully",
       });
-    } catch (error: any) {
+    } catch (error) {
       toast({
         title: "Error uploading image",
         description: error.message,
@@ -193,6 +214,6 @@ export const useProfileManagement = () => {
     uploading,
     updateProfile,
     uploadAvatar,
-    signOut
+    signOut,
   };
 };

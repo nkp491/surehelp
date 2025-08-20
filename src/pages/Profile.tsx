@@ -61,7 +61,6 @@ const ProfileContent = () => {
           lastName={profile?.last_name}
           email={profile?.email}
           phone={profile?.phone}
-          managerId={profile?.manager_id}
           onUpdate={updateProfile}
         />
 

@@ -55,10 +55,14 @@ export function ManagerSelect({
     };
     findCircularUsers(user.id);
 
+    // Filter to only show users who have manager roles
+    const managerRoles = ['manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum'];
+    
     return allUsers.filter(
       (potentialManager) =>
         potentialManager.id !== user.id &&
-        !circularUsers.has(potentialManager.id)
+        !circularUsers.has(potentialManager.id) &&
+        potentialManager.roles.some(role => managerRoles.includes(role))
     );
   }, [user.id, allUsers]);
 
