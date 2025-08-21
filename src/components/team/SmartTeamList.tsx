@@ -49,7 +49,7 @@ interface TeamMemberData {
   privacy_settings?: Record<string, unknown>;
   notification_preferences?: Record<string, unknown>;
 }
- 
+
 export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -159,6 +159,13 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
       if (membersError) throw membersError;
 
+      // Get all team managers
+      const { data: allTeamManagers, error: managersError } = await supabase
+        .from("team_managers")
+        .select("*");
+
+      if (managersError) throw managersError;
+
       // Get all profiles
       const { data: allProfiles, error: profilesError } = await supabase
         .from("profiles")
@@ -166,7 +173,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
       if (profilesError) throw profilesError;
 
-      return { teams, allTeamMembers, allProfiles };
+      return { teams, allTeamMembers, allTeamManagers, allProfiles };
     },
   });
 
@@ -174,7 +181,8 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   const buildTeamHierarchy = (): TeamMemberNode[] => {
     if (!teamMembers || !allTeamsData) return [];
 
-    const { teams, allTeamMembers, allProfiles } = allTeamsData;
+    const { teams, allTeamMembers, allTeamManagers, allProfiles } =
+      allTeamsData;
     const profilesMap = new Map<string, Record<string, unknown>>();
     allProfiles?.forEach((profile) => profilesMap.set(profile.id, profile));
 
@@ -188,7 +196,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
     const findMemberTeam = (memberId: string) => {
       return teams?.find((team) => {
-        const teamManager = allTeamMembers?.find(
+        const teamManager = allTeamManagers?.find(
           (tm) => tm.team_id === team.id && tm.user_id === memberId
         );
         return teamManager;
