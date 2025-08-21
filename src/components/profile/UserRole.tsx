@@ -5,7 +5,6 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
-import { AgentTypes } from "@/types/agent";
 
 interface UserRoleProps {
   role: "agent" | "manager_pro" | "manager" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;

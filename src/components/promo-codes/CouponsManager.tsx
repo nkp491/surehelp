@@ -1,5 +1,4 @@
 import { supabase } from '@/integrations/supabase/client';
-import { Button } from '../ui/button';
 import { Card } from '../ui/card';
 import { PromoCodesTable } from './data-table';
 import MetricsBoxes from './metrics.boxes';

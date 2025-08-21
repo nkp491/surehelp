@@ -165,7 +165,6 @@ export function CustomeDatePicker({
       formattedOutput += "/"
       const yearPart = cleanedDigits.substring(currentDigitIndex, currentDigitIndex + 4)
       formattedOutput += yearPart
-      currentDigitIndex += yearPart.length
     }
 
     setInputValue(formattedOutput)

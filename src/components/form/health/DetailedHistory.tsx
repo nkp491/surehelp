@@ -2,7 +2,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { DatePicker } from "@/components/ui/date-picker";
 import { FormSubmission } from "@/types/form";
 import { CustomeDatePicker } from "@/components/custome-date-picker";
 

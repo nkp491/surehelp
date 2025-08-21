@@ -66,7 +66,6 @@ serve(async (req) => {
     }
 
     let discounts: { promotion_code: string }[] | undefined = undefined;
-    let redemption = undefined;
     let trial_days: undefined;
     if (promotionCode) {
       // You may want to store the Stripe promotion_code ID in your DB, or fetch it from Stripe
@@ -76,7 +75,6 @@ serve(async (req) => {
       });
       if (promoList.data.length > 0) {
         discounts = [{ promotion_code: promoList.data[0].id }];
-        redemption = promoList.data[0].times_redeemed;
         trial_days = promoList.data[0].coupon?.metadata?.trial_days;
       } else {
         throw new Error("Invalid or expired promotion code");

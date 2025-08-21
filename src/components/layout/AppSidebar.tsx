@@ -18,7 +18,7 @@ export function AppSidebar() {
   let sidebarContext: ReturnType<typeof useSidebar> | null = null;
   try {
     sidebarContext = useSidebar();
-  } catch {}
+  } catch(e) { console.log("Sidebar context not available"); }
 
   // Show mobile trigger only if sidebar is closed on mobile
   const showMobileTrigger = isMobile && sidebarContext && !sidebarContext.openMobile;
