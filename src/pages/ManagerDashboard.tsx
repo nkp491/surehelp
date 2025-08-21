@@ -42,7 +42,9 @@ const useTeams = () => {
       const [teamsResult, membersResult, profilesResult] = await Promise.all([
         supabase.from("teams").select("*"),
         supabase.from("team_members").select("*"),
-        supabase.from("profiles").select("id, first_name, last_name, email, profile_image_url"),
+        supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email, profile_image_url"),
       ]);
       if (teamsResult.error || membersResult.error || profilesResult.error) {
         console.error("Error fetching data:", {
@@ -53,7 +55,11 @@ const useTeams = () => {
         return;
       }
       const profileMap = createProfileMap(profilesResult.data as Profile[]);
-      const teamsWithMembers = transformTeamsData(teamsResult.data, membersResult.data, profileMap);
+      const teamsWithMembers = transformTeamsData(
+        teamsResult.data,
+        membersResult.data,
+        profileMap
+      );
       setTeams(teamsWithMembers);
     } catch (error) {
       console.error("Error fetching teams:", error);
@@ -104,8 +110,8 @@ const createProfileMap = (profiles: Profile[]): Map<string, ProfileInfo> => {
 };
 
 const transformTeamsData = (
-  teams: any[],
-  teamMembers: any[],
+  teams,
+  teamMembers,
   profileMap: Map<string, ProfileInfo>
 ): TransformedTeam[] => {
   return teams.map((team) => ({
@@ -118,7 +124,8 @@ const transformTeamsData = (
           ...member,
           name: profileMap.get(member.user_id)?.name ?? "Unknown User",
           email: profileMap.get(member.user_id)?.email,
-          profile_image_url: profileMap.get(member.user_id)?.profile_image_url ?? null,
+          profile_image_url:
+            profileMap.get(member.user_id)?.profile_image_url ?? null,
           created_at: member.created_at ?? new Date().toISOString(),
           updated_at: member.updated_at ?? new Date().toISOString(),
         })
@@ -148,12 +155,15 @@ const fetchDailyMetrics = async (
       startDate = new Date(now.getFullYear(), 0, 1); // Default to YTD
   }
 
+  // Format the start date as YYYY-MM-DD for the date field
+  const startDateStr = startDate.toISOString().split("T")[0];
+
   const { data, error } = await supabase
     .from("daily_metrics")
     .select("*")
     .in("user_id", userIds)
-    .gte("created_at", startDate.toISOString())
-    .order("created_at", { ascending: true });
+    .gte("date", startDateStr)
+    .order("date", { ascending: true });
 
   if (error) throw error;
   return data as DailyMetric[];
@@ -182,7 +192,9 @@ const fetchMeetingData = async (
   };
 };
 
-const aggregateMetricsByUser = (metricsData: DailyMetric[]): Record<string, MetricCount> => {
+const aggregateMetricsByUser = (
+  metricsData: DailyMetric[]
+): Record<string, MetricCount> => {
   const metricsByUser: Record<string, MetricCount> = {};
   metricsData.forEach((row) => {
     metricsByUser[row.user_id] ??= {
@@ -211,7 +223,8 @@ const enrichMetricsWithRatios = (
 ): Record<string, MemberMetrics> => {
   const enrichedMetrics: Record<string, MemberMetrics> = {};
   Object.entries(metricsByUser).forEach(([userId, metrics]) => {
-    const conversion = metrics.leads > 0 ? Math.round((metrics.sales / metrics.leads) * 100) : 0;
+    const conversion =
+      metrics.leads > 0 ? Math.round((metrics.sales / metrics.leads) * 100) : 0;
     enrichedMetrics[userId] = {
       ...metrics,
       conversion,
@@ -271,7 +284,7 @@ const convertRatiosToObject = (
           .replace(/ ([a-z])/g, (_, c: string) => c.toUpperCase())
           .replace(/ /g, "");
         const camelKey = key.charAt(0).toLowerCase() + key.slice(1);
-        (acc as any)[camelKey] = String(r.value); // Ensure value is string for MetricRatios
+        acc[camelKey] = String(r.value);
         return acc;
       } catch (error) {
         console.warn("Error processing ratio:", r, error);
@@ -326,15 +339,17 @@ const transformMemberData = (
               notes: meetingNotesByUser[member.user_id] || [],
             };
           }
-          const ratios = metrics.ratios || calculateRatios({
-            leads: metrics.leads,
-            calls: metrics.calls,
-            contacts: metrics.contacts,
-            scheduled: metrics.scheduled,
-            sits: metrics.sits,
-            sales: metrics.sales,
-            ap: metrics.ap,
-          });
+          const ratios =
+            metrics.ratios ||
+            calculateRatios({
+              leads: metrics.leads,
+              calls: metrics.calls,
+              contacts: metrics.contacts,
+              scheduled: metrics.scheduled,
+              sits: metrics.sits,
+              sales: metrics.sales,
+              ap: metrics.ap,
+            });
           return {
             user_id: member.user_id,
             name: member.name || "Unknown User",
@@ -369,7 +384,9 @@ const transformMemberData = (
 // Main component
 const ManagerDashboard = () => {
   const { teams, loading: teamsLoading, fetchTeams } = useTeams();
-  const [selectedTeam, setSelectedTeam] = useState<TransformedTeam | null>(null);
+  const [selectedTeam, setSelectedTeam] = useState<TransformedTeam | null>(
+    null
+  );
   const [members, setMembers] = useState<EnrichedMember[]>([]);
   const [teamMetricsLoading, setTeamMetricsLoading] = useState(false);
   // UI state
@@ -398,7 +415,10 @@ const ManagerDashboard = () => {
       ]);
       const metricsByUser = aggregateMetricsByUser(metricsData);
       const enrichedMetrics = enrichMetricsWithRatios(metricsByUser);
-      const meetingNotesByUser = organizeMeetingNotesByUser(meetings, meetingNotes);
+      const meetingNotesByUser = organizeMeetingNotesByUser(
+        meetings,
+        meetingNotes
+      );
       const transformedMembers = transformMemberData(
         selectedTeam.members as TeamMember[],
         enrichedMetrics,
@@ -436,7 +456,9 @@ const ManagerDashboard = () => {
   const filteredMembers = members.filter((member) => {
     const searchTerms = searchQuery.toLowerCase().trim().split(/\s+/);
     const memberName = member.name.toLowerCase();
-    const matchesSearch = searchTerms.every((term) => memberName.includes(term));
+    const matchesSearch = searchTerms.every((term) =>
+      memberName.includes(term)
+    );
     const memberRole = member.role?.toLowerCase() || "";
     const matchesRole =
       filterRole === "all" ||
@@ -455,7 +477,9 @@ const ManagerDashboard = () => {
       <div className="container mx-auto px-4 sm:px-6 py-4">
         <div className="mb-4">
           <h2 className="text-2xl font-bold text-gray-900">Team Dashboard</h2>
-          <p className="text-muted-foreground mt-1">Manage your team and monitor performance</p>
+          <p className="text-muted-foreground mt-1">
+            Manage your team and monitor performance
+          </p>
         </div>
 
         <div className="space-y-6">
@@ -463,8 +487,15 @@ const ManagerDashboard = () => {
             <div className="space-y-6">
               {/* Teams and Bulletin */}
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <TeamList teams={teams} setSelectedTeam={setSelectedTeam} loading={teamsLoading} />
-                <TeamBulletIns bulletins={bulletins || []} loading={bulletinsLoading} />
+                <TeamList
+                  teams={teams}
+                  setSelectedTeam={setSelectedTeam}
+                  loading={teamsLoading}
+                />
+                <TeamBulletIns
+                  bulletins={bulletins || []}
+                  loading={bulletinsLoading}
+                />
               </section>
               {/* Team Members Section */}
               <section className="bg-white p-6 rounded-lg shadow-sm">
@@ -480,7 +511,10 @@ const ManagerDashboard = () => {
                         className="w-full sm:w-[200px]"
                       />
                       <div className="flex flex-wrap gap-2">
-                        <Select value={filterRole} onValueChange={setFilterRole}>
+                        <Select
+                          value={filterRole}
+                          onValueChange={setFilterRole}
+                        >
                           <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Filter by role" />
                           </SelectTrigger>
@@ -492,7 +526,9 @@ const ManagerDashboard = () => {
                         </Select>
                         <Select
                           value={timeRange}
-                          onValueChange={(value: TimeRange) => setTimeRange(value)}
+                          onValueChange={(value: TimeRange) =>
+                            setTimeRange(value)
+                          }
                         >
                           <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Select time range" />
@@ -505,7 +541,9 @@ const ManagerDashboard = () => {
                         </Select>
                         <Select
                           value={itemsPerPage.toString()}
-                          onValueChange={(value) => setItemsPerPage(Number(value))}
+                          onValueChange={(value) =>
+                            setItemsPerPage(Number(value))
+                          }
                         >
                           <SelectTrigger className="w-full sm:w-[180px]">
                             <SelectValue placeholder="Items per page" />
@@ -523,7 +561,9 @@ const ManagerDashboard = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setSortBy(sortBy === "asc" ? "desc" : "asc")}
+                        onClick={() =>
+                          setSortBy(sortBy === "asc" ? "desc" : "asc")
+                        }
                       >
                         {sortBy === "asc" ? "Sort ↑" : "Sort ↓"}
                       </Button>
@@ -532,14 +572,17 @@ const ManagerDashboard = () => {
                   {/* Pagination */}
                   <div className="flex items-center justify-between py-4">
                     <div className="text-sm text-muted-foreground">
-                      Showing {startIndex + 1}-{Math.min(endIndex, filteredMembers.length)} of{" "}
+                      Showing {startIndex + 1}-
+                      {Math.min(endIndex, filteredMembers.length)} of{" "}
                       {filteredMembers.length} members
                     </div>
                     <div className="flex items-center space-x-2">
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) => Math.max(1, prev - 1))
+                        }
                         disabled={currentPage === 1}
                       >
                         Previous
@@ -550,7 +593,11 @@ const ManagerDashboard = () => {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                        onClick={() =>
+                          setCurrentPage((prev) =>
+                            Math.min(totalPages, prev + 1)
+                          )
+                        }
                         disabled={currentPage === totalPages}
                       >
                         Next
@@ -564,7 +611,11 @@ const ManagerDashboard = () => {
                     </div>
                   ) : (
                     currentMembers.map((member) => (
-                      <MemberCard data={member} key={member.user_id} timeRange={timeRange} />
+                      <MemberCard
+                        data={member}
+                        key={member.user_id}
+                        timeRange={timeRange}
+                      />
                     ))
                   )}
                 </div>
