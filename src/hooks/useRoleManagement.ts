@@ -37,24 +37,57 @@ export const useRoleManagement = () => {
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
-        .select("id, email, first_name, last_name, manager_id, created_at");
+        .select("id, email, first_name, last_name, created_at");
 
       if (profilesError) {
         console.error("Error fetching profiles:", profilesError);
         throw profilesError;
       }
 
-      // Fetch managers info separately
-      const managerIds = profiles
-        .filter((p) => p.manager_id)
-        .map((p) => p.manager_id);
+      // Get all team members to understand team relationships
+      const { data: teamMembers, error: teamMembersError } = await supabase
+        .from("team_members")
+        .select("team_id, user_id");
 
+      if (teamMembersError) {
+        console.error("Error fetching team members:", teamMembersError);
+        throw teamMembersError;
+      }
+
+      // Get all team managers to understand who manages which teams
+      const { data: teamManagers, error: teamManagersError } = await supabase
+        .from("team_managers")
+        .select("team_id, user_id");
+
+      if (teamManagersError) {
+        console.error("Error fetching team managers:", teamManagersError);
+        throw teamManagersError;
+      }
+
+      // Create a map of team_id to manager_id
+      const teamToManagerMap = new Map<string, string>();
+      teamManagers?.forEach((tm) => {
+        teamToManagerMap.set(tm.team_id, tm.user_id);
+      });
+
+      // Create a map of user_id to manager_id through team relationships
+      const userToManagerMap = new Map<string, string>();
+      teamMembers?.forEach((member) => {
+        const managerId = teamToManagerMap.get(member.team_id);
+        if (managerId && managerId !== member.user_id) {
+          userToManagerMap.set(member.user_id, managerId);
+        }
+      });
+
+      // Get manager profiles for users who have managers through teams
+      const managerIds = Array.from(userToManagerMap.values());
       let managers: Array<{
         id: string;
         first_name: string | null;
         last_name: string | null;
         email: string | null;
       }> = [];
+
       if (managerIds.length > 0) {
         const { data: managersData, error: managersError } = await supabase
           .from("profiles")
@@ -107,12 +140,11 @@ export const useRoleManagement = () => {
             email: string | null;
             first_name: string | null;
             last_name: string | null;
-            manager_id: string | null;
             created_at: string | null;
           }) => {
-            const manager = profile.manager_id
-              ? managerMap.get(profile.manager_id)
-              : null;
+            // Get manager from teams flow instead of profiles table
+            const managerId = userToManagerMap.get(profile.id) || null;
+            const manager = managerId ? managerMap.get(managerId) : null;
             const userRoles = roleMap.get(profile.id) || [];
 
             return {
@@ -121,7 +153,7 @@ export const useRoleManagement = () => {
               first_name: profile.first_name,
               last_name: profile.last_name,
               roles: userRoles,
-              manager_id: profile.manager_id,
+              manager_id: managerId,
               manager_name: manager
                 ? `${manager.first_name} ${manager.last_name}`.trim()
                 : null,
@@ -363,10 +395,38 @@ export const useRoleManagement = () => {
 
       // If removing manager (managerId is null)
       if (!managerId) {
-        // Remove user from any existing team
-        await supabase.from("team_members").delete().eq("user_id", userId);
+        // Check if user is currently in any team
+        const { data: currentTeamMember, error: currentTeamError } =
+          await supabase
+            .from("team_members")
+            .select("team_id")
+            .eq("user_id", userId)
+            .maybeSingle();
 
-        console.log(`User ${userId} removed from all teams`);
+        if (currentTeamError) {
+          console.error(
+            "Error checking current team membership:",
+            currentTeamError
+          );
+          throw new Error("Failed to check current team membership");
+        }
+
+        if (currentTeamMember) {
+          // Remove user from current team
+          const { error: removeError } = await supabase
+            .from("team_members")
+            .delete()
+            .eq("user_id", userId);
+
+          if (removeError) {
+            console.error("Error removing user from team:", removeError);
+            throw new Error("Failed to remove user from team");
+          }
+
+          console.log(
+            `User ${userId} removed from team ${currentTeamMember.team_id}`
+          );
+        }
 
         return {
           success: true,
@@ -394,6 +454,39 @@ export const useRoleManagement = () => {
 
       if (!managerRoles?.length) {
         throw new Error("Selected user does not have a manager role");
+      }
+
+      // Check if user already has a manager (is in any team)
+      const { data: currentTeamMember, error: currentTeamError } =
+        await supabase
+          .from("team_members")
+          .select("team_id")
+          .eq("user_id", userId)
+          .maybeSingle();
+
+      if (currentTeamError) {
+        console.error(
+          "Error checking current team membership:",
+          currentTeamError
+        );
+        throw new Error("Failed to check current team membership");
+      }
+
+      // If user is already in a team, remove them first
+      if (currentTeamMember) {
+        console.log(
+          `User ${userId} is currently in team ${currentTeamMember.team_id}, removing...`
+        );
+
+        const { error: removeError } = await supabase
+          .from("team_members")
+          .delete()
+          .eq("user_id", userId);
+
+        if (removeError) {
+          console.error("Error removing user from current team:", removeError);
+          throw new Error("Failed to remove user from current team");
+        }
       }
 
       // Get manager profile for team creation
@@ -472,9 +565,6 @@ export const useRoleManagement = () => {
           `Team created successfully for manager ${managerProfile.id}: ${teamName}`
         );
       }
-
-      // Remove user from any existing team first
-      await supabase.from("team_members").delete().eq("user_id", userId);
 
       // Add user to the manager's team
       const { error: insertError } = await supabase

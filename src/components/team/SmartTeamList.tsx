@@ -49,7 +49,7 @@ interface TeamMemberData {
   privacy_settings?: Record<string, unknown>;
   notification_preferences?: Record<string, unknown>;
 }
-
+ 
 export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
@@ -381,12 +381,6 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         .eq("user_id", memberId);
 
       if (error) throw error;
-
-      // Also update the user's manager_id to null in profiles table
-      await supabase
-        .from("profiles")
-        .update({ manager_id: null })
-        .eq("id", memberId);
 
       toast({
         title: "Success",
