@@ -1,4 +1,10 @@
-import { Phone, Calendar, MessageSquare, Target, TrendingUp } from "lucide-react";
+import {
+  Phone,
+  Calendar,
+  MessageSquare,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 
 // Type definitions
@@ -83,7 +89,11 @@ const RATIO_METRICS = [
   { key: "leadsToSits", label: "Lead to Sits", format: "percent" },
   { key: "leadsToSales", label: "Lead to Sales", format: "percent" },
   { key: "aPPerLead", label: "AP per Lead", format: "currency" },
-  { key: "contactToScheduled", label: "Contact to Scheduled", format: "percent" },
+  {
+    key: "contactToScheduled",
+    label: "Contact to Scheduled",
+    format: "percent",
+  },
   { key: "contactToSits", label: "Contact to Sits", format: "percent" },
   { key: "callsToContact", label: "Calls to Contact", format: "percent" },
   { key: "callsToScheduled", label: "Calls to Scheduled", format: "percent" },
@@ -98,9 +108,20 @@ const RATIO_METRICS = [
   { key: "aPPerSale", label: "AP per Sale", format: "currency" },
 ] as const;
 
-const formatValue = (value: number | string, format: "percent" | "currency"): string => {
+const formatValue = (
+  value: number | string,
+  format: "percent" | "currency"
+): string => {
   if (format === "percent") {
+    // If the value already contains a percentage sign, return it as is
+    if (typeof value === "string" && value.includes("%")) {
+      return value;
+    }
     return `${value}%`;
+  }
+  // If the value already contains a dollar sign, return it as is
+  if (typeof value === "string" && value.includes("$")) {
+    return value;
   }
   return `$${value}`;
 };
@@ -118,14 +139,13 @@ const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
   const successScore = calculateSuccessScore(data.metrics.conversion);
 
   const formatRoleName = (role: string): string => {
-  if (!role) return "";
+    if (!role) return "";
 
-  return role
-    .split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ");
-};
-
+    return role
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+  };
 
   return (
     <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 relative cursor-pointer transition-all">
@@ -145,7 +165,9 @@ const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
           )}
           <div>
             <h3 className="font-semibold">{data.name}</h3>
-            <p className="text-sm text-muted-foreground">{formatRoleName(data.role)}</p>
+            <p className="text-sm text-muted-foreground">
+              {formatRoleName(data.role)}
+            </p>
           </div>
         </div>
         <div className="flex items-center space-x-2">
@@ -161,13 +183,19 @@ const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
         {PRIMARY_METRICS.map(({ key, label, colorClass }) => (
           <div key={key} className="bg-blue-50 p-3 rounded-lg text-center">
             <div className={`text-lg font-bold ${colorClass}`}>
-              {data.metrics[key as keyof Omit<Metrics, "ratios" | "conversion">]}
+              {
+                data.metrics[
+                  key as keyof Omit<Metrics, "ratios" | "conversion">
+                ]
+              }
             </div>
             <div className="text-xs text-muted-foreground">{label}</div>
           </div>
         ))}
         <div className="bg-green-50 p-3 rounded-lg text-center col-span-2">
-          <div className="text-lg font-bold text-green-600">${data.metrics.ap}</div>
+          <div className="text-lg font-bold text-green-600">
+            ${data.metrics.ap}
+          </div>
           <div className="text-xs text-muted-foreground">AP</div>
         </div>
       </div>
@@ -195,16 +223,24 @@ const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
                 <TrendingUp className="h-4 w-4 text-green-600" />
                 <span className="text-xs font-medium">Conversion Rate</span>
               </div>
-              <div className="text-lg font-bold text-green-600">{data.metrics.conversion}%</div>
-              <p className="text-xs text-muted-foreground">{timeRangeLabel} Rate</p>
+              <div className="text-lg font-bold text-green-600">
+                {data.metrics.conversion}%
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {timeRangeLabel} Rate
+              </p>
             </div>
             <div className="p-3 bg-gray-50 rounded-lg">
               <div className="flex items-center space-x-2 mb-1">
                 <Target className="h-4 w-4 text-blue-600" />
                 <span className="text-xs font-medium">Success Score</span>
               </div>
-              <div className="text-lg font-bold text-blue-600">{successScore}</div>
-              <p className="text-xs text-muted-foreground">{timeRangeLabel} Rating</p>
+              <div className="text-lg font-bold text-blue-600">
+                {successScore}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                {timeRangeLabel} Rating
+              </p>
             </div>
           </div>
           <div>
@@ -231,13 +267,17 @@ const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
               data.notes.map((note) => (
                 <div key={note.id} className="p-2 bg-gray-50 rounded-lg">
                   <div className="flex items-center justify-between mb-1">
-                    <span className="text-xs font-medium">{formatDate(note.created_at)}</span>
+                    <span className="text-xs font-medium">
+                      {formatDate(note.created_at)}
+                    </span>
                   </div>
                   <p className="text-xs text-gray-600">{note.content}</p>
                 </div>
               ))
             ) : (
-              <p className="text-xs text-muted-foreground">No 1:1 notes available</p>
+              <p className="text-xs text-muted-foreground">
+                No 1:1 notes available
+              </p>
             )}
           </div>
         </div>

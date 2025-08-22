@@ -1,4 +1,3 @@
-
 import { Card } from "@/components/ui/card";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
@@ -20,13 +19,15 @@ const MetricButtons = ({
   isLast = false,
 }: MetricButtonsProps) => {
   const { metrics, handleInputChange } = useMetrics();
-  
+
   const formatMetricName = (metric: string) => {
-    return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
+    return metric === "ap"
+      ? "AP"
+      : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
   const currentValue = metrics[metric as MetricType];
-  const isAP = metric === 'ap';
+  const isAP = metric === "ap";
 
   const handleIncrement = () => {
     const increment = isAP ? 100 : 1;
@@ -44,24 +45,8 @@ const MetricButtons = ({
   };
 
   const handleMetricInputChange = async (value: string) => {
-    console.log(`[MetricButtons] Input change for ${metric}:`, {
-      value,
-      metric,
-      currentMetrics: metrics,
-      timestamp: new Date().toISOString()
-    });
-
-    // Ensure we're passing a valid number string
     const numericValue = isAP ? value : parseInt(value).toString();
-    
-    // Call the context's handleInputChange
     await handleInputChange(metric as MetricType, numericValue);
-    
-    console.log(`[MetricButtons] After state update for ${metric}:`, {
-      newValue: numericValue,
-      updatedMetrics: metrics,
-      timestamp: new Date().toISOString()
-    });
   };
 
   return (
@@ -86,10 +71,7 @@ const MetricButtons = ({
         </Card>
       </div>
       {!isLast && (
-        <Separator
-          orientation="vertical"
-          className="h-12 mx-3 bg-[#D9D9D9]"
-        />
+        <Separator orientation="vertical" className="h-12 mx-3 bg-[#D9D9D9]" />
       )}
     </div>
   );

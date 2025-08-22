@@ -1,9 +1,9 @@
 import { MetricCount } from "@/types/metrics";
 
 export const formatCurrency = (value: number) => {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
   }).format(value);
 };
 
@@ -13,63 +13,63 @@ export const formatPercentage = (value: number) => {
 
 export const calculateRatios = (metrics: MetricCount) => {
   const { leads, calls, contacts, scheduled, sits, sales, ap } = metrics;
-  
+
   return [
     {
       label: "Leads to Contact",
-      value: leads > 0 && contacts > 0 ? (leads / contacts).toFixed(1) : "0",
+      value: leads > 0 ? formatPercentage(contacts / leads) : "0%",
     },
     {
       label: "Leads to Scheduled",
-      value: leads > 0 && scheduled > 0 ? (leads / scheduled).toFixed(1) : "0",
+      value: leads > 0 ? formatPercentage(scheduled / leads) : "0%",
     },
     {
       label: "Leads to Sits",
-      value: leads > 0 && sits > 0 ? (leads / sits).toFixed(1) : "0",
+      value: leads > 0 ? formatPercentage(sits / leads) : "0%",
     },
     {
       label: "Leads to Sales",
-      value: leads > 0 && sales > 0 ? (leads / sales).toFixed(1) : "0",
+      value: leads > 0 ? formatPercentage(sales / leads) : "0%",
     },
     {
       label: "Calls to Contact",
-      value: calls > 0 && contacts > 0 ? (calls / contacts).toFixed(1) : "0",
+      value: calls > 0 ? formatPercentage(contacts / calls) : "0%",
     },
     {
       label: "Calls to Scheduled",
-      value: calls > 0 && scheduled > 0 ? (calls / scheduled).toFixed(1) : "0",
+      value: calls > 0 ? formatPercentage(scheduled / calls) : "0%",
     },
     {
       label: "Calls to Sits",
-      value: calls > 0 && sits > 0 ? (calls / sits).toFixed(1) : "0",
+      value: calls > 0 ? formatPercentage(sits / calls) : "0%",
     },
     {
       label: "Calls to Sales",
-      value: calls > 0 && sales > 0 ? (calls / sales).toFixed(1) : "0",
+      value: calls > 0 ? formatPercentage(sales / calls) : "0%",
     },
     {
       label: "AP per Call",
-      value: calls > 0 ? formatCurrency(ap / 100 / calls) : "$0.00",
+      value: calls > 0 ? formatCurrency(ap / calls) : "$0.00",
     },
     {
       label: "Contact to Scheduled",
-      value: contacts > 0 && scheduled > 0 ? (contacts / scheduled).toFixed(1) : "0",
+      value: contacts > 0 ? formatPercentage(scheduled / contacts) : "0%",
     },
     {
       label: "Contact to Sits",
-      value: contacts > 0 && sits > 0 ? (contacts / sits).toFixed(1) : "0",
+      value: contacts > 0 ? formatPercentage(sits / contacts) : "0%",
     },
     {
       label: "Contact to Sales",
-      value: contacts > 0 && sales > 0 ? (contacts / sales).toFixed(1) : "0",
+      value: contacts > 0 ? formatPercentage(sales / contacts) : "0%",
     },
     {
       label: "AP per Contact",
-      value: contacts > 0 ? formatCurrency(ap / 100 / contacts) : "$0.00",
+      value: contacts > 0 ? formatCurrency(ap / contacts) : "$0.00",
     },
     {
       label: "AP per Lead",
-      value: leads > 0 ? formatCurrency(ap / 100 / leads) : "$0.00",
+      value: leads > 0 ? formatCurrency(ap / leads) : "$0.00",
     },
     {
       label: "Scheduled to Sits",
@@ -85,15 +85,15 @@ export const calculateRatios = (metrics: MetricCount) => {
     },
     {
       label: "AP per Sit",
-      value: sits > 0 ? formatCurrency(ap / 100 / sits) : "$0.00",
+      value: sits > 0 ? formatCurrency(ap / sits) : "$0.00",
     },
     {
       label: "AP per Appointment",
-      value: scheduled > 0 ? formatCurrency(ap / 100 / scheduled) : "$0.00",
+      value: scheduled > 0 ? formatCurrency(ap / scheduled) : "$0.00",
     },
     {
       label: "AP per Sale",
-      value: sales > 0 ? formatCurrency(ap / 100 / sales) : "$0.00",
-    }
+      value: sales > 0 ? formatCurrency(ap / sales) : "$0.00",
+    },
   ];
 };

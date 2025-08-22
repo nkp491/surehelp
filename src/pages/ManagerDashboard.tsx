@@ -137,35 +137,31 @@ const fetchDailyMetrics = async (
   userIds: string[],
   timeRange: TimeRange
 ): Promise<DailyMetric[]> => {
-  const now = new Date();
   let startDate: Date;
-
-  // Calculate start date based on time range
+  const dataYear = 2025;
   switch (timeRange) {
     case "weekly":
-      startDate = new Date(now.setDate(now.getDate() - 7));
+      startDate = new Date(dataYear, 11, 25);
       break;
     case "monthly":
-      startDate = new Date(now.getFullYear(), now.getMonth(), 1); // First day of current month
+      startDate = new Date(dataYear, 0, 1);
       break;
     case "ytd":
-      startDate = new Date(now.getFullYear(), 0, 1); // First day of current year
+      startDate = new Date(dataYear, 0, 1);
       break;
     default:
-      startDate = new Date(now.getFullYear(), 0, 1); // Default to YTD
+      startDate = new Date(dataYear, 0, 1);
   }
-
-  // Format the start date as YYYY-MM-DD for the date field
   const startDateStr = startDate.toISOString().split("T")[0];
-
   const { data, error } = await supabase
     .from("daily_metrics")
     .select("*")
     .in("user_id", userIds)
     .gte("date", startDateStr)
     .order("date", { ascending: true });
-
-  if (error) throw error;
+  if (error) {
+    throw error;
+  }
   return data as DailyMetric[];
 };
 
@@ -262,21 +258,15 @@ const convertRatiosToObject = (
     if (typeof ratios === "object" && !Array.isArray(ratios)) {
       return ratios as MetricRatios;
     }
-
-    // If ratios is not an array, return empty object
     if (!Array.isArray(ratios)) {
       console.warn("Ratios is not an array:", ratios);
       return {} as MetricRatios;
     }
-
-    // Process array of ratios
     return ratios.reduce((acc, r) => {
-      // Guard against invalid ratio objects
       if (!r || typeof r !== "object" || !("label" in r) || !("value" in r)) {
         console.warn("Invalid ratio object:", r);
         return acc;
       }
-
       try {
         const key = r.label
           .replace(/\s+/g, " ")
@@ -329,7 +319,7 @@ const transformMemberData = (
               user_id: member.user_id,
               name: member.name || "Unknown User",
               role: member.role || "Unknown Role",
-              email: member.email || undefined, // Make email optional
+              email: member.email || undefined,
               profile_image_url: member.profile_image_url || null,
               metrics: {
                 ...defaultMetrics,
@@ -354,7 +344,7 @@ const transformMemberData = (
             user_id: member.user_id,
             name: member.name || "Unknown User",
             role: member.role || "Unknown Role",
-            email: member.email || undefined, // Make email optional
+            email: member.email || undefined,
             profile_image_url: member.profile_image_url || null,
             metrics: {
               leads: Number(metrics.leads) || 0,

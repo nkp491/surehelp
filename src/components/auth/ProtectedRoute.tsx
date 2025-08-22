@@ -25,8 +25,8 @@ export const ProtectedRoute = ({
       searchParams.set("returnUrl", location.pathname);
     }
     const redirectPath =
-      redirectTo + (searchParams.toString() ? "?" + searchParams.toString() : "");
-    console.log("Redirecting to:", redirectPath);
+      redirectTo +
+      (searchParams.toString() ? "?" + searchParams.toString() : "");
     return <Navigate to={redirectPath} replace />;
   }
   return <>{children}</>;
