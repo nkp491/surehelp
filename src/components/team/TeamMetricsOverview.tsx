@@ -144,7 +144,7 @@ export function TeamMetricsOverview({ teamId }: TeamMetricsOverviewProps) {
                       
                       <div>
                         <Badge variant="outline" className="ml-2">
-                          AP: ${(member.metrics.average_ap / 100).toFixed(2)}
+                          AP: ${member.metrics.average_ap.toFixed(2)}
                         </Badge>
                       </div>
                     </div>

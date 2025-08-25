@@ -194,7 +194,7 @@ const MemberCard: React.FC<MemberCardProps> = ({ data, timeRange }) => {
         ))}
         <div className="bg-green-50 p-3 rounded-lg text-center col-span-2">
           <div className="text-lg font-bold text-green-600">
-            ${data.metrics.ap}
+            ${data.metrics.ap.toFixed(2)}
           </div>
           <div className="text-xs text-muted-foreground">AP</div>
         </div>

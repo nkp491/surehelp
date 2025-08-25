@@ -24,8 +24,8 @@ const MetricInput = ({
   useEffect(() => {
     if (!isFocused) {
       if (isAP) {
-        // Don't format with toFixed when not focused, just convert to decimal
-        setInputValue(String(currentValue / 100));
+        // Store AP values as dollars, not cents
+        setInputValue(String(currentValue));
       } else {
         setInputValue(currentValue.toString());
       }
@@ -73,8 +73,8 @@ const MetricInput = ({
         // Only update parent if we have a valid number
         const numericValue = parseFloat(value || '0');
         if (!isNaN(numericValue)) {
-          const centsValue = Math.round(numericValue * 100);
-          onInputChange(centsValue.toString());
+          // Store AP values as dollars, not cents
+          onInputChange(numericValue.toString());
         }
       }
     } else {
@@ -94,7 +94,7 @@ const MetricInput = ({
   const handleFocus = () => {
     setIsFocused(true);
     if (isAP) {
-      const value = String(currentValue / 100);
+      const value = String(currentValue);
       setInputValue(value);
       previousLengthRef.current = value.length;
       
@@ -114,8 +114,8 @@ const MetricInput = ({
       // Format the value properly on blur
       const numericValue = parseFloat(inputValue || '0');
       if (!isNaN(numericValue)) {
-        const centsValue = Math.round(numericValue * 100);
-        onInputChange(centsValue.toString());
+        // Store AP values as dollars, not cents
+        onInputChange(numericValue.toString());
       } else {
         setInputValue('0');
         onInputChange('0');
@@ -140,7 +140,7 @@ const MetricInput = ({
         currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }).format(currentValue / 100);
+      }).format(currentValue);
     }
   };
 

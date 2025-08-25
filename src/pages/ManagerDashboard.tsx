@@ -192,6 +192,7 @@ const aggregateMetricsByUser = (
   metricsData: DailyMetric[]
 ): Record<string, MetricCount> => {
   const metricsByUser: Record<string, MetricCount> = {};
+  
   metricsData.forEach((row) => {
     metricsByUser[row.user_id] ??= {
       leads: 0,
@@ -209,8 +210,13 @@ const aggregateMetricsByUser = (
     userMetrics.scheduled += row.scheduled ?? 0;
     userMetrics.sits += row.sits ?? 0;
     userMetrics.sales += row.sales ?? 0;
-    userMetrics.ap += row.ap ?? 0;
+    
+    // For AP, sum all values (don't average)
+    if (row.ap && row.ap > 0) {
+      userMetrics.ap += row.ap;
+    }
   });
+  
   return metricsByUser;
 };
 

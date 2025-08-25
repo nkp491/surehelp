@@ -29,7 +29,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
       scheduled: entry.metrics.scheduled || 0,
       sits: entry.metrics.sits || 0,
       sales: entry.metrics.sales || 0,
-      ap: (entry.metrics.ap || 0) / 100, // Convert cents to dollars
+      ap: (entry.metrics.ap || 0), // AP values are now stored as dollars
     }))
     .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime()); // Sort by date ascending
 
@@ -44,7 +44,7 @@ const MetricsChart = ({ timePeriod, onTimePeriodChange }: MetricsChartProps) => 
 
   // Calculate the maximum AP value for the right Y-axis
   const maxAP = Math.max(...transformedMetricsData.map(item => item.ap));
-  const yAxisDomain = [0, Math.ceil(maxAP / 1000) * 1000];
+  const yAxisDomain = [0, Math.ceil(maxAP / 10) * 10];
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">

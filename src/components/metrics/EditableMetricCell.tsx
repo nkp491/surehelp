@@ -14,8 +14,8 @@ const EditableMetricCell = ({ isEditing, value, onChange, metric }: EditableMetr
   
   useEffect(() => {
     if (isEditing && metric === 'ap') {
-      // Initialize input value when editing starts
-      setInputValue((Number(value) / 100).toFixed(2));
+      // Initialize input value when editing starts - AP values are now stored as dollars
+      setInputValue(Number(value).toFixed(2));
     }
   }, [isEditing, value, metric]);
 
@@ -27,11 +27,11 @@ const EditableMetricCell = ({ isEditing, value, onChange, metric }: EditableMetr
       if (newValue === '' || /^\d*\.?\d*$/.test(newValue)) {
         setInputValue(newValue);
         
-        // Convert to cents for storage only if we have a valid number
+        // Convert to dollars for storage only if we have a valid number
         const numericValue = parseFloat(newValue);
         if (!isNaN(numericValue)) {
-          const centsValue = Math.round(numericValue * 100);
-          onChange(centsValue.toString());
+          // Store AP values as dollars, not cents
+          onChange(numericValue.toString());
         } else {
           onChange('0');
         }
@@ -46,10 +46,13 @@ const EditableMetricCell = ({ isEditing, value, onChange, metric }: EditableMetr
 
   const formatDisplayValue = (val: string) => {
     if (metric === 'ap') {
-      return new Intl.NumberFormat('en-US', {
+      const numericVal = Number(val);
+      const displayVal = new Intl.NumberFormat('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }).format(Number(val) / 100);
+      }).format(numericVal);
+      
+      return displayVal;
     }
     return val;
   };

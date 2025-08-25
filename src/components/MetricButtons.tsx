@@ -30,7 +30,7 @@ const MetricButtons = ({
   const isAP = metric === "ap";
 
   const handleIncrement = () => {
-    const increment = isAP ? 100 : 1;
+    const increment = isAP ? 1 : 1;
     const newValue = currentValue + increment;
     handleInputChange(metric as MetricType, newValue.toString());
     onIncrement();
@@ -38,7 +38,7 @@ const MetricButtons = ({
 
   const handleDecrement = () => {
     if (currentValue <= 0) return;
-    const decrement = isAP ? 100 : 1;
+    const decrement = isAP ? 1 : 1;
     const newValue = Math.max(0, currentValue - decrement);
     handleInputChange(metric as MetricType, newValue.toString());
     onDecrement();

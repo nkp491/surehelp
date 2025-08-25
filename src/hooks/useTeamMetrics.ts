@@ -77,7 +77,7 @@ export const useTeamMetrics = (teamId?: string) => {
               total_scheduled: acc.total_scheduled + (curr.scheduled || 0),
               total_sits: acc.total_sits + (curr.sits || 0),
               total_sales: acc.total_sales + (curr.sales || 0),
-              average_ap: acc.average_ap + (curr.ap || 0)
+              average_ap: acc.average_ap + (curr.ap && curr.ap > 0 ? curr.ap : 0)
             }), {
               total_leads: 0,
               total_calls: 0,
@@ -88,9 +88,8 @@ export const useTeamMetrics = (teamId?: string) => {
               average_ap: 0
             });
 
-            // Calculate average AP
-            summary.average_ap = metrics.length > 0 ?
-                Math.round(summary.average_ap / metrics.length) : 0;
+            // AP is now total sum, not average
+            // No need to divide by count since we want total AP
 
             const profile = profileMap[member.user_id] || {};
 
@@ -151,7 +150,8 @@ export const useTeamMetrics = (teamId?: string) => {
             sits: 0,
             sales: 0,
             ap: 0,
-            count: 0
+            count: 0,
+            apCount: 0 // Track count of team members with AP > 0
           };
         }
         
@@ -161,16 +161,21 @@ export const useTeamMetrics = (teamId?: string) => {
         acc[curr.date].scheduled += (curr.scheduled || 0);
         acc[curr.date].sits += (curr.sits || 0);
         acc[curr.date].sales += (curr.sales || 0);
-        acc[curr.date].ap += (curr.ap || 0);
+        
+        // Only include AP values > 0 in the sum and count
+        if (curr.ap && curr.ap > 0) {
+          acc[curr.date].ap += curr.ap;
+          acc[curr.date].apCount += 1;
+        }
         acc[curr.date].count += 1;
         
         return acc;
       }, {});
 
-      // Convert to array and calculate average AP
+      // Convert to array and calculate total AP (not average)
       return Object.values(metricsByDate).map((day: any) => ({
         ...day,
-        ap: day.count > 0 ? Math.round(day.ap / day.count) : 0
+        ap: day.ap // Keep as total sum, don't average
       }));
     },
     enabled: !!teamId,

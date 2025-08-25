@@ -1,11 +1,10 @@
 import { Card } from "./ui/card";
 import { Separator } from "./ui/separator";
-import { MetricsProvider } from "@/contexts/MetricsContext";
+import { MetricsProvider, useMetrics } from "@/contexts/MetricsContext";
 import TimeControls from "./metrics/TimeControls";
 import MetricsGrid from "./metrics/MetricsGrid";
 import RatiosGrid from "./metrics/RatiosGrid";
 import MetricsChart from "./MetricsChart";
-import { useMetrics } from "@/contexts/MetricsContext";
 import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
@@ -18,7 +17,7 @@ const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
   const { sortedHistory } = useMetricsHistory();
   const { isAuthenticated } = useAuthStateManager();
-  
+
   const defaultMetrics = {
     leads: 0,
     calls: 0,
@@ -26,7 +25,7 @@ const BusinessMetricsContent = () => {
     scheduled: 0,
     sits: 0,
     sales: 0,
-    ap: 0
+    ap: 0,
   };
 
   // Memoize the calculation function to prevent unnecessary recalculations
@@ -36,22 +35,27 @@ const BusinessMetricsContent = () => {
     }
 
     const now = startOfDay(new Date());
-    const periodRange = timePeriod === '7d' ? 7 : timePeriod === '30d' ? 30 : 1;
+    const periodRange = timePeriod === "7d" ? 7 : timePeriod === "30d" ? 30 : 1;
 
-    return sortedHistory.reduce((acc: MetricCount, entry) => {
-      const entryDate = new Date(entry.date);
-      const daysDiff = Math.floor((now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24));
-      
-      if (daysDiff <= periodRange) {
-        Object.entries(entry.metrics).forEach(([key, value]) => {
-          if (key in acc) {
-            acc[key as keyof MetricCount] += Number(value) || 0;
-          }
-        });
-      }
-      
-      return acc;
-    }, { ...defaultMetrics });
+    return sortedHistory.reduce(
+      (acc: MetricCount, entry) => {
+        const entryDate = new Date(entry.date);
+        const daysDiff = Math.floor(
+          (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        if (daysDiff <= periodRange) {
+          Object.entries(entry.metrics).forEach(([key, value]) => {
+            if (key in acc) {
+              acc[key as keyof MetricCount] += Number(value) || 0;
+            }
+          });
+        }
+
+        return acc;
+      },
+      { ...defaultMetrics }
+    );
   }, [timePeriod, sortedHistory, isAuthenticated]);
 
   // Update aggregated metrics when dependencies change
@@ -59,8 +63,14 @@ const BusinessMetricsContent = () => {
     if (sortedHistory?.length > 0 && isAuthenticated) {
       setAggregatedMetrics(aggregatedMetrics);
     }
-  }, [aggregatedMetrics, setAggregatedMetrics, sortedHistory, timePeriod, isAuthenticated]);
-  
+  }, [
+    aggregatedMetrics,
+    setAggregatedMetrics,
+    sortedHistory,
+    timePeriod,
+    isAuthenticated,
+  ]);
+
   if (!isAuthenticated) {
     return null;
   }
@@ -79,10 +89,7 @@ const BusinessMetricsContent = () => {
             <RatiosGrid />
           </div>
 
-          <MetricsChart 
-            timePeriod={timePeriod}
-            onTimePeriodChange={() => {}}
-          />
+          <MetricsChart timePeriod={timePeriod} onTimePeriodChange={() => {}} />
 
           <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
             <div className="flex items-center justify-between mb-6">

@@ -33,7 +33,7 @@ const MetricCard = ({
         currency: 'USD',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-      }).format(value / 100); // Convert cents to dollars for display
+      }).format(value); // AP values are now stored as dollars
     }
     return value.toString();
   };
