@@ -12,10 +12,11 @@ import { startOfDay } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo } from "react";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
+import { Loader2 } from "lucide-react";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, setAggregatedMetrics } = useMetrics();
-  const { sortedHistory } = useMetricsHistory();
+  const { sortedHistory, isLoading } = useMetricsHistory();
   const { isAuthenticated } = useAuthStateManager();
 
   const defaultMetrics = {
@@ -73,6 +74,27 @@ const BusinessMetricsContent = () => {
 
   if (!isAuthenticated) {
     return null;
+  }
+
+  // Show loading state for initial data fetch
+  if (isLoading && sortedHistory.length === 0) {
+    return (
+      <div className="space-y-8">
+        <Card className="w-full mb-12 p-8 shadow-lg bg-[#F1F1F1]">
+          <div className="flex items-center justify-center py-16">
+            <div className="flex flex-col items-center space-y-4">
+              <Loader2 className="h-10 w-10 animate-spin text-muted-foreground" />
+              <p className="text-lg text-muted-foreground">
+                Loading KPI Insights...
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Please wait while we fetch your data
+              </p>
+            </div>
+          </div>
+        </Card>
+      </div>
+    );
   }
 
   return (

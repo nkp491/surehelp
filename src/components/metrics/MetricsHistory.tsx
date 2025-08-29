@@ -6,6 +6,7 @@ import MetricsContent from "./MetricsContent";
 import { useMetrics } from "@/contexts/MetricsContext";
 import { TimePeriod } from "@/types/metrics";
 import { useInView } from "react-intersection-observer";
+import { Loader2 } from "lucide-react";
 
 const MetricsHistory = () => {
   const {
@@ -81,24 +82,44 @@ const MetricsHistory = () => {
         />
       </div>
 
-      <div className="bg-white rounded-lg shadow-sm">
-        <MetricsContent
-          sortedHistory={sortedHistory}
-          editingRow={editingRow}
-          editedValues={editedValues}
-          selectedDate={selectedDate}
-          searchTerm={searchTerm}
-          deleteDate={deleteDate}
-          onEdit={handleEdit}
-          onSave={handleSaveAndRefresh}
-          onCancel={handleCancel}
-          onSort={handleSort}
-          onValueChange={handleValueChange}
-          onDelete={(date) => setDeleteDate(date)}
-          onDeleteDialogChange={(open) => !open && setDeleteDate(null)}
-          onConfirmDelete={() => deleteDate && handleDelete(deleteDate)}
-        />
-      </div>
+      {isLoading && sortedHistory.length === 0 ? (
+        <div className="bg-white rounded-lg shadow-sm p-8">
+          <div className="flex items-center justify-center py-12">
+            <div className="flex flex-col items-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+              <p className="text-sm text-muted-foreground">
+                Loading KPI history...
+              </p>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="bg-white rounded-lg shadow-sm">
+          <MetricsContent
+            sortedHistory={sortedHistory}
+            editingRow={editingRow}
+            editedValues={editedValues}
+            selectedDate={selectedDate}
+            searchTerm={searchTerm}
+            deleteDate={deleteDate}
+            onEdit={handleEdit}
+            onSave={handleSaveAndRefresh}
+            onCancel={handleCancel}
+            onSort={handleSort}
+            onValueChange={handleValueChange}
+            onDelete={(date) => setDeleteDate(date)}
+            onDeleteDialogChange={(open) => !open && setDeleteDate(null)}
+            onConfirmDelete={() => deleteDate && handleDelete(deleteDate)}
+          />
+        </div>
+      )}
+
+      {/* Loading indicator for infinite scroll */}
+      {isLoading && sortedHistory.length > 0 && (
+        <div className="flex items-center justify-center py-4">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
 
       {/* Invisible trigger for infinite scroll */}
       <div ref={ref} className="h-4" />
