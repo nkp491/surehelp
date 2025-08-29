@@ -246,7 +246,6 @@ const FormSection = ({
                       handleInvestmentTotalChange(field.id, total);
                     }
                   }}
-                  formData={enhancedFormData} // Pass the enhanced formData
                 />
               </div>
             );
