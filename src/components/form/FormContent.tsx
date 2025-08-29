@@ -14,25 +14,46 @@ interface FormContentProps {
 
 const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
   const [sections] = useState(INITIAL_FIELDS);
-  const { formData, setFormData, errors, handleSubmit } = useFormLogic(editingSubmission, onUpdate);
-  const { familyMembers, updateFamilyMember, removeFamilyMember } = useFamilyMembers();
+  const { formData, setFormData, errors, handleSubmit, initialFormValues } =
+    useFormLogic(editingSubmission, onUpdate);
+  const { familyMembers, updateFamilyMember, removeFamilyMember } =
+    useFamilyMembers();
   const [loading, setLoading] = useState(false);
-  const [loadingButton, setLoadingButton] = useState<string | undefined>(undefined);
+  const [loadingButton, setLoadingButton] = useState<string | undefined>(
+    undefined
+  );
 
-  const handleFormSubmit = async (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => {
+  const handleFormSubmit = async (
+    e: React.MouseEvent<HTMLButtonElement>,
+    outcome: string
+  ) => {
     e.preventDefault();
     setLoading(true);
     setLoadingButton(outcome);
-    const success = await handleSubmit(e, outcome);
-    setLoading(false);
-    setLoadingButton(undefined);
-    // Only reset if successful (handleSubmit returns true)
-    // (Form reset is handled in useFormSubmission on success)
+
+    try {
+      const success = await handleSubmit(e, outcome);
+      if (success) {
+        // Delay form reset to prevent visual break
+        setTimeout(() => {
+          setFormData(initialFormValues);
+        }, 100);
+      }
+    } finally {
+      setLoading(false);
+      setLoadingButton(undefined);
+    }
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-180px)] pb-8">
-      <DirectTotalIncomeCalculator formData={formData} setFormData={setFormData} />
+    <form
+      onSubmit={(e) => e.preventDefault()}
+      className="min-h-[calc(100vh-180px)] pb-8"
+    >
+      <DirectTotalIncomeCalculator
+        formData={formData}
+        setFormData={setFormData}
+      />
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 max-w-[1440px] mx-auto">
         {/* Primary Health Assessment Column */}
         <div className="space-y-6">
@@ -88,7 +109,9 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
         <FormSection
           key={member.id}
           section={`Family Member ${index + 1}`}
-          fields={sections[0].fields.filter((field) => !field.id.toLowerCase().includes("spouse"))}
+          fields={sections[0].fields.filter(
+            (field) => !field.id.toLowerCase().includes("spouse")
+          )}
           formData={member.data}
           setFormData={(data) => updateFamilyMember(member.id, data)}
           errors={{}}
@@ -96,7 +119,11 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
           onRemove={() => removeFamilyMember(member.id)}
         />
       ))}
-      <FormButtons onSubmit={handleFormSubmit} loading={loading} loadingButton={loadingButton} />
+      <FormButtons
+        onSubmit={handleFormSubmit}
+        loading={loading}
+        loadingButton={loadingButton}
+      />
     </form>
   );
 };

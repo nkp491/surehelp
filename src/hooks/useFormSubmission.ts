@@ -4,11 +4,11 @@ import { FormSubmission } from "@/types/form";
 import { useAuditTrail } from "./useAuditTrail";
 
 export const useFormSubmission = (
-  formData: Omit<FormSubmission, 'timestamp' | 'outcome'>,
-  setFormData: (data: Omit<FormSubmission, 'timestamp' | 'outcome'>) => void,
-  initialFormValues: Omit<FormSubmission, 'timestamp' | 'outcome'>,
+  formData: Omit<FormSubmission, "timestamp" | "outcome">,
+  setFormData: (data: Omit<FormSubmission, "timestamp" | "outcome">) => void,
+  initialFormValues: Omit<FormSubmission, "timestamp" | "outcome">,
   editingSubmission: FormSubmission | null,
-  onUpdate?: (submission: FormSubmission) => void,
+  onUpdate?: (submission: FormSubmission) => void
 ) => {
   const { toast } = useToast();
   const { createAuditEntry } = useAuditTrail();
@@ -16,11 +16,11 @@ export const useFormSubmission = (
   const handleSubmit = async (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
     console.log("Submitting form with outcome:", outcome);
-    
+
     const submissionData = {
       ...formData,
       outcome,
-      timestamp: editingSubmission?.timestamp || new Date().toISOString()
+      timestamp: editingSubmission?.timestamp || new Date().toISOString(),
     };
 
     try {
@@ -28,56 +28,58 @@ export const useFormSubmission = (
       if (!user.data.user) throw new Error("No authenticated user found");
 
       if (editingSubmission) {
-        const auditEntry = createAuditEntry(editingSubmission, submissionData, 'updated');
+        const auditEntry = createAuditEntry(
+          editingSubmission,
+          submissionData,
+          "updated"
+        );
         const auditTrail = [
           ...(editingSubmission.auditTrail || []),
-          auditEntry
+          auditEntry,
         ];
 
         const { error } = await supabase
-          .from('submissions')
+          .from("submissions")
           .update({
             data: JSON.stringify({
               ...submissionData,
-              auditTrail
+              auditTrail,
             }),
-            outcome: submissionData.outcome
+            outcome: submissionData.outcome,
           })
-          .eq('timestamp', editingSubmission.timestamp);
+          .eq("timestamp", editingSubmission.timestamp);
 
         if (error) throw error;
-        
+
         onUpdate?.(submissionData);
-        
+
         toast({
           title: "Success!",
           description: "Your form has been updated successfully.",
         });
       } else {
-        const auditEntry = createAuditEntry({}, submissionData, 'created');
+        const auditEntry = createAuditEntry({}, submissionData, "created");
         const auditTrail = [auditEntry];
 
-        const { error } = await supabase
-          .from('submissions')
-          .insert({
-            user_id: user.data.user.id,
-            data: JSON.stringify({
-              ...submissionData,
-              auditTrail
-            }),
-            outcome: submissionData.outcome,
-            timestamp: submissionData.timestamp
-          });
+        const { error } = await supabase.from("submissions").insert({
+          user_id: user.data.user.id,
+          data: JSON.stringify({
+            ...submissionData,
+            auditTrail,
+          }),
+          outcome: submissionData.outcome,
+          timestamp: submissionData.timestamp,
+        });
 
         if (error) throw error;
-        
+
         toast({
           title: "Success!",
           description: `Form submitted with outcome: ${outcome}`,
         });
       }
-      
-      setFormData(initialFormValues);
+
+      // Form reset is now handled in FormContent with a delay to prevent visual breaks
       return true;
     } catch (error) {
       console.error("Error saving submission:", error);

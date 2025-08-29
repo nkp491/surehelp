@@ -35,42 +35,49 @@ const TextField = ({
   const t = translations[language];
 
   const inputClasses = cn(
-    "w-full bg-gray-50 border-gray-200 rounded-md text-sm",
+    "w-full bg-gray-50 border-gray-200 rounded-md text-sm transition-all duration-200",
     error && "border-red-500",
     className
   );
 
   // Translate the label if it exists in translations
-  const translatedLabel = (t as any)[label.toLowerCase()] || label;
-  const translatedPlaceholder = placeholder ? (t as any)[placeholder.toLowerCase()] || placeholder : undefined;
+  const translatedLabel =
+    (t as Record<string, string>)[label.toLowerCase()] || label;
+  const translatedPlaceholder = placeholder
+    ? (t as Record<string, string>)[placeholder.toLowerCase()] || placeholder
+    : undefined;
 
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-medium text-gray-700">
+    <div className="space-y-2 min-h-[80px] flex flex-col justify-start">
+      <Label className="text-sm font-medium text-gray-700 flex-shrink-0">
         {translatedLabel}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      {type === "textarea" ? (
-        <Textarea
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-          placeholder={translatedPlaceholder}
-          className={inputClasses}
-          required={required}
-          readOnly={readOnly}
-        />
-      ) : (
-        <Input
-          type={type}
-          value={value}
-          onChange={(e) => onChange?.(e.target.value)}
-          placeholder={translatedPlaceholder}
-          className={inputClasses}
-          required={required}
-          readOnly={readOnly}
-        />
-      )}
-      {error && <p className="text-sm text-red-500">{error}</p>}
+      <div className="flex-1 flex flex-col justify-center">
+        {type === "textarea" ? (
+          <Textarea
+            value={value}
+            onChange={(e) => onChange?.(e.target.value)}
+            placeholder={translatedPlaceholder}
+            className={cn(inputClasses, "min-h-[100px] resize-none")}
+            required={required}
+            readOnly={readOnly}
+          />
+        ) : (
+          <Input
+            type={type}
+            value={value}
+            onChange={(e) => onChange?.(e.target.value)}
+            placeholder={translatedPlaceholder}
+            className={cn(inputClasses, "h-11")}
+            required={required}
+            readOnly={readOnly}
+          />
+        )}
+        {error && (
+          <p className="text-sm text-red-500 mt-1 flex-shrink-0">{error}</p>
+        )}
+      </div>
     </div>
   );
 };

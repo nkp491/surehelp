@@ -20,50 +20,52 @@ const HeightField = ({
   const [feet, inches] = (value || "0'0\"").split("'").map(v => v.replace('"', ''));
   
   return (
-    <div className="space-y-1">
-      <Label className="text-sm font-medium text-gray-700">
+    <div className="space-y-2 min-h-[80px] flex flex-col justify-start">
+      <Label className="text-sm font-medium text-gray-700 flex-shrink-0">
         Height
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <div className="flex gap-2 items-center">
-        <div className="w-16">
-          <Input
-            type="number"
-            value={feet || ""}
-            onChange={(e) => {
-              const newFeet = e.target.value;
-              const newInches = inches || "0";
-              onChange?.(`${newFeet}'${newInches}"`);
-            }}
-            placeholder="ft"
-            min="0"
-            max="9"
-            className="h-9 px-2 text-sm bg-gray-50"
-            required={required}
-            readOnly={readOnly}
-          />
+      <div className="flex-1 flex flex-col justify-center">
+        <div className="flex gap-2 items-center">
+          <div className="w-16">
+            <Input
+              type="number"
+              value={feet || ""}
+              onChange={(e) => {
+                const newFeet = e.target.value;
+                const newInches = inches || "0";
+                onChange?.(`${newFeet}'${newInches}"`);
+              }}
+              placeholder="ft"
+              min="0"
+              max="9"
+              className="h-9 px-2 text-sm bg-gray-50 transition-all duration-200"
+              required={required}
+              readOnly={readOnly}
+            />
+          </div>
+          <span className="text-sm">ft</span>
+          <div className="w-16">
+            <Input
+              type="number"
+              value={inches || ""}
+              onChange={(e) => {
+                const newInches = e.target.value;
+                const currentFeet = feet || "0";
+                onChange?.(`${currentFeet}'${newInches}"`);
+              }}
+              placeholder="in"
+              min="0"
+              max="11"
+              className="h-9 px-2 text-sm bg-gray-50 transition-all duration-200"
+              required={required}
+              readOnly={readOnly}
+            />
+          </div>
+          <span className="text-sm">in</span>
         </div>
-        <span className="text-sm">ft</span>
-        <div className="w-16">
-          <Input
-            type="number"
-            value={inches || ""}
-            onChange={(e) => {
-              const newInches = e.target.value;
-              const currentFeet = feet || "0";
-              onChange?.(`${currentFeet}'${newInches}"`);
-            }}
-            placeholder="in"
-            min="0"
-            max="11"
-            className="h-9 px-2 text-sm bg-gray-50"
-            required={required}
-            readOnly={readOnly}
-          />
-        </div>
-        <span className="text-sm">in</span>
+        {error && <p className="text-sm text-red-500 mt-1 flex-shrink-0">{error}</p>}
       </div>
-      {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   );
 };

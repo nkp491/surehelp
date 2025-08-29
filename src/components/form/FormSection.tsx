@@ -9,55 +9,65 @@ import AgentSection from "./sections/AgentSection";
 interface FormSectionProps {
   section: string;
   fields: FormField[];
-  formData: any;
-  setFormData: (value: any) => void;
-  errors: any;
+  formData: Record<string, string>;
+  setFormData: (value: Record<string, string>) => void;
+  errors: Record<string, string>;
   submissionId?: string;
   onRemove?: () => void;
 }
 
-const FormSection = ({ 
-  section, 
-  fields, 
-  formData, 
-  setFormData, 
+const FormSection = ({
+  section,
+  fields,
+  formData,
+  setFormData,
   errors,
   submissionId,
-  onRemove
+  onRemove,
 }: FormSectionProps) => {
   const { showSpouse } = useSpouseVisibility();
-  
+
   const isSpecialField = (fieldId: string) => {
-    return ['height', 'weight', 'tobaccoUse'].includes(fieldId);
+    return ["height", "weight", "tobaccoUse"].includes(fieldId);
   };
 
   const isSpouseField = (fieldId: string) => {
-    return fieldId.toLowerCase().startsWith('spouse');
+    return fieldId.toLowerCase().startsWith("spouse");
   };
 
-  const filteredFields = fields.filter(field => {
+  const filteredFields = fields.filter((field) => {
     if (isSpouseField(field.id)) {
       return showSpouse;
     }
     return true;
   });
 
-  const regularFields = filteredFields.filter(field => !isSpecialField(field.id));
-  const nonAgentFields = regularFields.filter(field => !isAgentField(field.id));
-  const agentFields = regularFields.filter(field => isAgentField(field.id));
+  const regularFields = filteredFields.filter(
+    (field) => !isSpecialField(field.id)
+  );
+  const nonAgentFields = regularFields.filter(
+    (field) => !isAgentField(field.id)
+  );
+  const agentFields = regularFields.filter((field) => isAgentField(field.id));
 
-  if (!showSpouse && section.toLowerCase().includes('spouse')) {
+  if (!showSpouse && section.toLowerCase().includes("spouse")) {
     return null;
   }
 
   if (section === "Primary Health Assessment") {
-    return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
+    return (
+      <PrimaryHealth
+        formData={formData}
+        setFormData={setFormData}
+        errors={errors}
+      />
+    );
   }
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-2">
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-2 transition-all duration-200">
       <SectionHeader section={section} onRemove={onRemove} />
-      <div className="p-2">
+      <div className="p-2 min-h-[100px]">
         {section === "Assessment Notes" ? (
           <div className="space-y-2">
             <RegularFieldsSection
@@ -67,7 +77,7 @@ const FormSection = ({
               errors={errors}
               submissionId={submissionId}
             />
-            
+
             {agentFields.length > 0 && (
               <AgentSection
                 fields={agentFields}
