@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useMetricsHistory } from '@/hooks/useMetricsHistory';
-import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
-import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
-import MetricsContent from './MetricsContent';
-import { useMetrics } from '@/contexts/MetricsContext';
-import { TimePeriod } from '@/types/metrics';
-import { useInView } from 'react-intersection-observer';
+import { useState, useEffect } from "react";
+import { useMetricsHistory } from "@/hooks/useMetricsHistory";
+import { useMetricsDelete } from "@/hooks/metrics/useMetricsDelete";
+import MetricsHistoryHeader from "./filters/MetricsHistoryHeader";
+import MetricsContent from "./MetricsContent";
+import { useMetrics } from "@/contexts/MetricsContext";
+import { TimePeriod } from "@/types/metrics";
+import { useInView } from "react-intersection-observer";
 
 const MetricsHistory = () => {
   const {
@@ -26,14 +26,15 @@ const MetricsHistory = () => {
   } = useMetricsHistory();
 
   const { refreshMetrics } = useMetrics();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
-  const { deleteDate, setDeleteDate, handleDelete } = useMetricsDelete(loadHistory);
+  const { deleteDate, setDeleteDate, handleDelete } =
+    useMetricsDelete(loadHistory);
 
   // Infinite scroll setup with a lower threshold for smoother loading
   const { ref, inView } = useInView({
     threshold: 0.1,
-    rootMargin: '100px',
+    rootMargin: "100px",
   });
 
   useEffect(() => {
@@ -43,9 +44,18 @@ const MetricsHistory = () => {
   }, [inView, isLoading, loadMoreHistory]);
 
   const handleSaveAndRefresh = async (date: string) => {
-    await handleSave(date);
-    await loadHistory();
-    await refreshMetrics();
+    try {
+      const success = await handleSave(date, async () => {
+        // Immediately refresh the data to show updated values
+        await Promise.all([loadHistory(), refreshMetrics()]);
+      });
+
+      if (!success) {
+        console.error("[MetricsHistory] Save operation failed");
+      }
+    } catch (error) {
+      console.error("[MetricsHistory] Error in save and refresh:", error);
+    }
   };
 
   const handleAddHistoricalEntry = async (date: Date) => {
@@ -53,7 +63,7 @@ const MetricsHistory = () => {
       await handleAddBackdatedMetrics(date);
       await refreshMetrics();
     } catch (error) {
-      console.error('[MetricsHistory] Error adding historical entry:', error);
+      console.error("[MetricsHistory] Error adding historical entry:", error);
     }
   };
 
@@ -70,7 +80,7 @@ const MetricsHistory = () => {
           onTimePeriodChange={setTimePeriod}
         />
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-sm">
         <MetricsContent
           sortedHistory={sortedHistory}

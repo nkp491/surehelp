@@ -2,6 +2,7 @@ import { useState } from "react";
 import { MetricCount } from "@/types/metrics";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 export const useMetricsEdit = () => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
@@ -13,7 +14,7 @@ export const useMetricsEdit = () => {
     setEditedValues({ ...metrics });
   };
 
-  const handleSave = async (date: string) => {
+  const handleSave = async (date: string, onSuccess?: () => void) => {
     if (!editedValues) return;
 
     try {
@@ -54,13 +55,39 @@ export const useMetricsEdit = () => {
         timestamp,
       });
 
+      // Create a more detailed success message showing what was updated
+      const updatedMetrics = Object.entries(processedValues)
+        .filter(([_, value]) => value > 0)
+        .map(([metric, value]) => {
+          const displayValue =
+            metric === "ap" ? `$${value.toLocaleString()}` : value.toString();
+          return `${metric.toUpperCase()}: ${displayValue}`;
+        })
+        .join(", ");
+
+      const successMessage = updatedMetrics
+        ? `Updated ${updatedMetrics} for ${format(
+            new Date(date),
+            "MMM dd, yyyy"
+          )}`
+        : `KPI data for ${format(
+            new Date(date),
+            "MMM dd, yyyy"
+          )} has been updated successfully.`;
+
       toast({
-        title: "Success",
-        description: "Metrics updated successfully",
+        title: "Success!",
+        description: successMessage,
       });
 
       setEditingRow(null);
       setEditedValues(null);
+
+      // Call the success callback if provided
+      onSuccess?.();
+
+      // Return success to indicate the operation completed
+      return true;
     } catch (error) {
       console.error("[MetricsEdit] Error updating metrics:", {
         action: "update_error",
@@ -70,9 +97,10 @@ export const useMetricsEdit = () => {
       });
       toast({
         title: "Error",
-        description: "Failed to update metrics",
+        description: "Failed to update KPI data. Please try again.",
         variant: "destructive",
       });
+      return false;
     }
   };
 
