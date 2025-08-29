@@ -9,6 +9,7 @@ import TermsCheckbox from "@/components/auth/TermsCheckbox";
 import { roleService } from "@/services/roleService";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -24,6 +25,9 @@ const Auth = () => {
     setPasswordError("");
     setNameError({ firstName: "", lastName: "" });
     setErrorMessage("");
+    // Reset password visibility states
+    setShowSignUpPassword(false);
+    setShowSignInPassword(false);
   };
   const [isInitializing, setIsInitializing] = useState(true);
   const [termsAccepted, setTermsAccepted] = useState(false);
@@ -37,6 +41,8 @@ const Auth = () => {
     lastName: "",
   });
   const [nameError, setNameError] = useState({ firstName: "", lastName: "" });
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showSignInPassword, setShowSignInPassword] = useState(false);
 
   const validateEmail = (email: string) => {
     if (!email) {
@@ -339,21 +345,35 @@ const Auth = () => {
                 </div>
                 <div>
                   <label htmlFor="signup-password">Create a Password</label>
-                  <Input
-                    id="signup-password"
-                    type="password"
-                    placeholder="Your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      validatePassword(e.target.value, true);
-                    }}
-                    required
-                    aria-invalid={!!passwordError}
-                    aria-describedby={
-                      passwordError ? "signup-password-error" : undefined
-                    }
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signup-password"
+                      type={showSignUpPassword ? "text" : "password"}
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        validatePassword(e.target.value, true);
+                      }}
+                      required
+                      aria-invalid={!!passwordError}
+                      aria-describedby={
+                        passwordError ? "signup-password-error" : undefined
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                      tabIndex={-1}
+                    >
+                      {showSignUpPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                   {passwordError && (
                     <p
                       id="signup-password-error"
@@ -414,21 +434,35 @@ const Auth = () => {
                 </div>
                 <div>
                   <label htmlFor="signin-password">Your Password</label>
-                  <Input
-                    id="signin-password"
-                    type="password"
-                    placeholder="Your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      validatePassword(e.target.value, false);
-                    }}
-                    required
-                    aria-invalid={!!passwordError}
-                    aria-describedby={
-                      passwordError ? "signin-password-error" : undefined
-                    }
-                  />
+                  <div className="relative">
+                    <Input
+                      id="signin-password"
+                      type={showSignInPassword ? "text" : "password"}
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        validatePassword(e.target.value, false);
+                      }}
+                      required
+                      aria-invalid={!!passwordError}
+                      aria-describedby={
+                        passwordError ? "signin-password-error" : undefined
+                      }
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      onClick={() => setShowSignInPassword(!showSignInPassword)}
+                      tabIndex={-1}
+                    >
+                      {showSignInPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
                   {passwordError && (
                     <p
                       id="signin-password-error"
