@@ -24,7 +24,7 @@ const RegularFieldsSection = ({
   };
 
   return (
-    <div className="space-y-4 min-h-[200px]">
+    <div className="space-y-4">
       {fields.map((field) => (
         <div key={field.id} className="transition-all duration-200">
           <DraggableFormField

@@ -315,8 +315,10 @@ const PersonalInfo = ({
                   className="w-full"
                 />
               ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.first_name || ""}
+                <p className="text-base text-gray-900 pt-1 min-h-[20px]">
+                  {formData.first_name || (
+                    <span className="text-gray-400 italic">Not provided</span>
+                  )}
                 </p>
               )}
             </div>
@@ -340,8 +342,10 @@ const PersonalInfo = ({
                   className="w-full"
                 />
               ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.last_name || ""}
+                <p className="text-base text-gray-900 pt-1 min-h-[20px]">
+                  {formData.last_name || (
+                    <span className="text-gray-400 italic">Not provided</span>
+                  )}
                 </p>
               )}
             </div>
@@ -376,8 +380,10 @@ const PersonalInfo = ({
                   className="w-full"
                 />
               ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.phone || ""}
+                <p className="text-base text-gray-900 pt-1 min-h-[20px]">
+                  {formData.phone || (
+                    <span className="text-gray-400 italic">Not provided</span>
+                  )}
                 </p>
               )}
             </div>
