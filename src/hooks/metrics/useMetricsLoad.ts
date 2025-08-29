@@ -8,8 +8,10 @@ import { format, parseISO, subMonths } from "date-fns";
 let globalChannel: ReturnType<typeof supabase.channel> | null = null;
 
 export const useMetricsLoad = () => {
-  const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [history, setHistory] = useState<
+    Array<{ date: string; metrics: MetricCount }>
+  >([]);
+  const [isLoading, setIsLoading] = useState(true); // Start with loading true
   const { toast } = useToast();
   const isSubscribed = useRef(false);
 
@@ -119,21 +121,24 @@ export const useMetricsLoad = () => {
     }
   }, [history, toast]);
 
-  const addOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
-    setHistory((prev) => {
-      const newEntry = { date, metrics };
-      const existingIndex = prev.findIndex((entry) => entry.date === date);
+  const addOptimisticEntry = useCallback(
+    (date: string, metrics: MetricCount) => {
+      setHistory((prev) => {
+        const newEntry = { date, metrics };
+        const existingIndex = prev.findIndex((entry) => entry.date === date);
 
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = newEntry;
-        return updated;
-      } else {
-        const updated = [newEntry, ...prev];
-        return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
-      }
-    });
-  }, []);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = newEntry;
+          return updated;
+        } else {
+          const updated = [newEntry, ...prev];
+          return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
+        }
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     console.log("[MetricsLoad] Initial load starting...");
@@ -147,7 +152,10 @@ export const useMetricsLoad = () => {
             event: "*",
             schema: "public",
             table: "daily_metrics",
-            filter: `date=gte.${format(subMonths(new Date(), 1), "yyyy-MM-dd")}`,
+            filter: `date=gte.${format(
+              subMonths(new Date(), 1),
+              "yyyy-MM-dd"
+            )}`,
           },
           async (payload) => {
             console.log("[MetricsLoad] Real-time update received:", payload);

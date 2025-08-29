@@ -82,13 +82,15 @@ const MetricsHistory = () => {
         />
       </div>
 
-      {isLoading && sortedHistory.length === 0 ? (
+      {isLoading ? (
         <div className="bg-white rounded-lg shadow-sm p-8">
           <div className="flex items-center justify-center py-12">
             <div className="flex flex-col items-center space-y-4">
               <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                Loading KPI history...
+                {sortedHistory.length === 0
+                  ? "Loading KPI history..."
+                  : "Loading more data..."}
               </p>
             </div>
           </div>
