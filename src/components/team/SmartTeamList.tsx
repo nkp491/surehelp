@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +53,8 @@ interface TeamMemberData {
 export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
+  const queryClient = useQueryClient();
 
   // Fetch team members using the new team management system
   const { data: teamMembers, isLoading } = useQuery({
@@ -395,8 +397,9 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         description: "Team member has been removed from your team.",
       });
 
-      // Refetch the data to update the UI
-      window.location.reload();
+      // Invalidate and refetch the data to update the UI smoothly
+      queryClient.invalidateQueries({ queryKey: ["team-members", managerId] });
+      queryClient.invalidateQueries({ queryKey: ["all-teams-hierarchy"] });
     } catch (error: unknown) {
       console.error("Error removing team member:", error);
       toast({
