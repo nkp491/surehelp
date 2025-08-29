@@ -17,7 +17,6 @@ interface PersonalInfoProps {
   onUpdate: (data: {
     first_name: string;
     last_name: string;
-    email: string;
     phone: string;
   }) => void;
 }
@@ -252,17 +251,21 @@ const PersonalInfo = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Submitting form data:", formData);
+    // Exclude email from form data since it's not editable
+    const { email, ...editableData } = formData;
+    console.log("Submitting form data:", editableData);
 
-    onUpdate(formData);
+    onUpdate(editableData);
     setIsEditing(false);
   };
 
   const handleToggleEdit = () => {
     if (isEditing) {
       // If we're currently editing and toggling off, submit the form
-      console.log("Saving data via toggle:", formData);
-      onUpdate(formData);
+      // Exclude email from form data since it's not editable
+      const { email, ...editableData } = formData;
+      console.log("Saving data via toggle:", editableData);
+      onUpdate(editableData);
     }
     setIsEditing(!isEditing);
   };
@@ -302,6 +305,7 @@ const PersonalInfo = ({
                 <Input
                   type="text"
                   value={formData.first_name}
+                  placeholder="Enter first name"
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -312,7 +316,7 @@ const PersonalInfo = ({
                 />
               ) : (
                 <p className="text-base text-gray-900 pt-1">
-                  {formData.first_name || "Not provided"}
+                  {formData.first_name || ""}
                 </p>
               )}
             </div>
@@ -326,6 +330,7 @@ const PersonalInfo = ({
                 <Input
                   type="text"
                   value={formData.last_name}
+                  placeholder="Enter last name"
                   onChange={(e) =>
                     setFormData((prev) => ({
                       ...prev,
@@ -336,7 +341,7 @@ const PersonalInfo = ({
                 />
               ) : (
                 <p className="text-base text-gray-900 pt-1">
-                  {formData.last_name || "Not provided"}
+                  {formData.last_name || ""}
                 </p>
               )}
             </div>
@@ -346,20 +351,13 @@ const PersonalInfo = ({
               <label className="text-sm font-medium text-gray-700">
                 {t.email}
               </label>
-              {isEditing ? (
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  className="w-full"
-                />
-              ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.email || "Not provided"}
-                </p>
-              )}
+              <Input
+                type="email"
+                value={formData.email}
+                disabled
+                className="w-full bg-gray-50 cursor-not-allowed opacity-75"
+                title="Email cannot be changed"
+              />
             </div>
 
             {/* Phone */}
@@ -371,6 +369,7 @@ const PersonalInfo = ({
                 <Input
                   type="tel"
                   value={formData.phone}
+                  placeholder="Enter phone number"
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, phone: e.target.value }))
                   }
@@ -378,7 +377,7 @@ const PersonalInfo = ({
                 />
               ) : (
                 <p className="text-base text-gray-900 pt-1">
-                  {formData.phone || "Not provided"}
+                  {formData.phone || ""}
                 </p>
               )}
             </div>

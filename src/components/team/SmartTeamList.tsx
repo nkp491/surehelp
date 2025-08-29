@@ -11,6 +11,7 @@ import {
   Users,
   MoreHorizontal,
   UserX,
+  Loader2,
 } from "lucide-react";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -372,6 +373,8 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   // Handle member removal - now removes from team_members table
   const handleRemoveMember = async (memberId: string) => {
     try {
+      setRemovingMemberId(memberId);
+      
       // First, get the manager's team
       const { data: managerTeam, error: teamError } = await supabase
         .from("team_managers")
@@ -407,6 +410,8 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         description: "Failed to remove team member. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setRemovingMemberId(null);
     }
   };
 
@@ -477,9 +482,19 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
                 <DropdownMenuItem
                   onClick={() => handleRemoveMember(node.member.id)}
                   className="text-destructive"
+                  disabled={removingMemberId === node.member.id}
                 >
-                  <UserX className="h-4 w-4 mr-2" />
-                  Remove from Team
+                  {removingMemberId === node.member.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <UserX className="h-4 w-4 mr-2" />
+                      Remove from Team
+                    </>
+                  )}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
