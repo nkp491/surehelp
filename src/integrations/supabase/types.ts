@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -1030,11 +1030,11 @@ export type Database = {
     }
     Functions: {
       add_user_to_manager_teams: {
-        Args: { user_id: string; manager_id: string }
+        Args: { manager_id: string; user_id: string }
         Returns: boolean
       }
       can_access_team: {
-        Args: { check_user_id: string; check_team_id: string }
+        Args: { check_team_id: string; check_user_id: string }
         Returns: boolean
       }
       create_team_for_manager: {
@@ -1046,11 +1046,11 @@ export type Database = {
         Returns: Json
       }
       create_team_with_member: {
-        Args: { team_name: string; member_role?: string }
+        Args: { member_role?: string; team_name: string }
         Returns: Json
       }
       ensure_user_in_manager_teams: {
-        Args: { user_id: string; manager_id: string }
+        Args: { manager_id: string; user_id: string }
         Returns: boolean
       }
       force_agent_team_association: {
@@ -1062,7 +1062,7 @@ export type Database = {
         Returns: string[]
       }
       get_user_manager_status: {
-        Args: { check_user_id: string; check_team_id: string }
+        Args: { check_team_id: string; check_user_id: string }
         Returns: boolean
       }
       get_user_role: {
@@ -1094,8 +1094,12 @@ export type Database = {
         Returns: string[]
       }
       has_role: {
-        Args: { check_user_id: string; check_role: string }
+        Args: { check_role: string; check_user_id: string }
         Returns: boolean
+      }
+      increment_promo_usage: {
+        Args: { promo: string }
+        Returns: undefined
       }
       is_manager_of: {
         Args: { manager_id: string; user_id: string }
@@ -1118,7 +1122,7 @@ export type Database = {
         Returns: boolean
       }
       is_team_manager_secure: {
-        Args: { check_user_id: string; check_team_id: string }
+        Args: { check_team_id: string; check_user_id: string }
         Returns: boolean
       }
       is_team_manager_v2: {
@@ -1142,7 +1146,7 @@ export type Database = {
         Returns: boolean
       }
       user_has_role: {
-        Args: { check_user_id: string; check_role: string }
+        Args: { check_role: string; check_user_id: string }
         Returns: boolean
       }
     }
