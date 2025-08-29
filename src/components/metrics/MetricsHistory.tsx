@@ -68,6 +68,9 @@ const MetricsHistory = () => {
     }
   };
 
+  // Show loading state for initial load or when no data is available
+  const showInitialLoader = isLoading && sortedHistory.length === 0;
+
   return (
     <div className="space-y-6">
       <div className="bg-gray-50 p-4 rounded-lg">
@@ -82,21 +85,19 @@ const MetricsHistory = () => {
         />
       </div>
 
-      {isLoading ? (
-        <div className="bg-white rounded-lg shadow-sm p-8">
-          <div className="flex items-center justify-center py-12">
-            <div className="flex flex-col items-center space-y-4">
-              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">
-                {sortedHistory.length === 0
-                  ? "Loading KPI history..."
-                  : "Loading more data..."}
-              </p>
+      <div className="bg-white rounded-lg shadow-sm">
+        {showInitialLoader ? (
+          <div className="p-8">
+            <div className="flex items-center justify-center py-12">
+              <div className="flex flex-col items-center space-y-4">
+                <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">
+                  Loading KPI history...
+                </p>
+              </div>
             </div>
           </div>
-        </div>
-      ) : (
-        <div className="bg-white rounded-lg shadow-sm">
+        ) : (
           <MetricsContent
             sortedHistory={sortedHistory}
             editingRow={editingRow}
@@ -113,13 +114,16 @@ const MetricsHistory = () => {
             onDeleteDialogChange={(open) => !open && setDeleteDate(null)}
             onConfirmDelete={() => deleteDate && handleDelete(deleteDate)}
           />
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Loading indicator for infinite scroll */}
       {isLoading && sortedHistory.length > 0 && (
         <div className="flex items-center justify-center py-4">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          <span className="ml-2 text-sm text-muted-foreground">
+            Loading more data...
+          </span>
         </div>
       )}
 

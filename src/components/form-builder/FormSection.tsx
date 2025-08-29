@@ -8,7 +8,7 @@ interface FormData {
   socialSecurityIncome?: string;
   pensionIncome?: string;
   survivorshipIncome?: string;
-  selectedInvestments_total?: string;
+  selectedInvestments_total?: string; 
   totalIncome?: string;
   primaryTotalIncome?: string;
   onChange?: (fieldId: string, value: string) => void;
