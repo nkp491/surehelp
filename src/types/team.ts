@@ -148,8 +148,8 @@ export interface EnrichedMember {
   user_id: string;
   name: string;
   role: string;
-  email?: string; // Make email optional
-  profile_image_url?: string | null;
+  email: string; // Make email required for the filter to work
+  profile_image_url: string | null; // Make profile_image_url required for the filter to work
   metrics: MemberMetrics;
   notes: MeetingNote[];
 }
