@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
+import { validateFile, formatFileSize } from "@/utils/fileValidation";
 
 interface ProfileImageProps {
   imageUrl: string | null;
@@ -23,11 +24,20 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+      
+      // Validate file using utility function
+      const validation = validateFile(file, {
+        maxSize: 5 * 1024 * 1024, // 5MB
+        allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
+        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif']
+      });
 
-      if (!allowedTypes.includes(fileExt?.toLowerCase() || '')) {
-        throw new Error('File type not supported. Please upload a JPG, PNG, or GIF image.');
+      if (!validation.isValid) {
+        // Provide more detailed error message for file size issues
+        if (file.size > 5 * 1024 * 1024) {
+          throw new Error(`File size too large (${formatFileSize(file.size)}). Please upload an image smaller than 5MB.`);
+        }
+        throw new Error(validation.error || 'Invalid file');
       }
 
       // Create a preview URL
@@ -37,10 +47,11 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
       // Call the parent's onUpload handler
       await onUpload(event);
 
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
       toast({
         title: "Error uploading image",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     }
@@ -67,7 +78,7 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
             className="text-foreground"
           />
           <p className="text-sm text-foreground mt-1">
-            {uploading ? "Uploading..." : "Click to upload a new profile picture"}
+            {uploading ? "Uploading..." : "Click to upload a new profile picture (max 5MB)"}
           </p>
         </div>
       </CardContent>
