@@ -13,31 +13,42 @@ interface ProfileImageProps {
   uploading: boolean;
 }
 
-const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImageProps) => {
+const ProfileImage = ({
+  imageUrl,
+  firstName,
+  onUpload,
+  uploading,
+}: ProfileImageProps) => {
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(imageUrl);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
+        throw new Error("You must select an image to upload.");
       }
 
       const file = event.target.files[0];
-      
+
       // Validate file using utility function
       const validation = validateFile(file, {
         maxSize: 5 * 1024 * 1024, // 5MB
-        allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'],
-        allowedExtensions: ['jpg', 'jpeg', 'png', 'gif']
+        allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif"],
+        allowedExtensions: ["jpg", "jpeg", "png", "gif"],
       });
 
       if (!validation.isValid) {
         // Provide more detailed error message for file size issues
         if (file.size > 5 * 1024 * 1024) {
-          throw new Error(`File size too large (${formatFileSize(file.size)}). Please upload an image smaller than 5MB.`);
+          throw new Error(
+            `File size too large (${formatFileSize(
+              file.size
+            )}). Please upload an image smaller than 5MB.`
+          );
         }
-        throw new Error(validation.error || 'Invalid file');
+        throw new Error(validation.error || "Invalid file");
       }
 
       // Create a preview URL
@@ -46,9 +57,9 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
 
       // Call the parent's onUpload handler
       await onUpload(event);
-
     } catch (error: unknown) {
-      const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : "An unknown error occurred";
       toast({
         title: "Error uploading image",
         description: errorMessage,
@@ -75,10 +86,12 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
             accept="image/*"
             onChange={handleFileChange}
             disabled={uploading}
-            className="text-foreground"
+            className="text-foreground hover:opacity-80 transition-opacity duration-200"
           />
           <p className="text-sm text-foreground mt-1">
-            {uploading ? "Uploading..." : "Click to upload a new profile picture (max 5MB)"}
+            {uploading
+              ? "Uploading..."
+              : "Click to upload a new profile picture (max 5MB)"}
           </p>
         </div>
       </CardContent>
