@@ -2,6 +2,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { FormSubmission } from "@/types/form";
 import { useAuditTrail } from "./useAuditTrail";
+import { updateMetricsFromFormSubmission } from "@/utils/formMetricsMapper";
+import { useMetricsRefresh } from "./useMetricsRefresh";
 
 export const useFormSubmission = (
   formData: Omit<FormSubmission, "timestamp" | "outcome">,
@@ -12,11 +14,10 @@ export const useFormSubmission = (
 ) => {
   const { toast } = useToast();
   const { createAuditEntry } = useAuditTrail();
+  const { refreshMetricsAfterFormSubmission } = useMetricsRefresh();
 
   const handleSubmit = async (e: React.FormEvent, outcome: string) => {
     e.preventDefault();
-    console.log("Submitting form with outcome:", outcome);
-
     const submissionData = {
       ...formData,
       outcome,
@@ -51,11 +52,21 @@ export const useFormSubmission = (
 
         if (error) throw error;
 
+        // Update KPI metrics from form submission
+        await updateMetricsFromFormSubmission(
+          submissionData,
+          user.data.user.id
+        );
+
+        // Refresh metrics to show updated values in KPI Insights
+        await refreshMetricsAfterFormSubmission();
+
         onUpdate?.(submissionData);
 
         toast({
           title: "Success!",
-          description: "Your form has been updated successfully.",
+          description:
+            "Your form has been updated successfully and KPI metrics have been refreshed.",
         });
       } else {
         const auditEntry = createAuditEntry({}, submissionData, "created");
@@ -73,9 +84,18 @@ export const useFormSubmission = (
 
         if (error) throw error;
 
+        // Update KPI metrics from form submission
+        await updateMetricsFromFormSubmission(
+          submissionData,
+          user.data.user.id
+        );
+
+        // Refresh metrics to show updated values in KPI Insights
+        await refreshMetricsAfterFormSubmission();
+
         toast({
           title: "Success!",
-          description: `Form submitted with outcome: ${outcome}`,
+          description: `Form submitted with outcome: ${outcome}. KPI metrics have been updated.`,
         });
       }
 
