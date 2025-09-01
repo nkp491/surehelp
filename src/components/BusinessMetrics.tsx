@@ -8,7 +8,7 @@ import MetricsChart from "./MetricsChart";
 import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { startOfDay } from "date-fns";
+import { startOfDay, format } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo } from "react";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
@@ -58,6 +58,43 @@ const BusinessMetricsContent = () => {
     );
   }, [timePeriod, sortedHistory, isAuthenticated]);
 
+  // Get today's metrics from historical data if available
+  const todayMetrics = useMemo(() => {
+    if (!sortedHistory?.length || !isAuthenticated) {
+      return defaultMetrics;
+    }
+
+    const today = format(new Date(), "yyyy-MM-dd");
+    const todayEntry = sortedHistory.find(entry => entry.date === today);
+    
+    // If no exact match, try to find entries from the last few days
+    let fallbackEntry = null;
+    if (!todayEntry) {
+      const now = new Date();
+      for (let i = 0; i < 3; i++) {
+        const checkDate = format(new Date(now.getTime() - i * 24 * 60 * 60 * 1000), "yyyy-MM-dd");
+        const found = sortedHistory.find(entry => entry.date === checkDate);
+        if (found) {
+          fallbackEntry = found;
+          console.log('[BusinessMetrics] Using fallback date:', checkDate);
+          break;
+        }
+      }
+    }
+    
+    const finalEntry = todayEntry || fallbackEntry;
+    
+    console.log('[BusinessMetrics] Today metrics calculation:', {
+      today,
+      sortedHistoryLength: sortedHistory.length,
+      todayEntry: todayEntry ? todayEntry.metrics : 'Not found',
+      fallbackEntry: fallbackEntry ? fallbackEntry.metrics : 'Not found',
+      result: finalEntry ? finalEntry.metrics : defaultMetrics
+    });
+    
+    return finalEntry ? finalEntry.metrics : defaultMetrics;
+  }, [sortedHistory, isAuthenticated]);
+
   // Update aggregated metrics when dependencies change
   useEffect(() => {
     if (sortedHistory?.length > 0 && isAuthenticated) {
@@ -70,6 +107,18 @@ const BusinessMetricsContent = () => {
     timePeriod,
     isAuthenticated,
   ]);
+
+  // Debug logging
+  useEffect(() => {
+    console.log('[BusinessMetrics] Component state:', {
+      timePeriod,
+      sortedHistoryLength: sortedHistory?.length || 0,
+      isAuthenticated,
+      todayMetrics,
+      aggregatedMetrics,
+      hasData: sortedHistory && sortedHistory.length > 0
+    });
+  }, [timePeriod, sortedHistory, isAuthenticated, todayMetrics, aggregatedMetrics]);
 
   if (!isAuthenticated) {
     return null;
@@ -84,9 +133,12 @@ const BusinessMetricsContent = () => {
           </div>
 
           <div className="bg-white p-6 rounded-lg shadow-sm space-y-8 text-[#2A6F97]">
-            <MetricsGrid aggregatedMetrics={aggregatedMetrics} />
+            <MetricsGrid 
+              aggregatedMetrics={aggregatedMetrics} 
+              todayMetrics={todayMetrics}
+            />
             <Separator className="my-8" />
-            <RatiosGrid />
+            <RatiosGrid todayMetrics={todayMetrics} />
           </div>
 
           <MetricsChart timePeriod={timePeriod} onTimePeriodChange={() => {}} />

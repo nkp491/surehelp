@@ -77,10 +77,30 @@ export const useFormSubmission = (
         });
       }
       
-      // Add a small delay before resetting to prevent visual break
+      // Show success feedback for a moment before resetting
+      toast({
+        title: "Form Submitted Successfully!",
+        description: "Preparing to reset form...",
+        duration: 2000,
+      });
+      
+      // Add a longer delay and smooth transition to prevent visual break
       setTimeout(() => {
-        setFormData(initialFormValues);
-      }, 500);
+        // Smoothly fade out the form content before resetting
+        const formElement = document.querySelector('form');
+        if (formElement) {
+          formElement.style.transition = 'opacity 0.3s ease-out';
+          formElement.style.opacity = '0';
+          
+          setTimeout(() => {
+            setFormData(initialFormValues);
+            formElement.style.opacity = '1';
+            formElement.style.transition = 'opacity 0.3s ease-in';
+          }, 300);
+        } else {
+          setFormData(initialFormValues);
+        }
+      }, 800);
       return true;
     } catch (error) {
       console.error("Error saving submission:", error);

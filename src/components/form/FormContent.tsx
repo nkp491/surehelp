@@ -21,21 +21,33 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
 
   const handleFormSubmit = async (e: React.MouseEvent<HTMLButtonElement>, outcome: string) => {
     e.preventDefault();
+    
+    // Prevent multiple submissions
+    if (loading) return;
+    
     setLoading(true);
     setLoadingButton(outcome);
-    const success = await handleSubmit(e, outcome);
-    setLoading(false);
-    setLoadingButton(undefined);
-    // Only reset if successful (handleSubmit returns true)
-    // (Form reset is handled in useFormSubmission on success)
+    
+    try {
+      const success = await handleSubmit(e, outcome);
+      // Form reset is handled in useFormSubmission on success
+    } catch (error) {
+      console.error('Form submission error:', error);
+    } finally {
+      // Add a small delay before clearing loading states to prevent visual flicker
+      setTimeout(() => {
+        setLoading(false);
+        setLoadingButton(undefined);
+      }, 200);
+    }
   };
 
   return (
-    <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-180px)] pb-8">
+    <form onSubmit={(e) => e.preventDefault()} className="min-h-[calc(100vh-180px)] pb-8 transition-opacity duration-300">
       <DirectTotalIncomeCalculator formData={formData} setFormData={setFormData} />
-      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 max-w-[1440px] mx-auto">
+      <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 p-4 max-w-[1440px] mx-auto transition-all duration-300">
         {/* Primary Health Assessment Column */}
-        <div className="space-y-6">
+        <div className="space-y-6 transition-all duration-300">
           <FormSection
             key="Primary Health Assessment"
             section="Primary Health Assessment"
@@ -46,7 +58,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
           />
         </div>
         {/* Income Assessment Column */}
-        <div className="space-y-6">
+        <div className="space-y-6 transition-all duration-300">
           <FormSection
             key="Primary Income Assessment"
             section="Primary Income Assessment"
@@ -65,7 +77,7 @@ const FormContent = ({ editingSubmission, onUpdate }: FormContentProps) => {
           />
         </div>
         {/* Assessment Notes and Agent Use Only Column */}
-        <div className="space-y-6">
+        <div className="space-y-6 transition-all duration-300">
           <FormSection
             key="Assessment Notes"
             section="Assessment Notes"

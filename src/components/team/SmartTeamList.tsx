@@ -57,7 +57,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
   // Fetch team members using the new team management system
   const { data: teamMembers, isLoading } = useQuery({
-    queryKey: ["team-members", managerId],
+    queryKey: ["manager-team", managerId],
     queryFn: async () => {
       if (!managerId) return [];
 
@@ -392,7 +392,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
       if (error) throw error;
 
       // Invalidate the specific team-members query to refresh the list
-      queryClient.invalidateQueries({ queryKey: ["team-members", managerId] });
+      queryClient.invalidateQueries({ queryKey: ["manager-team", managerId] });
 
       toast({
         title: "Success",

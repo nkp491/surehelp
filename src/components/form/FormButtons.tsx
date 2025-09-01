@@ -22,8 +22,8 @@ const FormButtons = ({ onSubmit, loading = false, loadingButton }: FormButtonsPr
 
     return (
       <>
-        <div className="transition-all duration-200">
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : icon}
+        <div className="transition-all duration-200 flex items-center justify-center w-6 h-6">
+          {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : icon}
         </div>
         <span className={`font-medium transition-opacity duration-200 ${isLoading ? "opacity-75" : ""}`}>
           {isLoading ? "Processing..." : label}
@@ -40,7 +40,7 @@ const FormButtons = ({ onSubmit, loading = false, loadingButton }: FormButtonsPr
           onClick={(e) => onSubmit(e, "protected")}
           className={`
             bg-green-600 hover:bg-green-700 h-auto py-4 flex flex-col items-center gap-2
-            transition-all duration-200 relative overflow-hidden
+            transition-all duration-200 relative overflow-hidden min-w-[120px] min-h-[80px]
             ${loading && loadingButton === "protected" ? "bg-green-700 shadow-lg" : ""}
             ${loading && loadingButton !== "protected" ? "opacity-50" : ""}
           `}
@@ -58,7 +58,7 @@ const FormButtons = ({ onSubmit, loading = false, loadingButton }: FormButtonsPr
           onClick={(e) => onSubmit(e, "follow-up")}
           className={`
             bg-yellow-600 hover:bg-yellow-700 h-auto py-4 flex flex-col items-center gap-2
-            transition-all duration-200 relative overflow-hidden
+            transition-all duration-200 relative overflow-hidden min-w-[120px] min-h-[80px]
             ${loading && loadingButton === "follow-up" ? "bg-yellow-700 shadow-lg" : ""}
             ${loading && loadingButton !== "follow-up" ? "opacity-50" : ""}
           `}
@@ -76,7 +76,7 @@ const FormButtons = ({ onSubmit, loading = false, loadingButton }: FormButtonsPr
           onClick={(e) => onSubmit(e, "declined")}
           className={`
             bg-red-600 hover:bg-red-700 h-auto py-4 flex flex-col items-center gap-2
-            transition-all duration-200 relative overflow-hidden
+            transition-all duration-200 relative overflow-hidden min-w-[120px] min-h-[80px]
             ${loading && loadingButton === "declined" ? "bg-red-700 shadow-lg" : ""}
             ${loading && loadingButton !== "declined" ? "opacity-50" : ""}
           `}

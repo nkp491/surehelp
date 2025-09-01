@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import { roleService } from "@/services/roleService";
+import { validateFile } from "@/utils/fileValidation";
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -163,6 +164,18 @@ export const useProfileManagement = () => {
       }
 
       const file = event.target.files[0];
+      
+      // Validate file before upload
+      const validation = validateFile(file, {
+        maxSize: 5 * 1024 * 1024, // 5 MB limit
+        allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif"],
+        allowedExtensions: ["jpg", "jpeg", "png", "gif"]
+      });
+
+      if (!validation.isValid) {
+        throw new Error(validation.error || "File validation failed");
+      }
+
       const fileExt = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 

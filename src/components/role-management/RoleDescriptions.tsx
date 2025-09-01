@@ -1,5 +1,10 @@
-
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 
 export function RoleDescriptions() {
   return (
@@ -23,7 +28,7 @@ export function RoleDescriptions() {
             <li>Client book of business</li>
           </ul>
         </div>
-        
+
         {/* Agent Pro */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Agent Pro</h3>
@@ -32,13 +37,14 @@ export function RoleDescriptions() {
           </p>
           <ul className="list-disc list-inside space-y-1">
             <li>Everything in Agent role</li>
-            <li>Advanced lead tracking</li>
-            <li>Commission calculator</li>
-            <li>Performance analytics</li>
-            <li>Priority support</li>
+            <li>Unlimited access to all Agent role functionality</li>
+            <li>Unlimited personal metrics tracking in KPI Insights</li>
+            <li>Unlimited saved forms in Client book of business</li>
+            <li>Commission calculator tool</li>
+            <li>Priority support access</li>
           </ul>
         </div>
-        
+
         {/* Manager Pro */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Manager Pro</h3>
@@ -52,7 +58,7 @@ export function RoleDescriptions() {
             <li>Up to 5 agent accounts</li>
           </ul>
         </div>
-        
+
         {/* Manager Pro Gold */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Manager Pro Gold</h3>
@@ -68,7 +74,7 @@ export function RoleDescriptions() {
             <li>White-label reporting</li>
           </ul>
         </div>
-        
+
         {/* Manager Pro Platinum */}
         <div className="border-b pb-4">
           <h3 className="font-semibold text-lg mb-2">Manager Pro Platinum</h3>
@@ -82,7 +88,7 @@ export function RoleDescriptions() {
             <li>Dedicated account manager</li>
           </ul>
         </div>
-        
+
         {/* Beta User */}
         <div>
           <h3 className="font-semibold text-lg mb-2">Beta User</h3>
