@@ -7,8 +7,14 @@ import { MetricCount } from '@/types/metrics';
 import { useToast } from '@/hooks/use-toast';
 
 export const useMetricsHistory = () => {
-  const { history, loadHistory, addOptimisticEntry, isLoading, loadMoreHistory } = useMetricsLoad();
+  const { history, loadHistory, addOptimisticEntry, isLoading, loadMoreHistory, updateOptimisticEntry } = useMetricsLoad();
   const { sortedHistory, handleSort } = useMetricsSort(history);
+  
+  // Create optimistic update callback
+  const handleOptimisticEdit = useCallback((date: string, newValues: MetricCount) => {
+    updateOptimisticEntry(date, newValues);
+  }, [updateOptimisticEntry]);
+  
   const {
     editingRow,
     editedValues,
@@ -16,7 +22,7 @@ export const useMetricsHistory = () => {
     handleSave,
     handleCancel,
     handleValueChange,
-  } = useMetricsEdit();
+  } = useMetricsEdit(handleOptimisticEdit);
   const { toast } = useToast();
 
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);

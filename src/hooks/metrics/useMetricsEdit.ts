@@ -3,7 +3,7 @@ import { MetricCount } from "@/types/metrics";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useMetricsEdit = () => {
+export const useMetricsEdit = (onSuccessfulEdit?: (date: string, newValues: MetricCount) => void) => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<MetricCount | null>(null);
   const { toast } = useToast();
@@ -58,6 +58,11 @@ export const useMetricsEdit = () => {
         title: "Success",
         description: "Metrics updated successfully",
       });
+
+      // Call the callback to update the UI immediately with optimistic updates
+      if (onSuccessfulEdit) {
+        onSuccessfulEdit(date, processedValues);
+      }
 
       setEditingRow(null);
       setEditedValues(null);
