@@ -325,7 +325,7 @@ const transformMemberData = (
               user_id: member.user_id,
               name: member.name || "Unknown User",
               role: member.role || "Unknown Role",
-              email: member.email || "unknown@email.com",
+              email: member.email || undefined,
               profile_image_url: member.profile_image_url || null,
               metrics: {
                 ...defaultMetrics,
@@ -350,7 +350,7 @@ const transformMemberData = (
             user_id: member.user_id,
             name: member.name || "Unknown User",
             role: member.role || "Unknown Role",
-            email: member.email || "unknown@email.com",
+            email: member.email || undefined,
             profile_image_url: member.profile_image_url || null,
             metrics: {
               leads: Number(metrics.leads) || 0,

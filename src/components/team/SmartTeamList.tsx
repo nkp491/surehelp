@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -11,7 +11,6 @@ import {
   Users,
   MoreHorizontal,
   UserX,
-  Loader2,
 } from "lucide-react";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -54,8 +53,6 @@ interface TeamMemberData {
 export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
-  const [removingMemberId, setRemovingMemberId] = useState<string | null>(null);
-  const queryClient = useQueryClient();
 
   // Fetch team members using the new team management system
   const { data: teamMembers, isLoading } = useQuery({
@@ -373,8 +370,6 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   // Handle member removal - now removes from team_members table
   const handleRemoveMember = async (memberId: string) => {
     try {
-      setRemovingMemberId(memberId);
-      
       // First, get the manager's team
       const { data: managerTeam, error: teamError } = await supabase
         .from("team_managers")
@@ -400,9 +395,8 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         description: "Team member has been removed from your team.",
       });
 
-      // Invalidate and refetch the data to update the UI smoothly
-      queryClient.invalidateQueries({ queryKey: ["team-members", managerId] });
-      queryClient.invalidateQueries({ queryKey: ["all-teams-hierarchy"] });
+      // Refetch the data to update the UI
+      window.location.reload();
     } catch (error: unknown) {
       console.error("Error removing team member:", error);
       toast({
@@ -410,8 +404,6 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         description: "Failed to remove team member. Please try again.",
         variant: "destructive",
       });
-    } finally {
-      setRemovingMemberId(null);
     }
   };
 
@@ -482,19 +474,9 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
                 <DropdownMenuItem
                   onClick={() => handleRemoveMember(node.member.id)}
                   className="text-destructive"
-                  disabled={removingMemberId === node.member.id}
                 >
-                  {removingMemberId === node.member.id ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Removing...
-                    </>
-                  ) : (
-                    <>
-                      <UserX className="h-4 w-4 mr-2" />
-                      Remove from Team
-                    </>
-                  )}
+                  <UserX className="h-4 w-4 mr-2" />
+                  Remove from Team
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>

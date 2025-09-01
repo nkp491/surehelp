@@ -4,7 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import { roleService } from "@/services/roleService";
-import { validateFile, formatFileSize } from "@/utils/fileValidation";
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -90,7 +89,7 @@ export const useProfileManagement = () => {
       console.log("Current user ID:", session.user.id);
 
       // Create a clean copy of updates for database
-      const { roles, ...updatesToSave } = updates;
+      const { roles, ...updatesToSave } = updates as Partial<Profile>;
 
       // Handle JSON fields properly
       if (
@@ -164,26 +163,6 @@ export const useProfileManagement = () => {
       }
 
       const file = event.target.files[0];
-
-      // Validate file using utility function
-      const validation = validateFile(file, {
-        maxSize: 5 * 1024 * 1024, // 5MB
-        allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif"],
-        allowedExtensions: ["jpg", "jpeg", "png", "gif"],
-      });
-
-      if (!validation.isValid) {
-        // Provide more detailed error message for file size issues
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error(
-            `File size too large (${formatFileSize(
-              file.size
-            )}). Please upload an image smaller than 5MB.`
-          );
-        }
-        throw new Error(validation.error || "Invalid file");
-      }
-
       const fileExt = file.name.split(".").pop();
       const fileName = `${crypto.randomUUID()}.${fileExt}`;
 
@@ -203,12 +182,10 @@ export const useProfileManagement = () => {
         title: "Success",
         description: "Profile picture updated successfully",
       });
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
+    } catch (error) {
       toast({
         title: "Error uploading image",
-        description: errorMessage,
+        description: error.message,
         variant: "destructive",
       });
     } finally {

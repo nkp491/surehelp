@@ -1,18 +1,11 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 
 interface TotalIncomeFieldProps {
   label: string;
-  formData?: {
-    employmentIncome?: string;
-    socialSecurityIncome?: string;
-    pensionIncome?: string;
-    survivorshipIncome?: string;
-    selectedInvestments_total?: string;
-    onChange?: (field: string, value: string) => void;
-  };
+  formData: any;
   placeholder?: string;
   required?: boolean;
   error?: string;
@@ -32,57 +25,44 @@ const TotalIncomeField = ({
 
   // Calculate total income whenever relevant form data changes
   useEffect(() => {
-    // Early return if formData is undefined or null
-    if (!formData) {
-      setTotalIncome("0");
-      return;
-    }
-
     // Helper function to clean and parse values
-    const cleanAndParse = (value: string | undefined): number => {
+    const cleanAndParse = (value: string): number => {
       if (!value) return 0;
       // Remove any non-numeric characters except decimal point
       const cleanValue = value.replace(/[^\d.]/g, "");
       return parseFloat(cleanValue) || 0;
     };
 
-    // Get all income values with safe property access
-    const employment = cleanAndParse(formData?.employmentIncome);
-    const socialSecurity = cleanAndParse(formData?.socialSecurityIncome);
-    const pension = cleanAndParse(formData?.pensionIncome);
-    const survivorship = cleanAndParse(formData?.survivorshipIncome);
+    // Get all income values
+    const employment = cleanAndParse(formData.employmentIncome);
+    const socialSecurity = cleanAndParse(formData.socialSecurityIncome);
+    const pension = cleanAndParse(formData.pensionIncome);
+    const survivorship = cleanAndParse(formData.survivorshipIncome);
 
     // Get investment income if available
     let investmentIncome = 0;
-    if (formData?.selectedInvestments_total) {
+    if (formData.selectedInvestments_total) {
       investmentIncome = cleanAndParse(formData.selectedInvestments_total);
     }
 
     // Calculate total
-    const total =
-      employment + socialSecurity + pension + survivorship + investmentIncome;
+    const total = employment + socialSecurity + pension + survivorship + investmentIncome;
 
     // Format the total
     setTotalIncome(total.toFixed(2));
 
     // IMPORTANT: Also update the formData directly if possible
-    if (formData?.onChange) {
+    if (formData.onChange) {
       // Use consistent field name
       formData.onChange("primaryTotalIncome", total.toString());
     }
   }, [
-    formData?.employmentIncome,
-    formData?.socialSecurityIncome,
-    formData?.pensionIncome,
-    formData?.survivorshipIncome,
-    formData?.selectedInvestments_total,
+    formData.employmentIncome,
+    formData.socialSecurityIncome,
+    formData.pensionIncome,
+    formData.survivorshipIncome,
+    formData.selectedInvestments_total,
   ]);
-
-  // Defensive check for required props (after hooks)
-  if (!label) {
-    console.warn("[TotalIncomeField] Label is required but not provided");
-    return null;
-  }
 
   return (
     <div className="space-y-2">

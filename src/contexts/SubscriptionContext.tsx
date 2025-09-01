@@ -67,32 +67,8 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
 
       if (subscriptionData) {
-        // Transform snake_case to camelCase for subscription
-        const transformedSubscription: Subscription = {
-          ...subscriptionData,
-          status: subscriptionData.status as Subscription['status']
-        };
-        setSubscription(transformedSubscription);
-        
-        // Transform snake_case to camelCase for subscription plan
-        const planData = subscriptionData.subscription_plans;
-        if (planData) {
-          const transformedPlan: SubscriptionPlan = {
-            id: planData.id,
-            name: planData.name,
-            description: planData.description || "",
-            role: planData.role,
-            features: Array.isArray(planData.features) 
-              ? (planData.features as string[])
-              : [],
-            monthlyPrice: planData.monthly_price,
-            annualPrice: planData.annual_price, 
-            stripePriceIdMonthly: planData.stripe_price_id_monthly,
-            stripePriceIdAnnual: planData.stripe_price_id_annual,
-            popular: planData.popular
-          };
-          setSubscriptionPlan(transformedPlan);
-        }
+        setSubscription(subscriptionData);
+        setSubscriptionPlan(subscriptionData.subscription_plans);
       } else {
         setSubscription(null);
         setSubscriptionPlan(null);

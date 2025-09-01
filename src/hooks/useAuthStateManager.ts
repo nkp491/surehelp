@@ -2,7 +2,6 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { roleService } from "@/services/roleService";
-import { queryClient } from "@/lib/react-query";
 
 export const useAuthStateManager = () => {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
@@ -11,11 +10,8 @@ export const useAuthStateManager = () => {
 
   const checkSession = async () => {
     try {
-      const {
-        data: { session },
-        error: sessionError,
-      } = await supabase.auth.getSession();
-
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
       if (sessionError) {
         console.error("Session error:", sessionError);
         setIsAuthenticated(false);
@@ -28,11 +24,6 @@ export const useAuthStateManager = () => {
         roleService.clearRoles();
         setIsAuthenticated(false);
         setIsLoading(false);
-        // Clear team membership cache when no session
-        queryClient.invalidateQueries({ queryKey: ["team-membership"] });
-        queryClient.invalidateQueries({ queryKey: ["team-members"] });
-        queryClient.invalidateQueries({ queryKey: ["manager-team"] });
-        queryClient.invalidateQueries({ queryKey: ["all-teams-hierarchy"] });
         return;
       }
 
@@ -42,11 +33,6 @@ export const useAuthStateManager = () => {
         await supabase.auth.signOut();
         roleService.clearRoles();
         setIsAuthenticated(false);
-        // Clear team membership cache on refresh error
-        queryClient.invalidateQueries({ queryKey: ["team-membership"] });
-        queryClient.invalidateQueries({ queryKey: ["team-members"] });
-        queryClient.invalidateQueries({ queryKey: ["manager-team"] });
-        queryClient.invalidateQueries({ queryKey: ["all-teams-hierarchy"] });
         toast({
           title: "Session Expired",
           description: "Please sign in again",
@@ -64,11 +50,6 @@ export const useAuthStateManager = () => {
       roleService.clearRoles();
       setIsAuthenticated(false);
       setIsLoading(false);
-      // Clear team membership cache on auth error
-      queryClient.invalidateQueries({ queryKey: ["team-membership"] });
-      queryClient.invalidateQueries({ queryKey: ["team-members"] });
-      queryClient.invalidateQueries({ queryKey: ["manager-team"] });
-      queryClient.invalidateQueries({ queryKey: ["all-teams-hierarchy"] });
       toast({
         title: "Authentication Error",
         description: "Please sign in again",
@@ -80,11 +61,9 @@ export const useAuthStateManager = () => {
   useEffect(() => {
     checkSession();
 
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       console.log("Auth state change:", { event, session });
-
+      
       switch (event) {
         case "SIGNED_IN":
           setIsAuthenticated(true);
@@ -93,11 +72,6 @@ export const useAuthStateManager = () => {
         case "SIGNED_OUT":
           setIsAuthenticated(false);
           setIsLoading(false);
-          // Clear team membership cache when user signs out
-          queryClient.invalidateQueries({ queryKey: ["team-membership"] });
-          queryClient.invalidateQueries({ queryKey: ["team-members"] });
-          queryClient.invalidateQueries({ queryKey: ["manager-team"] });
-          queryClient.invalidateQueries({ queryKey: ["all-teams-hierarchy"] });
           break;
         case "TOKEN_REFRESHED":
           setIsAuthenticated(!!session);

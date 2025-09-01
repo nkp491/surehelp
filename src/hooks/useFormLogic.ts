@@ -1,10 +1,11 @@
-import { useEffect } from "react";
-import { FormSubmission } from "@/types/form";
-import { useAgeCalculation } from "./useAgeCalculation";
-import { useFormValidation } from "./useFormValidation";
-import { useFormState } from "./useFormState";
-import { useFormSubmission } from "./useFormSubmission";
-import { toast } from "@/hooks/use-toast";
+import {useEffect} from "react";
+import {FormSubmission} from "@/types/form";
+import {useAgeCalculation} from "./useAgeCalculation";
+import {useIncomeCalculation} from "./useIncomeCalculation";
+import {useFormValidation} from "./useFormValidation";
+import {useFormState} from "./useFormState";
+import {useFormSubmission} from "./useFormSubmission";
+import {toast} from "@/hooks/use-toast";
 
 export const useFormLogic = (
   editingSubmission: FormSubmission | null = null,
@@ -12,7 +13,10 @@ export const useFormLogic = (
 ) => {
   const { formData, setFormData, errors, setErrors, initialFormValues } =
     useFormState(editingSubmission);
+
   const { age } = useAgeCalculation(formData.dob, "");
+  // We're still using useIncomeCalculation but not applying its results
+  const { totalIncome: calculatedTotalIncome } = useIncomeCalculation(formData);
   const { validateForm } = useFormValidation();
 
   const { handleSubmit: submitForm } = useFormSubmission(
@@ -28,9 +32,10 @@ export const useFormLogic = (
       return {
         ...prev,
         age,
+        // We're not touching totalIncome at all
       };
     });
-  }, [age, setFormData]);
+  }, [age, setFormData]); // Removed totalIncome from dependencies
 
   const handleSubmit = async (
     e: React.MouseEvent<HTMLButtonElement> | React.FormEvent,
@@ -57,6 +62,5 @@ export const useFormLogic = (
     setFormData,
     errors,
     handleSubmit,
-    initialFormValues,
   };
 };

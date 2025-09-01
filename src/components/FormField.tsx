@@ -40,24 +40,17 @@ const FormField = ({
   const t = translations[language];
 
   const getTranslatedLabel = (label: string) => {
-    const translatedLabel = (t as Record<string, string>)[label];
+    const translatedLabel = (t as any)[label];
     if (translatedLabel) return translatedLabel;
 
     const key = label.toLowerCase().replace(/[^a-zA-Z0-9]/g, "");
-    return (t as Record<string, string>)[key] || label;
+    return (t as any)[key] || label;
   };
 
-  const labelClassName = "text-sm font-medium text-gray-700 mb-2 flex-shrink-0";
+  const labelClassName = "text-sm font-medium text-gray-700 mb-2";
 
   if (type === "height") {
-    return (
-      <HeightField
-        value={value}
-        onChange={onChange}
-        required={required}
-        error={error}
-      />
-    );
+    return <HeightField value={value} onChange={onChange} required={required} error={error} />;
   }
 
   if (type === "currency") {
@@ -87,80 +80,51 @@ const FormField = ({
 
   if (type === "yes_no") {
     return (
-      <div className="relative space-y-2 min-h-[80px] flex flex-col justify-start">
+      <div className="relative space-y-2">
         <Label className={labelClassName}>
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
-        <div className="flex-1 flex flex-col justify-center">
-          <RadioGroup
-            value={value}
-            onValueChange={onChange}
-            className="flex items-center gap-6"
-          >
-            <div className="flex items-center gap-2">
-              <RadioGroupItem
-                value="yes"
-                id={`${label}-yes`}
-                className="h-4 w-4"
-              />
-              <Label
-                htmlFor={`${label}-yes`}
-                className="text-sm font-normal text-gray-600"
-              >
-                {t.yes}
-              </Label>
-            </div>
-            <div className="flex items-center gap-2">
-              <RadioGroupItem
-                value="no"
-                id={`${label}-no`}
-                className="h-4 w-4"
-              />
-              <Label
-                htmlFor={`${label}-no`}
-                className="text-sm font-normal text-gray-600"
-              >
-                {t.no}
-              </Label>
-            </div>
-          </RadioGroup>
-          {error && (
-            <p className="text-xs text-red-500 mt-1 flex-shrink-0">{error}</p>
-          )}
-        </div>
+        <RadioGroup value={value} onValueChange={onChange} className="flex items-center gap-6">
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="yes" id={`${label}-yes`} className="h-4 w-4" />
+            <Label htmlFor={`${label}-yes`} className="text-sm font-normal text-gray-600">
+              {t.yes}
+            </Label>
+          </div>
+          <div className="flex items-center gap-2">
+            <RadioGroupItem value="no" id={`${label}-no`} className="h-4 w-4" />
+            <Label htmlFor={`${label}-no`} className="text-sm font-normal text-gray-600">
+              {t.no}
+            </Label>
+          </div>
+        </RadioGroup>
+        {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
       </div>
     );
   }
 
   if (type === "textarea") {
     return (
-      <div className="relative space-y-2 min-h-[120px] flex flex-col justify-start">
+      <div className="relative space-y-2">
         <Label className={labelClassName}>
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
-        <div className="flex-1 flex flex-col justify-center">
-          <Textarea
-            value={value || ""}
-            onChange={(e) => onChange?.(e.target.value)}
-            placeholder={placeholder}
-            className="min-h-[100px] bg-gray-50 resize-none text-sm transition-all duration-200"
-            required={required}
-            readOnly={readOnly}
-          />
-          {error && (
-            <p className="text-xs text-red-500 mt-1 flex-shrink-0">{error}</p>
-          )}
-        </div>
+        <Textarea
+          value={value || ""}
+          onChange={(e) => onChange?.(e.target.value)}
+          placeholder={placeholder}
+          className="min-h-[100px] bg-gray-50 resize-none text-sm"
+          required={required}
+          readOnly={readOnly}
+        />
+        {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
       </div>
     );
   }
 
-  const inputClassName = cn(
-    "h-11 bg-gray-50 text-sm transition-all duration-200",
-    type === "age" && "w-[80px]"
-  );
+  const inputClassName = cn("h-11 bg-gray-50 text-sm", type === "age" && "w-[80px]");
 
   if (type === "date") {
     const selectedDate =
@@ -169,45 +133,37 @@ const FormField = ({
         : null;
 
     return (
-      <div className="relative space-y-2 min-h-[80px] flex flex-col justify-start">
+      <div className="relative space-y-2">
         <Label className={labelClassName}>
           {getTranslatedLabel(label)}
           {required && <span className="text-red-500 ml-1">*</span>}
         </Label>
-        <div className="flex-1 flex flex-col justify-center">
-          <CustomeDatePicker
-            value={selectedDate}
-            onChange={(dateString) => onChange?.(dateString || "")}
-            startYear={1920}
-          />
-          {error && (
-            <p className="text-xs text-red-500 mt-1 flex-shrink-0">{error}</p>
-          )}
-        </div>
+        <CustomeDatePicker
+                    value={selectedDate}
+                    onChange={(dateString) => onChange?.(dateString || "")}
+                    startYear={1920}
+                  />
+        {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
       </div>
     );
   }
 
   return (
-    <div className="relative space-y-2 min-h-[80px] flex flex-col justify-start">
+    <div className="relative space-y-2">
       <Label className={labelClassName}>
         {getTranslatedLabel(label)}
         {required && <span className="text-red-500 ml-1">*</span>}
       </Label>
-      <div className="flex-1 flex flex-col justify-center">
-        <Input
-          type={type}
-          value={value || ""}
-          onChange={(e) => onChange?.(e.target.value)}
-          placeholder={placeholder}
-          className={inputClassName}
-          required={required}
-          readOnly={readOnly}
-        />
-        {error && (
-          <p className="text-xs text-red-500 mt-1 flex-shrink-0">{error}</p>
-        )}
-      </div>
+      <Input
+        type={type}
+        value={value || ""}
+        onChange={(e) => onChange?.(e.target.value)}
+        placeholder={placeholder}
+        className={inputClassName}
+        required={required}
+        readOnly={readOnly}
+      />
+      {error && <p className="text-xs text-red-500 absolute right-0 top-0">{error}</p>}
     </div>
   );
 };

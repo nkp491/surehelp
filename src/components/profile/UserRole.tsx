@@ -1,25 +1,13 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info } from "lucide-react";
 
 interface UserRoleProps {
-  role:
-    | "agent"
-    | "manager_pro"
-    | "manager"
-    | "beta_user"
-    | "manager_pro_gold"
-    | "manager_pro_platinum"
-    | "agent_pro"
-    | null;
+  role: "agent" | "manager_pro" | "manager" | "beta_user" | "manager_pro_gold" | "manager_pro_platinum" | "agent_pro" | null;
   roles?: string[];
 }
 
@@ -32,36 +20,29 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
 
   // Function to determine badge variant based on role
   const getBadgeVariant = (role: string) => {
-    switch (role) {
-      case "manager_pro_platinum":
-        return "outline";
-      case "manager_pro_gold":
-        return "outline";
-      case "agent_pro":
-        return "outline";
-      case "manager":
-        return "default";
-      case "manager_pro":
-        return "default";
-      case "beta_user":
-        return "destructive";
-      default:
-        return "secondary";
+    switch(role) {
+      case "manager_pro_platinum": return "outline";
+      case "manager_pro_gold": return "outline"; 
+      case "agent_pro": return "outline";
+      case "manager": return "default";
+      case "manager_pro": return "default";
+      case "beta_user": return "destructive";
+      default: return "secondary";
     }
   };
 
   const getRoleDisplay = (role: string): string => {
-    if (!role) return "";
+  if (!role) return "";
 
-    return role
-      .split("_")
-      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(" ");
-  };
+  return role
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+};
 
   // Get premium features based on role
   const getPremiumFeatures = (role: string): string[] => {
-    switch (role) {
+    switch(role) {
       case "manager_pro_platinum":
         return [
           "Full manager dashboard access",
@@ -69,7 +50,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
           "Unlimited agent accounts",
           "Premium email support",
           "White-label reporting",
-          "Custom API integrations",
+          "Custom API integrations"
         ];
       case "manager_pro_gold":
         return [
@@ -77,32 +58,31 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
           "Team performance analytics",
           "Up to 20 agent accounts",
           "Premium email support",
-          "White-label reporting",
+          "White-label reporting"
         ];
       case "agent_pro":
         return [
-          "Unlimited access to all Agent role functionality",
-          "Unlimited personal metrics tracking in KPI Insights",
-          "Unlimited saved forms in Client book of business",
-          "Commission calculator tool",
-          "Priority support access",
+          "Advanced lead tracking",
+          "Commission calculator",
+          "Performance analytics",
+          "Priority support"
         ];
       case "manager_pro":
         return [
           "Basic manager dashboard",
           "Team performance metrics",
-          "Up to 5 agent accounts",
+          "Up to 5 agent accounts"
         ];
       case "beta_user":
         return [
-          "Early access to new features",
+          "Early access to new features", 
           "Feedback opportunities",
           "Full manager dashboard access",
           "Team performance analytics",
           "Commission calculator",
           "Performance analytics",
           "Priority support",
-          "Role management access",
+          "Role management access"
         ];
       default:
         return ["Basic assessment form access", "Personal metrics tracking"];
@@ -112,13 +92,13 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
   // Get combined features for all roles
   const getAllFeatures = () => {
     const featuresSet = new Set<string>();
-
+    
     userRoles.forEach((role) => {
       getPremiumFeatures(role).forEach((feature) => {
         featuresSet.add(feature);
       });
     });
-
+    
     return Array.from(featuresSet);
   };
 
@@ -135,9 +115,7 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
                 <Info className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent>
-                <p className="text-xs">
-                  Your roles determine what features you can access
-                </p>
+                <p className="text-xs">Your roles determine what features you can access</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -147,28 +125,26 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         <div className="space-y-4">
           <div className="flex flex-wrap gap-2">
             {userRoles.map((userRole, index) => (
-              <Badge
+              <Badge 
                 key={index}
-                variant={getBadgeVariant(userRole)}
+                variant={getBadgeVariant(userRole)} 
                 className={`text-sm ${
-                  userRole === "manager_pro_gold"
-                    ? "border-yellow-500 text-yellow-700 bg-yellow-50"
-                    : userRole === "manager_pro_platinum"
-                    ? "border-purple-500 text-purple-700 bg-purple-50"
-                    : userRole === "agent_pro"
-                    ? "border-blue-500 text-blue-700 bg-blue-50"
-                    : ""
+                  userRole === "manager_pro_gold" 
+                    ? "border-yellow-500 text-yellow-700 bg-yellow-50" 
+                    : userRole === "manager_pro_platinum" 
+                      ? "border-purple-500 text-purple-700 bg-purple-50" 
+                      : userRole === "agent_pro"
+                        ? "border-blue-500 text-blue-700 bg-blue-50"
+                        : ""
                 }`}
               >
                 {getRoleDisplay(userRole)}
               </Badge>
             ))}
           </div>
-
+          
           <div className="pt-2">
-            <h4 className="text-sm font-medium text-muted-foreground mb-2">
-              Features included:
-            </h4>
+            <h4 className="text-sm font-medium text-muted-foreground mb-2">Features included:</h4>
             <ul className="text-sm space-y-1">
               {features.map((feature, index) => (
                 <li key={index} className="flex items-start">

@@ -1,42 +1,22 @@
 import DraggableFormField from "../DraggableFormField";
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import IncomeDebugger from "../form-fields/IncomeDebugger";
-import { FormField } from "@/types/formTypes";
-
-interface FormData {
-  employmentIncome?: string;
-  socialSecurityIncome?: string;
-  pensionIncome?: string;
-  survivorshipIncome?: string;
-  selectedInvestments_total?: string; 
-  totalIncome?: string;
-  primaryTotalIncome?: string;
-  onChange?: (fieldId: string, value: string) => void;
-  [key: string]: any;
-}
 
 interface FormSectionProps {
   title: string;
-  fields: FormField[];
-  formData: FormData;
-  setFormData: (data: FormData) => void;
+  fields: any[];
+  formData: any;
+  setFormData: (data: any) => void;
 }
 
-const FormSection = ({
-  title,
-  fields,
-  formData,
-  setFormData,
-}: FormSectionProps) => {
+const FormSection = ({ title, fields, formData, setFormData }: FormSectionProps) => {
   // Keep a local copy of investment amounts to ensure they persist
   const [localInvestmentAmounts, setLocalInvestmentAmounts] = useState<
     Record<string, Record<string, string>>
   >({});
 
   // Keep track of investment totals
-  const [investmentTotals, setInvestmentTotals] = useState<
-    Record<string, number>
-  >({});
+  const [investmentTotals, setInvestmentTotals] = useState<Record<string, number>>({});
 
   // Helper function to calculate total income
   const calculateTotalIncome = () => {
@@ -48,29 +28,27 @@ const FormSection = ({
       return parseFloat(cleanValue) || 0;
     };
 
-    // Get all income values with safe property access
-    const employment = cleanAndParse(formData?.employmentIncome);
-    const socialSecurity = cleanAndParse(formData?.socialSecurityIncome);
-    const pension = cleanAndParse(formData?.pensionIncome);
-    const survivorship = cleanAndParse(formData?.survivorshipIncome);
+    // Get all income values
+    const employment = cleanAndParse(formData.employmentIncome);
+    const socialSecurity = cleanAndParse(formData.socialSecurityIncome);
+    const pension = cleanAndParse(formData.pensionIncome);
+    const survivorship = cleanAndParse(formData.survivorshipIncome);
 
     // Get investment income if available
     let investmentIncome = 0;
-    if (investmentTotals?.selectedInvestments) {
+    if (investmentTotals.selectedInvestments) {
       investmentIncome = investmentTotals.selectedInvestments;
-    } else if (formData?.selectedInvestments_total) {
+    } else if (formData.selectedInvestments_total) {
       investmentIncome = cleanAndParse(formData.selectedInvestments_total);
     }
 
     // Calculate total
-    return (
-      employment + socialSecurity + pension + survivorship + investmentIncome
-    );
+    return employment + socialSecurity + pension + survivorship + investmentIncome;
   };
 
   // Direct update function for the TotalIncomeField
   const handleDirectFieldChange = (fieldId: string, value: string) => {
-    setFormData((prev: FormData) => ({
+    setFormData((prev: any) => ({
       ...prev,
       [fieldId]: value,
     }));
@@ -133,19 +111,15 @@ const FormSection = ({
       primaryTotalIncome: totalIncome.toString(), // Consistent capitalization
     }));
   }, [
-    formData?.employmentIncome,
-    formData?.socialSecurityIncome,
-    formData?.pensionIncome,
-    formData?.survivorshipIncome,
-    formData?.selectedInvestments_total,
-    investmentTotals?.selectedInvestments, // Add investment totals to dependency array
+    formData.employmentIncome,
+    formData.socialSecurityIncome,
+    formData.pensionIncome,
+    formData.survivorshipIncome,
+    formData.selectedInvestments_total,
+    investmentTotals.selectedInvestments, // Add investment totals to dependency array
   ]);
 
-  const handleInvestmentAmountChange = (
-    fieldId: string,
-    type: string,
-    amount: string
-  ) => {
+  const handleInvestmentAmountChange = (fieldId: string, type: string, amount: string) => {
     setLocalInvestmentAmounts((prev) => {
       const fieldAmounts = { ...(prev[fieldId] || {}) };
 
@@ -180,14 +154,10 @@ const FormSection = ({
 
   return (
     <div className="bg-white rounded-lg shadow-sm overflow-hidden h-fit">
-      <div className="bg-[#6CAEC2] text-white px-3 py-1.5 text-sm font-medium">
-        {title}
-      </div>
+      <div className="bg-[#6CAEC2] text-white px-3 py-1.5 text-sm font-medium">{title}</div>
       <div className="p-2">
         {/* Add the IncomeDebugger component for debugging */}
-        {title.toLowerCase().includes("income") && (
-          <IncomeDebugger formData={formData} />
-        )}
+        {title.toLowerCase().includes("income") && <IncomeDebugger formData={formData} />}
         <div className="space-y-2">
           {fields.map((field) => {
             // Get the current field value
@@ -195,9 +165,7 @@ const FormSection = ({
 
             // Get investment amounts from local state for better persistence
             const fieldAmounts =
-              field.type === "investmentTypes"
-                ? localInvestmentAmounts[field.id] || {}
-                : {};
+              field.type === "investmentTypes" ? localInvestmentAmounts[field.id] || {} : {};
 
             // Create a copy of formData with investment totals for TotalIncomeField
             const enhancedFormData = {
@@ -217,7 +185,7 @@ const FormSection = ({
                   value={fieldValue}
                   onChange={(value) => {
                     // Update the form data with the new value
-                    setFormData((prev: FormData) => {
+                    setFormData((prev: any) => {
                       const updated = { ...prev, [field.id]: value };
 
                       // If this is an income field, immediately recalculate the total income
@@ -246,6 +214,7 @@ const FormSection = ({
                       handleInvestmentTotalChange(field.id, total);
                     }
                   }}
+                  formData={enhancedFormData} // Pass the enhanced formData
                 />
               </div>
             );

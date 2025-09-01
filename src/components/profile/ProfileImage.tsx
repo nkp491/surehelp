@@ -4,7 +4,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
-import { validateFile, formatFileSize } from "@/utils/fileValidation";
 
 interface ProfileImageProps {
   imageUrl: string | null;
@@ -13,42 +12,22 @@ interface ProfileImageProps {
   uploading: boolean;
 }
 
-const ProfileImage = ({
-  imageUrl,
-  firstName,
-  onUpload,
-  uploading,
-}: ProfileImageProps) => {
+const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImageProps) => {
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(imageUrl);
 
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error("You must select an image to upload.");
+        throw new Error('You must select an image to upload.');
       }
 
       const file = event.target.files[0];
+      const fileExt = file.name.split('.').pop();
+      const allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
 
-      // Validate file using utility function
-      const validation = validateFile(file, {
-        maxSize: 5 * 1024 * 1024, // 5MB
-        allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif"],
-        allowedExtensions: ["jpg", "jpeg", "png", "gif"],
-      });
-
-      if (!validation.isValid) {
-        // Provide more detailed error message for file size issues
-        if (file.size > 5 * 1024 * 1024) {
-          throw new Error(
-            `File size too large (${formatFileSize(
-              file.size
-            )}). Please upload an image smaller than 5MB.`
-          );
-        }
-        throw new Error(validation.error || "Invalid file");
+      if (!allowedTypes.includes(fileExt?.toLowerCase() || '')) {
+        throw new Error('File type not supported. Please upload a JPG, PNG, or GIF image.');
       }
 
       // Create a preview URL
@@ -57,12 +36,11 @@ const ProfileImage = ({
 
       // Call the parent's onUpload handler
       await onUpload(event);
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "An unknown error occurred";
+
+    } catch (error: any) {
       toast({
         title: "Error uploading image",
-        description: errorMessage,
+        description: error.message,
         variant: "destructive",
       });
     }
@@ -86,12 +64,10 @@ const ProfileImage = ({
             accept="image/*"
             onChange={handleFileChange}
             disabled={uploading}
-            className="text-foreground hover:opacity-80 transition-opacity duration-200"
+            className="text-foreground"
           />
           <p className="text-sm text-foreground mt-1">
-            {uploading
-              ? "Uploading..."
-              : "Click to upload a new profile picture (max 5MB)"}
+            {uploading ? "Uploading..." : "Click to upload a new profile picture"}
           </p>
         </div>
       </CardContent>

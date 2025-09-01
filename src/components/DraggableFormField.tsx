@@ -1,25 +1,25 @@
-import React, { useState, useEffect } from "react";
 import FormField from "./FormField";
 import MedicalConditionsCheckbox from "./MedicalConditionsCheckbox";
 import EmploymentStatusCheckbox from "./EmploymentStatusCheckbox";
 import InvestmentTypesCheckbox from "./InvestmentTypesCheckbox";
 import TobaccoUseField from "./form-fields/TobaccoUseField";
 import TotalIncomeField from "./form-fields/TotalIncomeField";
+import { useEffect, useState } from "react";
 
 interface DraggableFormFieldProps {
   id: string;
   fieldType: string;
   label: string;
-  value: string | string[];
-  onChange?: (value: string | string[]) => void;
+  value: any;
+  onChange: (value: any) => void;
   placeholder?: string;
   required?: boolean;
   error?: string;
   submissionId?: string;
-  formData?: Record<string, string>;
   investmentAmounts?: Record<string, string>;
   onInvestmentAmountChange?: (type: string, amount: string) => void;
   onInvestmentTotalChange?: (total: number) => void;
+  formData?: any;
 }
 
 const DraggableFormField = ({
@@ -32,21 +32,32 @@ const DraggableFormField = ({
   required,
   error,
   submissionId,
-  formData,
   investmentAmounts = {},
   onInvestmentAmountChange = () => {},
   onInvestmentTotalChange = () => {},
+  formData = {},
 }: DraggableFormFieldProps) => {
   const [localInvestmentAmounts, setLocalInvestmentAmounts] =
-    useState(investmentAmounts);
+    useState<Record<string, string>>(investmentAmounts);
 
   useEffect(() => {
-    setLocalInvestmentAmounts(investmentAmounts);
+    const isDifferent =
+      Object.keys(investmentAmounts).some(
+        (key) => investmentAmounts[key] !== localInvestmentAmounts[key]
+      ) ||
+      Object.keys(localInvestmentAmounts).some(
+        (key) => localInvestmentAmounts[key] !== investmentAmounts[key]
+      );
+    if (isDifferent) {
+      setLocalInvestmentAmounts(investmentAmounts);
+    }
   }, [investmentAmounts]);
 
   const handleInvestmentAmountChange = (type: string, amount: string) => {
-    const updatedAmounts = { ...localInvestmentAmounts, [type]: amount };
-    setLocalInvestmentAmounts(updatedAmounts);
+    setLocalInvestmentAmounts((prev) => ({
+      ...prev,
+      [type]: amount,
+    }));
     onInvestmentAmountChange(type, amount);
   };
 
@@ -57,36 +68,21 @@ const DraggableFormField = ({
   const renderField = () => {
     switch (fieldType) {
       case "medicalConditions":
-        return (
-          <MedicalConditionsCheckbox
-            selectedConditions={Array.isArray(value) ? value : []}
-            onChange={(conditions) => onChange?.(conditions)}
-          />
-        );
+        return <MedicalConditionsCheckbox selectedConditions={value} onChange={onChange} />;
       case "employmentStatus":
-        return (
-          <EmploymentStatusCheckbox
-            selectedStatus={Array.isArray(value) ? value : []}
-            onChange={(status) => onChange?.(status)}
-          />
-        );
+        return <EmploymentStatusCheckbox selectedStatus={value} onChange={onChange} />;
       case "investmentTypes":
         return (
           <InvestmentTypesCheckbox
-            selectedInvestments={Array.isArray(value) ? value : []}
-            onChange={(investments) => onChange?.(investments)}
+            selectedInvestments={value}
+            onChange={onChange}
             investmentAmounts={localInvestmentAmounts}
             onAmountChange={handleInvestmentAmountChange}
             onTotalChange={handleInvestmentTotalChange}
           />
         );
       case "tobaccoUse":
-        return (
-          <TobaccoUseField
-            value={typeof value === "string" ? value : ""}
-            onChange={onChange}
-          />
-        );
+        return <TobaccoUseField value={value} onChange={onChange} />;
       case "currency":
         if (id === "primaryTotalIncome") {
           return (
@@ -105,7 +101,7 @@ const DraggableFormField = ({
           <FormField
             label={label}
             type={fieldType}
-            value={typeof value === "string" ? value : ""}
+            value={value}
             onChange={onChange}
             placeholder={placeholder}
             required={required}
@@ -116,9 +112,7 @@ const DraggableFormField = ({
     }
   };
 
-  return (
-    <div className="w-full transition-all duration-200">{renderField()}</div>
-  );
+  return <div className="w-full">{renderField()}</div>;
 };
 
 export default DraggableFormField;

@@ -8,52 +8,42 @@ export const useMetricsUpdates = (
 ) => {
   const { toast } = useToast();
 
-  const incrementMetric = (metric: MetricType) => {
+  const updateMetric = (metric: MetricType, increment: boolean) => {
     const currentValue = metrics[metric];
-    const newValue = metric === "ap" ? currentValue + 100 : currentValue + 1;
+    const newValue = increment
+      ? metric === "ap"
+        ? currentValue + 100
+        : currentValue + 1
+      : metric === "ap"
+      ? Math.max(0, currentValue - 100)
+      : Math.max(0, currentValue - 1);
 
-    handleInputChange(metric, newValue.toString());
-
-    toast({
-      title: "Metric Updated",
-      description: `${metric.toUpperCase()} has been increased`,
+    console.log("[MetricsUpdates] Updating metric:", {
+      action: "update_metric",
+      metric,
+      currentValue,
+      newValue,
+      increment,
+      allMetrics: { ...metrics },
+      timestamp: new Date().toISOString(),
     });
-  };
-
-  const decrementMetric = (metric: MetricType) => {
-    const currentValue = metrics[metric];
-    const newValue =
-      metric === "ap"
-        ? Math.max(0, currentValue - 100)
-        : Math.max(0, currentValue - 1);
 
     handleInputChange(metric, newValue.toString());
 
     toast({
       title: "Metric Updated",
-      description: `${metric.toUpperCase()} has been decreased`,
+      description: `${metric.toUpperCase()} has been ${increment ? "increased" : "decreased"}`,
     });
   };
 
   const saveDailyMetrics = async () => {
     try {
-      // Validate that at least one metric has a value greater than 0
-      const hasValidMetrics = Object.values(metrics).some((value) => value > 0);
-      if (!hasValidMetrics) {
-        toast({
-          title: "No Metrics to Log",
-          description: "Please add at least 1 metric before logging",
-          variant: "destructive",
-        });
-        return;
-      }
-
       const timestamp = Date.now();
       const formattedDate = new Date(timestamp).toISOString().split("T")[0];
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
 
-      const { error } = await supabase
+      const { error, data } = await supabase
         .from("daily_metrics")
         .upsert(
           {
@@ -68,6 +58,13 @@ export const useMetricsUpdates = (
         .select();
 
       if (error) throw error;
+
+      console.log("[MetricsUpdates] Metrics saved successfully:", {
+        action: "save_success",
+        saved: metrics,
+        response: data,
+        timestamp,
+      });
 
       toast({
         title: "Success",
@@ -89,8 +86,7 @@ export const useMetricsUpdates = (
   };
 
   return {
-    incrementMetric,
-    decrementMetric,
+    updateMetric,
     saveDailyMetrics,
   };
 };

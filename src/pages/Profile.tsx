@@ -9,19 +9,25 @@ import ProfileLoading from "@/components/profile/ProfileLoading";
 import UserRole from "@/components/profile/UserRole";
 import PasswordSettings from "@/components/profile/PasswordSettings";
 import { LanguageProvider } from "@/contexts/LanguageContext";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { SmartTeamList } from "@/components/team/SmartTeamList";
 import { SubscriptionStatus } from "@/components/subscription/SubscriptionStatus";
+
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 1000 * 60 * 5,
+      gcTime: 1000 * 60 * 30,
+    },
+  },
+});
 
 const ProfileContent = () => {
   const { profile, loading, uploading, updateProfile, uploadAvatar, signOut } =
     useProfileManagement();
   const isManager = profile?.roles?.some((role) =>
-    [
-      "manager",
-      "manager_pro",
-      "manager_pro_gold",
-      "manager_pro_platinum",
-    ].includes(role)
+    ["manager", "manager_pro", "manager_pro_gold", "manager_pro_platinum"].includes(role)
   );
 
   if (loading) {
@@ -103,9 +109,11 @@ const ProfileContent = () => {
 
 const Profile = () => {
   return (
-    <LanguageProvider>
-      <ProfileContent />
-    </LanguageProvider>
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <ProfileContent />
+      </LanguageProvider>
+    </QueryClientProvider>
   );
 };
 
