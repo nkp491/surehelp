@@ -1,4 +1,3 @@
-
 import { useNavigate } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { UserCircle } from "lucide-react";
@@ -26,9 +25,9 @@ export function SidebarProfile({ profileData }: SidebarProfileProps) {
     try {
       await supabase.auth.signOut();
       roleService.clearRoles();
-      navigate('/auth');
+      navigate("/auth");
     } catch (error) {
-      console.error('Error signing out:', error);
+      console.error("Error signing out:", error);
     }
   };
 
@@ -38,22 +37,27 @@ export function SidebarProfile({ profileData }: SidebarProfileProps) {
         <DropdownMenuTrigger className="w-full">
           <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-100 transition-colors duration-200">
             <Avatar className="h-9 w-9">
-              <AvatarImage src={profileData.profile_image_url || ''} />
+              <AvatarImage src={profileData.profile_image_url || ""} />
               <AvatarFallback>
                 <UserCircle className="h-6 w-6" />
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 text-left">
-              <p className="text-sm font-medium">{profileData.first_name || 'Agent'}</p>
+              <p className="text-sm font-medium">
+                {profileData.first_name || "Agent"}
+              </p>
               <p className="text-xs text-gray-500">View profile</p>
             </div>
           </div>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-[200px]">
-          <DropdownMenuItem onClick={() => navigate('/profile')}>
+          <DropdownMenuItem
+            onClick={() => navigate("/profile")}
+            className="cursor-pointer"
+          >
             Profile Settings
           </DropdownMenuItem>
-          <DropdownMenuItem onClick={handleSignOut}>
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>

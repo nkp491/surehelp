@@ -38,14 +38,17 @@ const ForgotPassword = () => {
     }
 
     try {
-      const { data } = await supabase
+      const normalizedEmail = email.trim().toLowerCase();
+      const { count, error: profileError } = await supabase
         .from("profiles")
-        .select("email")
-        .eq("email", email)
-        .maybeSingle();
-      if (data) {
+        .select("id", { count: "exact", head: true })
+        .eq("email", normalizedEmail);
+
+      if (profileError) throw profileError;
+
+      if (count && count > 0) {
         const redirectUrl = `${window.location.origin}/auth/reset-password`;
-        const { error: resetError } = await supabase.auth.resetPasswordForEmail(email, {
+        const { error: resetError } = await supabase.auth.resetPasswordForEmail(normalizedEmail, {
           redirectTo: redirectUrl,
         });
         if (resetError) throw resetError;

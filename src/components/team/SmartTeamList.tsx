@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +53,7 @@ interface TeamMemberData {
 export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const queryClient = useQueryClient();
 
   // Fetch team members using the new team management system
   const { data: teamMembers, isLoading } = useQuery({
@@ -367,7 +368,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
     }
   };
 
-  // Handle member removal - now removes from team_members table
+  // Handle member removal - update DB, invalidate cache, avoid full page reload
   const handleRemoveMember = async (memberId: string) => {
     try {
       // First, get the manager's team
@@ -390,13 +391,13 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
       if (error) throw error;
 
+      // Invalidate the specific team-members query to refresh the list
+      queryClient.invalidateQueries({ queryKey: ["team-members", managerId] });
+
       toast({
         title: "Success",
         description: "Team member has been removed from your team.",
       });
-
-      // Refetch the data to update the UI
-      window.location.reload();
     } catch (error: unknown) {
       console.error("Error removing team member:", error);
       toast({

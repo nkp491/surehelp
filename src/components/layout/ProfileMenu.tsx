@@ -1,4 +1,3 @@
-
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,13 +14,13 @@ const ProfileMenu = () => {
     <div className="flex items-center space-x-4">
       <DropdownMenu>
         <DropdownMenuTrigger className="focus:outline-none">
-          <ProfileAvatar 
-            imageUrl={profileData.profile_image_url} 
-            firstName={profileData.first_name} 
+          <ProfileAvatar
+            imageUrl={profileData.profile_image_url}
+            firstName={profileData.first_name}
           />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
-          <DropdownMenuItem onClick={handleSignOut}>
+          <DropdownMenuItem onClick={handleSignOut} className="cursor-pointer">
             Sign Out
           </DropdownMenuItem>
         </DropdownMenuContent>
