@@ -77,7 +77,10 @@ export const useFormSubmission = (
         });
       }
       
-      setFormData(initialFormValues);
+      // Add a small delay before resetting to prevent visual break
+      setTimeout(() => {
+        setFormData(initialFormValues);
+      }, 500);
       return true;
     } catch (error) {
       console.error("Error saving submission:", error);

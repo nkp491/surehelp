@@ -135,6 +135,18 @@ export const useMetricsLoad = () => {
     });
   }, []);
 
+  const updateOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
+    setHistory((prev) => {
+      const existingIndex = prev.findIndex((entry) => entry.date === date);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = { date, metrics };
+        return updated;
+      }
+      return prev; // No change if entry doesn't exist
+    });
+  }, []);
+
   useEffect(() => {
     console.log("[MetricsLoad] Initial load starting...");
     loadHistory();
@@ -175,5 +187,6 @@ export const useMetricsLoad = () => {
     loadHistory,
     loadMoreHistory,
     addOptimisticEntry,
+    updateOptimisticEntry,
   };
 };

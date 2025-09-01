@@ -308,12 +308,17 @@ const PersonalInfo = ({
                       first_name: e.target.value,
                     }))
                   }
+                  placeholder="Enter first name"
                   className="w-full"
                 />
               ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.first_name || "Not provided"}
-                </p>
+                <Input
+                  type="text"
+                  value={formData.first_name}
+                  placeholder="Enter first name"
+                  readOnly
+                  className="w-full"
+                />
               )}
             </div>
 
@@ -332,12 +337,17 @@ const PersonalInfo = ({
                       last_name: e.target.value,
                     }))
                   }
+                  placeholder="Enter last name"
                   className="w-full"
                 />
               ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.last_name || "Not provided"}
-                </p>
+                <Input
+                  type="text"
+                  value={formData.last_name}
+                  placeholder="Enter last name"
+                  readOnly
+                  className="w-full"
+                />
               )}
             </div>
 
@@ -346,20 +356,14 @@ const PersonalInfo = ({
               <label className="text-sm font-medium text-gray-700">
                 {t.email}
               </label>
-              {isEditing ? (
-                <Input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) =>
-                    setFormData((prev) => ({ ...prev, email: e.target.value }))
-                  }
-                  className="w-full"
-                />
-              ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.email || "Not provided"}
-                </p>
-              )}
+              <Input
+                type="email"
+                value={formData.email}
+                placeholder="Email is managed by the system"
+                readOnly
+                disabled
+                className="w-full"
+              />
             </div>
 
             {/* Phone */}
@@ -374,12 +378,17 @@ const PersonalInfo = ({
                   onChange={(e) =>
                     setFormData((prev) => ({ ...prev, phone: e.target.value }))
                   }
+                  placeholder="Enter phone"
                   className="w-full"
                 />
               ) : (
-                <p className="text-base text-gray-900 pt-1">
-                  {formData.phone || "Not provided"}
-                </p>
+                <Input
+                  type="tel"
+                  value={formData.phone}
+                  placeholder="Enter phone"
+                  readOnly
+                  className="w-full"
+                />
               )}
             </div>
 

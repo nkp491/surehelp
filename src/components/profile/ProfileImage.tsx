@@ -12,22 +12,39 @@ interface ProfileImageProps {
   uploading: boolean;
 }
 
-const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImageProps) => {
+const ProfileImage = ({
+  imageUrl,
+  firstName,
+  onUpload,
+  uploading,
+}: ProfileImageProps) => {
   const { toast } = useToast();
   const [preview, setPreview] = useState<string | null>(imageUrl);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     try {
       if (!event.target.files || event.target.files.length === 0) {
-        throw new Error('You must select an image to upload.');
+        throw new Error("You must select an image to upload.");
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split('.').pop();
-      const allowedTypes = ['jpg', 'jpeg', 'png', 'gif'];
+      const fileExt = file.name.split(".").pop();
+      const allowedTypes = ["jpg", "jpeg", "png", "gif"];
+      const maxSizeInMB = 5; // 5 MB limit
+      const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
 
-      if (!allowedTypes.includes(fileExt?.toLowerCase() || '')) {
-        throw new Error('File type not supported. Please upload a JPG, PNG, or GIF image.');
+      if (file.size > maxSizeInBytes) {
+        throw new Error(
+          `File size too large. Please upload an image smaller than ${maxSizeInMB} MB.`
+        );
+      }
+
+      if (!allowedTypes.includes(fileExt?.toLowerCase() || "")) {
+        throw new Error(
+          "File type not supported. Please upload a JPG, PNG, or GIF image."
+        );
       }
 
       // Create a preview URL
@@ -36,7 +53,6 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
 
       // Call the parent's onUpload handler
       await onUpload(event);
-
     } catch (error: any) {
       toast({
         title: "Error uploading image",
@@ -67,7 +83,9 @@ const ProfileImage = ({ imageUrl, firstName, onUpload, uploading }: ProfileImage
             className="text-foreground"
           />
           <p className="text-sm text-foreground mt-1">
-            {uploading ? "Uploading..." : "Click to upload a new profile picture"}
+            {uploading
+              ? "Uploading..."
+              : "Click to upload a new profile picture"}
           </p>
         </div>
       </CardContent>

@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
-import { useMetricsHistory } from '@/hooks/useMetricsHistory';
-import { useMetricsDelete } from '@/hooks/metrics/useMetricsDelete';
-import MetricsHistoryHeader from './filters/MetricsHistoryHeader';
-import MetricsContent from './MetricsContent';
-import { useMetrics } from '@/contexts/MetricsContext';
-import { TimePeriod } from '@/types/metrics';
-import { useInView } from 'react-intersection-observer';
+import { useState, useEffect } from "react";
+import { useMetricsHistory } from "@/hooks/useMetricsHistory";
+import { useMetricsDelete } from "@/hooks/metrics/useMetricsDelete";
+import MetricsHistoryHeader from "./filters/MetricsHistoryHeader";
+import MetricsContent from "./MetricsContent";
+import { useMetrics } from "@/contexts/MetricsContext";
+import { TimePeriod } from "@/types/metrics";
+import { useInView } from "react-intersection-observer";
 
 const MetricsHistory = () => {
   const {
@@ -26,14 +26,15 @@ const MetricsHistory = () => {
   } = useMetricsHistory();
 
   const { refreshMetrics } = useMetrics();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
-  const { deleteDate, setDeleteDate, handleDelete } = useMetricsDelete(loadHistory);
+  const { deleteDate, setDeleteDate, handleDelete } =
+    useMetricsDelete(loadHistory);
 
   // Infinite scroll setup with a lower threshold for smoother loading
   const { ref, inView } = useInView({
     threshold: 0.1,
-    rootMargin: '100px',
+    rootMargin: "100px",
   });
 
   useEffect(() => {
@@ -53,7 +54,7 @@ const MetricsHistory = () => {
       await handleAddBackdatedMetrics(date);
       await refreshMetrics();
     } catch (error) {
-      console.error('[MetricsHistory] Error adding historical entry:', error);
+      console.error("[MetricsHistory] Error adding historical entry:", error);
     }
   };
 
@@ -70,24 +71,31 @@ const MetricsHistory = () => {
           onTimePeriodChange={setTimePeriod}
         />
       </div>
-      
+
       <div className="bg-white rounded-lg shadow-sm">
-        <MetricsContent
-          sortedHistory={sortedHistory}
-          editingRow={editingRow}
-          editedValues={editedValues}
-          selectedDate={selectedDate}
-          searchTerm={searchTerm}
-          deleteDate={deleteDate}
-          onEdit={handleEdit}
-          onSave={handleSaveAndRefresh}
-          onCancel={handleCancel}
-          onSort={handleSort}
-          onValueChange={handleValueChange}
-          onDelete={(date) => setDeleteDate(date)}
-          onDeleteDialogChange={(open) => !open && setDeleteDate(null)}
-          onConfirmDelete={() => deleteDate && handleDelete(deleteDate)}
-        />
+        {isLoading && sortedHistory.length === 0 ? (
+          <div className="p-8 text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-4"></div>
+            <p className="text-gray-600">Loading KPI history...</p>
+          </div>
+        ) : (
+          <MetricsContent
+            sortedHistory={sortedHistory}
+            editingRow={editingRow}
+            editedValues={editedValues}
+            selectedDate={selectedDate}
+            searchTerm={searchTerm}
+            deleteDate={deleteDate}
+            onEdit={handleEdit}
+            onSave={handleSaveAndRefresh}
+            onCancel={handleCancel}
+            onSort={handleSort}
+            onValueChange={handleValueChange}
+            onDelete={(date) => setDeleteDate(date)}
+            onDeleteDialogChange={(open) => !open && setDeleteDate(null)}
+            onConfirmDelete={() => deleteDate && handleDelete(deleteDate)}
+          />
+        )}
       </div>
 
       {/* Invisible trigger for infinite scroll */}

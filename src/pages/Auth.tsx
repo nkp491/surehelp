@@ -9,6 +9,7 @@ import TermsCheckbox from "@/components/auth/TermsCheckbox";
 import { roleService } from "@/services/roleService";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
 
 const Auth = () => {
   const navigate = useNavigate();
@@ -23,11 +24,12 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState({
     firstName: "",
     lastName: "",
   });
- const [nameError, setNameError] = useState({ firstName: "", lastName: "" });
+  const [nameError, setNameError] = useState({ firstName: "", lastName: "" });
 
   const validateEmail = (email: string) => {
     if (!email) {
@@ -71,29 +73,28 @@ const Auth = () => {
   };
 
   const validateName = (name: { firstName: string; lastName: string }) => {
-  const errors = { firstName: "", lastName: "" };
-  let isValid = true;
+    const errors = { firstName: "", lastName: "" };
+    let isValid = true;
 
-  if (!name.firstName) {
-    errors.firstName = "Please enter the first name";
-    isValid = false;
-  } else if (name.firstName.length < 2) {
-    errors.firstName = "First name must be at least 2 characters long";
-    isValid = false;
-  }
+    if (!name.firstName) {
+      errors.firstName = "Please enter the first name";
+      isValid = false;
+    } else if (name.firstName.length < 2) {
+      errors.firstName = "First name must be at least 2 characters long";
+      isValid = false;
+    }
 
-  if (!name.lastName) {
-    errors.lastName = "Please enter the last name";
-    isValid = false;
-  } else if (name.lastName.length < 2) {
-    errors.lastName = "Last name must be at least 2 characters long";
-    isValid = false;
-  }
+    if (!name.lastName) {
+      errors.lastName = "Please enter the last name";
+      isValid = false;
+    } else if (name.lastName.length < 2) {
+      errors.lastName = "Last name must be at least 2 characters long";
+      isValid = false;
+    }
 
-  setNameError(errors);
-  return isValid;
-};
-
+    setNameError(errors);
+    return isValid;
+  };
 
   useEffect(() => {
     const checkSession = async () => {
@@ -109,7 +110,9 @@ const Auth = () => {
           return;
         }
         if (session) {
-          const returnUrl = new URLSearchParams(location.search).get("returnUrl");
+          const returnUrl = new URLSearchParams(location.search).get(
+            "returnUrl"
+          );
           navigate(returnUrl || "/assessment", { replace: true });
         }
         if (error) {
@@ -140,7 +143,9 @@ const Auth = () => {
               );
               return;
             }
-            const returnUrl = new URLSearchParams(location.search).get("returnUrl");
+            const returnUrl = new URLSearchParams(location.search).get(
+              "returnUrl"
+            );
             navigate(returnUrl || "/assessment", { replace: true });
           }
           break;
@@ -157,7 +162,9 @@ const Auth = () => {
             });
             navigate("/assessment", { replace: true });
           } else {
-            setErrorMessage("There was an error updating your account. Please try again.");
+            setErrorMessage(
+              "There was an error updating your account. Please try again."
+            );
           }
           break;
       }
@@ -169,7 +176,8 @@ const Auth = () => {
     if (errorCode === "otp_expired") {
       toast({
         title: "Password Reset Link Expired",
-        description: "The password reset link has expired. Please request a new one.",
+        description:
+          "The password reset link has expired. Please request a new one.",
         variant: "destructive",
         duration: 6000,
       });
@@ -185,13 +193,23 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
-    
-    if (!validateEmail(email) || !validatePassword(password, true) || !validateName(name)) {
+
+    if (
+      !validateEmail(email) ||
+      !validatePassword(password, true) ||
+      !validateName(name)
+    ) {
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.signUp({ email, password, options: {data: {first_name: name.firstName, last_name: name.lastName}} });
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: { first_name: name.firstName, last_name: name.lastName },
+      },
+    });
     setLoading(false);
     if (error) setErrorMessage(getErrorMessage(error));
   };
@@ -200,13 +218,16 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     setErrorMessage("");
-    
+
     if (!validateEmail(email) || !validatePassword(password, false)) {
       setLoading(false);
       return;
     }
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
     setLoading(false);
     if (error) setErrorMessage(getErrorMessage(error));
   };
@@ -231,41 +252,55 @@ const Auth = () => {
           )}
           <div className="bg-white/90 p-6 sm:p-8 rounded-xl shadow-lg">
             {view === "sign_up" && (
-              <form onSubmit={handleSignUp} data-supabase-auth-view="sign_up" className="space-y-4">
+              <form
+                onSubmit={handleSignUp}
+                data-supabase-auth-view="sign_up"
+                className="space-y-4"
+              >
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-  <div>
-    <label htmlFor="firstName">First Name</label>
-    <Input
-      type="text"
-      placeholder="Your first name"
-      value={name.firstName}
-      onChange={(e) => {
-        setName((prev) => ({ ...prev, firstName: e.target.value }));
-        setNameError((prev) => ({ ...prev, firstName: "" }));
-      }}
-      required
-    />
-    {nameError.firstName && (
-      <p className="text-red-500 text-sm mt-1">{nameError.firstName}</p>
-    )}
-  </div>
-  <div>
-    <label htmlFor="lastName">Last Name</label>
-    <Input
-      type="text"
-      placeholder="Your last name"
-      value={name.lastName}
-      onChange={(e) => {
-        setName((prev) => ({ ...prev, lastName: e.target.value }));
-        setNameError((prev) => ({ ...prev, lastName: "" }));
-      }}
-      required
-    />
-    {nameError.lastName && (
-      <p className="text-red-500 text-sm mt-1">{nameError.lastName}</p>
-    )}
-  </div>
-</div>
+                  <div>
+                    <label htmlFor="firstName">First Name</label>
+                    <Input
+                      type="text"
+                      placeholder="Your first name"
+                      value={name.firstName}
+                      onChange={(e) => {
+                        setName((prev) => ({
+                          ...prev,
+                          firstName: e.target.value,
+                        }));
+                        setNameError((prev) => ({ ...prev, firstName: "" }));
+                      }}
+                      required
+                    />
+                    {nameError.firstName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {nameError.firstName}
+                      </p>
+                    )}
+                  </div>
+                  <div>
+                    <label htmlFor="lastName">Last Name</label>
+                    <Input
+                      type="text"
+                      placeholder="Your last name"
+                      value={name.lastName}
+                      onChange={(e) => {
+                        setName((prev) => ({
+                          ...prev,
+                          lastName: e.target.value,
+                        }));
+                        setNameError((prev) => ({ ...prev, lastName: "" }));
+                      }}
+                      required
+                    />
+                    {nameError.lastName && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {nameError.lastName}
+                      </p>
+                    )}
+                  </div>
+                </div>
 
                 <div>
                   <label htmlFor="email">Email address</label>
@@ -279,23 +314,44 @@ const Auth = () => {
                     }}
                     required
                   />
-                  {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                  {emailError && (
+                    <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="password">Create a Password</label>
-                  <Input
-                    type="password"
-                    placeholder="Your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      validatePassword(e.target.value, true);
-                    }}
-                    required
-                  />
-                  {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        validatePassword(e.target.value, true);
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                  )}
                 </div>
-                <TermsCheckbox isChecked={termsAccepted} onCheckedChange={setTermsAccepted} />
+                <TermsCheckbox
+                  isChecked={termsAccepted}
+                  onCheckedChange={setTermsAccepted}
+                />
                 <Button
                   type="submit"
                   className="w-full bg-[#2A6F97] hover:bg-[#256087] text-white"
@@ -306,7 +362,11 @@ const Auth = () => {
               </form>
             )}
             {view === "sign_in" && (
-              <form onSubmit={handleSignIn} data-supabase-auth-view="sign_in" className="space-y-4">
+              <form
+                onSubmit={handleSignIn}
+                data-supabase-auth-view="sign_in"
+                className="space-y-4"
+              >
                 <div>
                   <label htmlFor="email">Email address</label>
                   <Input
@@ -319,21 +379,39 @@ const Auth = () => {
                     }}
                     required
                   />
-                  {emailError && <p className="text-red-500 text-sm mt-1">{emailError}</p>}
+                  {emailError && (
+                    <p className="text-red-500 text-sm mt-1">{emailError}</p>
+                  )}
                 </div>
                 <div>
                   <label htmlFor="password">Your Password</label>
-                  <Input
-                    type="password"
-                    placeholder="Your password"
-                    value={password}
-                    onChange={(e) => {
-                      setPassword(e.target.value);
-                      validatePassword(e.target.value, false);
-                    }}
-                    required
-                  />
-                  {passwordError && <p className="text-red-500 text-sm mt-1">{passwordError}</p>}
+                  <div className="relative">
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="Your password"
+                      value={password}
+                      onChange={(e) => {
+                        setPassword(e.target.value);
+                        validatePassword(e.target.value, false);
+                      }}
+                      required
+                    />
+                    <button
+                      type="button"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2"
+                      onClick={() => setShowPassword(!showPassword)}
+                      tabIndex={-1}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-gray-500" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-gray-500" />
+                      )}
+                    </button>
+                  </div>
+                  {passwordError && (
+                    <p className="text-red-500 text-sm mt-1">{passwordError}</p>
+                  )}
                 </div>
                 <Button
                   type="submit"

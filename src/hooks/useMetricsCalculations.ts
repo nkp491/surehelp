@@ -1,7 +1,10 @@
 import { MetricCount, MetricTrends } from "@/types/metrics";
 
 export const useMetricsCalculations = () => {
-  const calculateTrends = (currentMetrics: MetricCount, previousMetrics: MetricCount): MetricTrends => {
+  const calculateTrends = (
+    currentMetrics: MetricCount,
+    previousMetrics: MetricCount
+  ): MetricTrends => {
     const trends: MetricTrends = {};
     Object.keys(currentMetrics).forEach((key) => {
       const current = currentMetrics[key];
@@ -15,12 +18,17 @@ export const useMetricsCalculations = () => {
     return trends;
   };
 
-  const initializeInputs = (metricsData: MetricCount): {[key: string]: string} => {
-    const initialInputs: {[key: string]: string} = {};
+  const initializeInputs = (
+    metricsData: MetricCount
+  ): { [key: string]: string } => {
+    const initialInputs: { [key: string]: string } = {};
     Object.entries(metricsData).forEach(([key, value]) => {
-      initialInputs[key] = key === 'ap' ? 
-        (value ? (value as number / 100).toFixed(2) : '0.00') : 
-        value?.toString() || '0';
+      initialInputs[key] =
+        key === "ap"
+          ? value
+            ? value.toFixed(2)
+            : "0.00"
+          : value?.toString() || "0";
     });
     return initialInputs;
   };

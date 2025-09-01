@@ -22,7 +22,7 @@ const FormButtons = ({ onSubmit, loading = false, loadingButton }: FormButtonsPr
 
     return (
       <>
-        <div className={`transition-all duration-200 ${isLoading ? "scale-110" : ""}`}>
+        <div className="transition-all duration-200">
           {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : icon}
         </div>
         <span className={`font-medium transition-opacity duration-200 ${isLoading ? "opacity-75" : ""}`}>
