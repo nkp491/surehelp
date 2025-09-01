@@ -79,6 +79,16 @@ export const useMetricsHistory = () => {
     loadHistory();
   }, [loadHistory]);
 
+  // Debug logging for history data
+  useEffect(() => {
+    console.log('[useMetricsHistory] History data updated:', {
+      historyLength: history.length,
+      sortedHistoryLength: sortedHistory?.length || 0,
+      isLoading,
+      hasData: history.length > 0
+    });
+  }, [history, sortedHistory, isLoading]);
+
   return {
     sortedHistory,
     editingRow,

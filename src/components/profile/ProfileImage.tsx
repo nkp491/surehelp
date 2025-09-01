@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { User } from "lucide-react";
+import { validateFile } from "@/utils/fileValidation";
 
 interface ProfileImageProps {
   imageUrl: string | null;
@@ -30,21 +31,16 @@ const ProfileImage = ({
       }
 
       const file = event.target.files[0];
-      const fileExt = file.name.split(".").pop();
-      const allowedTypes = ["jpg", "jpeg", "png", "gif"];
-      const maxSizeInMB = 5; // 5 MB limit
-      const maxSizeInBytes = maxSizeInMB * 1024 * 1024;
+      
+      // Use centralized validation utility
+      const validation = validateFile(file, {
+        maxSize: 5 * 1024 * 1024, // 5 MB limit
+        allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif"],
+        allowedExtensions: ["jpg", "jpeg", "png", "gif"]
+      });
 
-      if (file.size > maxSizeInBytes) {
-        throw new Error(
-          `File size too large. Please upload an image smaller than ${maxSizeInMB} MB.`
-        );
-      }
-
-      if (!allowedTypes.includes(fileExt?.toLowerCase() || "")) {
-        throw new Error(
-          "File type not supported. Please upload a JPG, PNG, or GIF image."
-        );
+      if (!validation.isValid) {
+        throw new Error(validation.error || "File validation failed");
       }
 
       // Create a preview URL
@@ -86,6 +82,9 @@ const ProfileImage = ({
             {uploading
               ? "Uploading..."
               : "Click to upload a new profile picture"}
+          </p>
+          <p className="text-xs text-muted-foreground mt-1">
+            Maximum file size: 5 MB. Supported formats: JPG, PNG, GIF
           </p>
         </div>
       </CardContent>

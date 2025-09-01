@@ -4,11 +4,15 @@ import LeadMTDSpend from "./LeadMTDSpend";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { MetricCount } from "@/types/metrics";
 
-const RatiosGrid = () => {
+interface RatiosGridProps {
+  todayMetrics?: Record<string, number>;
+}
+
+const RatiosGrid = ({ todayMetrics }: RatiosGridProps) => {
   const { metrics, timePeriod, aggregatedMetrics } = useMetrics();
 
-  // Use aggregated metrics for non-24h views
-  const metricsToUse: MetricCount = timePeriod === '24h' ? metrics : (aggregatedMetrics || metrics);
+  // Use todayMetrics for 24h view, aggregatedMetrics for other views
+  const metricsToUse: MetricCount = timePeriod === '24h' ? (todayMetrics || metrics) : (aggregatedMetrics || metrics);
   const ratios = calculateRatios(metricsToUse);
 
   return (

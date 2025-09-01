@@ -1,9 +1,11 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Profile } from "@/types/profile";
 import { toast } from "@/hooks/use-toast";
 
 export const useManagerTeam = (managerId?: string) => {
+  const queryClient = useQueryClient();
+  
   // Get all team members using the teams flow
   const {
     data: teamMembers,
@@ -125,6 +127,9 @@ export const useManagerTeam = (managerId?: string) => {
           title: "Success",
           description: "Team member has been removed from all teams.",
         });
+        
+        // Invalidate the team members query to refresh the list without triggering profile refetch
+        queryClient.invalidateQueries({ queryKey: ["manager-team", managerId] });
       } else {
         // Check if the new manager has a valid manager role
         const { data: managerRoles, error: managerRoleError } = await supabase
@@ -177,9 +182,11 @@ export const useManagerTeam = (managerId?: string) => {
           title: "Success",
           description: "Team member has been assigned to a new manager.",
         });
+        
+        // Invalidate the team members query to refresh the list without triggering profile refetch
+        queryClient.invalidateQueries({ queryKey: ["manager-team", managerId] });
       }
 
-      refetch();
       return true;
     } catch (error) {
       console.error("Error updating team member:", error.message);

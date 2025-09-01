@@ -3,11 +3,20 @@ import MetricCard from "./MetricCard";
 
 interface MetricsGridProps {
   aggregatedMetrics: Record<string, number>;
+  todayMetrics: Record<string, number>;
 }
 
-const MetricsGrid = ({ aggregatedMetrics }: MetricsGridProps) => {
+const MetricsGrid = ({ aggregatedMetrics, todayMetrics }: MetricsGridProps) => {
   const { metrics, trends, timePeriod } = useMetrics();
-  const displayMetrics = timePeriod === "24h" ? metrics : aggregatedMetrics;
+  const displayMetrics = timePeriod === "24h" ? todayMetrics : aggregatedMetrics;
+
+  console.log('[MetricsGrid] Rendering with:', {
+    timePeriod,
+    metrics,
+    todayMetrics,
+    aggregatedMetrics,
+    displayMetrics
+  });
 
   if (!displayMetrics) {
     return null;

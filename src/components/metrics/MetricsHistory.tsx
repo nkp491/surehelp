@@ -31,28 +31,57 @@ const MetricsHistory = () => {
   const { deleteDate, setDeleteDate, handleDelete } =
     useMetricsDelete(loadHistory);
 
+  // Track if we've reached the end of available data
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+
   // Infinite scroll setup with a lower threshold for smoother loading
   const { ref, inView } = useInView({
     threshold: 0.1,
     rootMargin: "100px",
+    // Disable when no more data
+    skip: !hasMoreData,
   });
 
   useEffect(() => {
-    if (inView && !isLoading) {
-      loadMoreHistory();
+    console.log("[MetricsHistory] useEffect triggered:", {
+      inView,
+      isLoading,
+      isLoadingMore,
+      hasMoreData,
+    });
+    if (inView && !isLoading && !isLoadingMore && hasMoreData) {
+      console.log("[MetricsHistory] Calling loadMoreHistory");
+      setIsLoadingMore(true);
+      loadMoreHistory()
+        .then((result) => {
+          console.log("[MetricsHistory] loadMoreHistory result:", result);
+          if (result && !result.hasMore) {
+            console.log("[MetricsHistory] Setting hasMoreData to false");
+            setHasMoreData(false);
+          }
+          setIsLoadingMore(false);
+        })
+        .catch(() => {
+          setIsLoadingMore(false);
+        });
     }
-  }, [inView, isLoading, loadMoreHistory]);
+  }, [inView, isLoading, isLoadingMore, hasMoreData]);
 
   const handleSaveAndRefresh = async (date: string) => {
     await handleSave(date);
     await loadHistory();
     await refreshMetrics();
+    // Reset hasMoreData when refreshing history
+    setHasMoreData(true);
   };
 
   const handleAddHistoricalEntry = async (date: Date) => {
     try {
       await handleAddBackdatedMetrics(date);
       await refreshMetrics();
+      // Reset hasMoreData when adding new entries
+      setHasMoreData(true);
     } catch (error) {
       console.error("[MetricsHistory] Error adding historical entry:", error);
     }
@@ -98,8 +127,25 @@ const MetricsHistory = () => {
         )}
       </div>
 
-      {/* Invisible trigger for infinite scroll */}
-      <div ref={ref} className="h-4" />
+      {/* Infinite scroll trigger and end-of-data indicator */}
+      {hasMoreData ? (
+        <div ref={ref} className="h-4">
+          {isLoadingMore && (
+            <div className="text-center py-4">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="text-sm text-muted-foreground mt-2">
+                Loading more...
+              </p>
+            </div>
+          )}
+        </div>
+      ) : (
+        sortedHistory.length > 0 && (
+          <div className="text-center py-4 text-muted-foreground">
+            <p>No more historical data to load</p>
+          </div>
+        )
+      )}
     </div>
   );
 };

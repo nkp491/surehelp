@@ -8,7 +8,9 @@ import { format, parseISO, subMonths } from "date-fns";
 let globalChannel: ReturnType<typeof supabase.channel> | null = null;
 
 export const useMetricsLoad = () => {
-  const [history, setHistory] = useState<Array<{ date: string; metrics: MetricCount }>>([]);
+  const [history, setHistory] = useState<
+    Array<{ date: string; metrics: MetricCount }>
+  >([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const isSubscribed = useRef(false);
@@ -55,6 +57,12 @@ export const useMetricsLoad = () => {
           },
         }));
 
+        console.log('[MetricsLoad] History loaded successfully:', {
+          dataLength: data.length,
+          formattedHistoryLength: formattedHistory.length,
+          sampleEntry: formattedHistory[0]
+        });
+        
         setHistory(formattedHistory);
         return formattedHistory;
       } catch (error) {
@@ -79,7 +87,8 @@ export const useMetricsLoad = () => {
     try {
       setIsLoading(true);
       const { data: user } = await supabase.auth.getUser();
-      if (!user.user || history.length === 0) return;
+      if (!user.user || history.length === 0)
+        return { hasMore: false, data: [] };
 
       const oldestEntry = history[history.length - 1];
       const { data, error } = await supabase
@@ -91,6 +100,11 @@ export const useMetricsLoad = () => {
         .limit(20);
 
       if (error) throw error;
+
+      // If no new data, return hasMore: false
+      if (!data || data.length === 0) {
+        return { hasMore: false, data: [] };
+      }
 
       const formattedNewHistory = data.map((entry) => ({
         date: format(parseISO(entry.date), "yyyy-MM-dd"),
@@ -106,7 +120,7 @@ export const useMetricsLoad = () => {
       }));
 
       setHistory((prev) => [...prev, ...formattedNewHistory]);
-      return formattedNewHistory;
+      return { hasMore: true, data: formattedNewHistory };
     } catch (error) {
       console.error("[MetricsLoad] Error loading more history:", error);
       toast({
@@ -114,38 +128,45 @@ export const useMetricsLoad = () => {
         description: "Failed to load more history",
         variant: "destructive",
       });
+      return { hasMore: false, data: [] };
     } finally {
       setIsLoading(false);
     }
   }, [history, toast]);
 
-  const addOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
-    setHistory((prev) => {
-      const newEntry = { date, metrics };
-      const existingIndex = prev.findIndex((entry) => entry.date === date);
+  const addOptimisticEntry = useCallback(
+    (date: string, metrics: MetricCount) => {
+      setHistory((prev) => {
+        const newEntry = { date, metrics };
+        const existingIndex = prev.findIndex((entry) => entry.date === date);
 
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = newEntry;
-        return updated;
-      } else {
-        const updated = [newEntry, ...prev];
-        return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
-      }
-    });
-  }, []);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = newEntry;
+          return updated;
+        } else {
+          const updated = [newEntry, ...prev];
+          return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
+        }
+      });
+    },
+    []
+  );
 
-  const updateOptimisticEntry = useCallback((date: string, metrics: MetricCount) => {
-    setHistory((prev) => {
-      const existingIndex = prev.findIndex((entry) => entry.date === date);
-      if (existingIndex >= 0) {
-        const updated = [...prev];
-        updated[existingIndex] = { date, metrics };
-        return updated;
-      }
-      return prev; // No change if entry doesn't exist
-    });
-  }, []);
+  const updateOptimisticEntry = useCallback(
+    (date: string, metrics: MetricCount) => {
+      setHistory((prev) => {
+        const existingIndex = prev.findIndex((entry) => entry.date === date);
+        if (existingIndex >= 0) {
+          const updated = [...prev];
+          updated[existingIndex] = { date, metrics };
+          return updated;
+        }
+        return prev; // No change if entry doesn't exist
+      });
+    },
+    []
+  );
 
   useEffect(() => {
     console.log("[MetricsLoad] Initial load starting...");
@@ -159,7 +180,10 @@ export const useMetricsLoad = () => {
             event: "*",
             schema: "public",
             table: "daily_metrics",
-            filter: `date=gte.${format(subMonths(new Date(), 1), "yyyy-MM-dd")}`,
+            filter: `date=gte.${format(
+              subMonths(new Date(), 1),
+              "yyyy-MM-dd"
+            )}`,
           },
           async (payload) => {
             console.log("[MetricsLoad] Real-time update received:", payload);
