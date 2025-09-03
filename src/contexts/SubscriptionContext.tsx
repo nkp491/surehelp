@@ -67,8 +67,33 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
       }
 
       if (subscriptionData) {
-        setSubscription(subscriptionData);
-        setSubscriptionPlan(subscriptionData.subscription_plans);
+        const transformedSubscription = {
+          ...subscriptionData,
+          currentPeriodStart: subscriptionData.current_period_start,
+          currentPeriodEnd: subscriptionData.current_period_end,
+          stripeCustomerId: subscriptionData.stripe_customer_id,
+          stripeSubscriptionId: subscriptionData.stripe_subscription_id,
+          trialEnd: subscriptionData.trial_end,
+          planId: subscriptionData.plan_id,
+          userId: subscriptionData.user_id,
+          createdAt: subscriptionData.created_at,
+          updatedAt: subscriptionData.updated_at,
+          status: subscriptionData.status as "active" | "canceled" | "incomplete" | "incomplete_expired" | "past_due" | "trialing" | "unpaid"
+        };
+        
+        const transformedPlan = {
+          ...subscriptionData.subscription_plans,
+          monthlyPrice: subscriptionData.subscription_plans.monthly_price,
+          annualPrice: subscriptionData.subscription_plans.annual_price,
+          stripePriceIdMonthly: subscriptionData.subscription_plans.stripe_price_id_monthly,
+          stripePriceIdAnnual: subscriptionData.subscription_plans.stripe_price_id_annual,
+          features: Array.isArray(subscriptionData.subscription_plans.features) 
+            ? subscriptionData.subscription_plans.features as string[]
+            : []
+        };
+        
+        setSubscription(transformedSubscription);
+        setSubscriptionPlan(transformedPlan);
       } else {
         setSubscription(null);
         setSubscriptionPlan(null);
