@@ -370,7 +370,7 @@ const transformMemberData = (
           return null;
         }
       })
-      .filter((member): member is EnrichedMember => member !== null);
+      .filter((member): member is NonNullable<typeof member> => member !== null);
   } catch (error) {
     console.error("Error in transformMemberData:", error);
     return [];
