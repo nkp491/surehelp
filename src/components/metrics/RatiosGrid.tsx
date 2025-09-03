@@ -12,7 +12,7 @@ const RatiosGrid = ({ todayMetrics }: RatiosGridProps) => {
   const { metrics, timePeriod, aggregatedMetrics } = useMetrics();
 
   // Use todayMetrics for 24h view, aggregatedMetrics for other views
-  const metricsToUse: MetricCount = timePeriod === '24h' ? (todayMetrics || metrics) : (aggregatedMetrics || metrics);
+  const metricsToUse = timePeriod === '24h' ? (todayMetrics || metrics) : (aggregatedMetrics || metrics);
   const ratios = calculateRatios(metricsToUse);
 
   return (
