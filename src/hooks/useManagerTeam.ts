@@ -18,16 +18,18 @@ export const useManagerTeam = (managerId?: string) => {
       if (!managerId) return [];
 
       // First, get the manager's team from team_managers table
-      const { data: managerTeam, error: teamError } = await supabase
+      const { data: managerTeams, error: teamError } = await supabase
         .from("team_managers")
         .select("team_id")
         .eq("user_id", managerId)
-        .single();
+        .limit(1);
 
-      if (teamError || !managerTeam) {
+      if (teamError || !managerTeams || managerTeams.length === 0) {
         console.log("No team found for manager:", managerId);
         return [];
       }
+
+      const managerTeam = managerTeams[0];
 
       // Get team members from team_members table
       const { data: members, error: membersError } = await supabase
@@ -152,15 +154,17 @@ export const useManagerTeam = (managerId?: string) => {
         }
 
         // Get manager's team
-        const { data: teamManager, error: teamManagerError } = await supabase
+        const { data: teamManagers, error: teamManagerError } = await supabase
           .from("team_managers")
           .select("team_id")
           .eq("user_id", newManagerId)
-          .single();
+          .limit(1);
 
-        if (teamManagerError) {
+        if (teamManagerError || !teamManagers || teamManagers.length === 0) {
           throw new Error("Failed to get manager's team");
         }
+
+        const teamManager = teamManagers[0];
 
         // Remove user from any existing team first
         await supabase.from("team_members").delete().eq("user_id", memberId);

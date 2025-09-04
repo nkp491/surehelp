@@ -38,7 +38,7 @@ export async function checkTeamMembership(userId: string): Promise<TeamMembershi
       .from("teams")
       .select("id, name")
       .eq("id", teamMember.team_id)
-      .single();
+      .maybeSingle();
 
     if (teamError) {
       console.error("Error fetching team:", teamError);
@@ -50,7 +50,7 @@ export async function checkTeamMembership(userId: string): Promise<TeamMembershi
       .from("team_managers")
       .select("user_id")
       .eq("team_id", teamMember.team_id)
-      .single();
+      .maybeSingle();
 
     if (managerError) {
       console.error("Error fetching team manager:", managerError);
@@ -62,7 +62,7 @@ export async function checkTeamMembership(userId: string): Promise<TeamMembershi
       .from("profiles")
       .select("first_name, last_name, email")
       .eq("id", teamManager.user_id)
-      .single();
+      .maybeSingle();
 
     if (profileError) {
       console.error("Error fetching manager profile:", profileError);

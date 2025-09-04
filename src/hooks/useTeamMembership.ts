@@ -72,7 +72,7 @@ export function useTeamMembership() {
           .from("teams")
           .select("id, name")
           .eq("id", teamMember.team_id)
-          .single();
+          .maybeSingle();
 
         if (teamError) {
           console.error("Error fetching team:", teamError);
@@ -84,7 +84,7 @@ export function useTeamMembership() {
           .from("team_managers")
           .select("user_id")
           .eq("team_id", teamMember.team_id)
-          .single();
+          .maybeSingle();
 
         if (managerError) {
           console.error("Error fetching team manager:", managerError);
@@ -96,7 +96,7 @@ export function useTeamMembership() {
           .from("profiles")
           .select("first_name, last_name, email")
           .eq("id", actualTeamManager.user_id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error("Error fetching manager profile:", profileError);

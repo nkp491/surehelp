@@ -1,7 +1,8 @@
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, X } from "lucide-react";
 import DateRangePicker from "@/components/charts/DateRangePicker";
 import { TimePeriod } from "@/types/metrics";
+import { Button } from "@/components/ui/button";
 
 interface SearchFiltersProps {
   searchTerm: string;
@@ -20,9 +21,15 @@ const SearchFilters = ({
   timePeriod,
   onTimePeriodChange,
 }: SearchFiltersProps) => {
-  const handleDateRangeChange = (dates: { from: Date | undefined; to: Date | undefined }) => {
-    // For now, we'll just use the "from" date to maintain compatibility
+  const handleDateRangeChange = (dates: {
+    from: Date | undefined;
+    to: Date | undefined;
+  }) => {
     onDateChange(dates.from);
+  };
+
+  const handleClearDate = () => {
+    onDateChange(null);
   };
 
   return (
@@ -37,11 +44,24 @@ const SearchFilters = ({
         />
         <Search className="w-4 h-4 absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" />
       </div>
-      <DateRangePicker
-        timePeriod={timePeriod}
-        onTimePeriodChange={onTimePeriodChange}
-        onDateRangeChange={handleDateRangeChange}
-      />
+      <div className="flex items-center gap-2">
+        <DateRangePicker
+          timePeriod={timePeriod}
+          onTimePeriodChange={onTimePeriodChange}
+          onDateRangeChange={handleDateRangeChange}
+        />
+        {selectedDate && (
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleClearDate}
+            className="h-10 w-10 text-gray-500 hover:text-gray-700"
+            title="Clear date filter"
+          >
+            <X className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
     </div>
   );
 };
