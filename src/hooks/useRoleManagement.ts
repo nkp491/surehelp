@@ -502,7 +502,7 @@ export const useRoleManagement = () => {
       }
 
       // Check if manager has a team
-      const { data: teamManager, error: teamManagerError } = await supabase
+      const { data: teamManagers, error: teamManagerError } = await supabase
         .from("team_managers")
         .select("user_id, role, team_id")
         .eq("user_id", managerId)
@@ -511,14 +511,15 @@ export const useRoleManagement = () => {
           "manager_gold",
           "manager_pro_gold",
           "manager_pro_platinum",
-        ])
-        .maybeSingle();
+        ]);
 
       if (teamManagerError) {
         console.error("Error checking team manager:", teamManagerError);
         throw new Error("Failed to check manager team");
       }
 
+      // Use the first manager entry if multiple exist
+      const teamManager = teamManagers?.[0];
       let managerTeamId = teamManager?.team_id;
 
       // If manager doesn't have a team, create one
