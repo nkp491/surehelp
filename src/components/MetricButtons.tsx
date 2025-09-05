@@ -42,7 +42,7 @@ const MetricButtons = ({
   };
 
   return (
-    <div className="flex items-center bg-red-500">
+    <div className="flex items-center">
       <div className="flex flex-col items-center gap-0.5 mx-[2px]">
         <h3 className="font-medium text-sm text-primary">
           {formatMetricName(metric)}

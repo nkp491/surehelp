@@ -36,16 +36,11 @@ export const useMetricsUpdates = (
       if (!user.user) return;
       const { error } = await supabase
         .from("daily_metrics")
-        .upsert(
-          {
-            user_id: user.user.id,
-            date: formattedDate,
-            ...metrics,
-          },
-          {
-            onConflict: "user_id,date",
-          }
-        )
+        .insert({
+          user_id: user.user.id,
+          date: formattedDate,
+          ...metrics,
+        })
         .select();
       if (error) throw error;
       toast({

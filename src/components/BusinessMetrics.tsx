@@ -8,7 +8,7 @@ import MetricsChart from "./MetricsChart";
 import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { startOfDay, format } from "date-fns";
+import { format } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import { useEffect, useMemo, useState } from "react";
 import { useAuthStateManager } from "@/hooks/useAuthStateManager";
@@ -16,7 +16,7 @@ import { PageSkeleton } from "./ui/loading-skeleton";
 import { ErrorBoundary } from "./ui/error-boundary";
 
 const BusinessMetricsContent = () => {
-  const { timePeriod, setAggregatedMetrics } = useMetrics();
+  const { timePeriod, dateRange, setAggregatedMetrics } = useMetrics();
   const { sortedHistory, isLoading: historyLoading } = useMetricsHistory();
   const { isAuthenticated } = useAuthStateManager();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
@@ -37,63 +37,99 @@ const BusinessMetricsContent = () => {
       return defaultMetrics;
     }
 
-    const now = startOfDay(new Date());
-    let periodRange = 1;
-    if (timePeriod === "7d") {
-      periodRange = 7;
-    } else if (timePeriod === "30d") {
-      periodRange = 30;
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = now;
+
+    switch (timePeriod) {
+      case "7d":
+        startDate = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+        break;
+      case "30d":
+        startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        break;
+      case "custom":
+        if (dateRange.from) {
+          startDate = dateRange.from;
+          endDate = dateRange.to || now;
+        } else {
+          startDate = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+        }
+        break;
+      default:
+        startDate = new Date(now.getTime() - 24 * 60 * 60 * 1000);
+        break;
     }
 
-    return sortedHistory.reduce(
+    const result = sortedHistory.reduce(
       (acc: MetricCount, entry) => {
-        const entryDate = new Date(entry.date);
-        const daysDiff = Math.floor(
-          (now.getTime() - entryDate.getTime()) / (1000 * 60 * 60 * 24)
-        );
-
-        if (daysDiff <= periodRange) {
+        const entryCreatedAt = new Date(entry.created_at);
+        if (entryCreatedAt >= startDate && entryCreatedAt <= endDate) {
           Object.entries(entry.metrics).forEach(([key, value]) => {
             if (key in acc) {
               acc[key as keyof MetricCount] += Number(value) || 0;
             }
           });
         }
-
         return acc;
       },
       { ...defaultMetrics }
     );
-  }, [timePeriod, sortedHistory, isAuthenticated]);
 
-  // Get today's metrics from historical data if available
+    return result;
+  }, [timePeriod, dateRange, sortedHistory, isAuthenticated]);
+
+  // Get today's metrics from historical data if available (sum all entries for today)
   const todayMetrics = useMemo(() => {
     if (!sortedHistory?.length || !isAuthenticated) {
       return defaultMetrics;
     }
 
     const today = format(new Date(), "yyyy-MM-dd");
-    const todayEntry = sortedHistory.find((entry) => entry.date === today);
 
-    // If no exact match, try to find entries from the last few days
-    let fallbackEntry = null;
-    if (!todayEntry) {
-      const now = new Date();
-      for (let i = 0; i < 3; i++) {
-        const checkDate = format(
-          new Date(now.getTime() - i * 24 * 60 * 60 * 1000),
-          "yyyy-MM-dd"
+    // Sum all entries for today
+    const todayEntries = sortedHistory.filter((entry) => entry.date === today);
+
+    if (todayEntries.length > 0) {
+      return todayEntries.reduce(
+        (acc, entry) => {
+          Object.entries(entry.metrics).forEach(([key, value]) => {
+            if (key in acc) {
+              acc[key as keyof MetricCount] += Number(value) || 0;
+            }
+          });
+          return acc;
+        },
+        { ...defaultMetrics }
+      );
+    }
+
+    // If no entries for today, try to find entries from the last few days
+    const now = new Date();
+    for (let i = 1; i <= 3; i++) {
+      const checkDate = format(
+        new Date(now.getTime() - i * 24 * 60 * 60 * 1000),
+        "yyyy-MM-dd"
+      );
+      const foundEntries = sortedHistory.filter(
+        (entry) => entry.date === checkDate
+      );
+      if (foundEntries.length > 0) {
+        return foundEntries.reduce(
+          (acc, entry) => {
+            Object.entries(entry.metrics).forEach(([key, value]) => {
+              if (key in acc) {
+                acc[key as keyof MetricCount] += Number(value) || 0;
+              }
+            });
+            return acc;
+          },
+          { ...defaultMetrics }
         );
-        const found = sortedHistory.find((entry) => entry.date === checkDate);
-        if (found) {
-          fallbackEntry = found;
-          break;
-        }
       }
     }
-    const finalEntry = todayEntry || fallbackEntry;
 
-    return finalEntry ? finalEntry.metrics : defaultMetrics;
+    return defaultMetrics;
   }, [sortedHistory, isAuthenticated]);
 
   // Update aggregated metrics when dependencies change

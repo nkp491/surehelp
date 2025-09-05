@@ -45,16 +45,14 @@ const MetricsSection = () => {
   }, [lastScrollY]);
 
   const handleSaveMetrics = async () => {
+    if (isLoading) {
+      return;
+    }
+
     try {
       setIsLoading(true);
-
-      // Save metrics using the service
       const success = await saveTodayMetricsForHeader(metrics);
-
       if (success) {
-        console.log("✅ Metrics saved successfully:", metrics);
-        
-        // Reset metrics to zeros after successful save
         setMetrics({
           leads: 0,
           calls: 0,
@@ -64,7 +62,7 @@ const MetricsSection = () => {
           sales: 0,
           ap: 0,
         });
-        
+
         // Optionally show success message
         // You can add a toast notification here if needed
       } else {
@@ -87,11 +85,9 @@ const MetricsSection = () => {
     }));
   };
 
-  console.log("=====metrics=====>", metrics);
-
   return (
     <div
-      className={`w-full transition-all duration-300 bg-blue-500 ${
+      className={`w-full transition-all duration-300 ${
         isVisible ? "translate-y-0" : "translate-y-full opacity-0"
       }`}
     >
@@ -131,14 +127,7 @@ const MetricsSection = () => {
             disabled={isLoading || isInitialLoading}
             className="bg-[#2A6F97] text-white px-8 h-6 w-12 text-sm hover:bg-[#2A6F97]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <Loader2 className="h-3 w-3 animate-spin" />
-                <span>Saving...</span>
-              </div>
-            ) : (
-              "Log"
-            )}
+            {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Log"}
           </Button>
         </div>
       </div>

@@ -25,7 +25,7 @@ export const useMetricsEdit = (
       const processedValues = Object.entries(editedValues).reduce(
         (acc, [key, value]) => ({
           ...acc,
-          [key]: Math.round(Number(value)),
+          [key]: key === "ap" ? Number(value) : Math.round(Number(value)),
         }),
         {} as MetricCount
       );
