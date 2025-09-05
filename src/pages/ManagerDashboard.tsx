@@ -39,26 +39,113 @@ const useTeams = () => {
   const fetchTeams = async (): Promise<void> => {
     try {
       setLoading(true);
-      const [teamsResult, membersResult, profilesResult] = await Promise.all([
-        supabase.from("teams").select("*"),
+
+      // Get current user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) {
+        console.error("Error getting current user:", userError);
+        return;
+      }
+
+      // Check if user is system admin
+      const { data: adminRoles, error: adminError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "system_admin");
+
+      if (adminError) {
+        console.error("Error checking admin role:", adminError);
+        return;
+      }
+
+      const isSystemAdmin = adminRoles && adminRoles.length > 0;
+
+      let teamsResult;
+      if (isSystemAdmin) {
+        // System admin can see all teams
+        teamsResult = await supabase.from("teams").select("*");
+      } else {
+        // Check if user is a manager
+        const { data: managerRoles, error: managerError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", [
+            "manager",
+            "manager_pro",
+            "manager_pro_gold",
+            "manager_pro_platinum",
+          ]);
+
+        if (managerError) {
+          console.error("Error checking manager role:", managerError);
+          return;
+        }
+
+        if (!managerRoles || managerRoles.length === 0) {
+          // User is not a manager, show no teams
+          setTeams([]);
+          return;
+        }
+
+        // Get teams managed by this user
+        const { data: managedTeams, error: managedTeamsError } = await supabase
+          .from("team_managers")
+          .select("team_id")
+          .eq("user_id", user.id);
+
+        if (managedTeamsError) {
+          console.error("Error fetching managed teams:", managedTeamsError);
+          return;
+        }
+
+        if (!managedTeams || managedTeams.length === 0) {
+          // User is a manager but has no teams assigned
+          setTeams([]);
+          return;
+        }
+
+        const teamIds = managedTeams.map((tm) => tm.team_id);
+        teamsResult = await supabase
+          .from("teams")
+          .select("*")
+          .in("id", teamIds);
+      }
+
+      if (teamsResult.error) {
+        console.error("Error fetching teams:", teamsResult.error);
+        return;
+      }
+
+      // Fetch team members, profiles, and user roles
+      const [membersResult, profilesResult, userRolesResult] = await Promise.all([
         supabase.from("team_members").select("*"),
         supabase
           .from("profiles")
           .select("id, first_name, last_name, email, profile_image_url"),
+        supabase.from("user_roles").select("user_id, role"),
       ]);
-      if (teamsResult.error || membersResult.error || profilesResult.error) {
+
+      if (membersResult.error || profilesResult.error || userRolesResult.error) {
         console.error("Error fetching data:", {
-          teamsError: teamsResult.error,
           membersError: membersResult.error,
           profilesError: profilesResult.error,
+          userRolesError: userRolesResult.error,
         });
         return;
       }
+
       const profileMap = createProfileMap(profilesResult.data as Profile[]);
+      const userRolesMap = createUserRolesMap(userRolesResult.data);
       const teamsWithMembers = transformTeamsData(
         teamsResult.data,
         membersResult.data,
-        profileMap
+        profileMap,
+        userRolesMap
       );
       setTeams(teamsWithMembers);
     } catch (error) {
@@ -109,10 +196,34 @@ const createProfileMap = (profiles: Profile[]): Map<string, ProfileInfo> => {
   );
 };
 
+const createUserRolesMap = (userRoles: { user_id: string; role: string }[]): Map<string, string[]> => {
+  const userRolesMap = new Map<string, string[]>();
+  userRoles.forEach((userRole) => {
+    if (!userRolesMap.has(userRole.user_id)) {
+      userRolesMap.set(userRole.user_id, []);
+    }
+    userRolesMap.get(userRole.user_id)!.push(userRole.role);
+  });
+  return userRolesMap;
+};
+
+const formatRoleName = (role: string): string => {
+  return role
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+const formatAllRoles = (roles: string[]): string => {
+  if (roles.length === 0) return "Agent";
+  return roles.map(formatRoleName).join(", ");
+};
+
 const transformTeamsData = (
   teams,
   teamMembers,
-  profileMap: Map<string, ProfileInfo>
+  profileMap: Map<string, ProfileInfo>,
+  userRolesMap: Map<string, string[]>
 ): TransformedTeam[] => {
   return teams.map((team) => ({
     ...team,
@@ -120,15 +231,22 @@ const transformTeamsData = (
     members: teamMembers
       .filter((member) => member.team_id === team.id)
       .map(
-        (member): TeamMember => ({
-          ...member,
-          name: profileMap.get(member.user_id)?.name ?? "Unknown User",
-          email: profileMap.get(member.user_id)?.email,
-          profile_image_url:
-            profileMap.get(member.user_id)?.profile_image_url ?? null,
-          created_at: member.created_at ?? new Date().toISOString(),
-          updated_at: member.updated_at ?? new Date().toISOString(),
-        })
+        (member): TeamMember => {
+          const userRoles = userRolesMap.get(member.user_id) ?? [];
+          const formattedRoles = formatAllRoles(userRoles);
+          
+          return {
+            ...member,
+            name: profileMap.get(member.user_id)?.name ?? "Unknown User",
+            email: profileMap.get(member.user_id)?.email,
+            profile_image_url:
+              profileMap.get(member.user_id)?.profile_image_url ?? null,
+            created_at: member.created_at ?? new Date().toISOString(),
+            updated_at: member.updated_at ?? new Date().toISOString(),
+            role: formattedRoles, // Display all formatted roles
+            roles: userRoles,
+          };
+        }
       ),
   }));
 };
@@ -192,7 +310,7 @@ const aggregateMetricsByUser = (
   metricsData: DailyMetric[]
 ): Record<string, MetricCount> => {
   const metricsByUser: Record<string, MetricCount> = {};
-  
+
   metricsData.forEach((row) => {
     metricsByUser[row.user_id] ??= {
       leads: 0,
@@ -210,13 +328,13 @@ const aggregateMetricsByUser = (
     userMetrics.scheduled += row.scheduled ?? 0;
     userMetrics.sits += row.sits ?? 0;
     userMetrics.sales += row.sales ?? 0;
-    
+
     // For AP, sum all values (don't average)
     if (row.ap && row.ap > 0) {
       userMetrics.ap += row.ap;
     }
   });
-  
+
   return metricsByUser;
 };
 
@@ -296,7 +414,8 @@ const convertRatiosToObject = (
 const transformMemberData = (
   members: TeamMember[],
   enrichedMetrics: Record<string, MemberMetrics>,
-  meetingNotesByUser: Record<string, MeetingNote[]>
+  meetingNotesByUser: Record<string, MeetingNote[]>,
+  userRolesMap: Map<string, string[]>
 ): EnrichedMember[] => {
   try {
     if (!Array.isArray(members)) {
@@ -320,11 +439,15 @@ const transformMemberData = (
             ap: 0,
           } as MetricCount;
           const metrics = enrichedMetrics[member.user_id];
+          const userRoles = userRolesMap.get(member.user_id) || [];
+          const formattedRoles = formatAllRoles(userRoles);
+          
           if (!metrics) {
             return {
               user_id: member.user_id,
               name: member.name || "Unknown User",
-              role: member.role || "Unknown Role",
+              role: formattedRoles,
+              roles: userRoles,
               email: member.email || undefined,
               profile_image_url: member.profile_image_url || null,
               metrics: {
@@ -349,7 +472,8 @@ const transformMemberData = (
           return {
             user_id: member.user_id,
             name: member.name || "Unknown User",
-            role: member.role || "Unknown Role",
+            role: formattedRoles,
+            roles: userRoles,
             email: member.email || undefined,
             profile_image_url: member.profile_image_url || null,
             metrics: {
@@ -370,7 +494,9 @@ const transformMemberData = (
           return null;
         }
       })
-      .filter((member): member is NonNullable<typeof member> => member !== null);
+      .filter(
+        (member): member is NonNullable<typeof member> => member !== null
+      );
   } catch (error) {
     console.error("Error in transformMemberData:", error);
     return [];
@@ -405,9 +531,10 @@ const ManagerDashboard = () => {
     try {
       const userIds = selectedTeam.members.map((m) => m.user_id);
       if (!userIds.length) return;
-      const [metricsData, { meetings, meetingNotes }] = await Promise.all([
+      const [metricsData, { meetings, meetingNotes }, userRolesResult] = await Promise.all([
         fetchDailyMetrics(userIds, timeRange),
         fetchMeetingData(userIds),
+        supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
       ]);
       const metricsByUser = aggregateMetricsByUser(metricsData);
       const enrichedMetrics = enrichMetricsWithRatios(metricsByUser);
@@ -415,10 +542,12 @@ const ManagerDashboard = () => {
         meetings,
         meetingNotes
       );
+      const userRolesMap = createUserRolesMap(userRolesResult.data || []);
       const transformedMembers = transformMemberData(
         selectedTeam.members as TeamMember[],
         enrichedMetrics,
-        meetingNotesByUser
+        meetingNotesByUser,
+        userRolesMap
       );
       setMembers(transformedMembers);
     } catch (error) {

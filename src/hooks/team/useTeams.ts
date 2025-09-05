@@ -20,13 +20,71 @@ export const useTeams = () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const { data, error } = await supabase
-        .from('teams')
-        .select('*')
-        .order('name');
+      // Check if user is system admin
+      const { data: adminRoles, error: adminError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "system_admin");
 
-      if (error) throw error;
-      return data as Team[];
+      if (adminError) {
+        console.error("Error checking admin role:", adminError);
+        throw adminError;
+      }
+
+      const isSystemAdmin = adminRoles && adminRoles.length > 0;
+
+      let teamsResult;
+      if (isSystemAdmin) {
+        // System admin can see all teams
+        teamsResult = await supabase
+          .from('teams')
+          .select('*')
+          .order('name');
+      } else {
+        // Check if user is a manager
+        const { data: managerRoles, error: managerError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", ["manager", "manager_pro", "manager_pro_gold", "manager_pro_platinum"]);
+
+        if (managerError) {
+          console.error("Error checking manager role:", managerError);
+          throw managerError;
+        }
+
+        if (!managerRoles || managerRoles.length === 0) {
+          // User is not a manager, return empty array
+          return [];
+        }
+
+        // Get teams managed by this user
+        const { data: managedTeams, error: managedTeamsError } = await supabase
+          .from("team_managers")
+          .select("team_id")
+          .eq("user_id", user.id);
+
+        if (managedTeamsError) {
+          console.error("Error fetching managed teams:", managedTeamsError);
+          throw managedTeamsError;
+        }
+
+        if (!managedTeams || managedTeams.length === 0) {
+          // User is a manager but has no teams assigned
+          return [];
+        }
+
+        const teamIds = managedTeams.map(tm => tm.team_id);
+        teamsResult = await supabase
+          .from('teams')
+          .select('*')
+          .in('id', teamIds)
+          .order('name');
+      }
+
+      if (teamsResult.error) throw teamsResult.error;
+      return teamsResult.data as Team[];
     },
   });
 

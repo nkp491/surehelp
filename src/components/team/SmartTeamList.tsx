@@ -141,16 +141,91 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
     enabled: !!managerId,
   });
 
-  // Fetch all teams and team members for hierarchy building
+  // Fetch teams and team members for hierarchy building (filtered by user role)
   const { data: allTeamsData } = useQuery({
     queryKey: ["all-teams-hierarchy"],
     queryFn: async () => {
-      // Get all teams
-      const { data: teams, error: teamsError } = await supabase
-        .from("teams")
-        .select("*");
+      // Get current user
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser();
+      if (userError || !user) {
+        throw new Error("User not authenticated");
+      }
 
-      if (teamsError) throw teamsError;
+      // Check if user is system admin
+      const { data: adminRoles, error: adminError } = await supabase
+        .from("user_roles")
+        .select("role")
+        .eq("user_id", user.id)
+        .eq("role", "system_admin");
+
+      if (adminError) throw adminError;
+
+      const isSystemAdmin = adminRoles && adminRoles.length > 0;
+
+      let teams;
+      if (isSystemAdmin) {
+        // System admin can see all teams
+        const { data: allTeams, error: teamsError } = await supabase
+          .from("teams")
+          .select("*");
+
+        if (teamsError) throw teamsError;
+        teams = allTeams;
+      } else {
+        // Check if user is a manager
+        const { data: managerRoles, error: managerError } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .in("role", [
+            "manager",
+            "manager_pro",
+            "manager_pro_gold",
+            "manager_pro_platinum",
+          ]);
+
+        if (managerError) throw managerError;
+
+        if (!managerRoles || managerRoles.length === 0) {
+          // User is not a manager, return empty data
+          return {
+            teams: [],
+            allTeamMembers: [],
+            allTeamManagers: [],
+            allProfiles: [],
+          };
+        }
+
+        // Get teams managed by this user
+        const { data: managedTeams, error: managedTeamsError } = await supabase
+          .from("team_managers")
+          .select("team_id")
+          .eq("user_id", user.id);
+
+        if (managedTeamsError) throw managedTeamsError;
+
+        if (!managedTeams || managedTeams.length === 0) {
+          // User is a manager but has no teams assigned
+          return {
+            teams: [],
+            allTeamMembers: [],
+            allTeamManagers: [],
+            allProfiles: [],
+          };
+        }
+
+        const teamIds = managedTeams.map((tm) => tm.team_id);
+        const { data: filteredTeams, error: teamsError } = await supabase
+          .from("teams")
+          .select("*")
+          .in("id", teamIds);
+
+        if (teamsError) throw teamsError;
+        teams = filteredTeams;
+      }
 
       // Get all team members
       const { data: allTeamMembers, error: membersError } = await supabase
