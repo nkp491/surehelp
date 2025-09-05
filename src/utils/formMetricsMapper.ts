@@ -110,9 +110,7 @@ export const updateMetricsFromFormSubmission = async (
 
     const { error: upsertError } = await supabase
       .from("daily_metrics")
-      .upsert(updatedMetrics, {
-        onConflict: "user_id,date",
-      });
+      .insert(updatedMetrics);
 
     if (upsertError) {
       console.error("Error updating metrics:", upsertError);

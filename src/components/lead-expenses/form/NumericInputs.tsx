@@ -22,11 +22,6 @@ const NumericInputs = ({ leadCount, setLeadCount, totalCost, setTotalCost }: Num
     const dollars = parseFloat(value);
     if (!isNaN(dollars)) {
       const cents = Math.round(dollars * 100);
-      console.log('[NumericInputs] Converting dollars to cents:', {
-        dollars,
-        cents,
-        originalValue: value
-      });
       setTotalCost(cents.toString());
     }
   };

@@ -1,44 +1,88 @@
 import MetricButtons from "@/components/MetricButtons";
-import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
-import { useMetricsUpdates } from "@/hooks/useMetricsUpdates";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
+import { Loader2 } from "lucide-react";
+import {
+  saveTodayMetricsForHeader,
+  MetricsHeaderData,
+} from "@/services/metricsHeaderService";
 
 const MetricsSection = () => {
-  const { metrics, handleInputChange } = useMetrics();
-  const { saveDailyMetrics } = useMetricsUpdates(metrics, handleInputChange);
+  const [metrics, setMetrics] = useState<MetricsHeaderData>({
+    leads: 0,
+    calls: 0,
+    contacts: 0,
+    scheduled: 0,
+    sits: 0,
+    sales: 0,
+    ap: 0,
+  });
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
+
+  // Initialize with zeros - don't load from DB
+  useEffect(() => {
+    setIsInitialLoading(false);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-
       setLastScrollY(currentScrollY);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
   }, [lastScrollY]);
 
   const handleSaveMetrics = async () => {
+    if (isLoading) {
+      return;
+    }
+
     try {
       setIsLoading(true);
-      await saveDailyMetrics();
+      const success = await saveTodayMetricsForHeader(metrics);
+      if (success) {
+        setMetrics({
+          leads: 0,
+          calls: 0,
+          contacts: 0,
+          scheduled: 0,
+          sits: 0,
+          sales: 0,
+          ap: 0,
+        });
+
+        // Optionally show success message
+        // You can add a toast notification here if needed
+      } else {
+        console.error("❌ Failed to save metrics");
+        // Optionally show error message
+        // You can add error handling/notification here
+      }
+    } catch (error) {
+      console.error("❌ Error saving metrics:", error);
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleInputChange = (metric: MetricType, value: string) => {
+    const numericValue = parseInt(value) || 0;
+    setMetrics((prev) => ({
+      ...prev,
+      [metric]: numericValue,
+    }));
   };
 
   return (
@@ -55,27 +99,35 @@ const MetricsSection = () => {
                 <MetricButtons
                   key={metric}
                   metric={metric}
-                  onIncrement={() => {}}
-                  onDecrement={() => {}}
+                  currentValue={metrics[metric as keyof MetricsHeaderData]}
+                  onInputChange={handleInputChange}
+                  onIncrement={() => {
+                    const currentValue =
+                      metrics[metric as keyof MetricsHeaderData];
+                    const newValue =
+                      metric === "ap" ? currentValue + 100 : currentValue + 1;
+                    handleInputChange(metric, newValue.toString());
+                  }}
+                  onDecrement={() => {
+                    const currentValue =
+                      metrics[metric as keyof MetricsHeaderData];
+                    const newValue =
+                      metric === "ap"
+                        ? Math.max(0, currentValue - 100)
+                        : Math.max(0, currentValue - 1);
+                    handleInputChange(metric, newValue.toString());
+                  }}
                   isLast={index === array.length - 1}
                 />
               )
             )}
           </div>
-
           <Button
             onClick={handleSaveMetrics}
-            disabled={isLoading}
-            className="bg-[#2A6F97] text-white px-8 h-6 text-sm hover:bg-[#2A6F97]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading || isInitialLoading}
+            className="bg-[#2A6F97] text-white px-8 h-6 w-12 text-sm hover:bg-[#2A6F97]/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
-              <div className="flex items-center gap-2">
-                <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                <span>Logging...</span>
-              </div>
-            ) : (
-              "Log"
-            )}
+            {isLoading ? <Loader2 className="h-3 w-3 animate-spin" /> : "Log"}
           </Button>
         </div>
       </div>

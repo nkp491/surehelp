@@ -4,12 +4,11 @@ import { MetricCount } from "@/types/metrics";
 import { useToast } from "@/hooks/use-toast";
 import { format, parseISO, subMonths } from "date-fns";
 
-// Create a singleton for the channel
 let globalChannel: ReturnType<typeof supabase.channel> | null = null;
 
 export const useMetricsLoad = () => {
   const [history, setHistory] = useState<
-    Array<{ date: string; metrics: MetricCount }>
+    Array<{ date: string; created_at: string; metrics: MetricCount }>
   >([]);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -23,29 +22,24 @@ export const useMetricsLoad = () => {
         if (!user.user) {
           return [];
         }
-
-        // Add a small delay on retry attempts
         if (retryCount > 0) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
-
-        // Get data from the last 3 months by default
         const threeMonthsAgo = format(subMonths(new Date(), 3), "yyyy-MM-dd");
-
         const { data, error } = await supabase
           .from("daily_metrics")
           .select("*")
           .eq("user_id", user.user.id)
           .gte("date", threeMonthsAgo)
-          .order("date", { ascending: false });
+          .order("created_at", { ascending: false });
 
         if (error) {
           console.error("[MetricsLoad] Error fetching data:", error);
           throw error;
         }
-
         const formattedHistory = data.map((entry) => ({
           date: format(parseISO(entry.date), "yyyy-MM-dd"),
+          created_at: entry.created_at,
           metrics: {
             leads: entry.leads || 0,
             calls: entry.calls || 0,
@@ -56,13 +50,6 @@ export const useMetricsLoad = () => {
             ap: entry.ap || 0,
           },
         }));
-
-        console.log('[MetricsLoad] History loaded successfully:', {
-          dataLength: data.length,
-          formattedHistoryLength: formattedHistory.length,
-          sampleEntry: formattedHistory[0]
-        });
-        
         setHistory(formattedHistory);
         return formattedHistory;
       } catch (error) {
@@ -89,25 +76,21 @@ export const useMetricsLoad = () => {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user || history.length === 0)
         return { hasMore: false, data: [] };
-
       const oldestEntry = history[history.length - 1];
       const { data, error } = await supabase
         .from("daily_metrics")
         .select("*")
         .eq("user_id", user.user.id)
-        .lt("date", oldestEntry.date)
-        .order("date", { ascending: false })
+        .lt("created_at", oldestEntry.created_at)
+        .order("created_at", { ascending: false })
         .limit(20);
-
       if (error) throw error;
-
-      // If no new data, return hasMore: false
       if (!data || data.length === 0) {
         return { hasMore: false, data: [] };
       }
-
       const formattedNewHistory = data.map((entry) => ({
         date: format(parseISO(entry.date), "yyyy-MM-dd"),
+        created_at: entry.created_at,
         metrics: {
           leads: entry.leads || 0,
           calls: entry.calls || 0,
@@ -118,7 +101,6 @@ export const useMetricsLoad = () => {
           ap: entry.ap || 0,
         },
       }));
-
       setHistory((prev) => [...prev, ...formattedNewHistory]);
       return { hasMore: true, data: formattedNewHistory };
     } catch (error) {
@@ -137,17 +119,27 @@ export const useMetricsLoad = () => {
   const addOptimisticEntry = useCallback(
     (date: string, metrics: MetricCount) => {
       setHistory((prev) => {
-        const newEntry = { date, metrics };
-        const existingIndex = prev.findIndex((entry) => entry.date === date);
-
-        if (existingIndex >= 0) {
-          const updated = [...prev];
-          updated[existingIndex] = newEntry;
-          return updated;
-        } else {
-          const updated = [newEntry, ...prev];
-          return updated.slice(0, 100); // Keep only the most recent 100 entries in memory
+        const now = new Date();
+        const recentThreshold = 5000;
+        const isDuplicate = prev.some((entry) => {
+          const entryTime = new Date(entry.created_at).getTime();
+          const timeDiff = now.getTime() - entryTime;
+          return (
+            entry.date === date &&
+            timeDiff < recentThreshold &&
+            JSON.stringify(entry.metrics) === JSON.stringify(metrics)
+          );
+        });
+        if (isDuplicate) {
+          return prev;
         }
+        const newEntry = {
+          date,
+          created_at: new Date().toISOString(),
+          metrics,
+        };
+        const updated = [newEntry, ...prev];
+        return updated.slice(0, 100);
       });
     },
     []
@@ -159,17 +151,19 @@ export const useMetricsLoad = () => {
         const existingIndex = prev.findIndex((entry) => entry.date === date);
         if (existingIndex >= 0) {
           const updated = [...prev];
-          updated[existingIndex] = { date, metrics };
+          updated[existingIndex] = {
+            ...updated[existingIndex],
+            metrics,
+          };
           return updated;
         }
-        return prev; // No change if entry doesn't exist
+        return prev;
       });
     },
     []
   );
 
   useEffect(() => {
-    console.log("[MetricsLoad] Initial load starting...");
     loadHistory();
     if (!isSubscribed.current && !globalChannel) {
       globalChannel = supabase
@@ -185,26 +179,21 @@ export const useMetricsLoad = () => {
               "yyyy-MM-dd"
             )}`,
           },
-          async (payload) => {
-            console.log("[MetricsLoad] Real-time update received:", payload);
+          async () => {
             await loadHistory();
           }
         )
         .subscribe();
-
       isSubscribed.current = true;
     }
-
     return () => {
       if (isSubscribed.current && globalChannel) {
-        console.log("[MetricsLoad] Cleaning up subscription");
         supabase.removeChannel(globalChannel);
         globalChannel = null;
         isSubscribed.current = false;
       }
     };
   }, []);
-
   return {
     history,
     isLoading,

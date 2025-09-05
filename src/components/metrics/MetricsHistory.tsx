@@ -44,20 +44,11 @@ const MetricsHistory = () => {
   });
 
   useEffect(() => {
-    console.log("[MetricsHistory] useEffect triggered:", {
-      inView,
-      isLoading,
-      isLoadingMore,
-      hasMoreData,
-    });
     if (inView && !isLoading && !isLoadingMore && hasMoreData) {
-      console.log("[MetricsHistory] Calling loadMoreHistory");
       setIsLoadingMore(true);
       loadMoreHistory()
         .then((result) => {
-          console.log("[MetricsHistory] loadMoreHistory result:", result);
           if (result && !result.hasMore) {
-            console.log("[MetricsHistory] Setting hasMoreData to false");
             setHasMoreData(false);
           }
           setIsLoadingMore(false);

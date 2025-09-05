@@ -1,25 +1,32 @@
 import { useMetrics } from "@/contexts/MetricsContext";
 import MetricCard from "./MetricCard";
+import { MetricsGridSkeleton } from "../ui/loading-skeleton";
 
 interface MetricsGridProps {
   aggregatedMetrics: Record<string, number>;
   todayMetrics: Record<string, number>;
+  isLoading?: boolean;
 }
 
-const MetricsGrid = ({ aggregatedMetrics, todayMetrics }: MetricsGridProps) => {
+const MetricsGrid = ({
+  aggregatedMetrics,
+  todayMetrics,
+  isLoading = false,
+}: MetricsGridProps) => {
   const { metrics, trends, timePeriod } = useMetrics();
-  const displayMetrics = timePeriod === "24h" ? todayMetrics : aggregatedMetrics;
+  const displayMetrics =
+    timePeriod === "24h" ? todayMetrics : aggregatedMetrics;
 
-  console.log('[MetricsGrid] Rendering with:', {
-    timePeriod,
-    metrics,
-    todayMetrics,
-    aggregatedMetrics,
-    displayMetrics
-  });
+  if (isLoading) {
+    return <MetricsGridSkeleton />;
+  }
 
   if (!displayMetrics) {
-    return null;
+    return (
+      <div className="text-center py-8 text-gray-500">
+        <p>No metrics data available</p>
+      </div>
+    );
   }
 
   return (

@@ -96,6 +96,10 @@ const TimeControls = () => {
                 from: range?.from,
                 to: range?.to,
               });
+              // Set time period to custom when date range is selected
+              if (range?.from && range?.to) {
+                handleTimePeriodChange("custom");
+              }
             }}
             numberOfMonths={2}
             />

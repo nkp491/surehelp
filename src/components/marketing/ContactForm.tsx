@@ -6,7 +6,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 
 const formSchema = z.object({
@@ -48,19 +54,19 @@ const ContactForm = () => {
   const onSubmit = async (data: FormData) => {
     setIsSubmitting(true);
     try {
-      // Here you would typically send the form data to your backend
-      console.log("Form submitted:", data);
-      
       toast({
         title: "Success!",
-        description: "We've received your message and will get back to you soon.",
+        description:
+          "We've received your message and will get back to you soon.",
       });
-      
+
       reset();
     } catch (error) {
+      console.error("Error submitting form:", error);
       toast({
         title: "Error",
-        description: "There was a problem submitting your form. Please try again.",
+        description:
+          "There was a problem submitting your form. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -69,7 +75,10 @@ const ContactForm = () => {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 w-full max-w-md">
+    <form
+      onSubmit={handleSubmit(onSubmit)}
+      className="space-y-6 w-full max-w-md"
+    >
       <div className="space-y-2">
         <Label htmlFor="fullName">Full Name</Label>
         <Input
@@ -98,7 +107,11 @@ const ContactForm = () => {
 
       <div className="space-y-2">
         <Label htmlFor="agencySize">Agency Size</Label>
-        <Select onValueChange={(value) => register("agencySize").onChange({ target: { value } })}>
+        <Select
+          onValueChange={(value) =>
+            register("agencySize").onChange({ target: { value } })
+          }
+        >
           <SelectTrigger className="bg-white/5 border-white/10 text-white">
             <SelectValue placeholder="Select agency size" />
           </SelectTrigger>
@@ -118,7 +131,9 @@ const ContactForm = () => {
       <div className="space-y-2">
         <Label>Would you like a demo?</Label>
         <RadioGroup
-          onValueChange={(value) => register("wantDemo").onChange({ target: { value } })}
+          onValueChange={(value) =>
+            register("wantDemo").onChange({ target: { value } })
+          }
           className="flex space-x-4"
         >
           <div className="flex items-center space-x-2">
@@ -163,11 +178,7 @@ const ContactForm = () => {
         )}
       </div>
 
-      <Button
-        type="submit"
-        className="w-full"
-        disabled={isSubmitting}
-      >
+      <Button type="submit" className="w-full" disabled={isSubmitting}>
         {isSubmitting ? "Sending..." : "Send Message"}
       </Button>
     </form>

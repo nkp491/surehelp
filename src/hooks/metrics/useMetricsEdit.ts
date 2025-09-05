@@ -3,7 +3,9 @@ import { MetricCount } from "@/types/metrics";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
-export const useMetricsEdit = (onSuccessfulEdit?: (date: string, newValues: MetricCount) => void) => {
+export const useMetricsEdit = (
+  onSuccessfulEdit?: (date: string, newValues: MetricCount) => void
+) => {
   const [editingRow, setEditingRow] = useState<string | null>(null);
   const [editedValues, setEditedValues] = useState<MetricCount | null>(null);
   const { toast } = useToast();
@@ -19,25 +21,14 @@ export const useMetricsEdit = (onSuccessfulEdit?: (date: string, newValues: Metr
     try {
       const { data: user } = await supabase.auth.getUser();
       if (!user.user) return;
-
-      const timestamp = Date.now();
-      const formattedDate = new Date(timestamp).toISOString().split("T")[0];
-
       // Process values before saving
       const processedValues = Object.entries(editedValues).reduce(
         (acc, [key, value]) => ({
           ...acc,
-          [key]: Math.round(Number(value)),
+          [key]: key === "ap" ? Number(value) : Math.round(Number(value)),
         }),
         {} as MetricCount
       );
-
-      console.log("[MetricsEdit] Saving metrics:", {
-        action: "update_metrics",
-        date: formattedDate,
-        metrics: processedValues,
-        timestamp,
-      });
 
       const { error } = await supabase
         .from("daily_metrics")
@@ -46,13 +37,6 @@ export const useMetricsEdit = (onSuccessfulEdit?: (date: string, newValues: Metr
         .eq("user_id", user.user.id);
 
       if (error) throw error;
-
-      console.log("[MetricsEdit] Metrics updated successfully:", {
-        action: "update_success",
-        date: formattedDate,
-        metrics: processedValues,
-        timestamp,
-      });
 
       toast({
         title: "Success",

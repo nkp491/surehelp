@@ -1,4 +1,5 @@
 import BusinessMetrics from "@/components/BusinessMetrics";
+import { ErrorBoundary } from "@/components/ui/error-boundary";
 
 const Dashboard = () => {
   return (
@@ -14,7 +15,9 @@ const Dashboard = () => {
         </div>
       </div>
       <div className="space-y-6 sm:space-y-8">
-        <BusinessMetrics />
+        <ErrorBoundary>
+          <BusinessMetrics />
+        </ErrorBoundary>
       </div>
     </div>
   );

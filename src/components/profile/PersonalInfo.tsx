@@ -150,6 +150,14 @@ const PersonalInfo = ({
         setManagerError("User not authenticated");
         return;
       }
+
+      const { canAddTeamMember } = await import("@/utils/teamLimits");
+      const teamLimitCheck = await canAddTeamMember(profileData.id);
+      
+      if (!teamLimitCheck.canAdd) {
+        setManagerError(teamLimitCheck.message || "Manager's team is at capacity");
+        return;
+      }
       let managerTeamId = teamManager.team_id;
       if (!managerTeamId) {
         const getTeamName = (profile: typeof profileData) => {

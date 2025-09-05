@@ -10,6 +10,7 @@ export type TeamMember = {
   team_id: string;
   user_id: string;
   role: string;
+  roles?: string[];
   name?: string;
   created_at: string;
   updated_at: string;
@@ -148,6 +149,7 @@ export interface EnrichedMember {
   user_id: string;
   name: string;
   role: string;
+  roles?: string[];
   email?: string; // Make email optional
   profile_image_url?: string | null;
   metrics: MemberMetrics;

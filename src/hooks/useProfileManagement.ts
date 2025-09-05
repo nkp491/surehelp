@@ -34,7 +34,6 @@ export const useProfileManagement = () => {
         console.error("Error fetching profile:", error);
         return;
       }
-      console.log("Fetched profile:", profile);
 
       setProfileData({
         ...profile,
@@ -75,8 +74,6 @@ export const useProfileManagement = () => {
 
   async function updateProfile(updates: Partial<Profile>) {
     try {
-      console.log("updateProfile called with data:", updates);
-
       const {
         data: { session },
       } = await supabase.auth.getSession();
@@ -87,10 +84,8 @@ export const useProfileManagement = () => {
         return;
       }
 
-      console.log("Current user ID:", session.user.id);
-
       // Create a clean copy of updates for database
-      const { roles, ...updatesToSave } = updates as Partial<Profile>;
+      const { roles, ...updatesToSave } = updates;
 
       // Handle JSON fields properly
       if (
@@ -108,19 +103,12 @@ export const useProfileManagement = () => {
         (updatesToSave as Record<string, unknown>).notification_preferences =
           JSON.stringify(updatesToSave.notification_preferences);
       }
-
-      // Log what we're sending to debug
-      console.log("Updating profile with:", updatesToSave);
-
       // FIX: Use .eq instead of .match for more reliable updating
-      const { data, error } = await supabase
+      const { error } = await supabase
         .from("profiles")
         .update(updatesToSave as Record<string, unknown>)
         .eq("id", session.user.id)
         .select();
-
-      console.log("Update response:", { data, error });
-
       if (error) {
         console.error("Error details:", error);
         throw error;
@@ -128,7 +116,6 @@ export const useProfileManagement = () => {
 
       // If email is updated, update it in user_roles table as well
       if (updates.email) {
-        console.log("Updating email in user_roles:", updates.email);
         const { error: rolesError } = await supabase
           .from("user_roles")
           .update({ email: updates.email })
@@ -164,12 +151,12 @@ export const useProfileManagement = () => {
       }
 
       const file = event.target.files[0];
-      
+
       // Validate file before upload
       const validation = validateFile(file, {
         maxSize: 5 * 1024 * 1024, // 5 MB limit
         allowedTypes: ["image/jpeg", "image/jpg", "image/png", "image/gif"],
-        allowedExtensions: ["jpg", "jpeg", "png", "gif"]
+        allowedExtensions: ["jpg", "jpeg", "png", "gif"],
       });
 
       if (!validation.isValid) {

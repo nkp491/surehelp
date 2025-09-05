@@ -9,17 +9,19 @@ export const useSaveFieldPosition = (section: string, fields: FormField[]) => {
     fieldId: string,
     newX: number,
     newY: number,
-    setFieldPositions: (value: any) => void
+    setFieldPositions: (value) => void
   ) => {
     try {
-      const { data: { user } } = await supabase.auth.getUser();
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
       if (!user) {
         console.error("No authenticated user found");
         return;
       }
 
       // Update local state immediately for better UX
-      setFieldPositions(prev => ({
+      setFieldPositions((prev) => ({
         ...prev,
         [fieldId]: {
           ...prev[fieldId],
@@ -29,41 +31,37 @@ export const useSaveFieldPosition = (section: string, fields: FormField[]) => {
       }));
 
       const { data: existingPosition } = await supabase
-        .from('form_field_positions')
-        .select('*')
-        .eq('user_id', user.id)
-        .eq('field_id', fieldId)
-        .eq('section', section)
+        .from("form_field_positions")
+        .select("*")
+        .eq("user_id", user.id)
+        .eq("field_id", fieldId)
+        .eq("section", section)
         .maybeSingle();
 
       if (existingPosition) {
         const { error: updateError } = await supabase
-          .from('form_field_positions')
+          .from("form_field_positions")
           .update({
             x_position: newX,
             y_position: newY,
             updated_at: new Date().toISOString(),
           })
-          .eq('id', existingPosition.id);
-
+          .eq("id", existingPosition.id);
         if (updateError) throw updateError;
       } else {
         const { error: insertError } = await supabase
-          .from('form_field_positions')
+          .from("form_field_positions")
           .insert({
             user_id: user.id,
             field_id: fieldId,
             section,
-            position: fields.findIndex(f => f.id === fieldId),
+            position: fields.findIndex((f) => f.id === fieldId),
             x_position: newX,
             y_position: newY,
           });
-
         if (insertError) throw insertError;
       }
-
-      console.log("Saved position for field:", fieldId, { newX, newY });
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error saving field position:", error);
       toast({
         title: "Error",

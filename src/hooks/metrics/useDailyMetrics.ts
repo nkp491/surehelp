@@ -1,6 +1,6 @@
-import {DatabaseMetric, MetricCount} from "@/types/metrics";
-import {supabase} from "@/integrations/supabase/client";
-import {format} from "date-fns";
+import { DatabaseMetric, MetricCount } from "@/types/metrics";
+import { supabase } from "@/integrations/supabase/client";
+import { format } from "date-fns";
 
 const extractMetricData = (data: DatabaseMetric): MetricCount => {
   const { leads, calls, contacts, scheduled, sits, sales, ap } = data;
@@ -31,15 +31,15 @@ export const useDailyMetrics = () => {
     }
 
     return data
-        ? extractMetricData(data as DatabaseMetric)
-        : {
-            leads: 0,
-            calls: 0,
-            contacts: 0,
-            scheduled: 0,
-            sits: 0,
-            sales: 0,
-            ap: 0,
+      ? extractMetricData(data as DatabaseMetric)
+      : {
+          leads: 0,
+          calls: 0,
+          contacts: 0,
+          scheduled: 0,
+          sits: 0,
+          sales: 0,
+          ap: 0,
         };
   };
 
@@ -54,16 +54,11 @@ export const useDailyMetrics = () => {
 
     const { error } = await supabase
       .from("daily_metrics")
-      .upsert(
-        {
-          user_id: user.user.id,
-          date: today,
-          ...metrics,
-        },
-        {
-          onConflict: "user_id,date",
-        }
-      )
+      .insert({
+        user_id: user.user.id,
+        date: today,
+        ...metrics,
+      })
       .select()
       .single();
 

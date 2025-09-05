@@ -1,5 +1,4 @@
 import { Card } from "@/components/ui/card";
-import { useMetrics } from "@/contexts/MetricsContext";
 import { MetricType } from "@/types/metrics";
 import MetricInput from "./metrics/MetricInput";
 import MetricControls from "./metrics/MetricControls";
@@ -7,6 +6,8 @@ import { Separator } from "./ui/separator";
 
 interface MetricButtonsProps {
   metric: string;
+  currentValue: number;
+  onInputChange: (metric: MetricType, value: string) => void;
   onIncrement: () => void;
   onDecrement: () => void;
   isLast?: boolean;
@@ -14,39 +15,30 @@ interface MetricButtonsProps {
 
 const MetricButtons = ({
   metric,
+  currentValue,
+  onInputChange,
   onIncrement,
   onDecrement,
   isLast = false,
 }: MetricButtonsProps) => {
-  const { metrics, handleInputChange } = useMetrics();
-
   const formatMetricName = (metric: string) => {
     return metric === "ap"
       ? "AP"
       : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
-  const currentValue = metrics[metric as MetricType];
   const isAP = metric === "ap";
 
   const handleIncrement = () => {
-    const increment = isAP ? 1 : 1;
-    const newValue = currentValue + increment;
-    handleInputChange(metric as MetricType, newValue.toString());
     onIncrement();
   };
 
   const handleDecrement = () => {
-    if (currentValue <= 0) return;
-    const decrement = isAP ? 1 : 1;
-    const newValue = Math.max(0, currentValue - decrement);
-    handleInputChange(metric as MetricType, newValue.toString());
     onDecrement();
   };
 
-  const handleMetricInputChange = async (value: string) => {
-    const numericValue = isAP ? value : parseInt(value).toString();
-    await handleInputChange(metric as MetricType, numericValue);
+  const handleMetricInputChange = (value: string) => {
+    onInputChange(metric as MetricType, value);
   };
 
   return (

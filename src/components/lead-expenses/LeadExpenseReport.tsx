@@ -5,6 +5,7 @@ import AddExpenseDialog from "./AddExpenseDialog";
 import DeleteExpenseDialog from "./DeleteExpenseDialog";
 import ExpenseTable from "./ExpenseTable";
 import ExpenseSearch from "./ExpenseSearch";
+import { TableSkeleton } from "../ui/loading-skeleton";
 
 interface LeadExpense {
   id: string;
@@ -23,6 +24,7 @@ const LeadExpenseReport = () => {
   const [isEditOpen, setIsEditOpen] = useState(false);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<LeadExpense | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [sortConfig, setSortConfig] = useState<{
     field: keyof LeadExpense;
     direction: 'asc' | 'desc';
@@ -30,6 +32,7 @@ const LeadExpenseReport = () => {
 
   const loadExpenses = async () => {
     try {
+      setIsLoading(true);
       const { data, error } = await supabase
         .from('lead_expenses')
         .select('*')
@@ -45,6 +48,8 @@ const LeadExpenseReport = () => {
         description: "Failed to load lead expenses",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -164,23 +169,60 @@ const LeadExpenseReport = () => {
 
       <ExpenseSearch onSearch={handleSearch} />
 
-      <ExpenseTable
-        expenses={filteredExpenses}
-        onEdit={(expense) => setSelectedExpense(expense)}
-        onDelete={(expense) => {
-          setSelectedExpense(expense);
-          setIsDeleteOpen(true);
-        }}
-        isEditOpen={isEditOpen}
-        setIsEditOpen={setIsEditOpen}
-        selectedExpense={selectedExpense}
-        onSuccess={() => {
-          loadExpenses();
-          setIsEditOpen(false);
-          setSelectedExpense(null);
-        }}
-        onSort={handleSort}
-      />
+      {(() => {
+        if (isLoading) {
+          return <TableSkeleton rows={5} />;
+        }
+        if (filteredExpenses.length === 0) {
+          return (
+        <div className="bg-white rounded-lg shadow-sm">
+          <div className="p-8 text-center">
+            <div className="text-gray-400 mb-4">
+              <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No Lead Expenses Found</h3>
+            <p className="text-gray-500 mb-4">
+              {(() => {
+                if (expenses.length === 0) {
+                  return "Start tracking your lead expenses to see them here.";
+                }
+                return "No expenses match your current search criteria.";
+              })()}
+            </p>
+            {expenses.length === 0 && (
+              <button
+                onClick={() => setIsAddOpen(true)}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Add First Expense
+              </button>
+            )}
+          </div>
+        </div>
+          );
+        }
+        return (
+          <ExpenseTable
+            expenses={filteredExpenses}
+            onEdit={(expense) => setSelectedExpense(expense)}
+            onDelete={(expense) => {
+              setSelectedExpense(expense);
+              setIsDeleteOpen(true);
+            }}
+            isEditOpen={isEditOpen}
+            setIsEditOpen={setIsEditOpen}
+            selectedExpense={selectedExpense}
+            onSuccess={() => {
+              loadExpenses();
+              setIsEditOpen(false);
+              setSelectedExpense(null);
+            }}
+            onSort={handleSort}
+          />
+        );
+      })()}
 
       <DeleteExpenseDialog
         isOpen={isDeleteOpen}
