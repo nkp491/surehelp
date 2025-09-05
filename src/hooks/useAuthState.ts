@@ -30,8 +30,6 @@ export const useAuthState = () => {
     } = supabase.auth.onAuthStateChange((event, session) => {
       if (!mounted) return;
 
-      console.log("Auth state change:", { event, session });
-
       if (event === "SIGNED_OUT") {
         clearAuthData();
         setIsAuthenticated(false);
@@ -54,7 +52,7 @@ export const useAuthState = () => {
           }
           return;
         }
-        if (session){
+        if (session) {
           setIsLogin(true);
         }
 

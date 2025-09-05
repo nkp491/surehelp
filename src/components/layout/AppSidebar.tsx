@@ -1,16 +1,15 @@
-
 import {
   Sidebar,
   SidebarContent,
   SidebarHeader,
   SidebarTrigger,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { navigationItems } from "./sidebar/navigationItems";
 import { useSidebarProfile } from "@/hooks/useSidebarProfile";
 import { SidebarNavigation } from "./sidebar/SidebarNavigation";
 import { SidebarProfile } from "./sidebar/SidebarProfile";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { useSidebar } from "@/components/ui/sidebar";
 
 export function AppSidebar() {
   const { profileData } = useSidebarProfile();
@@ -18,10 +17,13 @@ export function AppSidebar() {
   let sidebarContext: ReturnType<typeof useSidebar> | null = null;
   try {
     sidebarContext = useSidebar();
-  } catch(e) { console.log("Sidebar context not available"); }
+  } catch (e) {
+    console.error("Sidebar context not available");
+  }
 
   // Show mobile trigger only if sidebar is closed on mobile
-  const showMobileTrigger = isMobile && sidebarContext && !sidebarContext.openMobile;
+  const showMobileTrigger =
+    isMobile && sidebarContext && !sidebarContext.openMobile;
 
   return (
     <>
@@ -32,9 +34,9 @@ export function AppSidebar() {
       )}
       <Sidebar>
         <SidebarHeader className="h-[70px] flex items-center justify-center px-6 pt-6 relative">
-          <img 
-            src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png" 
-            alt="SureHelp" 
+          <img
+            src="/lovable-uploads/dcabcc30-0eb6-4b0b-9ff2-fbc393e364c8.png"
+            alt="SureHelp"
             className="h-[40px] w-auto mt-3"
           />
           {/* Desktop trigger only */}
@@ -43,9 +45,7 @@ export function AppSidebar() {
           )}
         </SidebarHeader>
         <SidebarContent>
-          <SidebarNavigation 
-            navigationItems={navigationItems}
-          />
+          <SidebarNavigation navigationItems={navigationItems} />
         </SidebarContent>
         <SidebarProfile profileData={profileData} />
       </Sidebar>

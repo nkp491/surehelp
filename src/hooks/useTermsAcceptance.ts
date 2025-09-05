@@ -1,10 +1,11 @@
-
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export const useTermsAcceptance = () => {
-  const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(null);
+  const [hasAcceptedTerms, setHasAcceptedTerms] = useState<boolean | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [isAccepting, setIsAccepting] = useState(false);
   const [termsAcceptedAt, setTermsAcceptedAt] = useState<string | null>(null);
@@ -14,10 +15,11 @@ export const useTermsAcceptance = () => {
     const checkTermsAcceptance = async () => {
       try {
         setIsLoading(true);
-        const { data: { session } } = await supabase.auth.getSession();
-        
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+
         if (!session) {
-          console.log("No session found");
           setHasAcceptedTerms(false);
           setIsLoading(false);
           return;
@@ -54,10 +56,12 @@ export const useTermsAcceptance = () => {
   const acceptTerms = async () => {
     try {
       setIsAccepting(true);
-      
+
       // Get the current user session
-      const { data: { session } } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
       if (!session) {
         toast({
           title: "Error",
@@ -69,13 +73,13 @@ export const useTermsAcceptance = () => {
 
       // Set current timestamp
       const now = new Date().toISOString();
-      
+
       // Update the terms_accepted_at field
       const { error } = await supabase
         .from("profiles")
         .update({ terms_accepted_at: now })
         .eq("id", session.user.id);
-      
+
       if (error) {
         toast({
           title: "Error",
@@ -88,14 +92,14 @@ export const useTermsAcceptance = () => {
       // Update local state
       setHasAcceptedTerms(true);
       setTermsAcceptedAt(now);
-      
+
       toast({
         title: "Terms Accepted",
         description: "You have successfully accepted the Terms and Conditions.",
       });
-      
+
       return Promise.resolve();
-    } catch (error: any) {
+    } catch (error) {
       console.error("Error accepting terms:", error);
       toast({
         title: "Error",
@@ -113,6 +117,6 @@ export const useTermsAcceptance = () => {
     termsAcceptedAt,
     isLoading,
     isAccepting,
-    acceptTerms
+    acceptTerms,
   };
 };

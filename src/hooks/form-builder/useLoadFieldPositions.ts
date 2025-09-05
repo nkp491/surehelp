@@ -9,38 +9,40 @@ export const useLoadFieldPositions = (section: string) => {
   useEffect(() => {
     const loadSavedPositions = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
         if (!user) {
-          console.log("No authenticated user found");
           return;
         }
 
         const { data: savedPositions, error } = await supabase
-          .from('form_field_positions')
-          .select('*')
-          .eq('user_id', user.id)
-          .eq('section', section)
-          .order('position');
+          .from("form_field_positions")
+          .select("*")
+          .eq("user_id", user.id)
+          .eq("section", section)
+          .order("position");
 
         if (error) {
           throw error;
         }
 
         if (savedPositions && savedPositions.length > 0) {
-          const positionsMap = savedPositions.reduce((acc, pos) => ({
-            ...acc,
-            [pos.field_id]: {
-              x_position: pos.x_position,
-              y_position: pos.y_position,
-              width: pos.width,
-              height: pos.height,
-              alignment: pos.alignment,
-              position: pos.position,
-            }
-          }), {});
-          
+          const positionsMap = savedPositions.reduce(
+            (acc, pos) => ({
+              ...acc,
+              [pos.field_id]: {
+                x_position: pos.x_position,
+                y_position: pos.y_position,
+                width: pos.width,
+                height: pos.height,
+                alignment: pos.alignment,
+                position: pos.position,
+              },
+            }),
+            {}
+          );
           setFieldPositions(positionsMap);
-          console.log("Loaded positions:", positionsMap);
         }
       } catch (error) {
         console.error("Error loading field positions:", error);

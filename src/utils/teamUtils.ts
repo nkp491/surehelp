@@ -14,7 +14,9 @@ export interface TeamMembershipInfo {
  * @param userId - The user ID to check
  * @returns TeamMembershipInfo if user is a team member, null otherwise
  */
-export async function checkTeamMembership(userId: string): Promise<TeamMembershipInfo | null> {
+export async function checkTeamMembership(
+  userId: string
+): Promise<TeamMembershipInfo | null> {
   try {
     // Check if user is in any team_members table
     const { data: teamMember, error: teamMemberError } = await supabase
@@ -29,7 +31,6 @@ export async function checkTeamMembership(userId: string): Promise<TeamMembershi
     }
 
     if (!teamMember) {
-      console.log("User is not a team member");
       return null;
     }
 
@@ -73,9 +74,10 @@ export async function checkTeamMembership(userId: string): Promise<TeamMembershi
       team_id: team.id,
       team_name: team.name,
       manager_id: teamManager.user_id,
-      manager_name: `${managerProfile.first_name} ${managerProfile.last_name}`.trim(),
+      manager_name:
+        `${managerProfile.first_name} ${managerProfile.last_name}`.trim(),
       manager_email: managerProfile.email || "",
-      role: teamMember.role
+      role: teamMember.role,
     };
   } catch (error) {
     console.error("Error in checkTeamMembership:", error);
@@ -90,7 +92,10 @@ export async function checkTeamMembership(userId: string): Promise<TeamMembershi
 export async function checkCurrentUserTeamMembership(): Promise<TeamMembershipInfo | null> {
   try {
     // Get current user
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    const {
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser();
     if (userError || !user) {
       throw new Error("User not authenticated");
     }
@@ -111,7 +116,8 @@ export async function getTeamMembers(teamId: string) {
   try {
     const { data: teamMembers, error } = await supabase
       .from("team_members")
-      .select(`
+      .select(
+        `
         user_id,
         role,
         profiles!inner(
@@ -121,7 +127,8 @@ export async function getTeamMembers(teamId: string) {
           email,
           profile_image_url
         )
-      `)
+      `
+      )
       .eq("team_id", teamId);
 
     if (error) {
@@ -129,11 +136,13 @@ export async function getTeamMembers(teamId: string) {
       return [];
     }
 
-    return teamMembers?.map(member => ({
-      user_id: member.user_id,
-      role: member.role,
-      profile: member.profiles
-    })) || [];
+    return (
+      teamMembers?.map((member) => ({
+        user_id: member.user_id,
+        role: member.role,
+        profile: member.profiles,
+      })) || []
+    );
   } catch (error) {
     console.error("Error in getTeamMembers:", error);
     return [];

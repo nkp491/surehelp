@@ -15,18 +15,14 @@ const MetricsSection = () => {
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-
       if (currentScrollY > lastScrollY) {
         setIsVisible(false);
       } else {
         setIsVisible(true);
       }
-
       setLastScrollY(currentScrollY);
     };
-
     window.addEventListener("scroll", handleScroll, { passive: true });
-
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
@@ -62,7 +58,6 @@ const MetricsSection = () => {
               )
             )}
           </div>
-
           <Button
             onClick={handleSaveMetrics}
             disabled={isLoading}
@@ -71,7 +66,6 @@ const MetricsSection = () => {
             {isLoading ? (
               <div className="flex items-center gap-2">
                 <div className="h-3 w-3 animate-spin rounded-full border-2 border-white border-t-transparent" />
-                <span>Logging...</span>
               </div>
             ) : (
               "Log"

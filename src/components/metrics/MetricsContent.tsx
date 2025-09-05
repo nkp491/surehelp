@@ -1,7 +1,6 @@
-
 import { MetricCount } from "@/types/metrics";
-import FilteredMetricsTable from './filters/FilteredMetricsTable';
-import DeleteMetricDialog from './DeleteMetricDialog';
+import FilteredMetricsTable from "./filters/FilteredMetricsTable";
+import DeleteMetricDialog from "./DeleteMetricDialog";
 import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { UpgradePrompt } from "@/components/common/UpgradePrompt";
 
@@ -39,26 +38,21 @@ const MetricsContent = ({
   onConfirmDelete,
 }: MetricsContentProps) => {
   const { hasRequiredRole } = useRoleCheck();
-  
+
   // Limit historical data for basic agents
   const hasFullHistoryAccess = hasRequiredRole([
-    'agent_pro', 'manager_pro', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'
+    "agent_pro",
+    "manager_pro",
+    "manager_pro_gold",
+    "manager_pro_platinum",
+    "beta_user",
+    "system_admin",
   ]);
-  
+
   // For basic agents, only show last 7 days of data
-  const limitedHistory = hasFullHistoryAccess 
-    ? sortedHistory 
+  const limitedHistory = hasFullHistoryAccess
+    ? sortedHistory
     : sortedHistory.slice(0, 7);
-  
-  console.log('[MetricsContent] Rendering with:', {
-    historyCount: sortedHistory.length,
-    limitedHistoryCount: limitedHistory.length,
-    hasFullAccess: hasFullHistoryAccess,
-    dates: limitedHistory.map(h => h.date),
-    searchTerm,
-    selectedDate: selectedDate?.toISOString(),
-    editingRow,
-  });
 
   return (
     <div className="space-y-4">

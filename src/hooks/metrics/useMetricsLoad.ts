@@ -57,12 +57,6 @@ export const useMetricsLoad = () => {
           },
         }));
 
-        console.log('[MetricsLoad] History loaded successfully:', {
-          dataLength: data.length,
-          formattedHistoryLength: formattedHistory.length,
-          sampleEntry: formattedHistory[0]
-        });
-        
         setHistory(formattedHistory);
         return formattedHistory;
       } catch (error) {
@@ -169,7 +163,6 @@ export const useMetricsLoad = () => {
   );
 
   useEffect(() => {
-    console.log("[MetricsLoad] Initial load starting...");
     loadHistory();
     if (!isSubscribed.current && !globalChannel) {
       globalChannel = supabase
@@ -186,7 +179,6 @@ export const useMetricsLoad = () => {
             )}`,
           },
           async (payload) => {
-            console.log("[MetricsLoad] Real-time update received:", payload);
             await loadHistory();
           }
         )
@@ -197,7 +189,6 @@ export const useMetricsLoad = () => {
 
     return () => {
       if (isSubscribed.current && globalChannel) {
-        console.log("[MetricsLoad] Cleaning up subscription");
         supabase.removeChannel(globalChannel);
         globalChannel = null;
         isSubscribed.current = false;

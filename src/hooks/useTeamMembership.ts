@@ -41,7 +41,6 @@ export function useTeamMembership() {
         }
 
         if (!teamMember) {
-          console.log("User is not a team member");
           return null;
         }
 
@@ -63,7 +62,6 @@ export function useTeamMembership() {
 
         // If user is the team manager, don't show them as their own manager
         if (teamManager) {
-          console.log("User is the team manager, not showing self as manager");
           return null;
         }
 

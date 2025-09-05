@@ -10,8 +10,11 @@ export const useAuthStateManager = () => {
 
   const checkSession = async () => {
     try {
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
-      
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
       if (sessionError) {
         console.error("Session error:", sessionError);
         setIsAuthenticated(false);
@@ -61,9 +64,9 @@ export const useAuthStateManager = () => {
   useEffect(() => {
     checkSession();
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log("Auth state change:", { event, session });
-      
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
       switch (event) {
         case "SIGNED_IN":
           setIsAuthenticated(true);

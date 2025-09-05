@@ -1,6 +1,6 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogClose,
@@ -10,37 +10,47 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon, Loader2 } from "lucide-react"
-import { format } from "date-fns"
-import { useForm, Controller } from "react-hook-form"
-import { useState } from "react"
-import { cn } from "@/lib/utils"
-import { supabase } from "@/integrations/supabase/client"
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { CalendarIcon, Loader2 } from "lucide-react";
+import { format } from "date-fns";
+import { useForm, Controller } from "react-hook-form";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { supabase } from "@/integrations/supabase/client";
 import { PROMO_CODE } from "./data-table";
 import { useToast } from "@/hooks/use-toast";
 
 type FormData = {
-  promoCode: string
-  discountType: string
-  discountValue?: number
-  usageLimit: number
-  expirationDate: Date
-}
+  promoCode: string;
+  discountType: string;
+  discountValue?: number;
+  usageLimit: number;
+  expirationDate: Date;
+};
 
 type AddPromoCodeProps = {
   onPromoCodeAdded?: (promo: PROMO_CODE) => void;
 };
 
 export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-   const { toast } = useToast();
+  const { toast } = useToast();
 
   const {
     register,
@@ -57,56 +67,60 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
       usageLimit: 0,
       expirationDate: new Date(new Date().setDate(new Date().getDate() + 1)),
     },
-  })
+  });
 
-  const discountType = watch("discountType")
-  const showDiscountField = discountType === "percentage" || discountType === "fixed"
+  const discountType = watch("discountType");
+  const showDiscountField =
+    discountType === "percentage" || discountType === "fixed";
 
   const handleCreateCoupon = async (data: FormData) => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       const {
         data: { session },
-      } = await supabase.auth.getSession()
+      } = await supabase.auth.getSession();
 
       if (!session?.access_token) {
-        throw new Error("No session found. Please log in and try again.")
+        throw new Error("No session found. Please log in and try again.");
       }
 
-      const accessToken = session.access_token
+      const accessToken = session.access_token;
 
-      const response = await fetch("https://fkdvsxnwpbvahllneusg.supabase.co/functions/v1/create-promo-code", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({
-          newCode: true,
-          promo_code: data.promoCode,
-          discount_type: data.discountType,
-          value: data.discountValue,
-          duration: "once",
-          expiration_date: data.expirationDate.toISOString(),
-          usage_limit: data.usageLimit,
-        }),
-      })
+      const response = await fetch(
+        "https://fkdvsxnwpbvahllneusg.supabase.co/functions/v1/create-promo-code",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({
+            newCode: true,
+            promo_code: data.promoCode,
+            discount_type: data.discountType,
+            value: data.discountValue,
+            duration: "once",
+            expiration_date: data.expirationDate.toISOString(),
+            usage_limit: data.usageLimit,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error("Error response from function:", errorData)
-        setIsLoading(false)
+        const errorData = await response.json();
+        console.error("Error response from function:", errorData);
+        setIsLoading(false);
         toast({
-        title: "Error",
-        description: "Failed to create promo code: " + (errorData || "Unknown error"),
-        variant: "destructive",
-        duration: 5000,
-      });
-        throw new Error(errorData.error || `Error creating promo code`)
+          title: "Error",
+          description:
+            "Failed to create promo code: " + (errorData || "Unknown error"),
+          variant: "destructive",
+          duration: 5000,
+        });
+        throw new Error(errorData.error || `Error creating promo code`);
       }
 
-      const result = await response.json()
-      console.log("Response from function:", result)
+      const result = await response.json();
 
       // Compose the new promo code object for optimistic update
       if (onPromoCodeAdded) {
@@ -117,13 +131,13 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
           expiration_date: result.promo?.expiration_date,
           usage_limit: result.promo?.usage_limit,
           usage_count: result.promo?.usage_count || 0,
-          coupon_id: result.promo?.coupon_id || '',
-          promo_id: result.promo?.promo_id || '',
+          coupon_id: result.promo?.coupon_id || "",
+          promo_id: result.promo?.promo_id || "",
           discount_type: result.promo?.discount_type, // Add the discount type
         };
         onPromoCodeAdded(newPromo);
       }
-      setIsLoading(false)
+      setIsLoading(false);
       toast({
         title: "Success",
         description: "Promo code created successfully",
@@ -132,34 +146,36 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
 
       // Auto-close dialog after success
       setTimeout(() => {
-        setOpen(false)
-        reset()
-      }, 2000)
+        setOpen(false);
+        reset();
+      }, 2000);
     } catch (err) {
-      console.error("Error calling Edge Function:", err)
-      setIsLoading(false)
+      console.error("Error calling Edge Function:", err);
+      setIsLoading(false);
       // Show error alert
       toast({
         title: "Error",
-        description: "Failed to create promo code: " + (err.error || err || "Unknown error"),
+        description:
+          "Failed to create promo code: " +
+          (err.error || err || "Unknown error"),
         variant: "destructive",
       });
     }
-  }
+  };
 
   const onSubmit = async (data: FormData) => {
-    await handleCreateCoupon(data)
-  }
+    await handleCreateCoupon(data);
+  };
 
   const handleDialogClose = (newOpen: boolean) => {
     if (!isLoading) {
-      setOpen(newOpen)
+      setOpen(newOpen);
       if (!newOpen) {
         // Reset form and states when dialog closes
-        reset()
+        reset();
       }
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleDialogClose}>
@@ -178,11 +194,17 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
               <Label htmlFor="promoCode">Promo Code Text *</Label>
               <Input
                 id="promoCode"
-                {...register("promoCode", { required: "Promo code text is required" })}
+                {...register("promoCode", {
+                  required: "Promo code text is required",
+                })}
                 placeholder="Enter promo code"
                 disabled={isLoading}
               />
-              {errors.promoCode && <span className="text-sm text-red-500">{errors.promoCode.message}</span>}
+              {errors.promoCode && (
+                <span className="text-sm text-red-500">
+                  {errors.promoCode.message}
+                </span>
+              )}
             </div>
 
             {/* Discount Type */}
@@ -193,7 +215,11 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
                 control={control}
                 rules={{ required: "Discount Type is required" }}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} value={field.value} disabled={isLoading}>
+                  <Select
+                    onValueChange={field.onChange}
+                    value={field.value}
+                    disabled={isLoading}
+                  >
                     <SelectTrigger>
                       <SelectValue placeholder="Select Discount Type" />
                     </SelectTrigger>
@@ -206,14 +232,20 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
                   </Select>
                 )}
               />
-              {errors.discountType && <span className="text-sm text-red-500">{errors.discountType.message}</span>}
+              {errors.discountType && (
+                <span className="text-sm text-red-500">
+                  {errors.discountType.message}
+                </span>
+              )}
             </div>
 
             {/* Conditional Discount Field */}
             {showDiscountField && (
               <div className="grid gap-2">
                 <Label htmlFor="discountValue">
-                  {discountType === "percentage" ? "Discount Percentage *" : "Discount Price *"}
+                  {discountType === "percentage"
+                    ? "Discount Percentage *"
+                    : "Discount Price *"}
                 </Label>
                 <Input
                   id="discountValue"
@@ -222,18 +254,31 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
                   min="0"
                   max={discountType === "percentage" ? "100" : undefined}
                   {...register("discountValue", {
-                    required: showDiscountField ? "Discount value is required" : false,
+                    required: showDiscountField
+                      ? "Discount value is required"
+                      : false,
                     valueAsNumber: true,
                     min: { value: 0, message: "Value must be greater than 0" },
                     max:
                       discountType === "percentage"
-                        ? { value: 100, message: "Percentage cannot exceed 100" }
+                        ? {
+                            value: 100,
+                            message: "Percentage cannot exceed 100",
+                          }
                         : undefined,
                   })}
-                  placeholder={discountType === "percentage" ? "Enter percentage (0-100)" : "Enter discount amount"}
+                  placeholder={
+                    discountType === "percentage"
+                      ? "Enter percentage (0-100)"
+                      : "Enter discount amount"
+                  }
                   disabled={isLoading}
                 />
-                {errors.discountValue && <span className="text-sm text-red-500">{errors.discountValue.message}</span>}
+                {errors.discountValue && (
+                  <span className="text-sm text-red-500">
+                    {errors.discountValue.message}
+                  </span>
+                )}
               </div>
             )}
 
@@ -251,7 +296,11 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
                 placeholder="Enter usage limit"
                 disabled={isLoading}
               />
-              {errors.usageLimit && <span className="text-sm text-red-500">{errors.usageLimit.message}</span>}
+              {errors.usageLimit && (
+                <span className="text-sm text-red-500">
+                  {errors.usageLimit.message}
+                </span>
+              )}
             </div>
 
             {/* Expiration Date */}
@@ -268,12 +317,14 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
                         variant="outline"
                         className={cn(
                           "w-full justify-start text-left font-normal",
-                          !field.value && "text-muted-foreground",
+                          !field.value && "text-muted-foreground"
                         )}
                         disabled={isLoading}
                       >
                         <CalendarIcon className="mr-2 h-4 w-4" />
-                        {field.value ? format(field.value, "PPP") : "Pick a date"}
+                        {field.value
+                          ? format(field.value, "PPP")
+                          : "Pick a date"}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0" align="start">
@@ -288,7 +339,11 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
                   </Popover>
                 )}
               />
-              {errors.expirationDate && <span className="text-sm text-red-500">{errors.expirationDate.message}</span>}
+              {errors.expirationDate && (
+                <span className="text-sm text-red-500">
+                  {errors.expirationDate.message}
+                </span>
+              )}
             </div>
           </div>
 
@@ -312,5 +367,5 @@ export function AddPromoCode({ onPromoCodeAdded }: AddPromoCodeProps) {
         </form>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

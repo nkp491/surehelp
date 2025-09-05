@@ -7,7 +7,6 @@ export const useMetricsRefresh = () => {
   const refreshMetricsAfterFormSubmission = useCallback(async () => {
     try {
       await refreshMetrics();
-      console.log("Metrics refreshed after form submission");
     } catch (error) {
       console.error("Error refreshing metrics after form submission:", error);
     }

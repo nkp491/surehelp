@@ -276,9 +276,6 @@ export const useRoleManagement = () => {
                     );
                   } else {
                     teamCreated = true;
-                    console.log(
-                      `Team created successfully for user ${userId} with role ${role}`
-                    );
                   }
                 } catch (insertError) {
                   console.error("Error inserting team manager:", insertError);
@@ -422,10 +419,6 @@ export const useRoleManagement = () => {
             console.error("Error removing user from team:", removeError);
             throw new Error("Failed to remove user from team");
           }
-
-          console.log(
-            `User ${userId} removed from team ${currentTeamMember.team_id}`
-          );
         }
 
         return {
@@ -474,10 +467,6 @@ export const useRoleManagement = () => {
 
       // If user is already in a team, remove them first
       if (currentTeamMember) {
-        console.log(
-          `User ${userId} is currently in team ${currentTeamMember.team_id}, removing...`
-        );
-
         const { error: removeError } = await supabase
           .from("team_members")
           .delete()
@@ -524,8 +513,6 @@ export const useRoleManagement = () => {
 
       // If manager doesn't have a team, create one
       if (!managerTeamId) {
-        console.log("Manager does not have a team, creating one...");
-
         // Create team name based on manager's first name
         const teamName = managerProfile.first_name
           ? `${managerProfile.first_name}'s Team`
@@ -560,11 +547,7 @@ export const useRoleManagement = () => {
           console.error("Error creating team manager entry:", teamManagerError);
           throw new Error("Error setting up manager team");
         }
-
         managerTeamId = newTeam.id;
-        console.log(
-          `Team created successfully for manager ${managerProfile.id}: ${teamName}`
-        );
       }
 
       // Add user to the manager's team
@@ -582,10 +565,6 @@ export const useRoleManagement = () => {
         console.error("Error adding user to team:", insertError);
         throw new Error("Error assigning user to team");
       }
-
-      console.log(
-        `User ${userId} successfully added to team ${managerTeamId} under manager ${managerId}`
-      );
 
       return {
         success: true,

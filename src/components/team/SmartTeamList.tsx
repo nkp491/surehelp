@@ -69,7 +69,6 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         .single();
 
       if (teamError || !managerTeam) {
-        console.log("No team found for manager:", managerId);
         return [];
       }
 

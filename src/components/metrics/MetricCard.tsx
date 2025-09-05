@@ -1,6 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
-import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip";
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from "@/components/ui/tooltip";
 
 interface MetricCardProps {
   metric: string;
@@ -15,22 +20,17 @@ const MetricCard = ({
   isCurrency = false,
   trend = 0,
 }: MetricCardProps) => {
-  console.log(`[MetricCard] Rendering ${metric} with value:`, {
-    action: 'render',
-    metric,
-    value,
-    timestamp: new Date().toISOString()
-  });
-
   const formatMetricName = (metric: string) => {
-    return metric === 'ap' ? 'AP' : metric.charAt(0).toUpperCase() + metric.slice(1);
+    return metric === "ap"
+      ? "AP"
+      : metric.charAt(0).toUpperCase() + metric.slice(1);
   };
 
   const formatValue = (value: number) => {
-    if (metric === 'ap') {
-      return new Intl.NumberFormat('en-US', {
-        style: 'currency',
-        currency: 'USD',
+    if (metric === "ap") {
+      return new Intl.NumberFormat("en-US", {
+        style: "currency",
+        currency: "USD",
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
       }).format(value); // AP values are now stored as dollars
@@ -38,7 +38,7 @@ const MetricCard = ({
     return value.toString();
   };
 
-  const isAP = metric === 'ap';
+  const isAP = metric === "ap";
 
   const getTrendIcon = () => {
     if (trend > 0) {
@@ -52,7 +52,7 @@ const MetricCard = ({
   const getTrendText = () => {
     const absValue = Math.abs(trend);
     if (trend === 0) return "No change";
-    return `${trend > 0 ? 'Up' : 'Down'} ${absValue}% from previous period`;
+    return `${trend > 0 ? "Up" : "Down"} ${absValue}% from previous period`;
   };
 
   return (
@@ -64,16 +64,18 @@ const MetricCard = ({
           </h3>
           <TooltipProvider>
             <Tooltip>
-              <TooltipTrigger>
-                {getTrendIcon()}
-              </TooltipTrigger>
+              <TooltipTrigger>{getTrendIcon()}</TooltipTrigger>
               <TooltipContent>
                 <p>{getTrendText()}</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </div>
-        <div className={`text-lg font-bold ${isAP ? 'text-green-600' : 'text-gray-900'}`}>
+        <div
+          className={`text-lg font-bold ${
+            isAP ? "text-green-600" : "text-gray-900"
+          }`}
+        >
           {formatValue(value)}
         </div>
       </div>
