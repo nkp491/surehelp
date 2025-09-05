@@ -550,7 +550,15 @@ export const useRoleManagement = () => {
         managerTeamId = newTeam.id;
       }
 
-      // Add user to the manager's team
+      const { canAddTeamMember } = await import("@/utils/teamLimits");
+      const teamLimitCheck = await canAddTeamMember(managerProfile.id);
+
+      if (!teamLimitCheck.canAdd) {
+        throw new Error(
+          teamLimitCheck.message || "Manager's team is at capacity"
+        );
+      }
+
       const { error: insertError } = await supabase
         .from("team_members")
         .insert([

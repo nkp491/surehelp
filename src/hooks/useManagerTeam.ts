@@ -131,6 +131,15 @@ export const useManagerTeam = (managerId?: string) => {
           throw new Error("Failed to get manager's team");
         }
         const teamManager = teamManagers[0];
+        
+        // Check team size limits before adding user to the new manager's team
+        const { canAddTeamMember } = await import("@/utils/teamLimits");
+        const teamLimitCheck = await canAddTeamMember(newManagerId);
+        
+        if (!teamLimitCheck.canAdd) {
+          throw new Error(teamLimitCheck.message || "Manager's team is at capacity");
+        }
+        
         await supabase.from("team_members").delete().eq("user_id", memberId);
         const { error: insertError } = await supabase
           .from("team_members")
