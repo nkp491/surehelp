@@ -99,7 +99,7 @@ export type Database = {
           calls: number | null
           contacts: number | null
           created_at: string
-          date: string
+          date: string | null
           id: string
           leads: number | null
           sales: number | null
@@ -113,7 +113,7 @@ export type Database = {
           calls?: number | null
           contacts?: number | null
           created_at?: string
-          date?: string
+          date?: string | null
           id?: string
           leads?: number | null
           sales?: number | null
@@ -127,7 +127,7 @@ export type Database = {
           calls?: number | null
           contacts?: number | null
           created_at?: string
-          date?: string
+          date?: string | null
           id?: string
           leads?: number | null
           sales?: number | null
