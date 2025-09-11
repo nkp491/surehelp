@@ -5,22 +5,23 @@ import { Profile } from "@/types/profile";
 import { useToast } from "@/hooks/use-toast";
 import { roleService } from "@/services/roleService";
 import { validateFile } from "@/utils/fileValidation";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 export const useProfileManagement = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
-  const [profileData, setProfileData] = useState<Profile>();
-  const isLoading = !profileData;
 
-  useEffect(() => {
-    const fetchProfile = async () => {
+  const { data: profileData, isLoading } = useQuery({
+    queryKey: ["profile"],
+    queryFn: async () => {
       const {
         data: { session },
       } = await supabase.auth.getSession();
 
       if (!session) {
         navigate("/auth");
-        return;
+        return null;
       }
 
       // Fetch profile data
@@ -29,13 +30,15 @@ export const useProfileManagement = () => {
         .select("*")
         .eq("id", session.user.id)
         .single();
-      const { roles } = await roleService.fetchAndSaveRoles();
+
       if (error) {
         console.error("Error fetching profile:", error);
-        return;
+        return null;
       }
 
-      setProfileData({
+      const { roles } = await roleService.fetchAndSaveRoles();
+
+      return {
         ...profile,
         roles: roles,
         privacy_settings:
@@ -53,11 +56,11 @@ export const useProfileManagement = () => {
                 email_notifications: true,
                 phone_notifications: false,
               },
-      } as Profile);
-    };
-
-    fetchProfile();
-  }, [navigate]);
+      } as Profile;
+    },
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
 
   // Auth state listener
   useEffect(() => {
@@ -126,6 +129,9 @@ export const useProfileManagement = () => {
           throw rolesError;
         }
       }
+
+      // Invalidate profile cache to refresh the data
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
 
       toast({
         title: "Profile updated",

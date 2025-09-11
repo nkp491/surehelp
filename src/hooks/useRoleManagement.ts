@@ -202,6 +202,60 @@ export const useRoleManagement = () => {
         .insert([{ user_id: userId, role, email }]);
       if (error) throw error;
 
+      // Create a subscription entry for the role if it's a paid role
+      const paidRoles = [
+        "agent_pro",
+        "manager_pro",
+        "manager_pro_gold",
+        "manager_pro_platinum",
+      ];
+      if (paidRoles.includes(role)) {
+        try {
+          // Check if user already has a subscription for this role
+          const { data: existingSubscription } = await supabase
+            .from("subscriptions")
+            .select("id")
+            .eq("user_id", userId)
+            .eq("plan_id", role)
+            .single();
+
+          if (!existingSubscription) {
+            // Create a subscription entry for admin-assigned roles
+            const { error: subscriptionError } = await supabase
+              .from("subscriptions")
+              .insert([
+                {
+                  user_id: userId,
+                  stripe_customer_id: `admin_${userId}`, // Placeholder for admin-assigned roles
+                  stripe_subscription_id: `admin_${userId}_${Date.now()}`, // Unique ID for admin-assigned roles
+                  plan_id: role,
+                  status: "active", // Admin-assigned roles are immediately active
+                  current_period_start: new Date().toISOString(),
+                  current_period_end: new Date(
+                    Date.now() + 365 * 24 * 60 * 60 * 1000
+                  ).toISOString(), // 1 year from now
+                },
+              ]);
+
+            if (subscriptionError) {
+              console.error(
+                "Error creating subscription for role:",
+                subscriptionError
+              );
+              // Don't throw error here as the role was already assigned successfully
+            } else {
+              console.log(`Successfully created subscription for role ${role} for user ${userId}`);
+            }
+          }
+        } catch (subscriptionError) {
+          console.error(
+            "Error in subscription creation process:",
+            subscriptionError
+          );
+          // Don't throw error here as the role was already assigned successfully
+        }
+      }
+
       // Check if this is a manager role and create a team if needed
       const managerRoles = [
         "manager_pro",
@@ -295,9 +349,21 @@ export const useRoleManagement = () => {
 
       return { success: true, message, teamCreated };
     },
-    onSuccess: (data) => {
+    onSuccess: async (data) => {
+      // Invalidate queries with a small delay to ensure subscription is created first
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-teams"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      
+      // Force refetch of profile and subscription data
+      queryClient.refetchQueries({ queryKey: ["profile"] });
+      
+      // Trigger subscription context refresh by dispatching a custom event
+      window.dispatchEvent(new CustomEvent('roleChanged'));
+      
       toast({
         title: "Success",
         description: data.message || "Role assigned successfully",
@@ -324,10 +390,49 @@ export const useRoleManagement = () => {
         .eq("user_id", userId)
         .eq("role", role);
       if (error) throw error;
+
+      // Remove subscription entry if it was admin-assigned
+      const paidRoles = [
+        "agent_pro",
+        "manager_pro",
+        "manager_pro_gold",
+        "manager_pro_platinum",
+      ];
+      if (paidRoles.includes(role)) {
+        try {
+          const { error: subscriptionError } = await supabase
+            .from("subscriptions")
+            .delete()
+            .eq("user_id", userId)
+            .eq("plan_id", role)
+            .like("stripe_customer_id", "admin_%"); // Only remove admin-assigned subscriptions
+
+          if (subscriptionError) {
+            console.error(
+              "Error removing subscription for role:",
+              subscriptionError
+            );
+            // Don't throw error here as the role was already removed successfully
+          }
+        } catch (subscriptionError) {
+          console.error(
+            "Error in subscription removal process:",
+            subscriptionError
+          );
+          // Don't throw error here as the role was already removed successfully
+        }
+      }
+
       return { success: true, message: "Role removed successfully" };
     },
     onSuccess: (data) => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["profile"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      
+      // Trigger subscription context refresh
+      window.dispatchEvent(new CustomEvent('roleChanged'));
+      
       toast({
         title: "Success",
         description: data.message || "Role removed successfully",
@@ -405,7 +510,6 @@ export const useRoleManagement = () => {
             "Error checking current team membership:",
             currentTeamError
           );
-          throw new Error("Failed to check current team membership");
         }
 
         if (currentTeamMember) {
@@ -462,7 +566,9 @@ export const useRoleManagement = () => {
           "Error checking current team membership:",
           currentTeamError
         );
-        throw new Error("Failed to check current team membership");
+        // Don't throw error here - just log it and continue
+        // The user might not be in any team, which is a valid state
+        // This could be due to RLS policies or the user simply not being in a team
       }
 
       // If user is already in a team, remove them first
@@ -584,6 +690,11 @@ export const useRoleManagement = () => {
       await queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       await queryClient.invalidateQueries({ queryKey: ["user-teams"] });
       await queryClient.invalidateQueries({ queryKey: ["team-members"] });
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+      await queryClient.invalidateQueries({ queryKey: ["subscription"] });
+
+      // Trigger subscription context refresh
+      window.dispatchEvent(new CustomEvent('roleChanged'));
 
       toast({
         title: "Success",
@@ -604,15 +715,26 @@ export const useRoleManagement = () => {
   });
 
   // Memoize the returned functions to prevent unnecessary re-renders
-  const assignRole = useCallback(assignRoleMutation.mutate, [
-    assignRoleMutation.mutate,
-  ]);
-  const removeRole = useCallback(removeRoleMutation.mutate, [
-    removeRoleMutation.mutate,
-  ]);
-  const assignManager = useCallback(assignManagerMutation.mutate, [
-    assignManagerMutation.mutate,
-  ]);
+  const assignRole = useCallback(
+    (data: { userId: string; email: string | null; role: string }) => {
+      assignRoleMutation.mutate(data);
+    },
+    [assignRoleMutation]
+  );
+
+  const removeRole = useCallback(
+    (data: { userId: string; role: string }) => {
+      removeRoleMutation.mutate(data);
+    },
+    [removeRoleMutation]
+  );
+
+  const assignManager = useCallback(
+    (data: { userId: string; managerId: string | null }) => {
+      assignManagerMutation.mutate(data);
+    },
+    [assignManagerMutation]
+  );
 
   return {
     users,

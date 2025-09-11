@@ -25,13 +25,14 @@ export const useMetricsLoad = () => {
         if (retryCount > 0) {
           await new Promise((resolve) => setTimeout(resolve, 500));
         }
-        const threeMonthsAgo = format(subMonths(new Date(), 3), "yyyy-MM-dd");
+        
+        // Load first 20 entries from the database
         const { data, error } = await supabase
           .from("daily_metrics")
           .select("*")
           .eq("user_id", user.user.id)
-          .gte("date", threeMonthsAgo)
-          .order("created_at", { ascending: false });
+          .order("created_at", { ascending: false })
+          .limit(20);
 
         if (error) {
           console.error("[MetricsLoad] Error fetching data:", error);
@@ -72,7 +73,7 @@ export const useMetricsLoad = () => {
 
   const loadMoreHistory = useCallback(async () => {
     try {
-      setIsLoading(true);
+      // Don't set the main isLoading state for loadMore - let the component handle its own loading state
       const { data: user } = await supabase.auth.getUser();
       if (!user.user || history.length === 0)
         return { hasMore: false, data: [] };
@@ -102,7 +103,8 @@ export const useMetricsLoad = () => {
         },
       }));
       setHistory((prev) => [...prev, ...formattedNewHistory]);
-      return { hasMore: true, data: formattedNewHistory };
+      // Return hasMore: true if we got exactly 20 entries (might be more), false if less
+      return { hasMore: data.length === 20, data: formattedNewHistory };
     } catch (error) {
       console.error("[MetricsLoad] Error loading more history:", error);
       toast({
@@ -111,8 +113,6 @@ export const useMetricsLoad = () => {
         variant: "destructive",
       });
       return { hasMore: false, data: [] };
-    } finally {
-      setIsLoading(false);
     }
   }, [history, toast]);
 

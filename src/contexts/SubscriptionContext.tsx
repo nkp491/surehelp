@@ -4,6 +4,7 @@ import {
   useEffect,
   useState,
   ReactNode,
+  useMemo,
 } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Subscription, SubscriptionPlan } from "@/integrations/stripe/types";
@@ -136,13 +137,27 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     };
   }, [isAuthenticated]);
 
+  // Listen for role changes to refresh subscription
+  useEffect(() => {
+    const handleRoleChange = () => {
+      console.log("Role changed event received, refreshing subscription...");
+      fetchSubscription();
+    };
+
+    window.addEventListener('roleChanged', handleRoleChange);
+    
+    return () => {
+      window.removeEventListener('roleChanged', handleRoleChange);
+    };
+  }, []);
+
   const isSubscribed = Boolean(
     subscription && ["active", "trialing"].includes(subscription.status)
   );
   const isTrialing = Boolean(subscription?.status === "trialing");
   const hasActiveSubscription = Boolean(subscription?.status === "active");
 
-  const value = {
+  const value = useMemo(() => ({
     subscription,
     subscriptionPlan,
     isLoading,
@@ -150,7 +165,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
     isTrialing,
     hasActiveSubscription,
     refreshSubscription: fetchSubscription,
-  };
+  }), [subscription, subscriptionPlan, isLoading, isSubscribed, isTrialing, hasActiveSubscription, fetchSubscription]);
 
   return (
     <SubscriptionContext.Provider value={value}>

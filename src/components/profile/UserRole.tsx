@@ -45,6 +45,12 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
     switch(role) {
       case "manager_pro_platinum":
         return [
+          "Unlimited client assessments",
+          "Advanced analytics & reporting",
+          "CSV export capabilities",
+          "Commission tracking",
+          "Priority support",
+          "Historical data insights",
           "Full manager dashboard access",
           "Team performance analytics",
           "Unlimited agent accounts",
@@ -54,6 +60,12 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         ];
       case "manager_pro_gold":
         return [
+          "Unlimited client assessments",
+          "Advanced analytics & reporting",
+          "CSV export capabilities",
+          "Commission tracking",
+          "Priority support",
+          "Historical data insights",
           "Full manager dashboard access",
           "Team performance analytics",
           "Up to 20 agent accounts",
@@ -62,13 +74,24 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         ];
       case "agent_pro":
         return [
-          "Advanced lead tracking",
-          "Commission calculator",
-          "Performance analytics",
-          "Priority support"
+          "Unlimited client assessments",
+          "Advanced analytics & reporting",
+          "CSV export capabilities", 
+          "Commission tracking",
+          "Priority support",
+          "Historical data insights",
+          "Personal metrics tracking",
+          "Client book of business",
+          "Performance analytics"
         ];
       case "manager_pro":
         return [
+          "Unlimited client assessments",
+          "Advanced analytics & reporting",
+          "CSV export capabilities",
+          "Commission tracking",
+          "Priority support",
+          "Historical data insights",
           "Basic manager dashboard",
           "Team performance metrics",
           "Up to 5 agent accounts"
@@ -77,11 +100,14 @@ const UserRole = ({ role, roles = [] }: UserRoleProps) => {
         return [
           "Early access to new features", 
           "Feedback opportunities",
+          "Unlimited client assessments",
+          "Advanced analytics & reporting",
+          "CSV export capabilities",
+          "Commission tracking",
+          "Priority support",
+          "Historical data insights",
           "Full manager dashboard access",
           "Team performance analytics",
-          "Commission calculator",
-          "Performance analytics",
-          "Priority support",
           "Role management access"
         ];
       default:

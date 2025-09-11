@@ -94,7 +94,12 @@ export function ManagerSelect({
       if (!canAssignManager) {
         return; // Prevent assignment if user doesn't have required role
       }
-      onAssignManager(user.id, value === NO_MANAGER_VALUE ? null : value);
+      try {
+        onAssignManager(user.id, value === NO_MANAGER_VALUE ? null : value);
+      } catch (error) {
+        console.error("Error assigning manager:", error);
+        // The error will be handled by the mutation's onError callback
+      }
     },
     [user.id, onAssignManager, canAssignManager]
   );
@@ -104,7 +109,12 @@ export function ManagerSelect({
     if (!canAssignManager) {
       return; // Prevent removal if user doesn't have required role
     }
-    onAssignManager(user.id, null);
+    try {
+      onAssignManager(user.id, null);
+    } catch (error) {
+      console.error("Error removing manager:", error);
+      // The error will be handled by the mutation's onError callback
+    }
   }, [user.id, onAssignManager, canAssignManager]);
 
   // Handle search input change
