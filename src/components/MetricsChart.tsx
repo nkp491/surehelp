@@ -1,5 +1,11 @@
-import ChartControls from "./charts/ChartControls";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { useMetricsHistory } from "@/hooks/useMetricsHistory";
+import { useMetrics } from "@/contexts/MetricsContext";
 import {
   Bar,
   XAxis,
@@ -12,8 +18,10 @@ import {
   ComposedChart,
 } from "recharts";
 import CustomTooltip from "./charts/CustomTooltip";
-import { startOfDay, subDays } from "date-fns";
+import { startOfDay, subDays, format } from "date-fns";
 import { ChartSkeleton } from "./ui/loading-skeleton";
+import { useMemo } from "react";
+import { cn } from "@/lib/utils";
 
 const COLORS = [
   "#64748B",
@@ -36,22 +44,68 @@ const MetricsChart = ({
   isLoading = false,
 }: MetricsChartProps) => {
   const { sortedHistory, isLoading: historyLoading } = useMetricsHistory();
+  const {
+    timePeriod: contextTimePeriod,
+    dateRange,
+    handleTimePeriodChange,
+    setDateRange,
+  } = useMetrics();
 
-  const sevenDaysAgo = startOfDay(subDays(new Date(), 7));
+  // Use context values if available, otherwise fall back to props
+  const currentTimePeriod = contextTimePeriod || timePeriod;
+  const currentDateRange = dateRange;
 
-  const transformedMetricsData = sortedHistory
-    .filter((entry) => new Date(entry.date) >= sevenDaysAgo)
-    .map((entry) => ({
-      name: new Date(entry.date).toLocaleDateString(),
-      leads: entry.metrics.leads || 0,
-      calls: entry.metrics.calls || 0,
-      contacts: entry.metrics.contacts || 0,
-      scheduled: entry.metrics.scheduled || 0,
-      sits: entry.metrics.sits || 0,
-      sales: entry.metrics.sales || 0,
-      ap: entry.metrics.ap || 0,
-    }))
-    .sort((a, b) => new Date(a.name).getTime() - new Date(b.name).getTime());
+  // Filter data based on time period and date range
+  const transformedMetricsData = useMemo(() => {
+    if (!sortedHistory?.length) return [];
+
+    const now = new Date();
+    let startDate: Date;
+    let endDate: Date = now;
+
+    switch (currentTimePeriod) {
+      case "24h":
+        startDate = subDays(now, 1);
+        break;
+      case "7d":
+        startDate = subDays(now, 7);
+        break;
+      case "30d":
+        startDate = subDays(now, 30);
+        break;
+      case "custom":
+        if (currentDateRange?.from && currentDateRange?.to) {
+          startDate = startOfDay(currentDateRange.from);
+          endDate = startOfDay(currentDateRange.to);
+        } else {
+          startDate = subDays(now, 7); // fallback to 7 days
+        }
+        break;
+      default:
+        startDate = subDays(now, 7);
+    }
+
+    return sortedHistory
+      .filter((entry) => {
+        const entryDate = startOfDay(new Date(entry.date));
+        return entryDate >= startDate && entryDate <= endDate;
+      })
+      .map((entry) => ({
+        name: format(new Date(entry.date), "MMM dd"),
+        fullDate: entry.date,
+        leads: entry.metrics.leads || 0,
+        calls: entry.metrics.calls || 0,
+        contacts: entry.metrics.contacts || 0,
+        scheduled: entry.metrics.scheduled || 0,
+        sits: entry.metrics.sits || 0,
+        sales: entry.metrics.sales || 0,
+        ap: entry.metrics.ap || 0,
+      }))
+      .sort(
+        (a, b) =>
+          new Date(a.fullDate).getTime() - new Date(b.fullDate).getTime()
+      );
+  }, [sortedHistory, currentTimePeriod, currentDateRange]);
 
   const metrics = [
     { key: "leads", label: "Leads", color: COLORS[0] },
@@ -62,8 +116,8 @@ const MetricsChart = ({
     { key: "sales", label: "Sales", color: COLORS[5] },
   ];
 
-  const maxAP = Math.max(...transformedMetricsData.map((item) => item.ap));
-  const yAxisDomain = [0, Math.ceil(maxAP / 10) * 10];
+  const maxAP = Math.max(...transformedMetricsData.map((item) => item.ap), 0);
+  const yAxisDomain = [0, Math.ceil(maxAP / 10) * 10 || 10];
 
   if (isLoading || historyLoading) {
     return <ChartSkeleton />;
@@ -71,13 +125,52 @@ const MetricsChart = ({
 
   if (!transformedMetricsData || transformedMetricsData.length === 0) {
     return (
-      <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
+      <div className="p-6 bg-white rounded-lg shadow-sm text-[#2A6F97]">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold">KPI VISUALIZATIONS</h2>
-          <ChartControls
-            timePeriod={timePeriod}
-            onTimePeriodChange={onTimePeriodChange}
-          />
+          <h2 className="text-xl font-bold">KPI VISUALIZATION</h2>
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                className={cn(
+                  "px-6 py-2 rounded-lg font-medium transition-colors border",
+                  currentTimePeriod === "custom"
+                    ? "bg-[#3F7BA9] text-white border-[#3F7BA9]"
+                    : "bg-white text-[#3F7BA9] border-[#3F7BA9] hover:bg-[#3F7BA9] hover:text-white"
+                )}
+              >
+                {dateRange.from && dateRange.to ? (
+                  <>
+                    {format(dateRange.from, "MMM d")} -{" "}
+                    {format(dateRange.to, "MMM d")}
+                  </>
+                ) : (
+                  "Custom"
+                )}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="end">
+              <Calendar
+                initialFocus
+                mode="range"
+                defaultMonth={dateRange.from}
+                selected={{
+                  from: dateRange.from,
+                  to: dateRange.to,
+                }}
+                onSelect={(range) => {
+                  setDateRange({
+                    from: range?.from,
+                    to: range?.to,
+                  });
+                  // Set time period to custom when date range is selected
+                  if (range?.from && range?.to) {
+                    handleTimePeriodChange("custom");
+                  }
+                }}
+                numberOfMonths={2}
+              />
+            </PopoverContent>
+          </Popover>
         </div>
         <div className="h-[500px] flex items-center justify-center">
           <div className="text-center">
@@ -111,11 +204,49 @@ const MetricsChart = ({
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm text-[#2A6F97]">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-xl font-bold">KPI VISUALIZATIONS</h2>
-        <ChartControls
-          timePeriod={timePeriod}
-          onTimePeriodChange={onTimePeriodChange}
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className={cn(
+                "px-6 py-2 rounded-lg font-medium transition-colors border",
+                currentTimePeriod === "custom"
+                  ? "bg-[#3F7BA9] text-white border-[#3F7BA9]"
+                  : "bg-white text-[#3F7BA9] border-[#3F7BA9] hover:bg-[#3F7BA9] hover:text-white"
+              )}
+            >
+              {dateRange.from && dateRange.to ? (
+                <>
+                  {format(dateRange.from, "MMM d")} -{" "}
+                  {format(dateRange.to, "MMM d")}
+                </>
+              ) : (
+                "Custom"
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange.from}
+              selected={{
+                from: dateRange.from,
+                to: dateRange.to,
+              }}
+              onSelect={(range) => {
+                setDateRange({
+                  from: range?.from,
+                  to: range?.to,
+                });
+                // Set time period to custom when date range is selected
+                if (range?.from && range?.to) {
+                  handleTimePeriodChange("custom");
+                }
+              }}
+              numberOfMonths={2}
+            />
+          </PopoverContent>
+        </Popover>
       </div>
       <div className="h-[500px]">
         <ResponsiveContainer width="100%" height="100%">

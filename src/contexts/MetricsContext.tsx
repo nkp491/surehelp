@@ -1,4 +1,3 @@
-
 import { createContext, useContext, ReactNode, useMemo } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { useMetricsStorage } from "@/hooks/useMetricsStorage";
@@ -28,16 +27,10 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     setTimePeriod,
   } = useMetricsState();
 
-  const { 
-    loadDailyMetrics,
-    loadPreviousMetrics,
-    savePeriodMetrics,
-  } = useMetricsStorage();
+  const { loadDailyMetrics, loadPreviousMetrics, savePeriodMetrics } =
+    useMetricsStorage();
 
-  const {
-    calculateTrends,
-    initializeInputs,
-  } = useMetricsCalculations();
+  const { calculateTrends, initializeInputs } = useMetricsCalculations();
 
   useMetricsRealtime(metrics);
 
@@ -62,6 +55,16 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const handleDateRangeChange = (range: {
+    from: Date | undefined;
+    to: Date | undefined;
+  }) => {
+    setDateRange(range);
+    if (range.from && range.to) {
+      setTimePeriod("custom");
+    }
+  };
+
   const handleMetricInputChange = async (metric: MetricType, value: string) => {
     handleInputChange(metric, value);
   };
@@ -70,7 +73,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     const dailyMetrics = await loadDailyMetrics();
     setMetrics(dailyMetrics);
     initializeInputs(dailyMetrics);
-    
+
     const previousMetricsData = await loadPreviousMetrics(timePeriod);
     if (previousMetricsData) {
       setPreviousMetrics(previousMetricsData);
@@ -81,46 +84,52 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
   const ratios = calculateRatios(metrics);
 
-  const value = useMemo(() => ({
-    metrics,
-    previousMetrics,
-    metricInputs,
-    timePeriod,
-    trends,
-    dateRange,
-    ratios,
-    aggregatedMetrics,
-    setAggregatedMetrics,
-    setDateRange,
-    setMetrics,
-    handleTimePeriodChange,
-    handleInputChange: handleMetricInputChange,
-    refreshMetrics,
-  }), [
-    metrics,
-    previousMetrics,
-    metricInputs,
-    timePeriod,
-    trends,
-    dateRange,
-    ratios,
-    aggregatedMetrics,
-    handleTimePeriodChange,
-    handleMetricInputChange,
-    refreshMetrics
-  ]);
+  const value = useMemo(
+    () => ({
+      metrics,
+      previousMetrics,
+      metricInputs,
+      timePeriod,
+      trends,
+      dateRange,
+      ratios,
+      aggregatedMetrics,
+      setAggregatedMetrics,
+      setDateRange,
+      setMetrics,
+      handleTimePeriodChange,
+      handleDateRangeChange,
+      handleInputChange: handleMetricInputChange,
+      refreshMetrics,
+    }),
+    [
+      metrics,
+      previousMetrics,
+      metricInputs,
+      timePeriod,
+      trends,
+      dateRange,
+      ratios,
+      aggregatedMetrics,
+      setAggregatedMetrics,
+      setDateRange,
+      setMetrics,
+      handleTimePeriodChange,
+      handleDateRangeChange,
+      handleMetricInputChange,
+      refreshMetrics,
+    ]
+  );
 
   return (
-    <MetricsContext.Provider value={value}>
-      {children}
-    </MetricsContext.Provider>
+    <MetricsContext.Provider value={value}>{children}</MetricsContext.Provider>
   );
 };
 
 export const useMetrics = () => {
   const context = useContext(MetricsContext);
   if (context === undefined) {
-    throw new Error('useMetrics must be used within a MetricsProvider');
+    throw new Error("useMetrics must be used within a MetricsProvider");
   }
   return context;
 };

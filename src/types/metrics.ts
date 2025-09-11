@@ -48,6 +48,7 @@ export interface MetricsContextType {
   setDateRange: (range: { from: Date | undefined; to: Date | undefined }) => void;
   setMetrics: (metrics: MetricCount) => void;
   handleTimePeriodChange: (period: TimePeriod) => void;
+  handleDateRangeChange: (range: { from: Date | undefined; to: Date | undefined }) => void;
   handleInputChange: (metric: MetricType, value: string) => void;
   refreshMetrics: () => Promise<void>;
 }

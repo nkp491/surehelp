@@ -12,8 +12,10 @@ import { roleService } from "@/services/roleService";
 
 const TimeControls = () => {
   const userRoles = roleService.getRoles();
-  const isAgent = userRoles.length > 1 ? false : userRoles.includes("agent") ? true : false;
-  const { timePeriod, dateRange, handleTimePeriodChange, setDateRange } = useMetrics();
+  const isAgent =
+    userRoles.length > 1 ? false : userRoles.includes("agent") ? true : false;
+  const { timePeriod, dateRange, handleTimePeriodChange, setDateRange } =
+    useMetrics();
   const { toast } = useToast();
 
   const handlePeriodChange = (period: "24h" | "7d" | "30d" | "custom") => {
@@ -21,12 +23,12 @@ const TimeControls = () => {
     toast({
       title: "Time Period Changed",
       description: `Switched to ${
-        period === "24h" 
-          ? "daily" 
-          : period === "7d" 
-          ? "weekly" 
-          : period === "30d" 
-          ? "monthly" 
+        period === "24h"
+          ? "daily"
+          : period === "7d"
+          ? "weekly"
+          : period === "30d"
+          ? "monthly"
           : "custom"
       } metrics view`,
     });
@@ -65,47 +67,47 @@ const TimeControls = () => {
         Monthly
       </button>
       {!isAgent && (
-      <Popover>
-        <PopoverTrigger asChild>
-          <button
-            className={cn(
-              tabStyle,
-              timePeriod === "custom" ? activeTabStyle : inactiveTabStyle
-            )}
-          >
-            {dateRange.from && dateRange.to ? (
-              <>
-                {format(dateRange.from, "MMM d")} - {format(dateRange.to, "MMM d")}
-              </>
-            ) : (
-              "Custom"
-            )}
-          </button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="end">
-          <Calendar
-            initialFocus
-            mode="range"
-            defaultMonth={dateRange.from}
-            selected={{
-              from: dateRange.from,
-              to: dateRange.to,
-            }}
-            onSelect={(range) => {
-              setDateRange({
-                from: range?.from,
-                to: range?.to,
-              });
-              // Set time period to custom when date range is selected
-              if (range?.from && range?.to) {
-                handleTimePeriodChange("custom");
-              }
-            }}
-            numberOfMonths={2}
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              className={cn(
+                tabStyle,
+                timePeriod === "custom" ? activeTabStyle : inactiveTabStyle
+              )}
+            >
+              {dateRange.from && dateRange.to ? (
+                <>
+                  {format(dateRange.from, "MMM d")} -{" "}
+                  {format(dateRange.to, "MMM d")}
+                </>
+              ) : (
+                "Custom"
+              )}
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-0" align="end">
+            <Calendar
+              initialFocus
+              mode="range"
+              defaultMonth={dateRange.from}
+              selected={{
+                from: dateRange.from,
+                to: dateRange.to,
+              }}
+              onSelect={(range) => {
+                setDateRange({
+                  from: range?.from,
+                  to: range?.to,
+                });
+                if (range?.from && range?.to) {
+                  handleTimePeriodChange("custom");
+                }
+              }}
+              numberOfMonths={2}
             />
-        </PopoverContent>
-      </Popover>
-        )}
+          </PopoverContent>
+        </Popover>
+      )}
     </div>
   );
 };

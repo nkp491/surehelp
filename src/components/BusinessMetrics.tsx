@@ -21,7 +21,7 @@ const BusinessMetricsContent = () => {
   const { isAuthenticated } = useAuthStateManager();
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  const defaultMetrics = {
+  const defaultMetrics = useMemo(() => ({
     leads: 0,
     calls: 0,
     contacts: 0,
@@ -29,7 +29,7 @@ const BusinessMetricsContent = () => {
     sits: 0,
     sales: 0,
     ap: 0,
-  };
+  }), []);
 
   // Memoize the calculation function to prevent unnecessary recalculations
   const aggregatedMetrics = useMemo(() => {
@@ -77,7 +77,7 @@ const BusinessMetricsContent = () => {
     );
 
     return result;
-  }, [timePeriod, dateRange, sortedHistory, isAuthenticated]);
+  }, [timePeriod, dateRange, sortedHistory, isAuthenticated, defaultMetrics]);
 
   // Get today's metrics from historical data if available (sum all entries for today)
   const todayMetrics = useMemo(() => {
@@ -130,7 +130,7 @@ const BusinessMetricsContent = () => {
     }
 
     return defaultMetrics;
-  }, [sortedHistory, isAuthenticated]);
+  }, [sortedHistory, isAuthenticated, defaultMetrics]);
 
   // Update aggregated metrics when dependencies change
   useEffect(() => {
