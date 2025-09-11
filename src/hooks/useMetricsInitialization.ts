@@ -27,10 +27,6 @@ export const useMetricsInitialization = (
           const dailyMetrics = await loadDailyMetrics();
           setMetrics(dailyMetrics);
           initializeInputs(dailyMetrics);
-          
-          if (timePeriod !== '24h') {
-            await savePeriodMetrics(timePeriod, dailyMetrics);
-          }
 
           const previousMetricsData = await loadPreviousMetrics(timePeriod);
           if (previousMetricsData) {

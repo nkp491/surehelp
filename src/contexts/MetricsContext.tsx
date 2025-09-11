@@ -14,7 +14,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   const {
     metrics,
     previousMetrics,
-    metricInputs,
     timePeriod,
     trends,
     dateRange,
@@ -26,13 +25,11 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     setDateRange,
     handleInputChange,
     setTimePeriod,
-    setMetricInputs,
   } = useMetricsState();
 
   const { 
     loadDailyMetrics,
     loadPreviousMetrics,
-    saveDailyMetrics,
     savePeriodMetrics,
   } = useMetricsStorage();
 
@@ -58,7 +55,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleTimePeriodChange = async (period: TimePeriod) => {
     setPreviousMetrics(metrics);
-    await saveDailyMetrics(metrics);
     setTimePeriod(period);
     if (period !== "custom") {
       setDateRange({ from: undefined, to: undefined });
@@ -67,7 +63,6 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
   const handleMetricInputChange = async (metric: MetricType, value: string) => {
     handleInputChange(metric, value);
-    await saveDailyMetrics(metrics);
   };
 
   const refreshMetrics = async () => {

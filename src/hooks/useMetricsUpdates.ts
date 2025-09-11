@@ -36,7 +36,7 @@ export const useMetricsUpdates = (
       if (!user.user) return;
       const { error } = await supabase
         .from("daily_metrics")
-        .insert({
+        .upsert({
           user_id: user.user.id,
           date: formattedDate,
           ...metrics,
