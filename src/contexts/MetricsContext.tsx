@@ -1,5 +1,5 @@
 
-import { createContext, useContext, ReactNode } from "react";
+import { createContext, useContext, ReactNode, useMemo } from "react";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { useMetricsStorage } from "@/hooks/useMetricsStorage";
 import { useMetricsCalculations } from "@/hooks/useMetricsCalculations";
@@ -14,6 +14,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
   const {
     metrics,
     previousMetrics,
+    metricInputs,
     timePeriod,
     trends,
     dateRange,
@@ -80,7 +81,7 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
 
   const ratios = calculateRatios(metrics);
 
-  const value = {
+  const value = useMemo(() => ({
     metrics,
     previousMetrics,
     metricInputs,
@@ -95,7 +96,19 @@ export const MetricsProvider = ({ children }: { children: ReactNode }) => {
     handleTimePeriodChange,
     handleInputChange: handleMetricInputChange,
     refreshMetrics,
-  };
+  }), [
+    metrics,
+    previousMetrics,
+    metricInputs,
+    timePeriod,
+    trends,
+    dateRange,
+    ratios,
+    aggregatedMetrics,
+    handleTimePeriodChange,
+    handleMetricInputChange,
+    refreshMetrics
+  ]);
 
   return (
     <MetricsContext.Provider value={value}>

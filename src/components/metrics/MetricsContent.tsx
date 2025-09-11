@@ -9,12 +9,10 @@ interface MetricsContentProps {
   editingRow: string | null;
   editedValues: MetricCount | null;
   selectedDate: Date | undefined;
-  searchTerm: string;
   deleteDate: string | null;
   onEdit: (date: string, metrics: MetricCount) => void;
   onSave: (date: string) => void;
   onCancel: () => void;
-  onSort: (key: string) => void;
   onValueChange: (metric: keyof MetricCount, value: string) => void;
   onDelete: (date: string) => void;
   onDeleteDialogChange: (open: boolean) => void;
@@ -26,12 +24,10 @@ const MetricsContent = ({
   editingRow,
   editedValues,
   selectedDate,
-  searchTerm,
   deleteDate,
   onEdit,
   onSave,
   onCancel,
-  onSort,
   onValueChange,
   onDelete,
   onDeleteDialogChange,
@@ -64,10 +60,8 @@ const MetricsContent = ({
           onEdit={onEdit}
           onSave={onSave}
           onCancel={onCancel}
-          onSort={onSort}
           onValueChange={onValueChange}
           onDelete={onDelete}
-          searchTerm={searchTerm}
           selectedDate={selectedDate}
         />
       </div>

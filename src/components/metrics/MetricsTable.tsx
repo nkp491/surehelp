@@ -1,5 +1,5 @@
 import { Table, TableBody, TableRow } from "@/components/ui/table";
-import { format } from 'date-fns';
+import { format } from "date-fns";
 import { MetricCount } from "@/types/metrics";
 import MetricsTableHeader from "./MetricsTableHeader";
 import EditableMetricCell from "./EditableMetricCell";
@@ -15,7 +15,6 @@ interface MetricsTableProps {
   onEdit: (date: string, metrics: MetricCount) => void;
   onSave: (date: string) => void;
   onCancel: () => void;
-  onSort: (key: string) => void;
   onValueChange: (metric: keyof MetricCount, value: string) => void;
   onDelete: (date: string) => void;
 }
@@ -29,20 +28,18 @@ const MetricsTable = ({
   onEdit,
   onSave,
   onCancel,
-  onSort,
   onValueChange,
   onDelete,
 }: MetricsTableProps) => {
   const [currentPage, setCurrentPage] = React.useState(1);
   const totalPages = Math.ceil(history.length / ITEMS_PER_PAGE);
-  
+
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
   const endIndex = startIndex + ITEMS_PER_PAGE;
   const currentPageData = history.slice(startIndex, endIndex);
 
   const handlePageChange = (newPage: number) => {
     setCurrentPage(newPage);
-    // If we're editing and change pages, cancel the edit
     if (editingRow) {
       onCancel();
     }
@@ -52,16 +49,17 @@ const MetricsTable = ({
     <div className="space-y-4">
       <div className="overflow-x-auto">
         <Table>
-          <MetricsTableHeader onSort={onSort} />
+          <MetricsTableHeader />
           <TableBody>
             {currentPageData.map(({ date, metrics }) => {
-              const currentValues = editingRow === date ? editedValues : metrics;
-              
+              const currentValues =
+                editingRow === date ? editedValues : metrics;
+
               return (
                 <TableRow key={date}>
                   <EditableMetricCell
                     isEditing={false}
-                    value={format(new Date(date), 'MMM dd, yyyy')}
+                    value={format(new Date(date), "MMM dd, yyyy")}
                     onChange={() => {}}
                     metric="date"
                   />
@@ -69,8 +67,16 @@ const MetricsTable = ({
                     <EditableMetricCell
                       key={metric}
                       isEditing={editingRow === date}
-                      value={currentValues ? currentValues[metric as keyof MetricCount].toString() : '0'}
-                      onChange={(newValue) => onValueChange(metric as keyof MetricCount, newValue)}
+                      value={
+                        currentValues
+                          ? currentValues[
+                              metric as keyof MetricCount
+                            ].toString()
+                          : "0"
+                      }
+                      onChange={(newValue) =>
+                        onValueChange(metric as keyof MetricCount, newValue)
+                      }
                       metric={metric}
                     />
                   ))}

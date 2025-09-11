@@ -4,7 +4,6 @@ import { useMetricsDelete } from "@/hooks/metrics/useMetricsDelete";
 import MetricsHistoryHeader from "./filters/MetricsHistoryHeader";
 import MetricsContent from "./MetricsContent";
 import { useMetrics } from "@/contexts/MetricsContext";
-import { TimePeriod } from "@/types/metrics";
 import { useInView } from "react-intersection-observer";
 
 const MetricsHistory = () => {
@@ -15,7 +14,6 @@ const MetricsHistory = () => {
     selectedDate,
     setSelectedDate,
     handleAddBackdatedMetrics,
-    handleSort,
     handleEdit,
     handleSave,
     handleCancel,
@@ -26,8 +24,6 @@ const MetricsHistory = () => {
   } = useMetricsHistory();
 
   const { refreshMetrics } = useMetrics();
-  const [searchTerm, setSearchTerm] = useState("");
-  const [timePeriod, setTimePeriod] = useState<TimePeriod>("24h");
   const { deleteDate, setDeleteDate, handleDelete } =
     useMetricsDelete(loadHistory);
 
@@ -48,7 +44,13 @@ const MetricsHistory = () => {
 
   // Auto-load more when scrolling to bottom (only if we have 20+ entries)
   useEffect(() => {
-    if (inView && !isLoading && !isLoadingMore && hasMoreData && shouldEnableInfiniteScroll) {
+    if (
+      inView &&
+      !isLoading &&
+      !isLoadingMore &&
+      hasMoreData &&
+      shouldEnableInfiniteScroll
+    ) {
       setIsLoadingMore(true);
       loadMoreHistory()
         .then((result) => {
@@ -61,11 +63,23 @@ const MetricsHistory = () => {
           setIsLoadingMore(false);
         });
     }
-  }, [inView, isLoading, isLoadingMore, hasMoreData, shouldEnableInfiniteScroll, loadMoreHistory]);
+  }, [
+    inView,
+    isLoading,
+    isLoadingMore,
+    hasMoreData,
+    shouldEnableInfiniteScroll,
+    loadMoreHistory,
+  ]);
 
   // Manual load more function for when we have less than 20 entries
   const handleLoadMore = async () => {
-    if (!isLoading && !isLoadingMore && hasMoreData && !shouldEnableInfiniteScroll) {
+    if (
+      !isLoading &&
+      !isLoadingMore &&
+      hasMoreData &&
+      !shouldEnableInfiniteScroll
+    ) {
       setIsLoadingMore(true);
       try {
         const result = await loadMoreHistory();
@@ -101,18 +115,11 @@ const MetricsHistory = () => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gray-50 p-4 rounded-lg">
-        <MetricsHistoryHeader
-          selectedDate={selectedDate}
-          onDateSelect={setSelectedDate}
-          onAdd={handleAddHistoricalEntry}
-          searchTerm={searchTerm}
-          onSearchChange={setSearchTerm}
-          timePeriod={timePeriod}
-          onTimePeriodChange={setTimePeriod}
-        />
-      </div>
-
+      <MetricsHistoryHeader
+        selectedDate={selectedDate}
+        onDateSelect={setSelectedDate}
+        onAdd={handleAddHistoricalEntry}
+      />
       <div className="bg-white rounded-lg shadow-sm">
         {isLoading && sortedHistory.length === 0 ? (
           <div className="p-8 text-center">
@@ -125,12 +132,10 @@ const MetricsHistory = () => {
             editingRow={editingRow}
             editedValues={editedValues}
             selectedDate={selectedDate}
-            searchTerm={searchTerm}
             deleteDate={deleteDate}
             onEdit={handleEdit}
             onSave={handleSaveAndRefresh}
             onCancel={handleCancel}
-            onSort={handleSort}
             onValueChange={handleValueChange}
             onDelete={(date) => setDeleteDate(date)}
             onDeleteDialogChange={(open) => !open && setDeleteDate(null)}

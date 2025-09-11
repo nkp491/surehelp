@@ -9,10 +9,8 @@ interface FilteredMetricsTableProps {
   onEdit: (date: string, metrics: MetricCount) => void;
   onSave: (date: string) => void;
   onCancel: () => void;
-  onSort: (key: string) => void;
   onValueChange: (metric: keyof MetricCount, value: string) => void;
   onDelete: (date: string) => void;
-  searchTerm: string;
   selectedDate?: Date;
 }
 
@@ -23,28 +21,17 @@ const FilteredMetricsTable = ({
   onEdit,
   onSave,
   onCancel,
-  onSort,
   onValueChange,
   onDelete,
-  searchTerm,
   selectedDate,
 }: FilteredMetricsTableProps) => {
   const filteredHistory = history.filter((entry) => {
-    const matchesSearch =
-      !searchTerm ||
-      Object.values(entry.metrics).some((value) =>
-        value.toString().toLowerCase().includes(searchTerm.toLowerCase())
-      ) ||
-      format(startOfDay(new Date(entry.date)), "yyyy-MM-dd")
-        .toLowerCase()
-        .includes(searchTerm.toLowerCase());
-
     const matchesDate =
       !selectedDate ||
       format(startOfDay(new Date(entry.date)), "yyyy-MM-dd") ===
         format(startOfDay(selectedDate), "yyyy-MM-dd");
 
-    return matchesSearch && matchesDate;
+    return matchesDate;
   });
 
   return (
@@ -56,7 +43,6 @@ const FilteredMetricsTable = ({
         onEdit={onEdit}
         onSave={onSave}
         onCancel={onCancel}
-        onSort={onSort}
         onValueChange={onValueChange}
         onDelete={onDelete}
       />
