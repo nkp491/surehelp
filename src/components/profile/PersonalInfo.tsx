@@ -58,6 +58,7 @@ const PersonalInfo = ({
     teamManagers: Array<{ user_id: string; role: string; team_id: string }>;
   } | null>(null);
   const [isAssigningManager, setIsAssigningManager] = useState(false);
+  const [nameErrors, setNameErrors] = useState({ first_name: "", last_name: "" });
 
   const canAssignManager = hasRequiredRole([
     "agent_pro",
@@ -67,6 +68,42 @@ const PersonalInfo = ({
     "beta_user",
     "system_admin",
   ]);
+
+  // Validation functions for name fields
+  const validateNameField = (value: string, fieldName: 'first_name' | 'last_name') => {
+    const trimmedValue = value.trim();
+    
+    if (!trimmedValue) {
+      setNameErrors(prev => ({ ...prev, [fieldName]: `${fieldName === 'first_name' ? 'First' : 'Last'} name is required` }));
+      return false;
+    }
+    
+    if (trimmedValue.length < 2) {
+      setNameErrors(prev => ({ ...prev, [fieldName]: `${fieldName === 'first_name' ? 'First' : 'Last'} name must be at least 2 characters long` }));
+      return false;
+    }
+    
+    if (!/^[a-zA-Z\s'-]+$/.test(trimmedValue)) {
+      setNameErrors(prev => ({ ...prev, [fieldName]: `${fieldName === 'first_name' ? 'First' : 'Last'} name can only contain letters, spaces, hyphens, and apostrophes` }));
+      return false;
+    }
+    
+    setNameErrors(prev => ({ ...prev, [fieldName]: "" }));
+    return true;
+  };
+
+  const handleNameChange = (field: 'first_name' | 'last_name', value: string) => {
+    // Remove any backspace characters and trim whitespace
+    const cleanedValue = value.replace(/[\b]/g, '').trim();
+    
+    setFormData(prev => ({
+      ...prev,
+      [field]: cleanedValue
+    }));
+    
+    // Validate the field
+    validateNameField(cleanedValue, field);
+  };
 
   useEffect(() => {
     if (
@@ -241,7 +278,28 @@ const PersonalInfo = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onUpdate(formData);
+    
+    // Validate name fields before submission
+    const isFirstNameValid = validateNameField(formData.first_name, 'first_name');
+    const isLastNameValid = validateNameField(formData.last_name, 'last_name');
+    
+    if (!isFirstNameValid || !isLastNameValid) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the name field errors before saving.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    // Trim the names before updating
+    const trimmedFormData = {
+      ...formData,
+      first_name: formData.first_name.trim(),
+      last_name: formData.last_name.trim(),
+    };
+    
+    onUpdate(trimmedFormData);
     if (validatedManager) {
       await assignValidatedManager();
     }
@@ -297,18 +355,18 @@ const PersonalInfo = ({
                 {t.firstName}
               </label>
               {isEditing ? (
-                <Input
-                  type="text"
-                  value={formData.first_name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      first_name: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter first name"
-                  className="w-full"
-                />
+                <>
+                  <Input
+                    type="text"
+                    value={formData.first_name}
+                    onChange={(e) => handleNameChange('first_name', e.target.value)}
+                    placeholder="Enter first name"
+                    className="w-full"
+                  />
+                  {nameErrors.first_name && (
+                    <p className="text-xs text-red-500 mt-1">{nameErrors.first_name}</p>
+                  )}
+                </>
               ) : (
                 <Input
                   type="text"
@@ -325,18 +383,18 @@ const PersonalInfo = ({
                 {t.lastName}
               </label>
               {isEditing ? (
-                <Input
-                  type="text"
-                  value={formData.last_name}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      last_name: e.target.value,
-                    }))
-                  }
-                  placeholder="Enter last name"
-                  className="w-full"
-                />
+                <>
+                  <Input
+                    type="text"
+                    value={formData.last_name}
+                    onChange={(e) => handleNameChange('last_name', e.target.value)}
+                    placeholder="Enter last name"
+                    className="w-full"
+                  />
+                  {nameErrors.last_name && (
+                    <p className="text-xs text-red-500 mt-1">{nameErrors.last_name}</p>
+                  )}
+                </>
               ) : (
                 <Input
                   type="text"

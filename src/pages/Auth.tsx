@@ -63,7 +63,7 @@ const Auth = () => {
         setPasswordError("Password must contain at least one lowercase letter");
         return false;
       }
-      if (!/[0-9]/.test(password)) {
+      if (!/\d/.test(password)) {
         setPasswordError("Password must contain at least one number");
         return false;
       }
@@ -76,19 +76,29 @@ const Auth = () => {
     const errors = { firstName: "", lastName: "" };
     let isValid = true;
 
-    if (!name.firstName) {
+    // Trim whitespace and check for empty strings
+    const trimmedFirstName = name.firstName?.trim() || "";
+    const trimmedLastName = name.lastName?.trim() || "";
+
+    if (!trimmedFirstName) {
       errors.firstName = "Please enter the first name";
       isValid = false;
-    } else if (name.firstName.length < 2) {
+    } else if (trimmedFirstName.length < 2) {
       errors.firstName = "First name must be at least 2 characters long";
+      isValid = false;
+    } else if (!/^[a-zA-Z\s'-]+$/.test(trimmedFirstName)) {
+      errors.firstName = "First name can only contain letters, spaces, hyphens, and apostrophes";
       isValid = false;
     }
 
-    if (!name.lastName) {
+    if (!trimmedLastName) {
       errors.lastName = "Please enter the last name";
       isValid = false;
-    } else if (name.lastName.length < 2) {
+    } else if (trimmedLastName.length < 2) {
       errors.lastName = "Last name must be at least 2 characters long";
+      isValid = false;
+    } else if (!/^[a-zA-Z\s'-]+$/.test(trimmedLastName)) {
+      errors.lastName = "Last name can only contain letters, spaces, hyphens, and apostrophes";
       isValid = false;
     }
 
