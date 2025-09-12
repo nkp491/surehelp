@@ -16,6 +16,9 @@ interface UserRoleItemProps {
   allUsers: UserWithRoles[];
   selectedRole: string | undefined;
   isAssigningRole: boolean;
+  isAssigningManager: boolean;
+  isRemovingRole: boolean;
+  isRemovingManager: boolean;
   onAssignRole: (userId: string, email: string | null) => void;
   onRemoveRole: (data: { userId: string; role: string }) => void;
   onAssignManager: (userId: string, managerId: string | null) => void;
@@ -26,6 +29,9 @@ export function UserRoleItem({
   allUsers,
   selectedRole,
   isAssigningRole,
+  isAssigningManager,
+  isRemovingRole,
+  isRemovingManager,
   onAssignRole,
   onRemoveRole,
   onAssignManager,
@@ -86,6 +92,8 @@ export function UserRoleItem({
               user={user}
               allUsers={allUsers}
               onAssignManager={onAssignManager}
+              isAssigningManager={isAssigningManager}
+              isRemovingManager={isRemovingManager}
             />
           </div>
         </div>
@@ -97,8 +105,17 @@ export function UserRoleItem({
             disabled={isAssigningRole || !selectedRole}
             className="mr-2"
           >
-            <PlusCircle className="h-4 w-4 mr-1" />
-            Assign Role
+            {isAssigningRole ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current mr-1" />
+                Assigning...
+              </>
+            ) : (
+              <>
+                <PlusCircle className="h-4 w-4 mr-1" />
+                Assign Role
+              </>
+            )}
           </Button>
         </div>
       </div>
@@ -113,10 +130,15 @@ export function UserRoleItem({
               {formatRoleName(role)}
               <button
                 onClick={() => handleRemoveRole(role)}
-                className="opacity-0 group-hover:opacity-100 transition-opacity"
+                disabled={isRemovingRole}
+                className="opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
                 aria-label={`Remove ${role} role`}
               >
-                <MinusCircle className="h-3 w-3" />
+                {isRemovingRole ? (
+                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current" />
+                ) : (
+                  <MinusCircle className="h-3 w-3" />
+                )}
               </button>
             </Badge>
           ))

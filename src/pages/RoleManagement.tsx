@@ -12,6 +12,10 @@ export default function RoleManagement() {
     removeRole,
     assignManager,
     isAssigningRole,
+    isAssigningManager,
+    isRemovingRole,
+    isRemovingManager,
+    getUserLoading,
   } = useRoleManagement();
 
   return (
@@ -29,6 +33,10 @@ export default function RoleManagement() {
           removeRole={removeRole}
           assignManager={assignManager}
           isAssigningRole={isAssigningRole}
+          isAssigningManager={isAssigningManager}
+          isRemovingRole={isRemovingRole}
+          isRemovingManager={isRemovingManager}
+          getUserLoading={getUserLoading}
         />
         <Toaster />
       </div>

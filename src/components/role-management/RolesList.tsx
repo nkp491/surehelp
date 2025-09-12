@@ -10,6 +10,10 @@ interface RolesListProps {
   users: UserWithRoles[];
   availableRoles: string[];
   isAssigningRole: boolean;
+  isAssigningManager: boolean;
+  isRemovingRole: boolean;
+  isRemovingManager: boolean;
+  getUserLoading: (userId: string, loadingType: string) => boolean;
   onAssignRole: (data: {
     userId: string;
     email: string | null;
@@ -23,6 +27,10 @@ export function RolesList({
   users,
   availableRoles,
   isAssigningRole,
+  isAssigningManager,
+  isRemovingRole,
+  isRemovingManager,
+  getUserLoading,
   onAssignRole,
   onRemoveRole,
   onAssignManager,
@@ -115,6 +123,9 @@ export function RolesList({
                   allUsers={users}
                   selectedRole={selectedRole}
                   isAssigningRole={isAssigningRole}
+                  isAssigningManager={getUserLoading(user.id, 'isAssigningManager')}
+                  isRemovingRole={isRemovingRole}
+                  isRemovingManager={getUserLoading(user.id, 'isRemovingManager')}
                   onAssignRole={handleAssignRole}
                   onRemoveRole={onRemoveRole}
                   onAssignManager={handleAssignManager}

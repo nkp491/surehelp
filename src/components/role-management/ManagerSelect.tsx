@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from "react";
+import { useMemo, useCallback, useState, useEffect } from "react";
 import {
   Select,
   SelectContent,
@@ -15,19 +15,33 @@ interface ManagerSelectProps {
   user: UserWithRoles;
   allUsers: UserWithRoles[];
   onAssignManager: (userId: string, managerId: string | null) => void;
+  isAssigningManager?: boolean;
+  isRemovingManager?: boolean;
 }
 
 export function ManagerSelect({
   user,
   allUsers,
   onAssignManager,
+  isAssigningManager = false,
+  isRemovingManager = false,
 }: Readonly<ManagerSelectProps>) {
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
   const NO_MANAGER_VALUE = "no_manager";
+
+  // Debounce search query
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300); // 300ms delay
+
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
 
   // Check if user has the required role to assign a manager
   const canAssignManager = user.roles.some(role => 
-    ['agent_pro', 'manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'].includes(role)
+    ['agent_pro', 'manager', 'manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'].includes(role)
   );
 
   const availableManagers = useMemo(() => {
@@ -56,7 +70,7 @@ export function ManagerSelect({
     findCircularUsers(user.id);
 
     // Filter to only show users who have manager roles
-    const managerRoles = ['manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum'];
+    const managerRoles = ['manager', 'manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum'];
     
     return allUsers.filter(
       (potentialManager) =>
@@ -66,13 +80,13 @@ export function ManagerSelect({
     );
   }, [user.id, allUsers]);
 
-  // Filter managers based on search query
+  // Filter managers based on debounced search query
   const filteredManagers = useMemo(() => {
-    if (!searchQuery.trim()) {
+    if (!debouncedSearchQuery.trim()) {
       return availableManagers;
     }
 
-    const query = searchQuery.toLowerCase().trim();
+    const query = debouncedSearchQuery.toLowerCase().trim();
     return availableManagers.filter((manager) => {
       const firstName = (manager.first_name || "").toLowerCase();
       const lastName = (manager.last_name || "").toLowerCase();
@@ -86,7 +100,7 @@ export function ManagerSelect({
         fullName.indexOf(query) !== -1
       );
     });
-  }, [availableManagers, searchQuery]);
+  }, [availableManagers, debouncedSearchQuery]);
 
   // Memoize the manager assignment handler
   const handleManagerChange = useCallback(
@@ -151,13 +165,19 @@ export function ManagerSelect({
 
   return (
     <div className="flex items-center gap-2">
-      <Select
-        value={user.manager_id || NO_MANAGER_VALUE}
-        onValueChange={handleManagerChange}
-      >
-        <SelectTrigger className="w-[250px]">
-          <SelectValue placeholder="Select a manager" />
-        </SelectTrigger>
+      <div className="relative">
+        <Select
+          value={user.manager_id || NO_MANAGER_VALUE}
+          onValueChange={handleManagerChange}
+          disabled={isAssigningManager || isRemovingManager}
+        >
+          <SelectTrigger className={`w-[250px] ${isAssigningManager || isRemovingManager ? 'opacity-50' : ''}`}>
+            <SelectValue placeholder={(() => {
+              if (isAssigningManager) return "Assigning...";
+              if (isRemovingManager) return "Removing...";
+              return "Select a manager";
+            })()} />
+          </SelectTrigger>
         <SelectContent>
           {/* Search input */}
           <div className="flex items-center px-3 py-2 border-b">
@@ -176,22 +196,36 @@ export function ManagerSelect({
               {manager.first_name} {manager.last_name} ({manager.email})
             </SelectItem>
           ))}
-          {filteredManagers.length === 0 && searchQuery.trim() && (
+          {filteredManagers.length === 0 && debouncedSearchQuery.trim() && (
             <div className="px-3 py-2 text-sm text-muted-foreground">
-              No managers found matching "{searchQuery}"
+              No managers found matching "{debouncedSearchQuery}"
             </div>
           )}
         </SelectContent>
-      </Select>
+        </Select>
+        
+        {/* Loading overlay */}
+        {(isAssigningManager || isRemovingManager) && (
+          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+          </div>
+        )}
+      </div>
 
       {user.manager_id && (
         <Button
           variant="ghost"
           size="icon"
           onClick={handleRemoveManager}
-          title="Remove manager"
+          disabled={isRemovingManager || isAssigningManager}
+          title={isRemovingManager ? "Removing manager..." : "Remove manager"}
+          className={isRemovingManager ? "opacity-50" : ""}
         >
-          <UserX className="h-4 w-4" />
+          {isRemovingManager ? (
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
+          ) : (
+            <UserX className="h-4 w-4" />
+          )}
         </Button>
       )}
     </div>

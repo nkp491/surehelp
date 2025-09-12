@@ -16,6 +16,10 @@ interface RoleManagementContentProps {
   removeRole: (data: { userId: string; role: string }) => void;
   assignManager: (data: { userId: string; managerId: string | null }) => void;
   isAssigningRole: boolean;
+  isAssigningManager: boolean;
+  isRemovingRole: boolean;
+  isRemovingManager: boolean;
+  getUserLoading: (userId: string, loadingType: string) => boolean;
 }
 
 export const RoleManagementContent = memo(function RoleManagementContent({
@@ -26,6 +30,10 @@ export const RoleManagementContent = memo(function RoleManagementContent({
   removeRole,
   assignManager,
   isAssigningRole,
+  isAssigningManager,
+  isRemovingRole,
+  isRemovingManager,
+  getUserLoading,
 }: Readonly<RoleManagementContentProps>) {
   if (isLoadingUsers) {
     return (
@@ -49,6 +57,10 @@ export const RoleManagementContent = memo(function RoleManagementContent({
           users={users || []}
           availableRoles={availableRoles}
           isAssigningRole={isAssigningRole}
+          isAssigningManager={isAssigningManager}
+          isRemovingRole={isRemovingRole}
+          isRemovingManager={isRemovingManager}
+          getUserLoading={getUserLoading}
           onAssignRole={assignRole}
           onRemoveRole={removeRole}
           onAssignManager={assignManager}

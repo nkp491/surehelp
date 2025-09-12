@@ -29,6 +29,29 @@ export const useRoleManagement = () => {
   const queryClient = useQueryClient();
   const [isAssigningRole, setIsAssigningRole] = useState(false);
   const [isAssigningManager, setIsAssigningManager] = useState(false);
+  const [isRemovingRole, setIsRemovingRole] = useState(false);
+  const [isRemovingManager, setIsRemovingManager] = useState(false);
+  const [userLoadingStates, setUserLoadingStates] = useState<Record<string, {
+    isAssigningManager?: boolean;
+    isRemovingManager?: boolean;
+    isAssigningRole?: boolean;
+    isRemovingRole?: boolean;
+  }>>({});
+
+  // Helper functions for per-user loading states
+  const setUserLoading = useCallback((userId: string, loadingType: keyof typeof userLoadingStates[string], isLoading: boolean) => {
+    setUserLoadingStates(prev => ({
+      ...prev,
+      [userId]: {
+        ...prev[userId],
+        [loadingType]: isLoading
+      }
+    }));
+  }, []);
+
+  const getUserLoading = useCallback((userId: string, loadingType: keyof typeof userLoadingStates[string]) => {
+    return userLoadingStates[userId]?.[loadingType] || false;
+  }, [userLoadingStates]);
 
   // Fetch all users with their roles
   const { data: users, isLoading: isLoadingUsers } = useQuery({
@@ -384,6 +407,7 @@ export const useRoleManagement = () => {
 
   const removeRoleMutation = useMutation({
     mutationFn: async ({ userId, role }: { userId: string; role: string }) => {
+      setIsRemovingRole(true);
       const { error } = await supabase
         .from("user_roles")
         .delete()
@@ -437,6 +461,7 @@ export const useRoleManagement = () => {
         title: "Success",
         description: data.message || "Role removed successfully",
       });
+      setIsRemovingRole(false);
     },
     onError: (error) => {
       console.error("Error removing role:", error);
@@ -445,6 +470,7 @@ export const useRoleManagement = () => {
         description: "There was a problem removing the role. Please try again.",
         variant: "destructive",
       });
+      setIsRemovingRole(false);
     },
   });
 
@@ -476,6 +502,7 @@ export const useRoleManagement = () => {
           .eq("user_id", currentUser.id)
           .in("role", [
             "agent_pro",
+            "manager",
             "manager_pro",
             "manager_pro_gold",
             "manager_pro_platinum",
@@ -497,6 +524,7 @@ export const useRoleManagement = () => {
 
       // If removing manager (managerId is null)
       if (!managerId) {
+        setUserLoading(userId, 'isRemovingManager', true);
         // Check if user is currently in any team
         const { data: currentTeamMember, error: currentTeamError } =
           await supabase
@@ -528,9 +556,12 @@ export const useRoleManagement = () => {
         return {
           success: true,
           message: "Manager removed successfully",
-          data: null,
+          data: { userId },
         };
       }
+
+      // Set loading state for manager assignment
+      setUserLoading(userId, 'isAssigningManager', true);
 
       // Check if the manager has a valid manager role
       const { data: managerRoles, error: managerRoleError } = await supabase
@@ -538,6 +569,7 @@ export const useRoleManagement = () => {
         .select("user_id, role")
         .eq("user_id", managerId)
         .in("role", [
+          "manager",
           "manager_pro",
           "manager_gold",
           "manager_pro_gold",
@@ -683,7 +715,7 @@ export const useRoleManagement = () => {
       return {
         success: true,
         message: "Manager assigned successfully",
-        data: { team_id: managerTeamId },
+        data: { team_id: managerTeamId, userId },
       };
     },
     onSuccess: async (data) => {
@@ -701,8 +733,14 @@ export const useRoleManagement = () => {
         description: data.message,
       });
       setIsAssigningManager(false);
+      setIsRemovingManager(false);
+      // Reset per-user loading states
+      if (data.data?.userId) {
+        setUserLoading(data.data.userId, 'isAssigningManager', false);
+        setUserLoading(data.data.userId, 'isRemovingManager', false);
+      }
     },
-    onError: (error) => {
+    onError: (error, variables) => {
       console.error("Error in manager assignment:", error);
       toast({
         title: "Error",
@@ -711,6 +749,10 @@ export const useRoleManagement = () => {
         variant: "destructive",
       });
       setIsAssigningManager(false);
+      setIsRemovingManager(false);
+      // Reset per-user loading state
+      setUserLoading(variables.userId, 'isAssigningManager', false);
+      setUserLoading(variables.userId, 'isRemovingManager', false);
     },
   });
 
@@ -745,5 +787,8 @@ export const useRoleManagement = () => {
     assignManager,
     isAssigningRole,
     isAssigningManager,
+    isRemovingRole,
+    isRemovingManager,
+    getUserLoading,
   };
 };
