@@ -2,6 +2,7 @@ import { useProfileManagement } from "@/hooks/useProfileManagement";
 import ProfileHeader from "@/components/profile/ProfileHeader";
 import ProfileImage from "@/components/profile/ProfileImage";
 import PersonalInfo from "@/components/profile/PersonalInfo";
+import ManagerInfo from "@/components/profile/ManagerInfo";
 import PrivacySettings from "@/components/profile/PrivacySettings";
 import NotificationPreferences from "@/components/profile/NotificationPreferences";
 import TermsAcceptance from "@/components/profile/TermsAcceptance";
@@ -63,6 +64,8 @@ const ProfileContent = () => {
           phone={profile?.phone}
           onUpdate={updateProfile}
         />
+
+        <ManagerInfo />
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="space-y-6">

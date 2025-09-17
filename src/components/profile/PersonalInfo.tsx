@@ -4,11 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { translations } from "@/utils/translations";
-import { supabase } from "@/integrations/supabase/client";
-import { useRoleCheck } from "@/hooks/useRoleCheck";
 import { useToast } from "@/hooks/use-toast";
-import { useTeamMembership } from "@/hooks/useTeamMembership";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface PersonalInfoProps {
   firstName?: string | null;
@@ -40,34 +36,8 @@ const PersonalInfo = ({
 
   const { language } = useLanguage();
   const t = translations[language];
-  const { hasRequiredRole } = useRoleCheck();
   const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const { teamMembership, isLoading: teamLoading } = useTeamMembership();
-  const [managerEmail, setManagerEmail] = useState("");
-  const [managerError, setManagerError] = useState("");
-  const [isCheckingManager, setIsCheckingManager] = useState(false);
-  const [validatedManager, setValidatedManager] = useState<{
-    profileData: {
-      id: string;
-      first_name: string;
-      last_name: string;
-      email: string;
-    };
-    teamManager: { user_id: string; role: string; team_id: string };
-    teamManagers: Array<{ user_id: string; role: string; team_id: string }>;
-  } | null>(null);
-  const [isAssigningManager, setIsAssigningManager] = useState(false);
   const [nameErrors, setNameErrors] = useState({ first_name: "", last_name: "" });
-
-  const canAssignManager = hasRequiredRole([
-    "agent_pro",
-    "manager_pro",
-    "manager_pro_gold",
-    "manager_pro_platinum",
-    "beta_user",
-    "system_admin",
-  ]);
 
   // Validation functions for name fields
   const validateNameField = (value: string, fieldName: 'first_name' | 'last_name') => {
@@ -94,7 +64,7 @@ const PersonalInfo = ({
 
   const handleNameChange = (field: 'first_name' | 'last_name', value: string) => {
     // Remove any backspace characters and trim whitespace
-    const cleanedValue = value.replace(/[\b]/g, '').trim();
+    const cleanedValue = value.trim();
     
     setFormData(prev => ({
       ...prev,
@@ -121,160 +91,6 @@ const PersonalInfo = ({
     }
   }, [firstName, lastName, email, phone]);
 
-  const validateManagerEmail = async (email: string) => {
-    setIsCheckingManager(true);
-    setManagerError("");
-    setValidatedManager(null);
-    try {
-      const { data: profileData, error: profileError } = await supabase
-        .from("profiles")
-        .select("id, first_name, last_name, email")
-        .eq("email", email)
-        .maybeSingle();
-      if (profileError || !profileData) {
-        setManagerError("This email does not exist in our system");
-        return null;
-      }
-      const { data: teamManagers, error: teamManagerError } = await supabase
-        .from("team_managers")
-        .select("user_id, role, team_id")
-        .eq("user_id", profileData.id)
-        .in("role", [
-          "manager_pro",
-          "manager_gold",
-          "manager_pro_gold",
-          "manager_pro_platinum",
-        ]);
-      if (teamManagerError) {
-        console.error("Error checking team manager:", teamManagerError);
-        setManagerError("Error checking manager role");
-        return null;
-      }
-      if (!teamManagers || teamManagers.length === 0) {
-        setManagerError("This email does not belong to a manager account");
-        return null;
-      }
-      const teamManager = teamManagers[0];
-      setValidatedManager({
-        profileData,
-        teamManager,
-        teamManagers,
-      });
-      setManagerError("");
-      toast({
-        title: "Manager validated",
-        description: `${profileData.first_name} ${profileData.last_name} can be assigned as your manager. Click Save to confirm.`,
-      });
-      return profileData;
-    } catch (error) {
-      console.error("Error validating manager:", error);
-      setManagerError("Error validating manager email");
-      return null;
-    } finally {
-      setIsCheckingManager(false);
-    }
-  };
-
-  const assignValidatedManager = async () => {
-    if (!validatedManager) return;
-    setIsAssigningManager(true);
-    try {
-      const { profileData, teamManager } = validatedManager;
-      const {
-        data: { user: currentUser },
-      } = await supabase.auth.getUser();
-      if (!currentUser) {
-        setManagerError("User not authenticated");
-        return;
-      }
-
-      const { canAddTeamMember } = await import("@/utils/teamLimits");
-      const teamLimitCheck = await canAddTeamMember(profileData.id);
-      
-      if (!teamLimitCheck.canAdd) {
-        setManagerError(teamLimitCheck.message || "Manager's team is at capacity");
-        return;
-      }
-      let managerTeamId = teamManager.team_id;
-      if (!managerTeamId) {
-        const getTeamName = (profile: typeof profileData) => {
-          if (profile.first_name) return `${profile.first_name}'s Team`;
-          if (profile.email) return `${profile.email}'s Team`;
-          return `Team ${profile.id.slice(0, 8)}`;
-        };
-        const teamName = getTeamName(profileData);
-        const { data: newTeam, error: teamError } = await supabase
-          .from("teams")
-          .insert([{ name: teamName }])
-          .select()
-          .single();
-        if (teamError) {
-          console.error("Error creating team:", teamError);
-          setManagerError("Error creating team for manager");
-          return;
-        }
-        const { error: teamManagerError } = await supabase
-          .from("team_managers")
-          .insert([
-            {
-              team_id: newTeam.id,
-              user_id: profileData.id,
-              role: teamManager.role,
-            },
-          ]);
-        if (teamManagerError) {
-          console.error("Error creating team manager entry:", teamManagerError);
-          setManagerError("Error setting up manager team");
-          return;
-        }
-        managerTeamId = newTeam.id;
-      }
-      await supabase
-        .from("team_members")
-        .delete()
-        .eq("user_id", currentUser.id);
-      const { error: insertError } = await supabase
-        .from("team_members")
-        .insert([
-          {
-            team_id: managerTeamId,
-            user_id: currentUser.id,
-            role: "agent",
-          },
-        ]);
-      if (insertError) {
-        console.error("Error adding user to team:", insertError);
-        setManagerError("Error assigning to team");
-        return;
-      }
-      setManagerError("");
-      setManagerEmail("");
-      setValidatedManager(null);
-      toast({
-        title: "Manager assigned",
-        description: `You have been assigned to ${profileData.first_name} ${profileData.last_name}'s team.`,
-      });
-
-      // Invalidate and refetch team membership data
-      queryClient.invalidateQueries({ queryKey: ["team-membership"] });
-      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
-    } catch (error) {
-      console.error("Error assigning manager:", error);
-      setManagerError("Error assigning manager");
-    } finally {
-      setIsAssigningManager(false);
-    }
-  };
-
-  const handleManagerEmailChange = async (email: string) => {
-    setManagerEmail(email);
-    if (!email) {
-      setValidatedManager(null);
-      setManagerError("");
-      return;
-    }
-    await validateManagerEmail(email);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -300,35 +116,14 @@ const PersonalInfo = ({
     };
     
     onUpdate(trimmedFormData);
-    if (validatedManager) {
-      await assignValidatedManager();
-    }
     setIsEditing(false);
   };
 
-  const handleToggleEdit = async () => {
+  const handleToggleEdit = () => {
     if (isEditing) {
       onUpdate(formData);
-      if (validatedManager) {
-        await assignValidatedManager();
-      }
     }
     setIsEditing(!isEditing);
-  };
-
-  const getManagerDisplay = () => {
-    if (teamLoading) {
-      return "Loading team information...";
-    }
-    if (teamMembership) {
-      return `${teamMembership.manager_name} (${teamMembership.manager_email})`;
-    }
-    return "None assigned";
-  };
-
-  const getButtonText = () => {
-    if (isAssigningManager) return "Assigning...";
-    return isEditing ? t.save : t.edit;
   };
 
   return (
@@ -340,9 +135,8 @@ const PersonalInfo = ({
             variant="outline"
             size="sm"
             onClick={handleToggleEdit}
-            disabled={isAssigningManager}
           >
-            {getButtonText()}
+            {isEditing ? t.save : t.edit}
           </Button>
         </CardTitle>
       </CardHeader>
@@ -445,61 +239,11 @@ const PersonalInfo = ({
                 />
               )}
             </div>
-            {/* Manager assignment field */}
-            <div className="space-y-2.5 md:col-span-2">
-              <label
-                htmlFor="manager-email"
-                className="text-sm font-medium text-gray-700"
-              >
-                Your Manager
-              </label>
-              {!canAssignManager ? (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
-                  <p className="text-sm text-yellow-800">
-                    You need Agent Pro or higher to assign a manager to your
-                    profile.
-                  </p>
-                </div>
-              ) : isEditing ? (
-                <div className="space-y-2">
-                  <Input
-                    type="email"
-                    placeholder="Enter manager's email"
-                    value={managerEmail}
-                    onChange={(e) => handleManagerEmailChange(e.target.value)}
-                    className="w-full"
-                  />
-                  {isCheckingManager && (
-                    <p className="text-sm text-muted-foreground">
-                      Checking manager...
-                    </p>
-                  )}
-                  {validatedManager && (
-                    <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                      <p className="text-sm text-green-800">
-                        ✓ {validatedManager.profileData.first_name}{" "}
-                        {validatedManager.profileData.last_name} can be assigned
-                        as your manager. Click Save to confirm.
-                      </p>
-                    </div>
-                  )}
-                  {managerError && (
-                    <p className="text-sm text-destructive">{managerError}</p>
-                  )}
-                </div>
-              ) : (
-                <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
-                  <p className="text-sm text-gray-700">
-                    Current Manager: {getManagerDisplay()}
-                  </p>
-                </div>
-              )}
-            </div>
           </div>
           {isEditing && (
             <div className="flex justify-end pt-2">
-              <Button type="submit" disabled={isAssigningManager}>
-                {isAssigningManager ? "Assigning Manager..." : t.save}
+              <Button type="submit">
+                {t.save}
               </Button>
             </div>
           )}

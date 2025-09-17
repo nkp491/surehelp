@@ -31,7 +31,7 @@ export function useTeamMembership() {
         // Check if user is in any team_members table
         const { data: teamMember, error: teamMemberError } = await supabase
           .from("team_members")
-          .select("team_id, role")
+          .select("team_id")
           .eq("user_id", user.id)
           .maybeSingle();
 
@@ -68,7 +68,7 @@ export function useTeamMembership() {
         // Get team information
         const { data: team, error: teamError } = await supabase
           .from("teams")
-          .select("id, name")
+          .select("id, name, manager")
           .eq("id", teamMember.team_id)
           .maybeSingle();
 
@@ -77,23 +77,19 @@ export function useTeamMembership() {
           return null;
         }
 
-        // Get team manager information
-        const { data: actualTeamManager, error: managerError } = await supabase
-          .from("team_managers")
-          .select("user_id")
-          .eq("team_id", teamMember.team_id)
-          .maybeSingle();
-
-        if (managerError) {
-          console.error("Error fetching team manager:", managerError);
+        // Get manager information from teams table
+        const managerEmail = team.manager;
+        
+        if (!managerEmail) {
+          console.error("No manager email found in team");
           return null;
         }
 
-        // Get manager profile
+        // Get manager profile using the email from teams.manager
         const { data: managerProfile, error: profileError } = await supabase
           .from("profiles")
-          .select("first_name, last_name, email")
-          .eq("id", actualTeamManager.user_id)
+          .select("id, first_name, last_name, email")
+          .eq("email", managerEmail)
           .maybeSingle();
 
         if (profileError) {
@@ -101,14 +97,28 @@ export function useTeamMembership() {
           return null;
         }
 
+        if (!managerProfile) {
+          console.error("Manager profile not found for email:", managerEmail);
+          return null;
+        }
+
+        // Get user's role from user_roles table
+        const { data: userRoles } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", user.id)
+          .limit(1);
+
+        const userRole = userRoles && userRoles.length > 0 ? userRoles[0].role : "member";
+
         return {
           team_id: team.id,
           team_name: team.name,
-          manager_id: actualTeamManager.user_id,
+          manager_id: managerProfile.id,
           manager_name:
             `${managerProfile.first_name} ${managerProfile.last_name}`.trim(),
           manager_email: managerProfile.email || "",
-          role: teamMember.role,
+          role: userRole,
         };
       } catch (error) {
         console.error("Error in useTeamMembership:", error);
