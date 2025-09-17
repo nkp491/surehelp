@@ -1,20 +1,15 @@
-import { useMemo, useCallback, useState, useEffect } from "react";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { useCallback, useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { UserWithRoles } from "@/hooks/useRoleManagement";
-import { UserX, Search } from "lucide-react";
+import { UserX, Edit } from "lucide-react";
+import { useAdminManagerAssignment } from "@/hooks/useAdminManagerAssignment";
+import { useToast } from "@/hooks/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ManagerSelectProps {
   user: UserWithRoles;
   allUsers: UserWithRoles[];
-  onAssignManager: (userId: string, managerId: string | null) => void;
   isAssigningManager?: boolean;
   isRemovingManager?: boolean;
 }
@@ -22,132 +17,164 @@ interface ManagerSelectProps {
 export function ManagerSelect({
   user,
   allUsers,
-  onAssignManager,
   isAssigningManager = false,
   isRemovingManager = false,
 }: Readonly<ManagerSelectProps>) {
-  const [searchQuery, setSearchQuery] = useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
-  const NO_MANAGER_VALUE = "no_manager";
+  const [isEditing, setIsEditing] = useState(false);
+  const [managerEmail, setManagerEmail] = useState("");
+  const [managerError, setManagerError] = useState("");
+  const [currentManager, setCurrentManager] = useState<{
+    name: string;
+    email: string;
+  } | null>(null);
+  const [isLoadingManager, setIsLoadingManager] = useState(false);
+  
+  const { toast } = useToast();
+  const { assignManagerToUser, removeManagerFromUser, isLoading: isAssigning } = useAdminManagerAssignment();
 
-  // Debounce search query
+
+  // Fetch current manager information
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-    }, 300); // 300ms delay
+    const fetchCurrentManager = async () => {
+      setIsLoadingManager(true);
+      try {
+        // Check if user is in any team
+        const { data: teamMember, error: teamMemberError } = await supabase
+          .from("team_members")
+          .select("team_id")
+          .eq("user_id", user.id)
+          .maybeSingle();
 
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
+        if (teamMemberError || !teamMember) {
+          setCurrentManager(null);
+          return;
+        }
+
+        // Get team information with manager
+        const { data: team, error: teamError } = await supabase
+          .from("teams")
+          .select("id, name, manager")
+          .eq("id", teamMember.team_id)
+          .maybeSingle();
+
+        if (teamError || !team?.manager) {
+          setCurrentManager(null);
+          return;
+        }
+
+        // Get manager profile
+        const { data: managerProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("first_name, last_name, email")
+          .eq("email", team.manager)
+          .maybeSingle();
+
+        if (profileError || !managerProfile) {
+          setCurrentManager(null);
+          return;
+        }
+
+        setCurrentManager({
+          name: `${managerProfile.first_name} ${managerProfile.last_name}`,
+          email: managerProfile.email,
+        });
+      } catch (error) {
+        console.error("Error fetching current manager:", error);
+        setCurrentManager(null);
+      } finally {
+        setIsLoadingManager(false);
+      }
+    };
+
+    fetchCurrentManager();
+  }, [user.id]);
 
   // Check if user has the required role to assign a manager
   const canAssignManager = user.roles.some(role => 
     ['agent_pro', 'manager', 'manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum', 'beta_user', 'system_admin'].includes(role)
   );
 
-  const availableManagers = useMemo(() => {
-    const circularUsers = new Set<string>();
-    const findCircularUsers = (targetUserId: string) => {
-      const visited = new Set<string>();
-      const queue = [targetUserId];
 
-      while (queue.length > 0) {
-        const currentId = queue.shift();
-        if (!currentId) continue;
-        if (visited.has(currentId)) continue;
-        visited.add(currentId);
 
-        allUsers.forEach((potentialUser) => {
-          if (
-            potentialUser.manager_id === currentId &&
-            !visited.has(potentialUser.id)
-          ) {
-            circularUsers.add(potentialUser.id);
-            queue.push(potentialUser.id);
-          }
-        });
-      }
-    };
-    findCircularUsers(user.id);
+  // Handle manager email input change
+  const handleManagerEmailChange = useCallback((email: string) => {
+    setManagerEmail(email);
+    if (!email) {
+      setManagerError("");
+      return;
+    }
+    setManagerError("");
+  }, []);
 
-    // Filter to only show users who have manager roles
-    const managerRoles = ['manager', 'manager_pro', 'manager_gold', 'manager_pro_gold', 'manager_pro_platinum'];
+  // Handle form submission
+  const handleSubmit = useCallback(async (e: React.FormEvent) => {
+    e.preventDefault();
     
-    return allUsers.filter(
-      (potentialManager) =>
-        potentialManager.id !== user.id &&
-        !circularUsers.has(potentialManager.id) &&
-        potentialManager.roles.some(role => managerRoles.includes(role))
-    );
-  }, [user.id, allUsers]);
-
-  // Filter managers based on debounced search query
-  const filteredManagers = useMemo(() => {
-    if (!debouncedSearchQuery.trim()) {
-      return availableManagers;
-    }
-
-    const query = debouncedSearchQuery.toLowerCase().trim();
-    return availableManagers.filter((manager) => {
-      const firstName = (manager.first_name || "").toLowerCase();
-      const lastName = (manager.last_name || "").toLowerCase();
-      const email = (manager.email || "").toLowerCase();
-      const fullName = `${firstName} ${lastName}`.trim();
-
-      return (
-        firstName.indexOf(query) !== -1 ||
-        lastName.indexOf(query) !== -1 ||
-        email.indexOf(query) !== -1 ||
-        fullName.indexOf(query) !== -1
-      );
-    });
-  }, [availableManagers, debouncedSearchQuery]);
-
-  // Memoize the manager assignment handler
-  const handleManagerChange = useCallback(
-    (value: string) => {
-      if (!canAssignManager) {
-        return; // Prevent assignment if user doesn't have required role
+    if (managerEmail) {
+      const result = await assignManagerToUser(user.id, managerEmail);
+      
+      if (result.success) {
+        setManagerError("");
+        setManagerEmail("");
+        setIsEditing(false);
+        toast({
+          title: "Success",
+          description: "Manager assigned successfully",
+        });
+        // Refresh current manager info
+        setCurrentManager({
+          name: result.managerName || managerEmail,
+          email: managerEmail,
+        });
+      } else {
+        setManagerError(result.error || "Failed to assign manager");
       }
-      try {
-        onAssignManager(user.id, value === NO_MANAGER_VALUE ? null : value);
-      } catch (error) {
-        console.error("Error assigning manager:", error);
-        // The error will be handled by the mutation's onError callback
-      }
-    },
-    [user.id, onAssignManager, canAssignManager]
-  );
-
-  // Memoize the remove manager handler
-  const handleRemoveManager = useCallback(() => {
-    if (!canAssignManager) {
-      return; // Prevent removal if user doesn't have required role
+    } else {
+      setIsEditing(false);
     }
-    try {
-      onAssignManager(user.id, null);
-    } catch (error) {
-      console.error("Error removing manager:", error);
-      // The error will be handled by the mutation's onError callback
-    }
-  }, [user.id, onAssignManager, canAssignManager]);
+  }, [managerEmail, user.id, assignManagerToUser, toast]);
 
-  // Handle search input change
-  const handleSearchChange = useCallback(
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchQuery(e.target.value);
-    },
-    []
-  );
+  // Handle removing manager
+  const handleRemoveManager = useCallback(async () => {
+    const result = await removeManagerFromUser(user.id);
+    
+    if (result.success) {
+      setCurrentManager(null);
+      toast({
+        title: "Success",
+        description: "Manager removed successfully",
+      });
+    } else {
+      toast({
+        title: "Error",
+        description: result.error || "Failed to remove manager",
+        variant: "destructive",
+      });
+    }
+  }, [user.id, removeManagerFromUser, toast]);
+
+
+  // Get display value for manager
+  const getManagerDisplayValue = () => {
+    if (isLoadingManager) {
+      return "Loading...";
+    }
+    if (currentManager) {
+      return `${currentManager.name} (${currentManager.email})`;
+    }
+    return "None assigned";
+  };
 
   // If user doesn't have the required role, show a disabled state
   if (!canAssignManager) {
     return (
       <div className="flex items-center gap-2">
-        <Select disabled>
-          <SelectTrigger className="w-[250px] opacity-50">
-            <SelectValue placeholder="Agent Pro required" />
-          </SelectTrigger>
-        </Select>
+        <Input
+          type="text"
+          value="Agent Pro required"
+          disabled
+          className="w-[250px] bg-gray-50 opacity-50"
+        />
         <Button
           variant="ghost"
           size="icon"
@@ -163,65 +190,68 @@ export function ManagerSelect({
     );
   }
 
-  return (
-    <div className="flex items-center gap-2">
-      <div className="relative">
-        <Select
-          value={user.manager_id || NO_MANAGER_VALUE}
-          onValueChange={handleManagerChange}
-          disabled={isAssigningManager || isRemovingManager}
-        >
-          <SelectTrigger className={`w-[250px] ${isAssigningManager || isRemovingManager ? 'opacity-50' : ''}`}>
-            <SelectValue placeholder={(() => {
-              if (isAssigningManager) return "Assigning...";
-              if (isRemovingManager) return "Removing...";
-              return "Select a manager";
-            })()} />
-          </SelectTrigger>
-        <SelectContent>
-          {/* Search input */}
-          <div className="flex items-center px-3 py-2 border-b">
-            <Search className="h-4 w-4 text-muted-foreground mr-2" />
-            <Input
-              placeholder="Search managers..."
-              value={searchQuery}
-              onChange={handleSearchChange}
-              className="border-0 focus-visible:ring-0 focus-visible:ring-offset-0 p-0 h-auto"
-            />
-          </div>
-
-          <SelectItem value={NO_MANAGER_VALUE}>No Manager</SelectItem>
-          {filteredManagers.map((manager) => (
-            <SelectItem key={manager.id} value={manager.id}>
-              {manager.first_name} {manager.last_name} ({manager.email})
-            </SelectItem>
-          ))}
-          {filteredManagers.length === 0 && debouncedSearchQuery.trim() && (
-            <div className="px-3 py-2 text-sm text-muted-foreground">
-              No managers found matching "{debouncedSearchQuery}"
-            </div>
-          )}
-        </SelectContent>
-        </Select>
-        
-        {/* Loading overlay */}
-        {(isAssigningManager || isRemovingManager) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-background/80 rounded-md">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
-          </div>
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2">
+        <form onSubmit={handleSubmit} className="flex items-center gap-2">
+          <Input
+            type="email"
+            placeholder="Enter manager's email"
+            value={managerEmail}
+            onChange={(e) => handleManagerEmailChange(e.target.value)}
+            className="w-[250px]"
+            disabled={isAssigning}
+          />
+          <Button type="submit" disabled={isAssigning || !managerEmail}>
+            {isAssigning ? "Assigning..." : "Assign"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => {
+              setIsEditing(false);
+              setManagerEmail("");
+              setManagerError("");
+            }}
+            disabled={isAssigning}
+          >
+            Cancel
+          </Button>
+        </form>
+        {managerError && (
+          <p className="text-sm text-destructive">{managerError}</p>
         )}
       </div>
+    );
+  }
 
-      {user.manager_id && (
+  return (
+    <div className="flex items-center gap-2">
+      <Input
+        type="text"
+        value={getManagerDisplayValue()}
+        disabled
+        className="w-[250px] bg-gray-50"
+        placeholder="No manager assigned"
+      />
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => setIsEditing(true)}
+        disabled={isAssigning}
+        title="Edit manager"
+      >
+        <Edit className="h-4 w-4" />
+      </Button>
+      {currentManager && (
         <Button
           variant="ghost"
           size="icon"
           onClick={handleRemoveManager}
-          disabled={isRemovingManager || isAssigningManager}
-          title={isRemovingManager ? "Removing manager..." : "Remove manager"}
-          className={isRemovingManager ? "opacity-50" : ""}
+          disabled={isAssigning}
+          title="Remove manager"
         >
-          {isRemovingManager ? (
+          {isAssigning ? (
             <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-current" />
           ) : (
             <UserX className="h-4 w-4" />

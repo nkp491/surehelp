@@ -8,22 +8,25 @@ import {
   UserRole,
 } from "@/integrations/supabase/types";
 
-interface ManagerAssignmentResult {
+interface AdminManagerAssignmentResult {
   success: boolean;
   error?: string;
   teamId?: string;
   managerName?: string;
 }
 
-interface UseManagerAssignmentReturn {
-  assignManager: (
-    managerEmail: string,
-    currentUserId: string
-  ) => Promise<ManagerAssignmentResult>;
+interface UseAdminManagerAssignmentReturn {
+  assignManagerToUser: (
+    targetUserId: string,
+    managerEmail: string
+  ) => Promise<AdminManagerAssignmentResult>;
+  removeManagerFromUser: (
+    targetUserId: string
+  ) => Promise<AdminManagerAssignmentResult>;
   isLoading: boolean;
 }
 
-export const useManagerAssignment = (): UseManagerAssignmentReturn => {
+export const useAdminManagerAssignment = (): UseAdminManagerAssignmentReturn => {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const queryClient = useQueryClient();
 
@@ -113,13 +116,13 @@ export const useManagerAssignment = (): UseManagerAssignmentReturn => {
 
   const addUserToTeam = async (
     teamId: string,
-    currentUserId: string
+    targetUserId: string
   ): Promise<string | null> => {
     // First, check if user already exists in team_members table
     const { data: existingMember, error: checkError } = await supabase
       .from("team_members")
       .select("id, team_id")
-      .eq("user_id", currentUserId)
+      .eq("user_id", targetUserId)
       .maybeSingle();
 
     if (checkError) {
@@ -132,21 +135,19 @@ export const useManagerAssignment = (): UseManagerAssignmentReturn => {
       const { error: updateError } = await supabase
         .from("team_members")
         .update({ team_id: teamId })
-        .eq("user_id", currentUserId);
+        .eq("user_id", targetUserId);
 
       if (updateError) {
         console.error("Error updating user's team:", updateError);
         return "Error updating user's team";
       }
 
-      console.log(
-        `Updated existing team membership for user ${currentUserId} to team ${teamId}`
-      );
+      console.log(`Updated existing team membership for user ${targetUserId} to team ${teamId}`);
     } else {
       // User doesn't exist in team_members table, create new entry
       const teamMemberInsertData = {
         team_id: teamId,
-        user_id: currentUserId,
+        user_id: targetUserId,
       };
       const { error: insertMemberError } = await supabase
         .from("team_members")
@@ -157,18 +158,16 @@ export const useManagerAssignment = (): UseManagerAssignmentReturn => {
         return "Error assigning to team";
       }
 
-      console.log(
-        `Created new team membership for user ${currentUserId} in team ${teamId}`
-      );
+      console.log(`Created new team membership for user ${targetUserId} in team ${teamId}`);
     }
 
     return null;
   };
 
-  const assignManager = async (
-    managerEmail: string,
-    currentUserId: string
-  ): Promise<ManagerAssignmentResult> => {
+  const assignManagerToUser = async (
+    targetUserId: string,
+    managerEmail: string
+  ): Promise<AdminManagerAssignmentResult> => {
     setIsLoading(true);
 
     try {
@@ -190,7 +189,7 @@ export const useManagerAssignment = (): UseManagerAssignmentReturn => {
       }
 
       // Add user to team
-      const addUserError = await addUserToTeam(teamId, currentUserId);
+      const addUserError = await addUserToTeam(teamId, targetUserId);
       if (addUserError) {
         return { success: false, error: addUserError };
       }
@@ -207,12 +206,48 @@ export const useManagerAssignment = (): UseManagerAssignmentReturn => {
         : managerEmail;
 
       // Invalidate relevant queries
-      queryClient.invalidateQueries({ queryKey: ["team-membership"] });
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["team-membership"] });
+      queryClient.invalidateQueries({ queryKey: ["user-teams"] });
+      queryClient.invalidateQueries({ queryKey: ["team-members"] });
 
       return { success: true, teamId, managerName };
     } catch (error: unknown) {
-      console.error("Error in manager assignment:", error);
+      console.error("Error in admin manager assignment:", error);
+      const errorMessage =
+        error instanceof Error ? error.message : "Unexpected error occurred";
+      return { success: false, error: errorMessage };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const removeManagerFromUser = async (
+    targetUserId: string
+  ): Promise<AdminManagerAssignmentResult> => {
+    setIsLoading(true);
+
+    try {
+      // Remove user from all teams
+      const { error: removeError } = await supabase
+        .from("team_members")
+        .delete()
+        .eq("user_id", targetUserId);
+
+      if (removeError) {
+        console.error("Error removing user from teams:", removeError);
+        return { success: false, error: "Error removing user from teams" };
+      }
+
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
+      queryClient.invalidateQueries({ queryKey: ["team-membership"] });
+      queryClient.invalidateQueries({ queryKey: ["user-teams"] });
+      queryClient.invalidateQueries({ queryKey: ["team-members"] });
+
+      return { success: true };
+    } catch (error: unknown) {
+      console.error("Error in removing manager:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Unexpected error occurred";
       return { success: false, error: errorMessage };
@@ -222,7 +257,8 @@ export const useManagerAssignment = (): UseManagerAssignmentReturn => {
   };
 
   return {
-    assignManager,
+    assignManagerToUser,
+    removeManagerFromUser,
     isLoading,
   };
 };

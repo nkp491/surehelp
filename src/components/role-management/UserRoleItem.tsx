@@ -91,7 +91,6 @@ export function UserRoleItem({
             <ManagerSelect
               user={user}
               allUsers={allUsers}
-              onAssignManager={onAssignManager}
               isAssigningManager={isAssigningManager}
               isRemovingManager={isRemovingManager}
             />
