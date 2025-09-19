@@ -633,15 +633,34 @@ const ManagerDashboard = () => {
         }
         const monthStart = format(startDate, "yyyy-MM-dd");
         const monthEnd = format(endDate, "yyyy-MM-dd");
-        const { data: profiles, error: profilesError } = await supabase
-          .from("profiles")
-          .select("id, first_name, last_name, email, profile_image_url")
-          .in("id", selectedTeamMemberIds);
-        if (profilesError) throw profilesError;
-        const profileMap = profiles.reduce((acc, profile) => {
+        // Get profiles and roles for all members
+        const [profilesResult, userRolesResult] = await Promise.all([
+          supabase
+            .from("profiles")
+            .select("id, first_name, last_name, email, profile_image_url")
+            .in("id", selectedTeamMemberIds),
+          supabase
+            .from("user_roles")
+            .select("user_id, role")
+            .in("user_id", selectedTeamMemberIds)
+        ]);
+
+        if (profilesResult.error) throw profilesResult.error;
+        if (userRolesResult.error) throw userRolesResult.error;
+
+        const profileMap = profilesResult.data.reduce((acc, profile) => {
           acc[profile.id] = profile;
           return acc;
         }, {} as Record<string, { id: string; first_name: string | null; last_name: string | null; email: string | null; profile_image_url: string | null }>);
+
+        // Create roles map
+        const rolesMap = new Map<string, string[]>();
+        userRolesResult.data.forEach((userRole) => {
+          if (!rolesMap.has(userRole.user_id)) {
+            rolesMap.set(userRole.user_id, []);
+          }
+          rolesMap.get(userRole.user_id)?.push(userRole.role);
+        });
         return await Promise.all(
           selectedTeamMemberIds.map(async (userId) => {
             const { data: metrics, error: metricsError } = await supabase
@@ -691,13 +710,23 @@ const ManagerDashboard = () => {
               acc[camelKey] = ratio.value;
               return acc;
             }, {} as Record<string, string>);
+            // Get user roles and format them
+            const userRoles = rolesMap.get(userId) || [];
+            const formattedRoles = userRoles.length > 0 
+              ? userRoles.map(role => 
+                  role.split("_")
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(" ")
+                ).join(", ")
+              : "Agent";
+
             return {
               user_id: userId,
               name:
                 `${profile.first_name || ""} ${
                   profile.last_name || ""
                 }`.trim() || "Unknown",
-              role: "Agent",
+              role: formattedRoles,
               profile_image_url: profile.profile_image_url,
               metrics: {
                 ...summary,
@@ -805,8 +834,23 @@ const ManagerDashboard = () => {
                       </SelectTrigger>
                       <SelectContent>
                         <SelectItem value="all">All Roles</SelectItem>
-                        <SelectItem value="Agent">Agent</SelectItem>
-                        <SelectItem value="Manager">Manager</SelectItem>
+                        {(() => {
+                          // Get all unique roles from team members
+                          const allRoles = new Set<string>();
+                          if (teamMemberMetrics) {
+                            teamMemberMetrics.forEach(member => {
+                              if (member.role) {
+                                // Split by comma and add each role
+                                member.role.split(',').forEach(role => {
+                                  allRoles.add(role.trim());
+                                });
+                              }
+                            });
+                          }
+                          return Array.from(allRoles).sort().map(role => (
+                            <SelectItem key={role} value={role}>{role}</SelectItem>
+                          ));
+                        })()}
                       </SelectContent>
                     </Select>
                     <Select
@@ -835,12 +879,40 @@ const ManagerDashboard = () => {
                         </span>
                       </div>
 
-                      {isLoadingTeamMetrics ? (
-                        <div className="flex items-center justify-center h-full min-h-72">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        </div>
-                      ) : teamMemberMetrics && teamMemberMetrics.length > 0 ? (
-                        teamMemberMetrics.map((member) => {
+                      {(() => {
+                        // Filter teamMemberMetrics based on search and role
+                        const filteredTeamMembers = teamMemberMetrics?.filter((member) => {
+                          const searchTerms = searchQuery.toLowerCase().trim().split(/\s+/);
+                          const memberName = member.name.toLowerCase();
+                          const matchesSearch = searchTerms.every((term) =>
+                            memberName.includes(term)
+                          );
+                          const memberRole = member.role?.toLowerCase() || "";
+                          const matchesRole =
+                            filterRole === "all" ||
+                            memberRole.includes(filterRole.toLowerCase());
+                          return matchesSearch && matchesRole;
+                        }) || [];
+
+                        if (isLoadingTeamMetrics) {
+                          return (
+                            <div className="flex items-center justify-center h-full min-h-72">
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            </div>
+                          );
+                        }
+
+                        if (filteredTeamMembers.length === 0) {
+                          return (
+                            <div className="text-center py-8 text-muted-foreground">
+                              <p>No metrics data available for team members</p>
+                            </div>
+                          );
+                        }
+
+                        return (
+                          <>
+                            {filteredTeamMembers.map((member) => {
                           const successScore = calculateSuccessScore(
                             member.metrics.conversion
                           );
@@ -1028,13 +1100,11 @@ const ManagerDashboard = () => {
                                 </div>
                               </div>
                             </div>
-                          );
-                        })
-                      ) : (
-                        <div className="text-center py-8 text-muted-foreground">
-                          <p>No metrics data available for team members</p>
-                        </div>
-                      )}
+                            );
+                            })}
+                          </>
+                        );
+                      })()}
                     </div>
                   ) : (
                     <div className="text-center py-8 text-muted-foreground">
