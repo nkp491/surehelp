@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import {
@@ -24,13 +23,90 @@ import type {
   MemberMetrics,
 } from "@/types/team";
 import TeamBulletIns from "@/components/manager/TeamBulletIns";
-import MemberCard from "@/components/manager/MemberCard";
 import { SmartTeamDashboard } from "@/components/team/SmartTeamDashboard";
 import { calculateRatios } from "@/utils/metricsUtils";
-import { Loader2 } from "lucide-react";
+import {
+  Loader2,
+  Phone,
+  Calendar,
+  MessageSquare,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { MetricCount } from "@/types/metrics";
+import type { TeamNode } from "@/components/team/SmartTeamDashboard";
+import { useQuery } from "@tanstack/react-query";
+import { endOfMonth, format, startOfMonth } from "date-fns";
+import { Progress } from "@/components/ui/progress";
 
 type TimeRange = "weekly" | "monthly" | "ytd";
+
+// Helper functions for metrics display
+const PRIMARY_METRICS = [
+  { key: "leads", label: "Leads", colorClass: "text-blue-600" },
+  { key: "calls", label: "Calls", colorClass: "text-blue-600" },
+  { key: "contacts", label: "Contacts", colorClass: "text-blue-600" },
+  { key: "scheduled", label: "Scheduled", colorClass: "text-blue-600" },
+  { key: "sits", label: "Sits", colorClass: "text-blue-600" },
+  { key: "sales", label: "Sales", colorClass: "text-blue-600" },
+] as const;
+
+const RATIO_METRICS = [
+  { key: "leadsToContact", label: "Lead to Contact", format: "percent" },
+  { key: "leadsToScheduled", label: "Lead to Scheduled", format: "percent" },
+  { key: "leadsToSits", label: "Lead to Sits", format: "percent" },
+  { key: "leadsToSales", label: "Lead to Sales", format: "percent" },
+  { key: "aPPerLead", label: "AP per Lead", format: "currency" },
+  {
+    key: "contactToScheduled",
+    label: "Contact to Scheduled",
+    format: "percent",
+  },
+  { key: "contactToSits", label: "Contact to Sits", format: "percent" },
+  { key: "callsToContact", label: "Calls to Contact", format: "percent" },
+  { key: "callsToScheduled", label: "Calls to Scheduled", format: "percent" },
+  { key: "callsToSits", label: "Calls to Sits", format: "percent" },
+  { key: "callsToSales", label: "Calls to Sales", format: "percent" },
+  { key: "aPPerCall", label: "AP per Call", format: "currency" },
+  { key: "contactToSales", label: "Contact to Sales", format: "percent" },
+  { key: "aPPerContact", label: "AP per Contact", format: "currency" },
+  { key: "scheduledToSits", label: "Scheduled to Sits", format: "percent" },
+  { key: "sitsToSalesCloseRatio", label: "Sits to Sales", format: "percent" },
+  { key: "aPPerSit", label: "AP per Sit", format: "currency" },
+  { key: "aPPerSale", label: "AP per Sale", format: "currency" },
+] as const;
+
+const formatValue = (
+  value: number | string,
+  format: "percent" | "currency"
+): string => {
+  if (format === "percent") {
+    if (typeof value === "string" && value.includes("%")) {
+      return value;
+    }
+    return `${value}%`;
+  }
+  if (typeof value === "string" && value.includes("$")) {
+    return value;
+  }
+  return `$${value}`;
+};
+
+const getTimeRangeLabel = (range: TimeRange): string => {
+  switch (range) {
+    case "weekly":
+      return "Weekly";
+    case "monthly":
+      return "Monthly";
+    case "ytd":
+    default:
+      return "Year to Date";
+  }
+};
+
+const calculateSuccessScore = (conversion: number): number => {
+  return Math.round((conversion / 100) * 100);
+};
 
 const useTeams = () => {
   const [teams, setTeams] = useState<TransformedTeam[]>([]);
@@ -39,8 +115,6 @@ const useTeams = () => {
   const fetchTeams = async (): Promise<void> => {
     try {
       setLoading(true);
-
-      // Get current user
       const {
         data: { user },
         error: userError,
@@ -49,27 +123,20 @@ const useTeams = () => {
         console.error("Error getting current user:", userError);
         return;
       }
-
-      // Check if user is system admin
       const { data: adminRoles, error: adminError } = await supabase
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
         .eq("role", "system_admin");
-
       if (adminError) {
         console.error("Error checking admin role:", adminError);
         return;
       }
-
       const isSystemAdmin = adminRoles && adminRoles.length > 0;
-
       let teamsResult;
       if (isSystemAdmin) {
-        // System admin can see all teams
         teamsResult = await supabase.from("teams").select("*");
       } else {
-        // Check if user is a manager
         const { data: managerRoles, error: managerError } = await supabase
           .from("user_roles")
           .select("role")
@@ -80,48 +147,36 @@ const useTeams = () => {
             "manager_pro_gold",
             "manager_pro_platinum",
           ]);
-
         if (managerError) {
           console.error("Error checking manager role:", managerError);
           return;
         }
-
         if (!managerRoles || managerRoles.length === 0) {
-          // User is not a manager, show no teams
           setTeams([]);
           return;
         }
-
-        // Get teams managed by this user
         const { data: managedTeams, error: managedTeamsError } = await supabase
           .from("team_managers")
           .select("team_id")
           .eq("user_id", user.id);
-
         if (managedTeamsError) {
           console.error("Error fetching managed teams:", managedTeamsError);
           return;
         }
-
         if (!managedTeams || managedTeams.length === 0) {
-          // User is a manager but has no teams assigned
           setTeams([]);
           return;
         }
-
         const teamIds = managedTeams.map((tm) => tm.team_id);
         teamsResult = await supabase
           .from("teams")
           .select("*")
           .in("id", teamIds);
       }
-
       if (teamsResult.error) {
         console.error("Error fetching teams:", teamsResult.error);
         return;
       }
-
-      // Fetch team members, profiles, and user roles
       const [membersResult, profilesResult, userRolesResult] =
         await Promise.all([
           supabase.from("team_members").select("*"),
@@ -130,7 +185,6 @@ const useTeams = () => {
             .select("id, first_name, last_name, email, profile_image_url"),
           supabase.from("user_roles").select("user_id, role"),
         ]);
-
       if (
         membersResult.error ||
         profilesResult.error ||
@@ -209,7 +263,7 @@ const createUserRolesMap = (
     if (!userRolesMap.has(userRole.user_id)) {
       userRolesMap.set(userRole.user_id, []);
     }
-    userRolesMap.get(userRole.user_id)!.push(userRole.role);
+    userRolesMap.get(userRole.user_id)?.push(userRole.role);
   });
   return userRolesMap;
 };
@@ -240,7 +294,6 @@ const transformTeamsData = (
       .map((member): TeamMember => {
         const userRoles = userRolesMap.get(member.user_id) ?? [];
         const formattedRoles = formatAllRoles(userRoles);
-
         return {
           ...member,
           name: profileMap.get(member.user_id)?.name ?? "Unknown User",
@@ -249,7 +302,7 @@ const transformTeamsData = (
             profileMap.get(member.user_id)?.profile_image_url ?? null,
           created_at: member.created_at ?? new Date().toISOString(),
           updated_at: member.updated_at ?? new Date().toISOString(),
-          role: formattedRoles, // Display all formatted roles
+          role: formattedRoles,
           roles: userRoles,
         };
       }),
@@ -315,7 +368,6 @@ const aggregateMetricsByUser = (
   metricsData: DailyMetric[]
 ): Record<string, MetricCount> => {
   const metricsByUser: Record<string, MetricCount> = {};
-
   metricsData.forEach((row) => {
     metricsByUser[row.user_id] ??= {
       leads: 0,
@@ -333,13 +385,10 @@ const aggregateMetricsByUser = (
     userMetrics.scheduled += row.scheduled ?? 0;
     userMetrics.sits += row.sits ?? 0;
     userMetrics.sales += row.sales ?? 0;
-
-    // For AP, sum all values (don't average)
     if (row.ap && row.ap > 0) {
       userMetrics.ap += row.ap;
     }
   });
-
   return metricsByUser;
 };
 
@@ -383,9 +432,8 @@ const convertRatiosToObject = (
   ratios: { label: string; value: string | number }[] | MetricRatios
 ): MetricRatios => {
   try {
-    // If ratios is already an object, return it
     if (typeof ratios === "object" && !Array.isArray(ratios)) {
-      return ratios as MetricRatios;
+      return ratios;
     }
     if (!Array.isArray(ratios)) {
       console.warn("Ratios is not an array:", ratios);
@@ -514,14 +562,13 @@ const ManagerDashboard = () => {
   const [selectedTeam, setSelectedTeam] = useState<TransformedTeam | null>(
     null
   );
+  const [selectedTeamNode, setSelectedTeamNode] = useState<TeamNode | null>(
+    null
+  );
   const [members, setMembers] = useState<EnrichedMember[]>([]);
-  const [teamMetricsLoading, setTeamMetricsLoading] = useState(false);
-  // UI state
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
   const [timeRange, setTimeRange] = useState<TimeRange>("ytd");
-  const [sortBy, setSortBy] = useState<"asc" | "desc">("asc");
   const [filterRole, setFilterRole] = useState<string>("all");
 
   const {
@@ -530,9 +577,145 @@ const ManagerDashboard = () => {
     fetchBulletins,
   } = useBulletins(selectedTeam?.id || null);
 
+  const handleTeamSelect = (
+    teamId: string | null,
+    teamData: TeamNode | null
+  ) => {
+    setSelectedTeamNode(teamData);
+    if (teamData) {
+      const transformedTeam = teams.find((team) => team.id === teamId);
+      setSelectedTeam(transformedTeam || null);
+    } else {
+      setSelectedTeam(null);
+    }
+  };
+
+  const getAllMemberIds = (teamNode: TeamNode): string[] => {
+    const memberIds: string[] = [];
+    const collectFromMembers = (
+      members: { member: { id: string }; subordinates?: any[] }[]
+    ) => {
+      members.forEach((member) => {
+        memberIds.push(member.member.id);
+        if (member.subordinates && member.subordinates.length > 0) {
+          collectFromMembers(member.subordinates);
+        }
+      });
+    };
+    collectFromMembers(teamNode.members);
+    return memberIds;
+  };
+
+  const selectedTeamMemberIds = selectedTeamNode
+    ? getAllMemberIds(selectedTeamNode)
+    : [];
+
+  const { data: teamMemberMetrics, isLoading: isLoadingTeamMetrics } = useQuery(
+    {
+      queryKey: ["team-member-metrics", selectedTeamMemberIds, timeRange],
+      queryFn: async () => {
+        if (!selectedTeamMemberIds.length) return [];
+        const today = new Date();
+        let startDate: Date;
+        let endDate: Date = today;
+        switch (timeRange) {
+          case "weekly":
+            startDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            break;
+          case "monthly":
+            startDate = startOfMonth(today);
+            endDate = endOfMonth(today);
+            break;
+          case "ytd":
+          default:
+            startDate = new Date(today.getFullYear(), 0, 1);
+            break;
+        }
+        const monthStart = format(startDate, "yyyy-MM-dd");
+        const monthEnd = format(endDate, "yyyy-MM-dd");
+        const { data: profiles, error: profilesError } = await supabase
+          .from("profiles")
+          .select("id, first_name, last_name, email, profile_image_url")
+          .in("id", selectedTeamMemberIds);
+        if (profilesError) throw profilesError;
+        const profileMap = profiles.reduce((acc, profile) => {
+          acc[profile.id] = profile;
+          return acc;
+        }, {} as Record<string, { id: string; first_name: string | null; last_name: string | null; email: string | null; profile_image_url: string | null }>);
+        return await Promise.all(
+          selectedTeamMemberIds.map(async (userId) => {
+            const { data: metrics, error: metricsError } = await supabase
+              .from("daily_metrics")
+              .select("leads, calls, contacts, scheduled, sits, sales, ap")
+              .eq("user_id", userId)
+              .gte("date", monthStart)
+              .lte("date", monthEnd);
+            if (metricsError) throw metricsError;
+            const summary = metrics.reduce(
+              (acc, curr) => ({
+                leads: acc.leads + (curr.leads || 0),
+                calls: acc.calls + (curr.calls || 0),
+                contacts: acc.contacts + (curr.contacts || 0),
+                scheduled: acc.scheduled + (curr.scheduled || 0),
+                sits: acc.sits + (curr.sits || 0),
+                sales: acc.sales + (curr.sales || 0),
+                ap: acc.ap + (curr.ap && curr.ap > 0 ? curr.ap : 0),
+              }),
+              {
+                leads: 0,
+                calls: 0,
+                contacts: 0,
+                scheduled: 0,
+                sits: 0,
+                sales: 0,
+                ap: 0,
+              }
+            );
+            const profile = profileMap[userId] || {
+              id: userId,
+              first_name: null,
+              last_name: null,
+              email: null,
+              profile_image_url: null,
+            };
+            const conversion =
+              summary.leads > 0 ? (summary.sales / summary.leads) * 100 : 0;
+            const ratiosArray = calculateRatios(summary as MetricCount);
+            const ratios = ratiosArray.reduce((acc, ratio) => {
+              const key = ratio.label
+                .replace(/\s+/g, " ")
+                .replace(/[^a-zA-Z0-9 ]/g, "")
+                .replace(/ ([a-z])/g, (_, c: string) => c.toUpperCase())
+                .replace(/ /g, "");
+              const camelKey = key.charAt(0).toLowerCase() + key.slice(1);
+              acc[camelKey] = ratio.value;
+              return acc;
+            }, {} as Record<string, string>);
+            return {
+              user_id: userId,
+              name:
+                `${profile.first_name || ""} ${
+                  profile.last_name || ""
+                }`.trim() || "Unknown",
+              role: "Agent",
+              profile_image_url: profile.profile_image_url,
+              metrics: {
+                ...summary,
+                conversion: Math.round(conversion * 100) / 100,
+                ratios: ratios,
+              },
+              notes: [],
+            };
+          })
+        );
+      },
+      enabled: selectedTeamMemberIds.length > 0,
+      staleTime: 1000 * 60 * 5,
+    }
+  );
+
   const fetchTeamMemberMetrics = async (): Promise<void> => {
     if (!selectedTeam) return;
-    setTeamMetricsLoading(true);
     try {
       const userIds = selectedTeam.members.map((m) => m.user_id);
       if (!userIds.length) return;
@@ -561,12 +744,9 @@ const ManagerDashboard = () => {
       setMembers(transformedMembers);
     } catch (error) {
       console.error("Error fetching team member metrics:", error);
-    } finally {
-      setTeamMetricsLoading(false);
     }
   };
 
-  // Effects
   useEffect(() => {
     fetchTeams();
   }, []);
@@ -585,26 +765,7 @@ const ManagerDashboard = () => {
   }, [selectedTeam, timeRange]);
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, filterRole, itemsPerPage]);
-
-  const filteredMembers = members.filter((member) => {
-    const searchTerms = searchQuery.toLowerCase().trim().split(/\s+/);
-    const memberName = member.name.toLowerCase();
-    const matchesSearch = searchTerms.every((term) =>
-      memberName.includes(term)
-    );
-    const memberRole = member.role?.toLowerCase() || "";
-    const matchesRole =
-      filterRole === "all" ||
-      (filterRole === "Agent" && memberRole.includes("agent")) ||
-      (filterRole === "Manager" && memberRole.includes("manager"));
-    return matchesSearch && matchesRole;
-  });
-
-  const totalPages = Math.ceil(filteredMembers.length / itemsPerPage);
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const currentMembers = filteredMembers.slice(startIndex, endIndex);
+  }, [searchQuery, filterRole]);
 
   return (
     <div className="w-full min-h-screen">
@@ -615,13 +776,12 @@ const ManagerDashboard = () => {
             Manage your team and monitor performance
           </p>
         </div>
-
         <div className="space-y-6">
           <Card className="w-full p-4 sm:p-6 shadow-sm bg-[#F1F1F1]">
             <div className="space-y-6">
               {/* Teams and Bulletin */}
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <SmartTeamDashboard />
+                <SmartTeamDashboard onTeamSelect={handleTeamSelect} />
                 <TeamBulletIns
                   bulletins={bulletins || []}
                   loading={bulletinsLoading}
@@ -629,124 +789,257 @@ const ManagerDashboard = () => {
               </section>
               {/* Team Members Section */}
               <section className="bg-white p-6 rounded-lg shadow-sm">
-                <h2 className="text-xl font-bold mb-6">TEAM MEMBERS</h2>
+                <h2 className="text-xl font-bold mb-6">TEAM METRICS</h2>
                 <div className="space-y-6">
                   {/* Filters */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-4">
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full sm:w-auto">
-                      <Input
-                        placeholder="Search members..."
-                        value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
-                        className="w-full sm:w-[200px]"
-                      />
-                      <div className="flex flex-wrap gap-2">
-                        <Select
-                          value={filterRole}
-                          onValueChange={setFilterRole}
-                        >
-                          <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Filter by role" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="all">All Roles</SelectItem>
-                            <SelectItem value="Agent">Agent</SelectItem>
-                            <SelectItem value="Manager">Manager</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={timeRange}
-                          onValueChange={(value: TimeRange) =>
-                            setTimeRange(value)
-                          }
-                        >
-                          <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Select time range" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="weekly">Weekly</SelectItem>
-                            <SelectItem value="monthly">Monthly</SelectItem>
-                            <SelectItem value="ytd">Year to Date</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Select
-                          value={itemsPerPage.toString()}
-                          onValueChange={(value) =>
-                            setItemsPerPage(Number(value))
-                          }
-                        >
-                          <SelectTrigger className="w-full sm:w-[180px]">
-                            <SelectValue placeholder="Items per page" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="10">10 per page</SelectItem>
-                            <SelectItem value="20">20 per page</SelectItem>
-                            <SelectItem value="50">50 per page</SelectItem>
-                            <SelectItem value="100">100 per page</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setSortBy(sortBy === "asc" ? "desc" : "asc")
-                        }
-                      >
-                        {sortBy === "asc" ? "Sort ↑" : "Sort ↓"}
-                      </Button>
-                    </div>
-                  </div>
-                  {/* Pagination */}
-                  <div className="flex items-center justify-between py-4">
-                    <div className="text-sm text-muted-foreground">
-                      Showing {startIndex + 1}-
-                      {Math.min(endIndex, filteredMembers.length)} of{" "}
-                      {filteredMembers.length} members
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setCurrentPage((prev) => Math.max(1, prev - 1))
-                        }
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </Button>
-                      <div className="text-sm">
-                        Page {currentPage} of {totalPages}
-                      </div>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() =>
-                          setCurrentPage((prev) =>
-                            Math.min(totalPages, prev + 1)
-                          )
-                        }
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </Button>
-                    </div>
+                  <div className="flex justify-end gap-4 w-full sm:w-auto">
+                    <Input
+                      placeholder="Search members..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full sm:w-[200px]"
+                    />
+                    <Select value={filterRole} onValueChange={setFilterRole}>
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Filter by role" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Roles</SelectItem>
+                        <SelectItem value="Agent">Agent</SelectItem>
+                        <SelectItem value="Manager">Manager</SelectItem>
+                      </SelectContent>
+                    </Select>
+                    <Select
+                      value={timeRange}
+                      onValueChange={(value: TimeRange) => setTimeRange(value)}
+                    >
+                      <SelectTrigger className="w-full sm:w-[180px]">
+                        <SelectValue placeholder="Select time range" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="weekly">Weekly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="ytd">Year to Date</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
                   {/* Team Members */}
-                  {teamMetricsLoading ? (
-                    <div className="flex items-center justify-center h-full min-h-72">
-                      <Loader2 className="w-4 h-4 animate-spin" />
+                  {selectedTeamNode ? (
+                    <div className="space-y-6">
+                      <div className="flex items-center gap-2 mb-4">
+                        <h3 className="text-lg font-semibold">
+                          {selectedTeamNode.team.name} Members
+                        </h3>
+                        <span className="text-sm text-muted-foreground">
+                          ({selectedTeamNode.members.length} members)
+                        </span>
+                      </div>
+
+                      {isLoadingTeamMetrics ? (
+                        <div className="flex items-center justify-center h-full min-h-72">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        </div>
+                      ) : teamMemberMetrics && teamMemberMetrics.length > 0 ? (
+                        teamMemberMetrics.map((member) => {
+                          const successScore = calculateSuccessScore(
+                            member.metrics.conversion
+                          );
+                          const timeRangeLabel = getTimeRangeLabel(timeRange);
+
+                          return (
+                            <div
+                              key={member.user_id}
+                              className="bg-gray-50 p-4 rounded-lg border border-gray-200"
+                            >
+                              {/* Header Section */}
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="flex items-center space-x-3">
+                                  {member.profile_image_url ? (
+                                    <img
+                                      src={member.profile_image_url}
+                                      alt={`${member.name} profile`}
+                                      className="size-10 rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="size-10 rounded-full bg-blue-100 flex items-center justify-center text-xs font-medium">
+                                      {member.name.charAt(0).toUpperCase()}
+                                    </div>
+                                  )}
+                                  <div>
+                                    <h3 className="font-semibold">
+                                      {member.name}
+                                    </h3>
+                                    <p className="text-sm text-muted-foreground">
+                                      {member.role}
+                                    </p>
+                                  </div>
+                                </div>
+                                <div className="flex items-center space-x-2">
+                                  <div className="text-sm font-medium text-green-600">
+                                    {member.metrics.conversion}% Conversion
+                                  </div>
+                                  <Progress
+                                    value={member.metrics.conversion}
+                                    className="w-24 h-2"
+                                  />
+                                </div>
+                              </div>
+
+                              {/* Primary Metrics */}
+                              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-4 mb-6">
+                                {PRIMARY_METRICS.map(
+                                  ({ key, label, colorClass }) => (
+                                    <div
+                                      key={key}
+                                      className="bg-blue-50 p-3 rounded-lg text-center"
+                                    >
+                                      <div
+                                        className={`text-lg font-bold ${colorClass}`}
+                                      >
+                                        {
+                                          member.metrics[
+                                            key as keyof typeof member.metrics
+                                          ] as number
+                                        }
+                                      </div>
+                                      <div className="text-xs text-muted-foreground">
+                                        {label}
+                                      </div>
+                                    </div>
+                                  )
+                                )}
+                                <div className="bg-green-50 p-3 rounded-lg text-center col-span-2">
+                                  <div className="text-lg font-bold text-green-600">
+                                    ${member.metrics.ap.toFixed(2)}
+                                  </div>
+                                  <div className="text-xs text-muted-foreground">
+                                    AP
+                                  </div>
+                                </div>
+                              </div>
+                              {/* Ratio Cards */}
+                              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-3">
+                                {RATIO_METRICS.map(({ key, label, format }) => (
+                                  <div
+                                    key={key}
+                                    className="bg-gray-100 p-2 rounded text-center"
+                                  >
+                                    <div className="text-sm font-semibold">
+                                      {formatValue(
+                                        String(
+                                          member.metrics.ratios[
+                                            key as keyof typeof member.metrics.ratios
+                                          ] || ""
+                                        ),
+                                        format
+                                      )}
+                                    </div>
+                                    <div className="text-xs text-muted-foreground">
+                                      {label}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                              {/* Success Calculator and 1:1 Notes */}
+                              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-6">
+                                {/* Success Calculator Section */}
+                                <div className="space-y-4">
+                                  <h3 className="text-sm font-semibold">
+                                    SUCCESS CALCULATOR
+                                  </h3>
+                                  <div className="grid grid-cols-2 gap-3">
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                      <div className="flex items-center space-x-2 mb-1">
+                                        <TrendingUp className="h-4 w-4 text-green-600" />
+                                        <span className="text-xs font-medium">
+                                          Conversion Rate
+                                        </span>
+                                      </div>
+                                      <div className="text-lg font-bold text-green-600">
+                                        {member.metrics.conversion}%
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                        {timeRangeLabel} Rate
+                                      </p>
+                                    </div>
+                                    <div className="p-3 bg-gray-50 rounded-lg">
+                                      <div className="flex items-center space-x-2 mb-1">
+                                        <Target className="h-4 w-4 text-blue-600" />
+                                        <span className="text-xs font-medium">
+                                          Success Score
+                                        </span>
+                                      </div>
+                                      <div className="text-lg font-bold text-blue-600">
+                                        {successScore}
+                                      </div>
+                                      <p className="text-xs text-muted-foreground">
+                                        {timeRangeLabel} Rating
+                                      </p>
+                                    </div>
+                                  </div>
+                                  <div>
+                                    <div className="flex items-center justify-between text-xs mb-1">
+                                      <span>Individual Progress</span>
+                                      <span>{member.metrics.conversion}%</span>
+                                    </div>
+                                    <Progress
+                                      value={member.metrics.conversion}
+                                      className="h-1.5"
+                                    />
+                                  </div>
+                                </div>
+                                {/* 1:1 Notes Section */}
+                                <div className="space-y-4">
+                                  <div className="flex items-center justify-between">
+                                    <h3 className="text-sm font-semibold">
+                                      1:1 NOTES
+                                    </h3>
+                                    <div className="flex items-center space-x-2">
+                                      <Phone className="h-4 w-4 text-muted-foreground" />
+                                      <Calendar className="h-4 w-4 text-muted-foreground" />
+                                      <MessageSquare className="h-4 w-4 text-muted-foreground" />
+                                    </div>
+                                  </div>
+                                  <div className="space-y-2 max-h-[200px] overflow-y-auto">
+                                    {member.notes.length > 0 ? (
+                                      member.notes.map((note) => (
+                                        <div
+                                          key={note.id}
+                                          className="p-2 bg-gray-50 rounded-lg"
+                                        >
+                                          <div className="flex items-center justify-between mb-1">
+                                            <span className="text-xs font-medium">
+                                              {new Date(
+                                                note.created_at
+                                              ).toLocaleDateString()}
+                                            </span>
+                                          </div>
+                                          <p className="text-xs text-gray-600">
+                                            {note.content}
+                                          </p>
+                                        </div>
+                                      ))
+                                    ) : (
+                                      <p className="text-xs text-muted-foreground">
+                                        No 1:1 notes available
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        })
+                      ) : (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <p>No metrics data available for team members</p>
+                        </div>
+                      )}
                     </div>
                   ) : (
-                    currentMembers.map((member) => (
-                      <MemberCard
-                        data={member}
-                        key={member.user_id}
-                        timeRange={timeRange}
-                      />
-                    ))
+                    <div className="text-center py-8 text-muted-foreground">
+                      <p>Select a team to view its members</p>
+                    </div>
                   )}
                 </div>
               </section>

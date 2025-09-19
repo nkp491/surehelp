@@ -9,7 +9,7 @@ import { ChevronDown, ChevronRight, Users } from "lucide-react";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
 
-interface TeamNode {
+export interface TeamNode {
   team: {
     id: string;
     name: string;
@@ -27,8 +27,14 @@ interface TeamMemberNode {
   level: number;
 }
 
-export function SmartTeamDashboard() {
+interface SmartTeamDashboardProps {
+  onTeamSelect?: (teamId: string | null, teamData: TeamNode | null) => void;
+}
+
+export function SmartTeamDashboard({ onTeamSelect }: SmartTeamDashboardProps) {
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
+  const [selectedTeamId, setSelectedTeamId] = useState<string | null>(null);
+
 
   // Fetch all teams and their hierarchies
   const { data: teamsData, isLoading } = useQuery({
@@ -582,9 +588,30 @@ export function SmartTeamDashboard() {
     );
   };
 
+  const handleTeamSelect = (teamNode: TeamNode) => {
+    const newSelectedTeamId = teamNode.team.id;
+    const isCurrentlySelected = selectedTeamId === newSelectedTeamId;
+    
+    if (isCurrentlySelected) {
+      // Deselect if already selected
+      setSelectedTeamId(null);
+      onTeamSelect?.(null, null);
+    } else {
+      // Select new team
+      setSelectedTeamId(newSelectedTeamId);
+      onTeamSelect?.(newSelectedTeamId, teamNode);
+      
+      // Also expand the team to show members
+      if (!expandedNodes.has(teamNode.team.id)) {
+        toggleNode(teamNode.team.id);
+      }
+    }
+  };
+
   const renderTeam = (teamNode: TeamNode) => {
     const isExpanded = expandedNodes.has(teamNode.team.id);
     const hasMembers = teamNode.members.length > 0;
+    const isSelected = selectedTeamId === teamNode.team.id;
 
     // Find the manager in the members list (should be first)
     const manager = teamNode.members.find(
@@ -595,7 +622,13 @@ export function SmartTeamDashboard() {
       : teamNode.team.manager;
 
     return (
-      <Card key={teamNode.team.id} className="mb-4">
+      <Card 
+        key={teamNode.team.id} 
+        className={`mb-4 cursor-pointer hover:bg-muted/30 transition-colors ${
+          isSelected ? "border-2 border-gray-600" : ""
+        }`}
+        onClick={() => handleTeamSelect(teamNode)}
+      >
         <CardHeader className="flex flex-row items-center justify-between">
           <div className="flex items-center gap-3">
             {hasMembers && (
@@ -603,7 +636,10 @@ export function SmartTeamDashboard() {
                 variant="ghost"
                 size="sm"
                 className="h-6 w-6 p-0"
-                onClick={() => toggleNode(teamNode.team.id)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleNode(teamNode.team.id);
+                }}
               >
                 {isExpanded ? (
                   <ChevronDown className="h-4 w-4" />
@@ -626,6 +662,11 @@ export function SmartTeamDashboard() {
               {teamNode.members.length}{" "}
               {teamNode.members.length === 1 ? "member" : "members"}
             </Badge>
+            {isSelected && (
+              <Badge variant="default" className="text-xs">
+                Selected
+              </Badge>
+            )}
           </div>
         </CardHeader>
         {isExpanded && hasMembers && (
