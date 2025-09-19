@@ -145,7 +145,7 @@ serve(async (req) => {
         );
       }
       const status = await stripe.promotionCodes.update(promo_id, {
-        active: action === "activate" ? true : false,
+        active: action === "activate",
       });
       if (!status) {
         return new Response(

@@ -634,12 +634,8 @@ export const useRoleManagement = () => {
           "Error checking current team membership:",
           currentTeamError
         );
-        // Don't throw error here - just log it and continue
-        // The user might not be in any team, which is a valid state
-        // This could be due to RLS policies or the user simply not being in a team
       }
 
-      // If user is already in a team, remove them first
       if (currentTeamMember) {
         const { error: removeError } = await supabase
           .from("team_members")

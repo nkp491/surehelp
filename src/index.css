@@ -54,15 +54,6 @@
     @apply shadow-sm;
   }
 
-  .form-layout {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 12px;
-    padding: 12px;
-    max-width: 1440px;
-    margin: 0 auto;
-  }
-
   .form-section {
     @apply bg-white rounded-xl shadow-sm border border-gray-200;
   }

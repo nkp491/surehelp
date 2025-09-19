@@ -41,8 +41,12 @@ const FormSection = ({
     return true;
   });
 
-  const regularFields = filteredFields.filter((field) => !isSpecialField(field.id));
-  const nonAgentFields = regularFields.filter((field) => !isAgentField(field.id));
+  const regularFields = filteredFields.filter(
+    (field) => !isSpecialField(field.id)
+  );
+  const nonAgentFields = regularFields.filter(
+    (field) => !isAgentField(field.id)
+  );
   const agentFields = regularFields.filter((field) => isAgentField(field.id));
 
   if (!showSpouse && section.toLowerCase().includes("spouse")) {
@@ -50,7 +54,7 @@ const FormSection = ({
   }
 
   if (section === "Primary Health Assessment") {
-    return <PrimaryHealth formData={formData} setFormData={setFormData} errors={errors} />;
+    return <PrimaryHealth formData={formData} setFormData={setFormData} />;
   }
 
   const isIncomeSection = section === "Primary Income Assessment";
@@ -71,7 +75,10 @@ const FormSection = ({
   const renderHouseholdSection = () => (
     <div className="form-group-horizontal">
       {nonAgentFields.map((field) => (
-        <div key={field.id} className={field.id === "expenses" ? "col-span-2" : ""}>
+        <div
+          key={field.id}
+          className={field.id === "expenses" ? "col-span-2" : ""}
+        >
           <RegularFieldsSection
             fields={[field]}
             formData={formData}
@@ -106,7 +113,10 @@ const FormSection = ({
         {agentFields
           .filter((field) => !shouldBeHorizontal(field.id))
           .map((field) => (
-            <div key={field.id} className={field.id === "carrierAndProduct" ? "col-span-2" : ""}>
+            <div
+              key={field.id}
+              className={field.id === "carrierAndProduct" ? "col-span-2" : ""}
+            >
               <RegularFieldsSection
                 fields={[field]}
                 formData={formData}
@@ -154,7 +164,10 @@ const FormSection = ({
         {isHouseholdSection && renderHouseholdSection()}
         {isIncomeSection && renderIncomeSection()}
         {isAgentSection && renderAgentSection()}
-        {!isHouseholdSection && !isIncomeSection && !isAgentSection && renderRegularSection()}
+        {!isHouseholdSection &&
+          !isIncomeSection &&
+          !isAgentSection &&
+          renderRegularSection()}
       </div>
     </div>
   );

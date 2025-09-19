@@ -13,7 +13,7 @@ import { roleService } from "@/services/roleService";
 const TimeControls = () => {
   const userRoles = roleService.getRoles();
   const isAgent =
-    userRoles.length > 1 ? false : userRoles.includes("agent") ? true : false;
+    userRoles.length > 1 ? false : userRoles.includes("agent");
   const { timePeriod, dateRange, handleTimePeriodChange, setDateRange } =
     useMetrics();
   const { toast } = useToast();

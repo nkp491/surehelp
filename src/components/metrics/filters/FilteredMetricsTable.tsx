@@ -1,6 +1,6 @@
-import { MetricCount } from "@/types/metrics";
+import {MetricCount} from "@/types/metrics";
 import MetricsTable from "../MetricsTable";
-import { format, startOfDay } from "date-fns";
+import {format, startOfDay} from "date-fns";
 
 interface FilteredMetricsTableProps {
   history: Array<{ date: string; metrics: MetricCount }>;
@@ -26,12 +26,9 @@ const FilteredMetricsTable = ({
   selectedDate,
 }: FilteredMetricsTableProps) => {
   const filteredHistory = history.filter((entry) => {
-    const matchesDate =
-      !selectedDate ||
-      format(startOfDay(new Date(entry.date)), "yyyy-MM-dd") ===
+      return !selectedDate ||
+        format(startOfDay(new Date(entry.date)), "yyyy-MM-dd") ===
         format(startOfDay(selectedDate), "yyyy-MM-dd");
-
-    return matchesDate;
   });
 
   return (

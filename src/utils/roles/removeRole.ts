@@ -2,13 +2,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { hasSystemAdminRole } from "./hasRole";
 
-/**
- * Removes a specific role from a user by ID
- * 
- * @param userId - The UUID of the user
- * @param role - The role to remove
- * @returns Promise resolving to a success message or error
- */
 export const removeRoleFromUser = async (userId: string, role: string, subscribedUser?: any): Promise<{ success: boolean; message: string }> => {
   try {
     // First check if current user has system_admin role

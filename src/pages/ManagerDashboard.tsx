@@ -36,7 +36,7 @@ import {
 import { MetricCount } from "@/types/metrics";
 import type { TeamNode } from "@/components/team/SmartTeamDashboard";
 import { useQuery } from "@tanstack/react-query";
-import { endOfMonth, format, startOfMonth } from "date-fns";
+import { format, startOfMonth } from "date-fns";
 import { Progress } from "@/components/ui/progress";
 
 type TimeRange = "weekly" | "monthly" | "ytd";

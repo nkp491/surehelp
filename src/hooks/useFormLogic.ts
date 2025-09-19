@@ -45,8 +45,7 @@ export const useFormLogic = (
     setErrors(validationErrors);
 
     if (Object.keys(validationErrors).length === 0) {
-      const result = await submitForm(e, outcome);
-      return result; // true if success, false if error
+        return await submitForm(e, outcome); // true if success, false if error
     } else {
       toast({
         title: "Error",

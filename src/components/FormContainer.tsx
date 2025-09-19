@@ -51,7 +51,7 @@ const FormContainer = ({ editingSubmission, onUpdate }: FormContainerProps) => {
     checkSubmissionLimits();
   }, []);
   const MAX_SUBMISSIONS_FOR_BASIC = 25;
-  const isAgent = userRoles.length > 1 ? false : userRoles.includes("agent") ? true : false;
+  const isAgent = userRoles.length > 1 ? false : userRoles.includes("agent");
   const isLimitReached = submissionCount >= MAX_SUBMISSIONS_FOR_BASIC && isAgent;
 
   if (loading) {

@@ -21,10 +21,6 @@ const IncomeDebugger: React.FC<IncomeDebuggerProps> = ({ formData }) => {
   
 
     // Get investment income if available
-    let investmentIncome = 0;
-    if (formData.selectedInvestments_total) {
-      investmentIncome = cleanAndParse(formData.selectedInvestments_total);
-    }
 
     // Calculate what the total should be
 

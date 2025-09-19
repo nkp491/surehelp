@@ -1,6 +1,6 @@
-import { TableCell } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
-import { useState, useEffect } from "react";
+import {TableCell} from "@/components/ui/table";
+import {Input} from "@/components/ui/input";
+import {useEffect, useState} from "react";
 
 interface EditableMetricCellProps {
   isEditing: boolean;
@@ -45,11 +45,10 @@ const EditableMetricCell = ({
   const formatDisplayValue = (val: string) => {
     if (metric === "ap") {
       const numericVal = Number(val);
-      const displayVal = new Intl.NumberFormat("en-US", {
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2,
+        return new Intl.NumberFormat("en-US", {
+          minimumFractionDigits: 2,
+          maximumFractionDigits: 2,
       }).format(numericVal);
-      return displayVal;
     }
     return val;
   };

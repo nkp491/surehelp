@@ -10,31 +10,29 @@ import DetailedHistory from "./health/DetailedHistory";
 interface PrimaryHealthProps {
   formData: any;
   setFormData: (value: any) => void;
-  errors: any;
 }
 
-const PrimaryHealth = ({ formData, setFormData, errors }: PrimaryHealthProps) => {
+const PrimaryHealth = ({ formData, setFormData }: PrimaryHealthProps) => {
   const { language } = useLanguage();
   const t = translations[language];
 
   return (
-    <div className="space-y-4">
-      <Card className="rounded-xl">
-        <CardHeader className="bg-[#0096c7] rounded-t-xl py-2 px-5">
-          <h1 className="text-white font-medium text-sm">{t.primaryHealthAssessment}</h1>
-        </CardHeader>
-
-        <CardContent className="p-4 space-y-6">
-          <div className="space-y-4">
-            <PersonalInfo formData={formData} setFormData={setFormData} />
-            <HealthMetrics formData={formData} setFormData={setFormData} />
-            <HealthHistory formData={formData} setFormData={setFormData} />
-            <MedicalConditions formData={formData} setFormData={setFormData} />
-            <DetailedHistory formData={formData} setFormData={setFormData} />
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    <Card className="rounded-xl">
+      <CardHeader className="bg-[#0096c7] rounded-t-xl py-2 px-5">
+        <h1 className="text-white font-medium text-sm">
+          {t.primaryHealthAssessment}
+        </h1>
+      </CardHeader>
+      <CardContent className="p-4 space-y-6">
+        <div className="space-y-4">
+          <PersonalInfo formData={formData} setFormData={setFormData} />
+          <HealthMetrics formData={formData} setFormData={setFormData} />
+          <HealthHistory formData={formData} setFormData={setFormData} />
+          <MedicalConditions formData={formData} setFormData={setFormData} />
+          <DetailedHistory formData={formData} setFormData={setFormData} />
+        </div>
+      </CardContent>
+    </Card>
   );
 };
 

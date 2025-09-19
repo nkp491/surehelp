@@ -1,19 +1,19 @@
-import { Card } from "./ui/card";
-import { Separator } from "./ui/separator";
-import { MetricsProvider, useMetrics } from "@/contexts/MetricsContext";
+import {Card} from "./ui/card";
+import {Separator} from "./ui/separator";
+import {MetricsProvider, useMetrics} from "@/contexts/MetricsContext";
 import TimeControls from "./metrics/TimeControls";
 import MetricsGrid from "./metrics/MetricsGrid";
 import RatiosGrid from "./metrics/RatiosGrid";
 import MetricsChart from "./MetricsChart";
 import MetricsHistory from "./metrics/MetricsHistory";
 import LeadExpenseReport from "./lead-expenses/LeadExpenseReport";
-import { useMetricsHistory } from "@/hooks/useMetricsHistory";
-import { format } from "date-fns";
-import { MetricCount } from "@/types/metrics";
-import { useEffect, useMemo, useState } from "react";
-import { useAuthStateManager } from "@/hooks/useAuthStateManager";
-import { PageSkeleton } from "./ui/loading-skeleton";
-import { ErrorBoundary } from "./ui/error-boundary";
+import {useMetricsHistory} from "@/hooks/useMetricsHistory";
+import {format} from "date-fns";
+import {MetricCount} from "@/types/metrics";
+import {useEffect, useMemo, useState} from "react";
+import {useAuthStateManager} from "@/hooks/useAuthStateManager";
+import {PageSkeleton} from "./ui/loading-skeleton";
+import {ErrorBoundary} from "./ui/error-boundary";
 
 const BusinessMetricsContent = () => {
   const { timePeriod, dateRange, setAggregatedMetrics } = useMetrics();
@@ -61,22 +61,20 @@ const BusinessMetricsContent = () => {
         break;
     }
 
-    const result = sortedHistory.reduce(
-      (acc: MetricCount, entry) => {
-        const entryCreatedAt = new Date(entry.created_at);
-        if (entryCreatedAt >= startDate && entryCreatedAt <= endDate) {
-          Object.entries(entry.metrics).forEach(([key, value]) => {
-            if (key in acc) {
-              acc[key as keyof MetricCount] += Number(value) || 0;
+    return sortedHistory.reduce(
+        (acc: MetricCount, entry) => {
+            const entryCreatedAt = new Date(entry.created_at);
+            if (entryCreatedAt >= startDate && entryCreatedAt <= endDate) {
+                Object.entries(entry.metrics).forEach(([key, value]) => {
+                    if (key in acc) {
+                        acc[key as keyof MetricCount] += Number(value) || 0;
+                    }
+                });
             }
-          });
-        }
-        return acc;
-      },
-      { ...defaultMetrics }
+            return acc;
+        },
+        {...defaultMetrics}
     );
-
-    return result;
   }, [timePeriod, dateRange, sortedHistory, isAuthenticated, defaultMetrics]);
 
   // Get today's metrics from historical data if available (sum all entries for today)

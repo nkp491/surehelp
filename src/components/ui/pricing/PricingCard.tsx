@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { ReactNode, useState } from "react";
 import { MoveRight, Loader2, Tag } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,9 @@ interface PricingCardProps {
   id: string;
   title: string;
   description: string;
-  monthlyPrice: string | JSX.Element;
-  annualPrice: string | JSX.Element;
-  savings?: JSX.Element | null;
+  monthlyPrice: string | ReactNode;
+  annualPrice: string | ReactNode;
+  savings?: ReactNode | null;
   isContact?: boolean;
   billingInterval?: "monthlyPrice" | "yearlyPrice";
 }
