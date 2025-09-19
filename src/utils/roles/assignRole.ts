@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { hasSystemAdminRole } from "./hasRole";
+import { canAddTeamMember, TEAM_LIMITS } from "@/utils/teamLimits";
 
 /**
  * Assigns a specific role to a user by ID
@@ -50,6 +51,20 @@ export const assignRoleToUser = async (userId: string, role: string): Promise<{ 
       return { success: true, message: "User already has this role" };
     }
 
+    // Check team limits for manager roles
+    const managerRoles = Object.keys(TEAM_LIMITS) as Array<keyof typeof TEAM_LIMITS>;
+    if (managerRoles.includes(role as keyof typeof TEAM_LIMITS)) {
+      const limitCheck = await canAddTeamMember(userId);
+      
+      if (!limitCheck.canAdd) {
+        const limitText = limitCheck.limit === Infinity ? "unlimited" : limitCheck.limit.toString();
+        return { 
+          success: false, 
+          message: `Cannot assign ${role} role. Team member limit reached (${limitCheck.currentCount}/${limitText} members).` 
+        };
+      }
+    }
+
     // Assign the role
     const { error } = await supabase
       .from("user_roles")
@@ -58,7 +73,7 @@ export const assignRoleToUser = async (userId: string, role: string): Promise<{ 
     if (error) throw error;
 
     return { success: true, message: `Role ${role} assigned successfully to user ${userId}` };
-  } catch (error: any) {
+  } catch (error) {
     console.error("Error assigning role:", error);
     return { success: false, message: error.message };
   }

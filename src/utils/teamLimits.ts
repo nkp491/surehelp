@@ -1,128 +1,186 @@
 import { supabase } from "@/integrations/supabase/client";
 
-export const TEAM_SIZE_LIMITS = {
+// Team member limits based on manager roles
+export const TEAM_LIMITS = {
   manager: 5,
   manager_pro: 20,
   manager_pro_gold: 50,
-  manager_pro_platinum: -1,
+  manager_pro_platinum: Infinity, // Unlimited
 } as const;
 
-export type ManagerRole = keyof typeof TEAM_SIZE_LIMITS;
+export type ManagerRole = keyof typeof TEAM_LIMITS;
 
-export const getTeamSizeLimit = (role: string): number => {
-  const normalizedRole = role.toLowerCase().replace(/\s+/g, "_");
-  if (normalizedRole in TEAM_SIZE_LIMITS) {
-    return TEAM_SIZE_LIMITS[normalizedRole as ManagerRole];
-  }
-  for (const [key, limit] of Object.entries(TEAM_SIZE_LIMITS)) {
-    if (normalizedRole.includes(key)) {
-      return limit;
-    }
-  }
-  return 5;
-};
-export const getCurrentTeamSize = async (
-  managerId: string
-): Promise<number> => {
-  try {
-    const { data: managerTeam, error: teamError } = await supabase
-      .from("team_managers")
-      .select("team_id")
-      .eq("user_id", managerId)
-      .single();
-    if (teamError || !managerTeam) {
-      return 0;
-    }
-    const { data: teamMembers, error: membersError } = await supabase
-      .from("team_members")
-      .select("user_id")
-      .eq("team_id", managerTeam.team_id);
-    if (membersError) {
-      console.error("Error fetching team members:", membersError);
-      return 0;
-    }
-    const memberCount = teamMembers.filter(
-      (member) => member.user_id !== managerId
-    ).length;
-    return memberCount;
-  } catch (error) {
-    console.error("Error getting current team size:", error);
-    return 0;
-  }
+/**
+ * Gets the team member limit for a specific manager role
+ */
+export const getTeamLimit = (role: ManagerRole): number => {
+  return TEAM_LIMITS[role];
 };
 
-export const canAddTeamMember = async (
-  managerId: string
-): Promise<{
+/**
+ * Gets the highest manager role from a list of user roles
+ */
+export const getHighestManagerRole = (userRoles: string[]): ManagerRole | null => {
+  const managerRoles: ManagerRole[] = ['manager_pro_platinum', 'manager_pro_gold', 'manager_pro', 'manager'];
+  
+  for (const role of managerRoles) {
+    if (userRoles.includes(role)) {
+      return role;
+    }
+  }
+  
+  return null;
+};
+
+/**
+ * Checks if a manager can add more team members based on their role limits
+ */
+export const canAddTeamMember = async (managerId: string): Promise<{
   canAdd: boolean;
-  currentSize: number;
+  currentCount: number;
   limit: number;
-  message?: string;
+  role: ManagerRole | null;
+  error?: string;
 }> => {
   try {
-    const { data: managerRoles, error: roleError } = await supabase
+    // Get manager's roles
+    const { data: userRoles, error: rolesError } = await supabase
       .from("user_roles")
       .select("role")
-      .eq("user_id", managerId)
-      .in("role", [
-        "manager",
-        "manager_pro",
-        "manager_pro_gold",
-        "manager_pro_platinum",
-      ]);
-    if (roleError || !managerRoles || managerRoles.length === 0) {
+      .eq("user_id", managerId);
+
+    if (rolesError) {
       return {
         canAdd: false,
-        currentSize: 0,
+        currentCount: 0,
         limit: 0,
-        message: "Manager role not found",
+        role: null,
+        error: "Error fetching manager roles"
       };
     }
 
-    const managerRole = managerRoles[0].role;
-    const limit = getTeamSizeLimit(managerRole);
-    const currentSize = await getCurrentTeamSize(managerId);
+    const roles = userRoles?.map(ur => ur.role) || [];
+    const highestManagerRole = getHighestManagerRole(roles);
 
-    if (limit === -1) {
+    if (!highestManagerRole) {
       return {
-        canAdd: true,
-        currentSize,
-        limit: -1,
-        message: "Unlimited team size",
+        canAdd: false,
+        currentCount: 0,
+        limit: 0,
+        role: null,
+        error: "User does not have manager privileges"
       };
     }
 
-    const canAdd = currentSize < limit;
-    const message = canAdd
-      ? `Can add ${limit - currentSize} more team members`
-      : `Team size limit reached (${limit} members). Current: ${currentSize}`;
+    // Get manager's email first
+    const { data: managerProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("email")
+      .eq("id", managerId)
+      .single();
+
+    if (profileError || !managerProfile) {
+      return {
+        canAdd: false,
+        currentCount: 0,
+        limit: 0,
+        role: highestManagerRole,
+        error: "Manager profile not found"
+      };
+    }
+
+    // Get team ID for this manager
+    const { data: team, error: teamError } = await supabase
+      .from("teams")
+      .select("id")
+      .eq("manager", managerProfile.email)
+      .single();
+
+    if (teamError || !team) {
+      return {
+        canAdd: false,
+        currentCount: 0,
+        limit: 0,
+        role: highestManagerRole,
+        error: "Team not found for manager"
+      };
+    }
+
+    // Get current team member count
+    const { data: teamMembers, error: membersError } = await supabase
+      .from("team_members")
+      .select("id")
+      .eq("team_id", team.id);
+
+    if (membersError) {
+      return {
+        canAdd: false,
+        currentCount: 0,
+        limit: 0,
+        role: highestManagerRole,
+        error: "Error fetching team members"
+      };
+    }
+
+    const currentCount = teamMembers?.length || 0;
+    const limit = getTeamLimit(highestManagerRole);
+    const canAdd = currentCount < limit;
 
     return {
       canAdd,
-      currentSize,
+      currentCount,
       limit,
-      message,
+      role: highestManagerRole
     };
   } catch (error) {
-    console.error("Error checking team member limit:", error);
+    console.error("Error checking team limits:", error);
     return {
       canAdd: false,
-      currentSize: 0,
+      currentCount: 0,
       limit: 0,
-      message: "Error checking team limits",
+      role: null,
+      error: "Unexpected error occurred"
     };
   }
 };
 
-export const getTeamSizeInfo = (role: string, currentSize: number) => {
-  const limit = getTeamSizeLimit(role);
-  const isUnlimited = limit === -1;
+/**
+ * Checks team limits by manager email (for manager assignment)
+ */
+export const canAddTeamMemberByEmail = async (managerEmail: string): Promise<{
+  canAdd: boolean;
+  currentCount: number;
+  limit: number;
+  role: ManagerRole | null;
+  error?: string;
+}> => {
+  try {
+    // Get manager profile by email
+    const { data: managerProfile, error: profileError } = await supabase
+      .from("profiles")
+      .select("id")
+      .eq("email", managerEmail)
+      .single();
 
-  return {
-    current: currentSize,
-    limit: isUnlimited ? "Unlimited" : limit,
-    remaining: isUnlimited ? "Unlimited" : Math.max(0, limit - currentSize),
-    isAtLimit: !isUnlimited && currentSize >= limit,
-    isUnlimited,
-  };
+    if (profileError || !managerProfile) {
+      return {
+        canAdd: false,
+        currentCount: 0,
+        limit: 0,
+        role: null,
+        error: "Manager not found"
+      };
+    }
+
+    return await canAddTeamMember(managerProfile.id);
+  } catch (error) {
+    console.error("Error checking team limits by email:", error);
+    return {
+      canAdd: false,
+      currentCount: 0,
+      limit: 0,
+      role: null,
+      error: "Unexpected error occurred"
+    };
+  }
 };

@@ -2,6 +2,7 @@ import { useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { canAddTeamMember, TEAM_LIMITS } from "@/utils/teamLimits";
 import { AgentTypes } from "@/types/agent";
 
 export type UserRole = {
@@ -31,27 +32,42 @@ export const useRoleManagement = () => {
   const [isAssigningManager, setIsAssigningManager] = useState(false);
   const [isRemovingRole, setIsRemovingRole] = useState(false);
   const [isRemovingManager, setIsRemovingManager] = useState(false);
-  const [userLoadingStates, setUserLoadingStates] = useState<Record<string, {
-    isAssigningManager?: boolean;
-    isRemovingManager?: boolean;
-    isAssigningRole?: boolean;
-    isRemovingRole?: boolean;
-  }>>({});
+  const [userLoadingStates, setUserLoadingStates] = useState<
+    Record<
+      string,
+      {
+        isAssigningManager?: boolean;
+        isRemovingManager?: boolean;
+        isAssigningRole?: boolean;
+        isRemovingRole?: boolean;
+      }
+    >
+  >({});
 
   // Helper functions for per-user loading states
-  const setUserLoading = useCallback((userId: string, loadingType: keyof typeof userLoadingStates[string], isLoading: boolean) => {
-    setUserLoadingStates(prev => ({
-      ...prev,
-      [userId]: {
-        ...prev[userId],
-        [loadingType]: isLoading
-      }
-    }));
-  }, []);
+  const setUserLoading = useCallback(
+    (
+      userId: string,
+      loadingType: keyof (typeof userLoadingStates)[string],
+      isLoading: boolean
+    ) => {
+      setUserLoadingStates((prev) => ({
+        ...prev,
+        [userId]: {
+          ...prev[userId],
+          [loadingType]: isLoading,
+        },
+      }));
+    },
+    []
+  );
 
-  const getUserLoading = useCallback((userId: string, loadingType: keyof typeof userLoadingStates[string]) => {
-    return userLoadingStates[userId]?.[loadingType] || false;
-  }, [userLoadingStates]);
+  const getUserLoading = useCallback(
+    (userId: string, loadingType: keyof (typeof userLoadingStates)[string]) => {
+      return userLoadingStates[userId]?.[loadingType] || false;
+    },
+    [userLoadingStates]
+  );
 
   // Fetch all users with their roles
   const { data: users, isLoading: isLoadingUsers } = useQuery({
@@ -219,6 +235,24 @@ export const useRoleManagement = () => {
         return { success: true, message: "User already has this role" };
       }
 
+      // Check team limits for manager roles
+      const managerRoles = Object.keys(TEAM_LIMITS) as Array<
+        keyof typeof TEAM_LIMITS
+      >;
+      if (managerRoles.includes(role as keyof typeof TEAM_LIMITS)) {
+        const limitCheck = await canAddTeamMember(userId);
+
+        if (!limitCheck.canAdd) {
+          const limitText =
+            limitCheck.limit === Infinity
+              ? "unlimited"
+              : limitCheck.limit.toString();
+          throw new Error(
+            `Cannot assign ${role} role. Team member limit reached (${limitCheck.currentCount}/${limitText} members).`
+          );
+        }
+      }
+
       // Insert the role
       const { error } = await supabase
         .from("user_roles")
@@ -267,7 +301,9 @@ export const useRoleManagement = () => {
               );
               // Don't throw error here as the role was already assigned successfully
             } else {
-              console.log(`Successfully created subscription for role ${role} for user ${userId}`);
+              console.log(
+                `Successfully created subscription for role ${role} for user ${userId}`
+              );
             }
           }
         } catch (subscriptionError) {
@@ -280,14 +316,14 @@ export const useRoleManagement = () => {
       }
 
       // Check if this is a manager role and create a team if needed
-      const managerRoles = [
+      const teamCreationRoles = [
         "manager_pro",
         "manager_pro_gold",
         "manager_pro_platinum",
       ];
       let teamCreated = false;
 
-      if (managerRoles.includes(role)) {
+      if (teamCreationRoles.includes(role)) {
         try {
           // Check if user already has a team as a manager
           const { data: existingTeamManager, error: existingTeamError } =
@@ -374,19 +410,19 @@ export const useRoleManagement = () => {
     },
     onSuccess: async (data) => {
       // Invalidate queries with a small delay to ensure subscription is created first
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       queryClient.invalidateQueries({ queryKey: ["user-teams"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["subscription"] });
-      
+
       // Force refetch of profile and subscription data
       queryClient.refetchQueries({ queryKey: ["profile"] });
-      
+
       // Trigger subscription context refresh by dispatching a custom event
-      window.dispatchEvent(new CustomEvent('roleChanged'));
-      
+      window.dispatchEvent(new CustomEvent("roleChanged"));
+
       toast({
         title: "Success",
         description: data.message || "Role assigned successfully",
@@ -453,10 +489,10 @@ export const useRoleManagement = () => {
       queryClient.invalidateQueries({ queryKey: ["users-with-roles"] });
       queryClient.invalidateQueries({ queryKey: ["profile"] });
       queryClient.invalidateQueries({ queryKey: ["subscription"] });
-      
+
       // Trigger subscription context refresh
-      window.dispatchEvent(new CustomEvent('roleChanged'));
-      
+      window.dispatchEvent(new CustomEvent("roleChanged"));
+
       toast({
         title: "Success",
         description: data.message || "Role removed successfully",
@@ -524,7 +560,7 @@ export const useRoleManagement = () => {
 
       // If removing manager (managerId is null)
       if (!managerId) {
-        setUserLoading(userId, 'isRemovingManager', true);
+        setUserLoading(userId, "isRemovingManager", true);
         // Check if user is currently in any team
         const { data: currentTeamMember, error: currentTeamError } =
           await supabase
@@ -561,7 +597,7 @@ export const useRoleManagement = () => {
       }
 
       // Set loading state for manager assignment
-      setUserLoading(userId, 'isAssigningManager', true);
+      setUserLoading(userId, "isAssigningManager", true);
 
       // Check if the manager has a valid manager role
       const { data: managerRoles, error: managerRoleError } = await supabase
@@ -692,9 +728,7 @@ export const useRoleManagement = () => {
       const teamLimitCheck = await canAddTeamMember(managerProfile.id);
 
       if (!teamLimitCheck.canAdd) {
-        throw new Error(
-          teamLimitCheck.message || "Manager's team is at capacity"
-        );
+        throw new Error("Manager's team is at capacity");
       }
 
       const { error: insertError } = await supabase
@@ -726,7 +760,7 @@ export const useRoleManagement = () => {
       await queryClient.invalidateQueries({ queryKey: ["subscription"] });
 
       // Trigger subscription context refresh
-      window.dispatchEvent(new CustomEvent('roleChanged'));
+      window.dispatchEvent(new CustomEvent("roleChanged"));
 
       toast({
         title: "Success",
@@ -736,8 +770,8 @@ export const useRoleManagement = () => {
       setIsRemovingManager(false);
       // Reset per-user loading states
       if (data.data?.userId) {
-        setUserLoading(data.data.userId, 'isAssigningManager', false);
-        setUserLoading(data.data.userId, 'isRemovingManager', false);
+        setUserLoading(data.data.userId, "isAssigningManager", false);
+        setUserLoading(data.data.userId, "isRemovingManager", false);
       }
     },
     onError: (error, variables) => {
@@ -751,8 +785,8 @@ export const useRoleManagement = () => {
       setIsAssigningManager(false);
       setIsRemovingManager(false);
       // Reset per-user loading state
-      setUserLoading(variables.userId, 'isAssigningManager', false);
-      setUserLoading(variables.userId, 'isRemovingManager', false);
+      setUserLoading(variables.userId, "isAssigningManager", false);
+      setUserLoading(variables.userId, "isRemovingManager", false);
     },
   });
 

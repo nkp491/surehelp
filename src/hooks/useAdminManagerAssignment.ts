@@ -7,6 +7,7 @@ import {
   TeamInsert,
   UserRole,
 } from "@/integrations/supabase/types";
+import { canAddTeamMemberByEmail } from "@/utils/teamLimits";
 
 interface AdminManagerAssignmentResult {
   success: boolean;
@@ -171,6 +172,16 @@ export const useAdminManagerAssignment = (): UseAdminManagerAssignmentReturn => 
     setIsLoading(true);
 
     try {
+      // Check team member limits for the manager
+      const limitCheck = await canAddTeamMemberByEmail(managerEmail);
+      if (!limitCheck.canAdd) {
+        const limitText = limitCheck.limit === Infinity ? "unlimited" : limitCheck.limit.toString();
+        return { 
+          success: false, 
+          error: `Cannot assign manager. Team member limit reached (${limitCheck.currentCount}/${limitText} members).` 
+        };
+      }
+
       // Check for existing team or create new one
       const existingTeamResult = await findExistingTeam(managerEmail);
       if (existingTeamResult.error) {
