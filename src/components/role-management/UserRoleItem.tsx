@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { UserWithRoles } from "@/hooks/useRoleAssignmentOnly";
+import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MinusCircle } from "lucide-react";
@@ -9,13 +9,17 @@ import {
 } from "@/components/role-management/roleUtils";
 import { useToast } from "@/hooks/use-toast";
 import { format } from "date-fns";
+import { ManagerSelect } from "@/components/role-management/ManagerSelect";
 
 interface UserRoleItemProps {
   user: UserWithRoles;
   allUsers: UserWithRoles[];
   selectedRole: string | undefined;
   isAssigningRole: boolean;
+  isAssigningManager: boolean;
+  isRemovingManager: boolean;
   onAssignRole: (userId: string) => void;
+  onAssignManager: (data: { userId: string; managerId: string | null }) => void;
 }
 
 export function UserRoleItem({
@@ -23,7 +27,10 @@ export function UserRoleItem({
   allUsers,
   selectedRole,
   isAssigningRole,
+  isAssigningManager,
+  isRemovingManager,
   onAssignRole,
+  onAssignManager,
 }: Readonly<UserRoleItemProps>) {
   const { toast } = useToast();
 
@@ -71,9 +78,12 @@ export function UserRoleItem({
           </div>
           <div>
             <p className="text-sm font-medium mb-1">Manager</p>
-            <div className="text-sm text-muted-foreground">
-              Manager assignment disabled
-            </div>
+            <ManagerSelect
+              user={user}
+              allUsers={allUsers}
+              isAssigningManager={isAssigningManager}
+              isRemovingManager={isRemovingManager}
+            />
           </div>
         </div>
         <div className="flex items-center">

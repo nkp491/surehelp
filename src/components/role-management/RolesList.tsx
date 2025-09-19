@@ -1,5 +1,5 @@
 import { useState, useMemo, useCallback } from "react";
-import { UserWithRoles } from "@/hooks/useRoleAssignmentOnly";
+import { UserWithRoles } from "@/hooks/useRoleManagement";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -16,6 +16,7 @@ interface RolesListProps {
     userId: string;
     role: string;
   }) => void;
+  onAssignManager: (data: { userId: string; managerId: string | null }) => void;
 }
 
 export function RolesList({
@@ -23,6 +24,7 @@ export function RolesList({
   availableRoles,
   getUserLoading,
   onAssignRole,
+  onAssignManager,
 }: Readonly<RolesListProps>) {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedRole, setSelectedRole] = useState<string | undefined>(
@@ -117,7 +119,10 @@ export function RolesList({
                   allUsers={users}
                   selectedRole={selectedRole}
                   isAssigningRole={getUserLoading(user.id, 'isAssigningRole')}
+                  isAssigningManager={getUserLoading(user.id, 'isAssigningManager')}
+                  isRemovingManager={getUserLoading(user.id, 'isRemovingManager')}
                   onAssignRole={handleAssignRole}
+                  onAssignManager={onAssignManager}
                 />
               ))
             )}

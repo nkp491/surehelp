@@ -2,7 +2,7 @@ import { memo } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { RolesList } from "@/components/role-management/RolesList";
 import { RoleDescriptions } from "@/components/role-management/RoleDescriptions";
-import { UserWithRoles } from "@/hooks/useRoleAssignmentOnly";
+import { UserWithRoles } from "@/hooks/useRoleManagement";
 
 interface RoleManagementContentProps {
   users: UserWithRoles[] | undefined;
@@ -13,6 +13,7 @@ interface RoleManagementContentProps {
     userId: string;
     role: string;
   }) => void;
+  assignManager: (data: { userId: string; managerId: string | null }) => void;
   getUserLoading: (userId: string, loadingType: string) => boolean;
 }
 
@@ -22,6 +23,7 @@ export const RoleManagementContent = memo(function RoleManagementContent({
   error,
   availableRoles,
   assignRole,
+  assignManager,
   getUserLoading,
 }: Readonly<RoleManagementContentProps>) {
   if (isLoadingUsers) {
@@ -68,6 +70,7 @@ export const RoleManagementContent = memo(function RoleManagementContent({
           availableRoles={availableRoles}
           getUserLoading={getUserLoading}
           onAssignRole={assignRole}
+          onAssignManager={assignManager}
         />
       </TabsContent>
       <TabsContent value="about">
