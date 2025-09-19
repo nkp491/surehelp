@@ -23,9 +23,9 @@ import type {
   MetricRatios,
   MemberMetrics,
 } from "@/types/team";
-import TeamList from "@/components/manager/TeamList";
 import TeamBulletIns from "@/components/manager/TeamBulletIns";
 import MemberCard from "@/components/manager/MemberCard";
+import { SmartTeamDashboard } from "@/components/team/SmartTeamDashboard";
 import { calculateRatios } from "@/utils/metricsUtils";
 import { Loader2 } from "lucide-react";
 import { MetricCount } from "@/types/metrics";
@@ -122,15 +122,20 @@ const useTeams = () => {
       }
 
       // Fetch team members, profiles, and user roles
-      const [membersResult, profilesResult, userRolesResult] = await Promise.all([
-        supabase.from("team_members").select("*"),
-        supabase
-          .from("profiles")
-          .select("id, first_name, last_name, email, profile_image_url"),
-        supabase.from("user_roles").select("user_id, role"),
-      ]);
+      const [membersResult, profilesResult, userRolesResult] =
+        await Promise.all([
+          supabase.from("team_members").select("*"),
+          supabase
+            .from("profiles")
+            .select("id, first_name, last_name, email, profile_image_url"),
+          supabase.from("user_roles").select("user_id, role"),
+        ]);
 
-      if (membersResult.error || profilesResult.error || userRolesResult.error) {
+      if (
+        membersResult.error ||
+        profilesResult.error ||
+        userRolesResult.error
+      ) {
         console.error("Error fetching data:", {
           membersError: membersResult.error,
           profilesError: profilesResult.error,
@@ -196,7 +201,9 @@ const createProfileMap = (profiles: Profile[]): Map<string, ProfileInfo> => {
   );
 };
 
-const createUserRolesMap = (userRoles: { user_id: string; role: string }[]): Map<string, string[]> => {
+const createUserRolesMap = (
+  userRoles: { user_id: string; role: string }[]
+): Map<string, string[]> => {
   const userRolesMap = new Map<string, string[]>();
   userRoles.forEach((userRole) => {
     if (!userRolesMap.has(userRole.user_id)) {
@@ -209,9 +216,9 @@ const createUserRolesMap = (userRoles: { user_id: string; role: string }[]): Map
 
 const formatRoleName = (role: string): string => {
   return role
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 };
 
 const formatAllRoles = (roles: string[]): string => {
@@ -230,24 +237,22 @@ const transformTeamsData = (
     performance: 0,
     members: teamMembers
       .filter((member) => member.team_id === team.id)
-      .map(
-        (member): TeamMember => {
-          const userRoles = userRolesMap.get(member.user_id) ?? [];
-          const formattedRoles = formatAllRoles(userRoles);
-          
-          return {
-            ...member,
-            name: profileMap.get(member.user_id)?.name ?? "Unknown User",
-            email: profileMap.get(member.user_id)?.email,
-            profile_image_url:
-              profileMap.get(member.user_id)?.profile_image_url ?? null,
-            created_at: member.created_at ?? new Date().toISOString(),
-            updated_at: member.updated_at ?? new Date().toISOString(),
-            role: formattedRoles, // Display all formatted roles
-            roles: userRoles,
-          };
-        }
-      ),
+      .map((member): TeamMember => {
+        const userRoles = userRolesMap.get(member.user_id) ?? [];
+        const formattedRoles = formatAllRoles(userRoles);
+
+        return {
+          ...member,
+          name: profileMap.get(member.user_id)?.name ?? "Unknown User",
+          email: profileMap.get(member.user_id)?.email,
+          profile_image_url:
+            profileMap.get(member.user_id)?.profile_image_url ?? null,
+          created_at: member.created_at ?? new Date().toISOString(),
+          updated_at: member.updated_at ?? new Date().toISOString(),
+          role: formattedRoles, // Display all formatted roles
+          roles: userRoles,
+        };
+      }),
   }));
 };
 
@@ -441,7 +446,7 @@ const transformMemberData = (
           const metrics = enrichedMetrics[member.user_id];
           const userRoles = userRolesMap.get(member.user_id) || [];
           const formattedRoles = formatAllRoles(userRoles);
-          
+
           if (!metrics) {
             return {
               user_id: member.user_id,
@@ -505,7 +510,7 @@ const transformMemberData = (
 
 // Main component
 const ManagerDashboard = () => {
-  const { teams, loading: teamsLoading, fetchTeams } = useTeams();
+  const { teams, fetchTeams } = useTeams();
   const [selectedTeam, setSelectedTeam] = useState<TransformedTeam | null>(
     null
   );
@@ -531,11 +536,15 @@ const ManagerDashboard = () => {
     try {
       const userIds = selectedTeam.members.map((m) => m.user_id);
       if (!userIds.length) return;
-      const [metricsData, { meetings, meetingNotes }, userRolesResult] = await Promise.all([
-        fetchDailyMetrics(userIds, timeRange),
-        fetchMeetingData(userIds),
-        supabase.from("user_roles").select("user_id, role").in("user_id", userIds),
-      ]);
+      const [metricsData, { meetings, meetingNotes }, userRolesResult] =
+        await Promise.all([
+          fetchDailyMetrics(userIds, timeRange),
+          fetchMeetingData(userIds),
+          supabase
+            .from("user_roles")
+            .select("user_id, role")
+            .in("user_id", userIds),
+        ]);
       const metricsByUser = aggregateMetricsByUser(metricsData);
       const enrichedMetrics = enrichMetricsWithRatios(metricsByUser);
       const meetingNotesByUser = organizeMeetingNotesByUser(
@@ -612,11 +621,7 @@ const ManagerDashboard = () => {
             <div className="space-y-6">
               {/* Teams and Bulletin */}
               <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <TeamList
-                  teams={teams}
-                  setSelectedTeam={setSelectedTeam}
-                  loading={teamsLoading}
-                />
+                <SmartTeamDashboard />
                 <TeamBulletIns
                   bulletins={bulletins || []}
                   loading={bulletinsLoading}

@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 import ProfileAvatar from "@/components/profile/ProfileAvatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Input } from "@/components/ui/input";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,7 +50,6 @@ interface TeamMemberData {
 }
 
 export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
-  const [searchQuery, setSearchQuery] = useState("");
   const [expandedNodes, setExpandedNodes] = useState<Set<string>>(new Set());
   const queryClient = useQueryClient();
 
@@ -61,14 +59,32 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
     queryFn: async () => {
       if (!managerId) return [];
 
-      // First, get the manager's team from team_managers table
-      const { data: managerTeam, error: teamError } = await supabase
-        .from("team_managers")
-        .select("team_id")
-        .eq("user_id", managerId)
+      // First, get the manager's profile to get their email
+      const { data: managerProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", managerId)
         .single();
 
-      if (teamError || !managerTeam) {
+      if (profileError || !managerProfile) {
+        console.error("Error fetching manager profile:", profileError);
+        return [];
+      }
+
+      // Find team where this manager's email is in the manager field
+      const { data: team, error: teamError } = await supabase
+        .from("teams")
+        .select("id, name, manager")
+        .eq("manager", managerProfile.email)
+        .maybeSingle();
+
+      if (teamError) {
+        console.error("Error fetching team:", teamError);
+        return [];
+      }
+
+      if (!team) {
+        // Manager has no team assigned
         return [];
       }
 
@@ -76,9 +92,12 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
       const { data: members, error: membersError } = await supabase
         .from("team_members")
         .select("*")
-        .eq("team_id", managerTeam.team_id);
+        .eq("team_id", team.id);
 
-      if (membersError) throw membersError;
+      if (membersError) {
+        console.error("Error fetching team members:", membersError);
+        throw membersError;
+      }
 
       if (!members || members.length === 0) {
         return [];
@@ -102,7 +121,10 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
         .select("*")
         .in("id", userIds);
 
-      if (profilesError) throw profilesError;
+      if (profilesError) {
+        console.error("Error fetching profiles:", profilesError);
+        throw profilesError;
+      }
 
       // Create a map of user IDs to their profile information
       const profileMap = profiles.reduce((acc, profile) => {
@@ -199,13 +221,24 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
           };
         }
 
-        // Get teams managed by this user
-        const { data: managedTeams, error: managedTeamsError } = await supabase
-          .from("team_managers")
-          .select("team_id")
-          .eq("user_id", user.id);
+        // Get user's profile to find teams they manage
+        const { data: userProfile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", user.id)
+          .single();
 
-        if (managedTeamsError) throw managedTeamsError;
+        if (profileError || !userProfile) {
+          throw new Error("User profile not found");
+        }
+
+        // Find teams where this user's email is in the manager field
+        const { data: managedTeams, error: teamsError } = await supabase
+          .from("teams")
+          .select("*")
+          .eq("manager", userProfile.email);
+
+        if (teamsError) throw teamsError;
 
         if (!managedTeams || managedTeams.length === 0) {
           // User is a manager but has no teams assigned
@@ -217,14 +250,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
           };
         }
 
-        const teamIds = managedTeams.map((tm) => tm.team_id);
-        const { data: filteredTeams, error: teamsError } = await supabase
-          .from("teams")
-          .select("*")
-          .in("id", teamIds);
-
-        if (teamsError) throw teamsError;
-        teams = filteredTeams;
+        teams = managedTeams;
       }
 
       // Get all team members
@@ -234,12 +260,6 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
       if (membersError) throw membersError;
 
-      // Get all team managers
-      const { data: allTeamManagers, error: managersError } = await supabase
-        .from("team_managers")
-        .select("*");
-
-      if (managersError) throw managersError;
 
       // Get all profiles
       const { data: allProfiles, error: profilesError } = await supabase
@@ -248,15 +268,15 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
 
       if (profilesError) throw profilesError;
 
-      return { teams, allTeamMembers, allTeamManagers, allProfiles };
+      return { teams, allTeamMembers, allProfiles };
     },
   });
 
   // Build team hierarchy with subordinates
-  const buildTeamHierarchy = (): TeamMemberNode[] => {
+  const buildTeamHierarchy = async (): Promise<TeamMemberNode[]> => {
     if (!teamMembers || !allTeamsData) return [];
 
-    const { teams, allTeamMembers, allTeamManagers, allProfiles } =
+    const { teams, allTeamMembers, allProfiles } =
       allTeamsData;
     const profilesMap = new Map<string, Record<string, unknown>>();
     allProfiles?.forEach((profile) => profilesMap.set(profile.id, profile));
@@ -270,18 +290,18 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
     });
 
     const findMemberTeam = (memberId: string) => {
-      return teams?.find((team) => {
-        const teamManager = allTeamManagers?.find(
-          (tm) => tm.team_id === team.id && tm.user_id === memberId
-        );
-        return teamManager;
-      });
+      // Find the member's profile to get their email
+      const memberProfile = profilesMap.get(memberId);
+      if (!memberProfile?.email) return null;
+
+      // Find team where this member's email is in the manager field
+      return teams?.find((team) => team.manager === memberProfile.email);
     };
 
-    const buildNode = (
+    const buildNode = async (
       memberId: string,
       level: number
-    ): TeamMemberNode | null => {
+    ): Promise<TeamMemberNode | null> => {
       const member = teamMembers.find((m) => m.user_id === memberId);
       if (!member) return null;
 
@@ -291,46 +311,83 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
       let subordinates: TeamMemberNode[] = [];
 
       if (memberTeam) {
-        // Get this member's team members
-        const memberTeamMembers = teamMembersMap.get(memberTeam.id) || [];
+        // Get this member's team members from team_members table
+        const { data: memberTeamMembers, error: membersError } = await supabase
+          .from("team_members")
+          .select("*")
+          .eq("team_id", memberTeam.id);
 
-        if (memberTeamMembers.length > 0) {
-          // Build subordinate nodes
-          subordinates = memberTeamMembers
-            .map((subMember) => {
-              const subProfile = profilesMap.get(subMember.user_id as string);
-              if (!subProfile) return null;
+        if (membersError) {
+          console.error("Error fetching member's team members:", membersError);
+        } else if (memberTeamMembers && memberTeamMembers.length > 0) {
+          // Filter out the member themselves from their own team
+          const filteredSubMembers = memberTeamMembers.filter(
+            (subMember) => subMember.user_id !== memberId
+          );
 
-              return {
-                member: {
-                  id: subMember.user_id,
-                  first_name: subProfile.first_name,
-                  last_name: subProfile.last_name,
-                  email: subProfile.email,
-                  profile_image_url: subProfile.profile_image_url,
-                  role: subProfile.role,
-                  roles: [],
-                  privacy_settings:
-                    typeof subProfile.privacy_settings === "string"
-                      ? JSON.parse(subProfile.privacy_settings)
-                      : subProfile.privacy_settings || {
-                          show_email: false,
-                          show_phone: false,
-                          show_photo: true,
-                        },
-                  notification_preferences:
-                    typeof subProfile.notification_preferences === "string"
-                      ? JSON.parse(subProfile.notification_preferences)
-                      : subProfile.notification_preferences || {
-                          email_notifications: true,
-                          phone_notifications: false,
-                        },
-                } as Profile,
-                subordinates: [],
-                level: level + 1,
-              };
-            })
-            .filter((node): node is TeamMemberNode => node !== null);
+          if (filteredSubMembers.length > 0) {
+            // Get profiles for the subordinate members
+            const userIds = filteredSubMembers.map((subMember) => subMember.user_id);
+            const { data: subProfiles, error: profilesError } = await supabase
+              .from("profiles")
+              .select("*")
+              .in("id", userIds);
+
+            if (profilesError) {
+              console.error("Error fetching subordinate profiles:", profilesError);
+            } else if (subProfiles) {
+              // Create profile map for subordinates
+              const subProfileMap = subProfiles.reduce((acc, profile) => {
+                acc[profile.id] = profile;
+                return acc;
+              }, {} as Record<string, Record<string, unknown>>);
+
+              // Build subordinate nodes recursively
+              subordinates = await Promise.all(
+                filteredSubMembers.map(async (subMember) => {
+                  const subProfile = subProfileMap[subMember.user_id];
+                  if (!subProfile) return null;
+
+                  // Recursively build subordinates for this member
+                  const subSubordinates = await buildSubordinatesRecursively(
+                    subMember.user_id,
+                    level + 2
+                  );
+
+                  return {
+                    member: {
+                      id: subMember.user_id,
+                      first_name: subProfile.first_name,
+                      last_name: subProfile.last_name,
+                      email: subProfile.email,
+                      profile_image_url: subProfile.profile_image_url,
+                      role: subProfile.role,
+                      roles: [],
+                      privacy_settings:
+                        typeof subProfile.privacy_settings === "string"
+                          ? JSON.parse(subProfile.privacy_settings)
+                          : subProfile.privacy_settings || {
+                              show_email: false,
+                              show_phone: false,
+                              show_photo: true,
+                            },
+                      notification_preferences:
+                        typeof subProfile.notification_preferences === "string"
+                          ? JSON.parse(subProfile.notification_preferences)
+                          : subProfile.notification_preferences || {
+                              email_notifications: true,
+                              phone_notifications: false,
+                            },
+                    } as Profile,
+                    subordinates: subSubordinates,
+                    level: level + 1,
+                  };
+                })
+              );
+
+              subordinates = subordinates.filter((node): node is TeamMemberNode => node !== null);
+            }
+          }
         }
       }
 
@@ -368,41 +425,107 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
       };
     };
 
+    // Helper function to recursively build subordinates
+    const buildSubordinatesRecursively = async (
+      memberId: string,
+      level: number
+    ): Promise<TeamMemberNode[]> => {
+      // Find if this member has a team
+      const memberProfile = profilesMap.get(memberId);
+      if (!memberProfile?.email) return [];
+
+      const memberTeam = teams?.find((team) => team.manager === memberProfile.email);
+      if (!memberTeam) return [];
+
+      // Get this member's team members
+      const { data: memberTeamMembers, error: membersError } = await supabase
+        .from("team_members")
+        .select("*")
+        .eq("team_id", memberTeam.id);
+
+      if (membersError || !memberTeamMembers || memberTeamMembers.length === 0) {
+        return [];
+      }
+
+      // Filter out the member themselves
+      const filteredMembers = memberTeamMembers.filter(
+        (subMember) => subMember.user_id !== memberId
+      );
+
+      if (filteredMembers.length === 0) return [];
+
+      // Get profiles for these members
+      const userIds = filteredMembers.map((subMember) => subMember.user_id);
+      const { data: subProfiles, error: profilesError } = await supabase
+        .from("profiles")
+        .select("*")
+        .in("id", userIds);
+
+      if (profilesError || !subProfiles) return [];
+
+      const subProfileMap = subProfiles.reduce((acc, profile) => {
+        acc[profile.id] = profile;
+        return acc;
+      }, {} as Record<string, Record<string, unknown>>);
+
+      // Build subordinate nodes
+      const subordinates: TeamMemberNode[] = [];
+      for (const subMember of filteredMembers) {
+        const subProfile = subProfileMap[subMember.user_id];
+        if (!subProfile) continue;
+
+        // Recursively get their subordinates
+        const subSubordinates = await buildSubordinatesRecursively(
+          subMember.user_id,
+          level + 1
+        );
+
+        subordinates.push({
+          member: {
+            id: subMember.user_id,
+            first_name: subProfile.first_name,
+            last_name: subProfile.last_name,
+            email: subProfile.email,
+            profile_image_url: subProfile.profile_image_url,
+            role: subProfile.role,
+            roles: [],
+            privacy_settings:
+              typeof subProfile.privacy_settings === "string"
+                ? JSON.parse(subProfile.privacy_settings)
+                : subProfile.privacy_settings || {
+                    show_email: false,
+                    show_phone: false,
+                    show_photo: true,
+                  },
+            notification_preferences:
+              typeof subProfile.notification_preferences === "string"
+                ? JSON.parse(subProfile.notification_preferences)
+                : subProfile.notification_preferences || {
+                    email_notifications: true,
+                    phone_notifications: false,
+                  },
+          } as Profile,
+          subordinates: subSubordinates,
+          level,
+        });
+      }
+
+      return subordinates;
+    };
+
     // Build hierarchy for all direct team members
-    return teamMembers
-      .map((member) => buildNode(member.user_id, 0))
-      .filter((node): node is TeamMemberNode => node !== null);
+    const hierarchy = await Promise.all(
+      teamMembers.map((member) => buildNode(member.user_id, 0))
+    );
+    return hierarchy.filter((node): node is TeamMemberNode => node !== null);
   };
 
-  const teamHierarchy = buildTeamHierarchy();
-
-  // Filter hierarchy based on search query
-  const filterHierarchy = (nodes: TeamMemberNode[]): TeamMemberNode[] => {
-    if (!searchQuery.trim()) return nodes;
-
-    return nodes
-      .map((node) => {
-        const fullName = `${node.member.first_name || ""} ${
-          node.member.last_name || ""
-        }`.toLowerCase();
-        const email = (node.member.email || "").toLowerCase();
-        const query = searchQuery.toLowerCase();
-
-        const matchesSearch = fullName.includes(query) || email.includes(query);
-        const filteredSubordinates = filterHierarchy(node.subordinates);
-
-        if (matchesSearch || filteredSubordinates.length > 0) {
-          return {
-            ...node,
-            subordinates: filteredSubordinates,
-          };
-        }
-        return null;
-      })
-      .filter((node): node is TeamMemberNode => node !== null);
-  };
-
-  const filteredHierarchy = filterHierarchy(teamHierarchy);
+  // Use a separate query to get the team hierarchy
+  const { data: teamHierarchy, isLoading: isLoadingHierarchy } = useQuery({
+    queryKey: ["team-hierarchy", managerId, teamMembers],
+    queryFn: buildTeamHierarchy,
+    enabled: !!managerId && !!teamMembers && !!allTeamsData,
+  });
 
   const toggleNode = (memberId: string) => {
     const newExpanded = new Set(expandedNodes);
@@ -445,14 +568,29 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
   // Handle member removal - update DB, invalidate cache, avoid full page reload
   const handleRemoveMember = async (memberId: string) => {
     try {
-      // First, get the manager's team
-      const { data: managerTeam, error: teamError } = await supabase
-        .from("team_managers")
-        .select("team_id")
-        .eq("user_id", managerId)
+      if (!managerId) {
+        throw new Error("Manager ID not found");
+      }
+
+      // First, get the manager's profile to get their email
+      const { data: managerProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", managerId)
         .single();
 
-      if (teamError || !managerTeam) {
+      if (profileError || !managerProfile) {
+        throw new Error("Manager profile not found");
+      }
+
+      // Find team where this manager's email is in the manager field
+      const { data: team, error: teamError } = await supabase
+        .from("teams")
+        .select("id")
+        .eq("manager", managerProfile.email)
+        .single();
+
+      if (teamError || !team) {
         throw new Error("Manager team not found");
       }
 
@@ -460,7 +598,7 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
       const { error } = await supabase
         .from("team_members")
         .delete()
-        .eq("team_id", managerTeam.team_id)
+        .eq("team_id", team.id)
         .eq("user_id", memberId);
 
       if (error) throw error;
@@ -576,15 +714,8 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          <Input
-            placeholder="Search members by name or email"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="mb-4"
-          />
-
           {(() => {
-            if (isLoading) {
+            if (isLoading || isLoadingHierarchy) {
               return Array.from({ length: 3 }).map((_, index) => (
                 <div
                   key={index}
@@ -600,20 +731,17 @@ export function SmartTeamList({ managerId }: Readonly<SmartTeamListProps>) {
               ));
             }
 
-            if (filteredHierarchy.length === 0) {
-              const message = searchQuery.trim()
-                ? "No members match your search"
-                : "No team members found";
+            if (!teamHierarchy || teamHierarchy.length === 0) {
               return (
                 <p className="text-center text-muted-foreground py-4">
-                  {message}
+                  No team members found
                 </p>
               );
             }
 
             return (
               <div className="space-y-2">
-                {filteredHierarchy.map((node) => (
+                {teamHierarchy.map((node) => (
                   <div key={node.member.id} className="space-y-2">
                     {renderTeamMember(node)}
                   </div>
