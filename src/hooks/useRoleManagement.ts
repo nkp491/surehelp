@@ -70,9 +70,30 @@ export const useRoleManagement = () => {
   );
 
   // Fetch all users with their roles
-  const { data: users, isLoading: isLoadingUsers } = useQuery({
+  const { data: users, isLoading: isLoadingUsers, error: queryError } = useQuery({
     queryKey: ["users-with-roles"],
     queryFn: async () => {
+      // Check if current user has system_admin role first
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id) {
+        throw new Error("User not authenticated");
+      }
+
+      const { data: adminCheck, error: adminError } = await supabase
+        .from("user_roles")
+        .select("*")
+        .eq("user_id", session.session.user.id)
+        .eq("role", "system_admin");
+
+      if (adminError) {
+        console.error("Error checking admin role:", adminError);
+        throw new Error("Failed to verify admin permissions");
+      }
+
+      if (!adminCheck || adminCheck.length === 0) {
+        throw new Error("Access denied: System admin role required");
+      }
+
       // First get all profiles
       const { data: profiles, error: profilesError } = await supabase
         .from("profiles")
@@ -93,33 +114,35 @@ export const useRoleManagement = () => {
         throw teamMembersError;
       }
 
-      // Get all team managers to understand who manages which teams
-      const { data: teamManagers, error: teamManagersError } = await supabase
-        .from("team_managers")
-        .select("team_id, user_id");
+      // Get all teams to understand who manages which teams
+      const { data: teams, error: teamsError } = await supabase
+        .from("teams")
+        .select("id, manager");
 
-      if (teamManagersError) {
-        console.error("Error fetching team managers:", teamManagersError);
-        throw teamManagersError;
+      if (teamsError) {
+        console.error("Error fetching teams:", teamsError);
+        throw teamsError;
       }
 
-      // Create a map of team_id to manager_id
+      // Create a map of team_id to manager email
       const teamToManagerMap = new Map<string, string>();
-      teamManagers?.forEach((tm) => {
-        teamToManagerMap.set(tm.team_id, tm.user_id);
+      teams?.forEach((team) => {
+        if (team.manager) {
+          teamToManagerMap.set(team.id, team.manager);
+        }
       });
 
-      // Create a map of user_id to manager_id through team relationships
+      // Create a map of user_id to manager_email through team relationships
       const userToManagerMap = new Map<string, string>();
       teamMembers?.forEach((member) => {
-        const managerId = teamToManagerMap.get(member.team_id);
-        if (managerId && managerId !== member.user_id) {
-          userToManagerMap.set(member.user_id, managerId);
+        const managerEmail = teamToManagerMap.get(member.team_id);
+        if (managerEmail) {
+          userToManagerMap.set(member.user_id, managerEmail);
         }
       });
 
       // Get manager profiles for users who have managers through teams
-      const managerIds = Array.from(userToManagerMap.values());
+      const managerEmails = Array.from(userToManagerMap.values());
       let managers: Array<{
         id: string;
         first_name: string | null;
@@ -127,11 +150,11 @@ export const useRoleManagement = () => {
         email: string | null;
       }> = [];
 
-      if (managerIds.length > 0) {
+      if (managerEmails.length > 0) {
         const { data: managersData, error: managersError } = await supabase
           .from("profiles")
           .select("id, first_name, last_name, email")
-          .in("id", managerIds);
+          .in("email", managerEmails);
 
         if (managersError) {
           console.error("Error fetching managers:", managersError);
@@ -157,7 +180,7 @@ export const useRoleManagement = () => {
         roleMap.set(role.user_id, [...existing, role.role]);
       });
 
-      // Create a map for faster manager lookup
+      // Create a map for faster manager lookup by email
       const managerMap = new Map<
         string,
         {
@@ -168,7 +191,9 @@ export const useRoleManagement = () => {
         }
       >();
       managers.forEach((manager) => {
-        managerMap.set(manager.id, manager);
+        if (manager.email) {
+          managerMap.set(manager.email, manager);
+        }
       });
 
       // Process users with optimized data structure
@@ -182,8 +207,8 @@ export const useRoleManagement = () => {
             created_at: string | null;
           }) => {
             // Get manager from teams flow instead of profiles table
-            const managerId = userToManagerMap.get(profile.id) || null;
-            const manager = managerId ? managerMap.get(managerId) : null;
+            const managerEmail = userToManagerMap.get(profile.id) || null;
+            const manager = managerEmail ? managerMap.get(managerEmail) : null;
             const userRoles = roleMap.get(profile.id) || [];
 
             return {
@@ -192,7 +217,7 @@ export const useRoleManagement = () => {
               first_name: profile.first_name,
               last_name: profile.last_name,
               roles: userRoles,
-              manager_id: managerId,
+              manager_id: manager?.id || null,
               manager_name: manager
                 ? `${manager.first_name} ${manager.last_name}`.trim()
                 : null,
@@ -326,73 +351,51 @@ export const useRoleManagement = () => {
       if (teamCreationRoles.includes(role)) {
         try {
           // Check if user already has a team as a manager
-          const { data: existingTeamManager, error: existingTeamError } =
-            await supabase
-              .from("team_managers")
-              .select("team_id")
-              .eq("user_id", userId)
-              .single();
+          const { data: userProfile, error: profileError } = await supabase
+            .from("profiles")
+            .select("first_name, last_name, email")
+            .eq("id", userId)
+            .single();
 
-          if (existingTeamError && existingTeamError.code !== "PGRST116") {
+          if (profileError) {
             console.error(
-              "Error checking existing team manager:",
-              existingTeamError
+              "Error fetching user profile for team creation:",
+              profileError
             );
-          } else if (!existingTeamManager) {
-            // User doesn't have a team yet, create one
-            // Get user profile to create team name
-            const { data: userProfile, error: profileError } = await supabase
-              .from("profiles")
-              .select("first_name, last_name, email")
-              .eq("id", userId)
+          } else if (userProfile?.email) {
+            // Check if user already has a team as manager
+            const { data: existingTeam, error: existingTeamError } = await supabase
+              .from("teams")
+              .select("id")
+              .eq("manager", userProfile.email)
               .single();
 
-            if (profileError) {
+            if (existingTeamError && existingTeamError.code !== "PGRST116") {
               console.error(
-                "Error fetching user profile for team creation:",
-                profileError
+                "Error checking existing team:",
+                existingTeamError
               );
-            } else {
+            } else if (!existingTeam) {
+              // User doesn't have a team yet, create one
               // Create team name based on user's first name
-              const teamName = userProfile?.first_name
+              const teamName = userProfile.first_name
                 ? `${userProfile.first_name}'s Team`
-                : userProfile?.email
+                : userProfile.email
                 ? `${userProfile.email}'s Team`
                 : `Team ${userId.slice(0, 8)}`;
 
-              // Create the team
-              const { data: newTeam, error: teamError } = await supabase
+              // Create the team with manager set
+              const { error: teamError } = await supabase
                 .from("teams")
-                .insert([{ name: teamName }])
-                .select()
-                .single();
+                .insert([{ 
+                  name: teamName,
+                  manager: userProfile.email
+                }]);
 
               if (teamError) {
                 console.error("Error creating team:", teamError);
               } else {
-                // Create entry in team_managers table
-                try {
-                  const { error: teamManagerError } = await supabase
-                    .from("team_managers")
-                    .insert([
-                      {
-                        team_id: newTeam.id,
-                        user_id: userId,
-                        role: role,
-                      },
-                    ]);
-
-                  if (teamManagerError) {
-                    console.error(
-                      "Error creating team manager entry:",
-                      teamManagerError
-                    );
-                  } else {
-                    teamCreated = true;
-                  }
-                } catch (insertError) {
-                  console.error("Error inserting team manager:", insertError);
-                }
+                teamCreated = true;
               }
             }
           }
@@ -661,25 +664,18 @@ export const useRoleManagement = () => {
       }
 
       // Check if manager has a team
-      const { data: teamManagers, error: teamManagerError } = await supabase
-        .from("team_managers")
-        .select("user_id, role, team_id")
-        .eq("user_id", managerId)
-        .in("role", [
-          "manager_pro",
-          "manager_gold",
-          "manager_pro_gold",
-          "manager_pro_platinum",
-        ]);
+      const { data: managerTeam, error: teamError } = await supabase
+        .from("teams")
+        .select("id")
+        .eq("manager", managerProfile.email)
+        .single();
 
-      if (teamManagerError) {
-        console.error("Error checking team manager:", teamManagerError);
+      if (teamError && teamError.code !== "PGRST116") {
+        console.error("Error checking manager team:", teamError);
         throw new Error("Failed to check manager team");
       }
 
-      // Use the first manager entry if multiple exist
-      const teamManager = teamManagers?.[0];
-      let managerTeamId = teamManager?.team_id;
+      let managerTeamId = managerTeam?.id;
 
       // If manager doesn't have a team, create one
       if (!managerTeamId) {
@@ -690,10 +686,13 @@ export const useRoleManagement = () => {
           ? `${managerProfile.email}'s Team`
           : `Team ${managerProfile.id.slice(0, 8)}`;
 
-        // Create the team
+        // Create the team with manager set
         const { data: newTeam, error: teamError } = await supabase
           .from("teams")
-          .insert([{ name: teamName }])
+          .insert([{ 
+            name: teamName,
+            manager: managerProfile.email
+          }])
           .select()
           .single();
 
@@ -702,21 +701,6 @@ export const useRoleManagement = () => {
           throw new Error("Error creating team for manager");
         }
 
-        // Create entry in team_managers table
-        const { error: teamManagerError } = await supabase
-          .from("team_managers")
-          .insert([
-            {
-              team_id: newTeam.id,
-              user_id: managerProfile.id,
-              role: managerRoles[0].role, // Use the first manager role
-            },
-          ]);
-
-        if (teamManagerError) {
-          console.error("Error creating team manager entry:", teamManagerError);
-          throw new Error("Error setting up manager team");
-        }
         managerTeamId = newTeam.id;
       }
 
@@ -811,6 +795,7 @@ export const useRoleManagement = () => {
   return {
     users,
     isLoadingUsers,
+    error: queryError,
     availableRoles,
     assignRole,
     removeRole,

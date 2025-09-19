@@ -14,19 +14,31 @@ export const useManagerTeam = (managerId?: string) => {
     queryKey: ["manager-team", managerId],
     queryFn: async () => {
       if (!managerId) return [];
-      const { data: managerTeams, error: teamError } = await supabase
-        .from("team_managers")
-        .select("team_id")
-        .eq("user_id", managerId)
-        .limit(1);
-      if (teamError || !managerTeams || managerTeams.length === 0) {
+      // Get manager profile to find their team by email
+      const { data: managerProfile, error: profileError } = await supabase
+        .from("profiles")
+        .select("email")
+        .eq("id", managerId)
+        .single();
+      
+      if (profileError || !managerProfile?.email) {
         return [];
       }
-      const managerTeam = managerTeams[0];
+
+      // Find team where this manager's email is in the manager field
+      const { data: team, error: teamError } = await supabase
+        .from("teams")
+        .select("id")
+        .eq("manager", managerProfile.email)
+        .single();
+      
+      if (teamError || !team) {
+        return [];
+      }
       const { data: members, error: membersError } = await supabase
         .from("team_members")
         .select("*")
-        .eq("team_id", managerTeam.team_id);
+        .eq("team_id", team.id);
       if (membersError) throw membersError;
       if (!members || members.length === 0) {
         return [];
@@ -122,15 +134,27 @@ export const useManagerTeam = (managerId?: string) => {
         if (!managerRoles?.length) {
           throw new Error("Selected user does not have a manager role");
         }
-        const { data: teamManagers, error: teamManagerError } = await supabase
-          .from("team_managers")
-          .select("team_id")
-          .eq("user_id", newManagerId)
-          .limit(1);
-        if (teamManagerError || !teamManagers || teamManagers.length === 0) {
+        // Get new manager profile to find their team by email
+        const { data: newManagerProfile, error: newManagerProfileError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("id", newManagerId)
+          .single();
+        
+        if (newManagerProfileError || !newManagerProfile?.email) {
+          throw new Error("Failed to get new manager profile");
+        }
+
+        // Find team where this manager's email is in the manager field
+        const { data: newManagerTeam, error: newManagerTeamError } = await supabase
+          .from("teams")
+          .select("id")
+          .eq("manager", newManagerProfile.email)
+          .single();
+        
+        if (newManagerTeamError || !newManagerTeam) {
           throw new Error("Failed to get manager's team");
         }
-        const teamManager = teamManagers[0];
         
         // Check team size limits before adding user to the new manager's team
         const { canAddTeamMember } = await import("@/utils/teamLimits");
@@ -145,7 +169,7 @@ export const useManagerTeam = (managerId?: string) => {
           .from("team_members")
           .insert([
             {
-              team_id: teamManager.team_id,
+              team_id: newManagerTeam.id,
               user_id: memberId,
               role: "agent",
             },

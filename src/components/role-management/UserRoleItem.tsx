@@ -1,5 +1,5 @@
 import { useMemo, useCallback } from "react";
-import { UserWithRoles } from "@/hooks/useRoleManagement";
+import { UserWithRoles } from "@/hooks/useRoleAssignmentOnly";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PlusCircle, MinusCircle } from "lucide-react";
@@ -8,7 +8,6 @@ import {
   getBadgeVariant,
 } from "@/components/role-management/roleUtils";
 import { useToast } from "@/hooks/use-toast";
-import { ManagerSelect } from "./ManagerSelect";
 import { format } from "date-fns";
 
 interface UserRoleItemProps {
@@ -16,12 +15,7 @@ interface UserRoleItemProps {
   allUsers: UserWithRoles[];
   selectedRole: string | undefined;
   isAssigningRole: boolean;
-  isAssigningManager: boolean;
-  isRemovingRole: boolean;
-  isRemovingManager: boolean;
-  onAssignRole: (userId: string, email: string | null) => void;
-  onRemoveRole: (data: { userId: string; role: string }) => void;
-  onAssignManager: (userId: string, managerId: string | null) => void;
+  onAssignRole: (userId: string) => void;
 }
 
 export function UserRoleItem({
@@ -29,12 +23,7 @@ export function UserRoleItem({
   allUsers,
   selectedRole,
   isAssigningRole,
-  isAssigningManager,
-  isRemovingRole,
-  isRemovingManager,
   onAssignRole,
-  onRemoveRole,
-  onAssignManager,
 }: Readonly<UserRoleItemProps>) {
   const { toast } = useToast();
 
@@ -63,15 +52,9 @@ export function UserRoleItem({
       });
       return;
     }
-    onAssignRole(user.id, user.email);
-  }, [selectedRole, onAssignRole, user.id, user.email, toast]);
+    onAssignRole(user.id);
+  }, [selectedRole, onAssignRole, user.id, toast]);
 
-  const handleRemoveRole = useCallback(
-    (role: string) => {
-      onRemoveRole({ userId: user.id, role });
-    },
-    [onRemoveRole, user.id]
-  );
 
   return (
     <div className="border rounded-lg p-4">
@@ -88,12 +71,9 @@ export function UserRoleItem({
           </div>
           <div>
             <p className="text-sm font-medium mb-1">Manager</p>
-            <ManagerSelect
-              user={user}
-              allUsers={allUsers}
-              isAssigningManager={isAssigningManager}
-              isRemovingManager={isRemovingManager}
-            />
+            <div className="text-sm text-muted-foreground">
+              Manager assignment disabled
+            </div>
           </div>
         </div>
         <div className="flex items-center">
@@ -124,21 +104,9 @@ export function UserRoleItem({
             <Badge
               key={`${user.id}-${role}-${index}`}
               variant={getBadgeVariant(role)}
-              className="flex items-center gap-1 group"
+              className="flex items-center gap-1"
             >
               {formatRoleName(role)}
-              <button
-                onClick={() => handleRemoveRole(role)}
-                disabled={isRemovingRole}
-                className="opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-50"
-                aria-label={`Remove ${role} role`}
-              >
-                {isRemovingRole ? (
-                  <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-current" />
-                ) : (
-                  <MinusCircle className="h-3 w-3" />
-                )}
-              </button>
             </Badge>
           ))
         ) : (

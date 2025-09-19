@@ -1,4 +1,4 @@
-import { useRoleManagement } from "@/hooks/useRoleManagement";
+import { useRoleAssignmentOnly } from "@/hooks/useRoleAssignmentOnly";
 import { AccessControl } from "@/components/role-management/AccessControl";
 import { RoleManagementContent } from "@/components/role-management/RoleManagementContent";
 import { Toaster } from "@/components/ui/toaster";
@@ -7,16 +7,11 @@ export default function RoleManagement() {
   const {
     users,
     isLoadingUsers,
+    error,
     availableRoles,
     assignRole,
-    removeRole,
-    assignManager,
-    isAssigningRole,
-    isAssigningManager,
-    isRemovingRole,
-    isRemovingManager,
     getUserLoading,
-  } = useRoleManagement();
+  } = useRoleAssignmentOnly();
 
   return (
     <AccessControl>
@@ -28,14 +23,9 @@ export default function RoleManagement() {
         <RoleManagementContent
           users={users}
           isLoadingUsers={isLoadingUsers}
+          error={error}
           availableRoles={availableRoles}
           assignRole={assignRole}
-          removeRole={removeRole}
-          assignManager={assignManager}
-          isAssigningRole={isAssigningRole}
-          isAssigningManager={isAssigningManager}
-          isRemovingRole={isRemovingRole}
-          isRemovingManager={isRemovingManager}
           getUserLoading={getUserLoading}
         />
         <Toaster />
