@@ -95,9 +95,9 @@ const formatValue = (
 const getTimeRangeLabel = (range: TimeRange): string => {
   switch (range) {
     case "weekly":
-      return "Weekly";
+      return "Week to Date";
     case "monthly":
-      return "Monthly";
+      return "Month to Date";
     case "ytd":
     default:
       return "Year to Date";
@@ -568,7 +568,7 @@ const ManagerDashboard = () => {
   const [members, setMembers] = useState<EnrichedMember[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [timeRange, setTimeRange] = useState<TimeRange>("ytd");
+  const [timeRange, setTimeRange] = useState<TimeRange>("weekly");
   const [filterRole, setFilterRole] = useState<string>("all");
 
   const {
@@ -620,14 +620,20 @@ const ManagerDashboard = () => {
         let endDate: Date = today;
         switch (timeRange) {
           case "weekly":
-            startDate = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+            // Week to date: start of current week (Monday) to today
+            const dayOfWeek = today.getDay();
+            const daysFromMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1; // Monday = 0, Sunday = 6
+            startDate = new Date(today);
+            startDate.setDate(today.getDate() - daysFromMonday);
+            startDate.setHours(0, 0, 0, 0);
             break;
           case "monthly":
+            // Month to date: start of current month to today
             startDate = startOfMonth(today);
-            endDate = endOfMonth(today);
             break;
           case "ytd":
           default:
+            // Year to date: start of current year to today
             startDate = new Date(today.getFullYear(), 0, 1);
             break;
         }
@@ -861,8 +867,8 @@ const ManagerDashboard = () => {
                         <SelectValue placeholder="Select time range" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="weekly">Weekly</SelectItem>
-                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="weekly">Week to Date</SelectItem>
+                        <SelectItem value="monthly">Month to Date</SelectItem>
                         <SelectItem value="ytd">Year to Date</SelectItem>
                       </SelectContent>
                     </Select>
