@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { canAddTeamMember, TEAM_LIMITS } from "@/utils/teamLimits";
 import { AgentTypes } from "@/types/agent";
 
 export type UserRole = {
@@ -260,23 +259,7 @@ export const useRoleManagement = () => {
         return { success: true, message: "User already has this role" };
       }
 
-      // Check team limits for manager roles
-      const managerRoles = Object.keys(TEAM_LIMITS) as Array<
-        keyof typeof TEAM_LIMITS
-      >;
-      if (managerRoles.includes(role as keyof typeof TEAM_LIMITS)) {
-        const limitCheck = await canAddTeamMember(userId);
-
-        if (!limitCheck.canAdd) {
-          const limitText =
-            limitCheck.limit === Infinity
-              ? "unlimited"
-              : limitCheck.limit.toString();
-          throw new Error(
-            `Cannot assign ${role} role. Team member limit reached (${limitCheck.currentCount}/${limitText} members).`
-          );
-        }
-      }
+      // Team limit checks removed as requested
 
       // Insert the role
       const { error } = await supabase
@@ -704,12 +687,7 @@ export const useRoleManagement = () => {
         managerTeamId = newTeam.id;
       }
 
-      const { canAddTeamMember } = await import("@/utils/teamLimits");
-      const teamLimitCheck = await canAddTeamMember(managerProfile.id);
-
-      if (!teamLimitCheck.canAdd) {
-        throw new Error("Manager's team is at capacity");
-      }
+      // Team limit checks removed as requested
 
       const { error: insertError } = await supabase
         .from("team_members")
